@@ -1,53 +1,56 @@
 package de.jeisfeld.lifx.lan.message;
 
 import java.net.DatagramPacket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
- * Response message of type StateLabel.
+ * Response message of type StatePower.
  */
-public class StateLabel extends ResponseMessage {
+public class StatePower extends ResponseMessage {
 	/**
-	 * The label.
+	 * The power level.
 	 */
-	private String mLabel;
+	private short mLevel;
 
 	/**
 	 * Create a StateLabel from message data.
 	 *
 	 * @param packet The message data.
 	 */
-	public StateLabel(final DatagramPacket packet) {
+	public StatePower(final DatagramPacket packet) {
 		super(packet);
 	}
 
 	@Override
 	public final MessageType getMessageType() {
-		return MessageType.STATE_LABEL;
+		return MessageType.STATE_POWER;
 	}
 
 	@Override
 	protected final void evaluatePayload() {
-		byte[] payload = getPayload();
-		mLabel = TypeUtil.toString(payload);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(getPayload());
+		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+		mLevel = byteBuffer.getShort();
 	}
 
 	@Override
 	protected final Map<String, String> getPayloadMap() {
 		Map<String, String> payloadFields = new LinkedHashMap<>();
-		payloadFields.put("Label", mLabel);
+		payloadFields.put("Level", TypeUtil.toUnsignedString(mLevel));
 		return payloadFields;
 	}
 
 	/**
-	 * Get the label.
+	 * Get the power level.
 	 *
-	 * @return the label
+	 * @return the power level
 	 */
-	public String getLabel() {
-		return mLabel;
+	public short getLevel() {
+		return mLevel;
 	}
 }

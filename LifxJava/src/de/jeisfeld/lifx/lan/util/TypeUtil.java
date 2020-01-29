@@ -1,11 +1,17 @@
 package de.jeisfeld.lifx.lan.util;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 /**
  * Helper class for converting types.
  */
 public final class TypeUtil {
+	/**
+	 * The indentation used in output.
+	 */
+	public static final String INDENT = "  ";
+
 	/**
 	 * Hide the default constructor.
 	 */
@@ -56,6 +62,31 @@ public final class TypeUtil {
 		byte[] realBytes = new byte[size];
 		System.arraycopy(b, 0, realBytes, 0, size);
 		return new String(realBytes, StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * Convert duration to String.
+	 *
+	 * @param duration the duration.
+	 * @return The String.
+	 */
+	public static String toString(final Duration duration) {
+		StringBuilder result = new StringBuilder();
+		long days = duration.toDays();
+		if (days > 0) {
+			result.append(days).append(" days, ");
+		}
+		long hours = duration.toHours() - 24 * days; // MAGIC_NUMBER
+		if (hours > 0) {
+			result.append(hours).append(" hours, ");
+		}
+		long minutes = duration.toMinutes() - 60 * duration.toHours(); // MAGIC_NUMBER
+		if (minutes > 0) {
+			result.append(minutes).append(" minutes, ");
+		}
+		long seconds = duration.getSeconds() - 60 * duration.toMinutes(); // MAGIC_NUMBER
+		result.append(seconds).append(" seconds");
+		return result.toString();
 	}
 
 	/**

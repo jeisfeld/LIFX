@@ -2,15 +2,31 @@ package de.jeisfeld.lifx.lan;
 
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.jeisfeld.lifx.lan.message.GetGroup;
+import de.jeisfeld.lifx.lan.message.GetHostFirmware;
+import de.jeisfeld.lifx.lan.message.GetHostInfo;
+import de.jeisfeld.lifx.lan.message.GetInfo;
 import de.jeisfeld.lifx.lan.message.GetLabel;
 import de.jeisfeld.lifx.lan.message.GetLocation;
+import de.jeisfeld.lifx.lan.message.GetPower;
 import de.jeisfeld.lifx.lan.message.GetVersion;
+import de.jeisfeld.lifx.lan.message.GetWifiFirmware;
+import de.jeisfeld.lifx.lan.message.GetWifiInfo;
+import de.jeisfeld.lifx.lan.message.StateGroup;
+import de.jeisfeld.lifx.lan.message.StateHostFirmware;
+import de.jeisfeld.lifx.lan.message.StateHostInfo;
+import de.jeisfeld.lifx.lan.message.StateInfo;
 import de.jeisfeld.lifx.lan.message.StateLabel;
 import de.jeisfeld.lifx.lan.message.StateLocation;
+import de.jeisfeld.lifx.lan.message.StatePower;
 import de.jeisfeld.lifx.lan.message.StateVersion;
+import de.jeisfeld.lifx.lan.message.StateWifiFirmware;
+import de.jeisfeld.lifx.lan.message.StateWifiInfo;
+import de.jeisfeld.lifx.lan.util.Logger;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -58,6 +74,18 @@ public class Device {
 	 * The location.
 	 */
 	private String mLocation = null;
+	/**
+	 * The group.
+	 */
+	private String mGroup = null;
+	/**
+	 * The host firmware version.
+	 */
+	private String mHostFirmwareVersion = null;
+	/**
+	 * The wifi firmware version.
+	 */
+	private String mWifiFirmwareVersion = null;
 
 	/**
 	 * Constructor.
@@ -89,7 +117,6 @@ public class Device {
 		if (!Device.NON_LIGHT_PRODUCTS.contains(mProduct)) {
 			device = new Light(this);
 		}
-		device.retrieveInformation();
 		return device;
 	}
 
@@ -104,29 +131,6 @@ public class Device {
 		mVendor = vendor;
 		mProduct = product;
 		mVersion = version;
-	}
-
-	/**
-	 * Retrieve the device information.
-	 *
-	 * @throws SocketException Exception while retrieving data.
-	 */
-	// OVERRIDABLE
-	public void retrieveInformation() throws SocketException {
-		if (mVendor == 0) {
-			getDeviceProduct();
-		}
-		retrieveLabel();
-		retrieveLocation();
-		// GetLabel
-		// GetLocation
-		// GetGroup
-		// LightGetPower
-		// GetHostFirmware
-		// GetWifiFirmware
-		// LightGet
-		// GetInfo
-		// GetWifiInfo
 	}
 
 	/**
@@ -151,6 +155,41 @@ public class Device {
 		mLocation = stateLocation.getLabel();
 	}
 
+	/**
+	 * Get Group via GetGroup call.
+	 *
+	 * @throws SocketException Exception while retrieving data.
+	 */
+	private void retrieveGroup() throws SocketException {
+		StateGroup stateGroup =
+				(StateGroup) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetGroup(mTargetAddress));
+		mGroup = stateGroup.getLabel();
+	}
+
+	/**
+	 * Get Group via GetHostFirmware call.
+	 *
+	 * @throws SocketException Exception while retrieving data.
+	 */
+	private void retrieveHostFirmware() throws SocketException {
+		StateHostFirmware stateHostFirmware =
+				(StateHostFirmware) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
+						.requestWithResponse(new GetHostFirmware(mTargetAddress));
+		mHostFirmwareVersion = stateHostFirmware.getMajorVersion() + "." + stateHostFirmware.getMinorVersion();
+	}
+
+	/**
+	 * Get Group via GetWifiFirmware call.
+	 *
+	 * @throws SocketException Exception while retrieving data.
+	 */
+	private void retrieveWifiFirmware() throws SocketException {
+		StateWifiFirmware stateWifiFirmware =
+				(StateWifiFirmware) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
+						.requestWithResponse(new GetWifiFirmware(mTargetAddress));
+		mWifiFirmwareVersion = stateWifiFirmware.getMajorVersion() + "." + stateWifiFirmware.getMinorVersion();
+	}
+
 	// OVERRIDABLE
 	@Override
 	public String toString() {
@@ -164,20 +203,21 @@ public class Device {
 	 * @return The device information as String.
 	 */
 	public String getFullInformation() {
-		String linebreak = "\n  ";
-		StringBuilder result = new StringBuilder(getClass().getSimpleName()).append(":");
-		result.append(linebreak).append("MAC: ").append(mTargetAddress);
-		result.append(linebreak).append("IP Address: ").append(mInetAddress.getHostAddress());
-		result.append(linebreak).append("Port: ").append(mPort);
-		result.append(linebreak).append("Vendor: ").append(TypeUtil.toUnsignedString(mVendor));
-		result.append(linebreak).append("Product: ").append(TypeUtil.toUnsignedString(mProduct));
-		result.append(linebreak).append("Version: ").append(TypeUtil.toUnsignedString(mVersion));
-		if (mLabel != null) {
-			result.append(linebreak).append("Label: ").append(mLabel);
-		}
-		if (mLocation != null) {
-			result.append(linebreak).append("Location: ").append(mLocation);
-		}
+		StringBuilder result = new StringBuilder(getClass().getSimpleName()).append(":\n");
+		result.append(TypeUtil.INDENT).append("MAC: ").append(mTargetAddress).append("\n");
+		result.append(TypeUtil.INDENT).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
+		result.append(TypeUtil.INDENT).append("Port: ").append(mPort).append("\n");
+		result.append(TypeUtil.INDENT).append("Vendor: ").append(TypeUtil.toUnsignedString(mVendor)).append("\n");
+		result.append(TypeUtil.INDENT).append("Product: ").append(TypeUtil.toUnsignedString(mProduct)).append("\n");
+		result.append(TypeUtil.INDENT).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
+		result.append(TypeUtil.INDENT).append("Label: ").append(getLabel()).append("\n");
+		result.append(TypeUtil.INDENT).append("Location: ").append(getLocation()).append("\n");
+		result.append(TypeUtil.INDENT).append("Group: ").append(getGroup()).append("\n");
+		result.append(TypeUtil.INDENT).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
+		result.append(TypeUtil.INDENT).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
+		result.append(TypeUtil.INDENT).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
+		result.append(TypeUtil.INDENT).append("WiFi Signal Strength: ").append(getWifiInfo().getSignalStrength()).append("\n");
+		result.append(TypeUtil.INDENT).append("Power: ").append(getPower()).append("\n");
 		return result.toString();
 	}
 
@@ -250,6 +290,14 @@ public class Device {
 	 * @return the label
 	 */
 	public final String getLabel() {
+		if (mLabel == null) {
+			try {
+				retrieveLabel();
+			}
+			catch (SocketException e) {
+				Logger.error(e);
+			}
+		}
 		return mLabel;
 	}
 
@@ -259,7 +307,172 @@ public class Device {
 	 * @return the location
 	 */
 	public final String getLocation() {
+		if (mLocation == null) {
+			try {
+				retrieveLocation();
+			}
+			catch (SocketException e) {
+				Logger.error(e);
+			}
+		}
 		return mLocation;
+	}
+
+	/**
+	 * Get the group.
+	 *
+	 * @return the group
+	 */
+	public final String getGroup() {
+		if (mGroup == null) {
+			try {
+				retrieveGroup();
+			}
+			catch (SocketException e) {
+				Logger.error(e);
+			}
+		}
+		return mGroup;
+	}
+
+	/**
+	 * Get the host firmware version.
+	 *
+	 * @return the host firmware version
+	 */
+	public final String getHostFirmwareVersion() {
+		if (mHostFirmwareVersion == null) {
+			try {
+				retrieveHostFirmware();
+			}
+			catch (SocketException e) {
+				Logger.error(e);
+			}
+		}
+		return mHostFirmwareVersion;
+	}
+
+	/**
+	 * Get the wifi firmware version.
+	 *
+	 * @return the wifi firmware version
+	 */
+	public final String getWifiFirmwareVersion() {
+		if (mWifiFirmwareVersion == null) {
+			try {
+				retrieveWifiFirmware();
+			}
+			catch (SocketException e) {
+				Logger.error(e);
+			}
+		}
+		return mWifiFirmwareVersion;
+	}
+
+	/**
+	 * Get the uptime.
+	 *
+	 * @return the uptime
+	 */
+	public final Duration getUptime() {
+		StateInfo stateInfo;
+		try {
+			stateInfo = (StateInfo) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetInfo(mTargetAddress));
+			return stateInfo.getUptime();
+		}
+		catch (SocketException e) {
+			Logger.error(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Get the power level.
+	 *
+	 * @return the power level.
+	 */
+	public final Power getPower() {
+		StatePower statePower;
+		try {
+			statePower =
+					(StatePower) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetPower(mTargetAddress));
+			return Power.fromLevel(statePower.getLevel());
+		}
+		catch (SocketException e) {
+			Logger.error(e);
+			return Power.UNKNOWN;
+		}
+	}
+
+	/**
+	 * Get the host info.
+	 *
+	 * @return The host info.
+	 */
+	public final StateHostInfo getHostInfo() {
+		StateHostInfo stateHostInfo;
+		try {
+			stateHostInfo = (StateHostInfo) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
+					.requestWithResponse(new GetHostInfo(mTargetAddress));
+			return stateHostInfo;
+		}
+		catch (SocketException e) {
+			Logger.error(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Get the wifi info.
+	 *
+	 * @return The wifi info.
+	 */
+	public final StateWifiInfo getWifiInfo() {
+		StateWifiInfo stateWifiInfo;
+		try {
+			stateWifiInfo = (StateWifiInfo) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
+					.requestWithResponse(new GetWifiInfo(mTargetAddress));
+			return stateWifiInfo;
+		}
+		catch (SocketException e) {
+			Logger.error(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Possible power values.
+	 */
+	public enum Power {
+		/**
+		 * Power is on.
+		 */
+		ON,
+		/**
+		 * Power is off.
+		 */
+		OFF,
+		/**
+		 * Power is unknown.
+		 */
+		UNKNOWN;
+
+		/**
+		 * Get the power value from level.
+		 *
+		 * @param level The power level.
+		 * @return The power value.
+		 */
+		protected static Power fromLevel(final short level) {
+			switch (level) {
+			case -1:
+				return ON;
+			case 0:
+				return OFF;
+			default:
+				return UNKNOWN;
+			}
+		}
 	}
 
 }

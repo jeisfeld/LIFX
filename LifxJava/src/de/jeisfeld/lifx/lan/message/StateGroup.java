@@ -10,9 +10,9 @@ import java.util.Map;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
- * Response message of type StateLocation.
+ * Response message of type StateGroup.
  */
-public class StateLocation extends ResponseMessage {
+public class StateGroup extends ResponseMessage {
 	/**
 	 * The location.
 	 */
@@ -31,13 +31,13 @@ public class StateLocation extends ResponseMessage {
 	 *
 	 * @param packet The message data.
 	 */
-	public StateLocation(final DatagramPacket packet) {
+	public StateGroup(final DatagramPacket packet) {
 		super(packet);
 	}
 
 	@Override
 	public final MessageType getMessageType() {
-		return MessageType.STATE_LOCATION;
+		return MessageType.STATE_GROUP;
 	}
 
 	@Override

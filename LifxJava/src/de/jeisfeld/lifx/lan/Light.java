@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.lan;
 
-import java.net.SocketException;
-
 /**
  * Class managing a LIFX light.
  */
@@ -14,14 +12,6 @@ public class Light extends Device {
 	public Light(final Device device) {
 		super(device.getTargetAddress(), device.getInetAddress(), device.getPort(), device.getSourceId());
 		setVersionInformation(device.getVendor(), device.getProduct(), device.getVersion());
-	}
-
-	// OVERRIDABLE
-	@Override
-	public void retrieveInformation() throws SocketException {
-		super.retrieveInformation();
-		// LightGetPower
-		// LightGet
 	}
 
 	// OVERRIDABLE

@@ -41,8 +41,7 @@ public class StateVersion extends ResponseMessage {
 
 	@Override
 	protected final void evaluatePayload() {
-		byte[] payload = getPayload();
-		ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(getPayload());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		mVendor = byteBuffer.getInt();
 		mProduct = byteBuffer.getInt();

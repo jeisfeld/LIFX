@@ -38,8 +38,7 @@ public class StateService extends ResponseMessage {
 
 	@Override
 	protected final void evaluatePayload() {
-		byte[] payload = getPayload();
-		ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
+		ByteBuffer byteBuffer = ByteBuffer.wrap(getPayload());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		mService = byteBuffer.get();
 		mPort = byteBuffer.getInt();

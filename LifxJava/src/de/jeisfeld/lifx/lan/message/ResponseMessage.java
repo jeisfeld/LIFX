@@ -150,6 +150,20 @@ public abstract class ResponseMessage {
 	}
 
 	/**
+	 * Get a formatted String with the payload content.
+	 *
+	 * @param prefix a Prefix to be written before each entry.
+	 * @return The String.
+	 */
+	public String getPayloadFormattedString(final String prefix) {
+		StringBuilder result = new StringBuilder();
+		for (Entry<String, String> entry : getPayloadMap().entrySet()) {
+			result.append(TypeUtil.INDENT).append(prefix).append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+		}
+		return result.toString();
+	}
+
+	/**
 	 * Get a map containing payload data for String representation.
 	 *
 	 * @return The map of payload data.
@@ -166,6 +180,7 @@ public abstract class ResponseMessage {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(packet.getData());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		MessageType messageType = MessageType.fromValue(byteBuffer.getShort(32)); // MAGIC_NUMBER
+
 		switch (messageType) {
 		case STATE_SERVICE:
 			return new StateService(packet);
@@ -175,6 +190,20 @@ public abstract class ResponseMessage {
 			return new StateLabel(packet);
 		case STATE_LOCATION:
 			return new StateLocation(packet);
+		case STATE_GROUP:
+			return new StateGroup(packet);
+		case STATE_HOST_FIRMWARE:
+			return new StateHostFirmware(packet);
+		case STATE_WIFI_FIRMWARE:
+			return new StateWifiFirmware(packet);
+		case STATE_INFO:
+			return new StateInfo(packet);
+		case STATE_HOST_INFO:
+			return new StateHostInfo(packet);
+		case STATE_WIFI_INFO:
+			return new StateWifiInfo(packet);
+		case STATE_POWER:
+			return new StatePower(packet);
 		case ACKNOWLEDGEMENT:
 			return new Acknowledgement(packet);
 		default:
