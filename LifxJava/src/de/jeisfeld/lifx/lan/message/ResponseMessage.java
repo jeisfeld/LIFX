@@ -204,6 +204,8 @@ public abstract class ResponseMessage {
 			return new StateWifiInfo(packet);
 		case STATE_POWER:
 			return new StatePower(packet);
+		case LIGHT_STATE_POWER:
+			return new LightStatePower(packet);
 		case ACKNOWLEDGEMENT:
 			return new Acknowledgement(packet);
 		default:

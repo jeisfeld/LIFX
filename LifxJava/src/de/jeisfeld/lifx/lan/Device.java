@@ -3,8 +3,6 @@ package de.jeisfeld.lifx.lan;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
 
 import de.jeisfeld.lifx.lan.message.GetGroup;
 import de.jeisfeld.lifx.lan.message.GetHostFirmware;
@@ -26,6 +24,9 @@ import de.jeisfeld.lifx.lan.message.StatePower;
 import de.jeisfeld.lifx.lan.message.StateVersion;
 import de.jeisfeld.lifx.lan.message.StateWifiFirmware;
 import de.jeisfeld.lifx.lan.message.StateWifiInfo;
+import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.Product;
+import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.util.Logger;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -33,11 +34,6 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
  * Class managing a LIFX device.
  */
 public class Device {
-	/**
-	 * The list of products which are no lights. Currently none.
-	 */
-	private static final List<Integer> NON_LIGHT_PRODUCTS = new ArrayList<>();
-
 	/**
 	 * Source ID. 32 bits. Unique ID sent by client. If zero, broadcast reply requested. If non-zero, unicast reply requested.
 	 */
@@ -57,11 +53,11 @@ public class Device {
 	/**
 	 * The vendor.
 	 */
-	private int mVendor = 0;
+	private Vendor mVendor;
 	/**
 	 * The product.
 	 */
-	private int mProduct = 0;
+	private Product mProduct;
 	/**
 	 * The version.
 	 */
@@ -114,7 +110,13 @@ public class Device {
 		StateVersion stateVersion =
 				(StateVersion) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetVersion(mTargetAddress));
 		setVersionInformation(stateVersion.getVendor(), stateVersion.getProduct(), stateVersion.getVersion());
-		if (!Device.NON_LIGHT_PRODUCTS.contains(mProduct)) {
+		if (mProduct.isChain()) {
+			device = new TileChain(this);
+		}
+		else if (mProduct.isMultizone()) {
+			device = new MultiZoneLight(this);
+		}
+		else if (mProduct.isLight()) {
 			device = new Light(this);
 		}
 		return device;
@@ -127,7 +129,7 @@ public class Device {
 	 * @param product The product.
 	 * @param version The version.
 	 */
-	protected void setVersionInformation(final int vendor, final int product, final int version) {
+	protected void setVersionInformation(final Vendor vendor, final Product product, final int version) {
 		mVendor = vendor;
 		mProduct = product;
 		mVersion = version;
@@ -207,9 +209,10 @@ public class Device {
 		result.append(TypeUtil.INDENT).append("MAC: ").append(mTargetAddress).append("\n");
 		result.append(TypeUtil.INDENT).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
 		result.append(TypeUtil.INDENT).append("Port: ").append(mPort).append("\n");
-		result.append(TypeUtil.INDENT).append("Vendor: ").append(TypeUtil.toUnsignedString(mVendor)).append("\n");
-		result.append(TypeUtil.INDENT).append("Product: ").append(TypeUtil.toUnsignedString(mProduct)).append("\n");
+		result.append(TypeUtil.INDENT).append("Vendor: ").append(mVendor).append("\n");
+		result.append(TypeUtil.INDENT).append("Product: ").append(getProduct()).append("\n");
 		result.append(TypeUtil.INDENT).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
+		result.append(TypeUtil.INDENT).append("Colored: ").append(getProduct().hasColor()).append("\n");
 		result.append(TypeUtil.INDENT).append("Label: ").append(getLabel()).append("\n");
 		result.append(TypeUtil.INDENT).append("Location: ").append(getLocation()).append("\n");
 		result.append(TypeUtil.INDENT).append("Group: ").append(getGroup()).append("\n");
@@ -262,7 +265,7 @@ public class Device {
 	 *
 	 * @return the vendor
 	 */
-	protected final int getVendor() {
+	protected final Vendor getVendor() {
 		return mVendor;
 	}
 
@@ -271,7 +274,7 @@ public class Device {
 	 *
 	 * @return the product
 	 */
-	protected final int getProduct() {
+	protected final Product getProduct() {
 		return mProduct;
 	}
 
@@ -437,41 +440,6 @@ public class Device {
 		catch (SocketException e) {
 			Logger.error(e);
 			return null;
-		}
-	}
-
-	/**
-	 * Possible power values.
-	 */
-	public enum Power {
-		/**
-		 * Power is on.
-		 */
-		ON,
-		/**
-		 * Power is off.
-		 */
-		OFF,
-		/**
-		 * Power is unknown.
-		 */
-		UNKNOWN;
-
-		/**
-		 * Get the power value from level.
-		 *
-		 * @param level The power level.
-		 * @return The power value.
-		 */
-		protected static Power fromLevel(final short level) {
-			switch (level) {
-			case -1:
-				return ON;
-			case 0:
-				return OFF;
-			default:
-				return UNKNOWN;
-			}
 		}
 	}
 

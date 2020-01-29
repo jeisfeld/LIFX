@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import de.jeisfeld.lifx.lan.Device;
+import de.jeisfeld.lifx.lan.type.Service;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -16,7 +17,7 @@ public class StateService extends ResponseMessage {
 	/**
 	 * The service.
 	 */
-	private byte mService;
+	private Service mService;
 	/**
 	 * The port.
 	 */
@@ -40,7 +41,7 @@ public class StateService extends ResponseMessage {
 	protected final void evaluatePayload() {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(getPayload());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		mService = byteBuffer.get();
+		mService = Service.fromByte(byteBuffer.get());
 		mPort = byteBuffer.getInt();
 	}
 
@@ -56,7 +57,7 @@ public class StateService extends ResponseMessage {
 	@Override
 	protected final Map<String, String> getPayloadMap() {
 		Map<String, String> payloadFields = new LinkedHashMap<>();
-		payloadFields.put("Service", TypeUtil.toUnsignedString(mService));
+		payloadFields.put("Service", mService.toString());
 		payloadFields.put("Port", TypeUtil.toUnsignedString(mPort));
 		return payloadFields;
 	}
@@ -66,7 +67,7 @@ public class StateService extends ResponseMessage {
 	 *
 	 * @return the service
 	 */
-	public final byte getService() {
+	public final Service getService() {
 		return mService;
 	}
 

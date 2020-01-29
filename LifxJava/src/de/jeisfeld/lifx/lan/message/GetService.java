@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.lan.message;
 
+import de.jeisfeld.lifx.lan.type.Service;
+
 /**
  * Request message of type GetService.
  */
@@ -37,6 +39,6 @@ public class GetService extends RequestMessage {
 
 	@Override
 	public final boolean matches(final ResponseMessage otherMessage) {
-		return super.matches(otherMessage) && ((StateService) otherMessage).getService() == 1;
+		return super.matches(otherMessage) && ((StateService) otherMessage).getService() != Service.UNKNOWN;
 	}
 }

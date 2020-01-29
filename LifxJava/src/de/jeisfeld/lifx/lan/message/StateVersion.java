@@ -6,6 +6,8 @@ import java.nio.ByteOrder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import de.jeisfeld.lifx.lan.type.Product;
+import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -15,11 +17,11 @@ public class StateVersion extends ResponseMessage {
 	/**
 	 * The vendor.
 	 */
-	private int mVendor;
+	private Vendor mVendor;
 	/**
 	 * The product.
 	 */
-	private int mProduct;
+	private Product mProduct;
 	/**
 	 * The version.
 	 */
@@ -43,16 +45,16 @@ public class StateVersion extends ResponseMessage {
 	protected final void evaluatePayload() {
 		ByteBuffer byteBuffer = ByteBuffer.wrap(getPayload());
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-		mVendor = byteBuffer.getInt();
-		mProduct = byteBuffer.getInt();
+		mVendor = Vendor.fromInt(byteBuffer.getInt());
+		mProduct = Product.fromId(byteBuffer.getInt());
 		mVersion = byteBuffer.getInt();
 	}
 
 	@Override
 	protected final Map<String, String> getPayloadMap() {
 		Map<String, String> payloadFields = new LinkedHashMap<>();
-		payloadFields.put("Vendor", TypeUtil.toUnsignedString(mVendor));
-		payloadFields.put("Product", TypeUtil.toUnsignedString(mProduct));
+		payloadFields.put("Vendor", mVendor.toString());
+		payloadFields.put("Product", mProduct.toString());
 		payloadFields.put("Version", TypeUtil.toUnsignedString(mVersion));
 		return payloadFields;
 	}
@@ -62,7 +64,7 @@ public class StateVersion extends ResponseMessage {
 	 *
 	 * @return the vendor
 	 */
-	public int getVendor() {
+	public Vendor getVendor() {
 		return mVendor;
 	}
 
@@ -71,7 +73,7 @@ public class StateVersion extends ResponseMessage {
 	 *
 	 * @return the product
 	 */
-	public int getProduct() {
+	public Product getProduct() {
 		return mProduct;
 	}
 
