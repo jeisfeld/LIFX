@@ -54,43 +54,43 @@ public enum Product {
 	/**
 	 * The product id.
 	 */
-	private int mPid;
+	private final int mPid;
 	/**
 	 * The product name.
 	 */
-	private String mName;
+	private final String mName;
 	/**
 	 * Flag if this is a light.
 	 */
-	private boolean mIsLight;
+	private final boolean mIsLight;
 	/**
 	 * Flag if this is a colored light.
 	 */
-	private boolean mHasColor;
+	private final boolean mHasColor;
 	/**
 	 * Flag if this light has infrared.
 	 */
-	private boolean mHasInfrared;
+	private final boolean mHasInfrared;
 	/**
 	 * Flag if this is a matrix light.
 	 */
-	private boolean mIsMatrix;
+	private final boolean mIsMatrix;
 	/**
 	 * Flag if this is a multizone light.
 	 */
-	private boolean mIsMultizone;
+	private final boolean mIsMultizone;
 	/**
 	 * The min color temperature.
 	 */
-	private int mMinTemperature;
+	private final int mMinTemperature;
 	/**
 	 * The max color temperature.
 	 */
-	private int mMaxTemperature;
+	private final int mMaxTemperature;
 	/**
 	 * Flag if this is a chain light.
 	 */
-	private boolean mIsChain;
+	private final boolean mIsChain;
 
 	/**
 	 * Map from id to product.

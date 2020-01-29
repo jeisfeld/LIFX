@@ -2,8 +2,11 @@ package de.jeisfeld.lifx.lan;
 
 import java.net.SocketException;
 
+import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetPower;
+import de.jeisfeld.lifx.lan.message.LightState;
 import de.jeisfeld.lifx.lan.message.LightStatePower;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.Logger;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -26,6 +29,7 @@ public class Light extends Device {
 	public String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
 		result.append(TypeUtil.INDENT).append("PowerLevel: ").append(TypeUtil.toUnsignedString(getPowerLevel())).append("\n");
+		result.append(TypeUtil.INDENT).append("Color: ").append(getColor()).append("\n");
 		return result.toString();
 	}
 
@@ -51,4 +55,33 @@ public class Light extends Device {
 			return null;
 		}
 	}
+
+	/**
+	 * Get the light state.
+	 *
+	 * @return the light state.
+	 */
+	public final LightState getState() {
+		LightState lightStatePower;
+		try {
+			lightStatePower = (LightState) new LifxLanConnection(getSourceId(), (byte) 0, getInetAddress(), getPort())
+					.requestWithResponse(new LightGet(getTargetAddress()));
+			return lightStatePower;
+		}
+		catch (SocketException e) {
+			Logger.error(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Get the color.
+	 *
+	 * @return the color.
+	 */
+	public final Color getColor() {
+		LightState lightState = getState();
+		return lightState == null ? null : lightState.getColor();
+	}
+
 }

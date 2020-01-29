@@ -206,6 +206,8 @@ public abstract class ResponseMessage {
 			return new StatePower(packet);
 		case LIGHT_STATE_POWER:
 			return new LightStatePower(packet);
+		case LIGHT_STATE:
+			return new LightState(packet);
 		case ACKNOWLEDGEMENT:
 			return new Acknowledgement(packet);
 		default:
