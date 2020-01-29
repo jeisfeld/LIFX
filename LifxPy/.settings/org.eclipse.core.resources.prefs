@@ -1,0 +1,11 @@
+eclipse.preferences.version=1
+encoding//examples/blink.py=utf-8
+encoding//examples/hello_world.py=utf-8
+encoding//lifxlan/device.py=utf-8
+encoding//lifxlan/lifxlan.py=utf-8
+encoding//lifxlan/light.py=utf-8
+encoding//lifxlan/message.py=utf-8
+encoding//lifxlan/msgtypes.py=utf-8
+encoding//lifxlan/multizonelight.py=utf-8
+encoding//lifxlan/products.py=utf-8
+encoding//lifxlan/unpack.py=utf-8
