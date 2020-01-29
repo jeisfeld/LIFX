@@ -28,7 +28,7 @@ public class StateInfo extends ResponseMessage {
 	private Duration mDowntime;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StateInfo from message data.
 	 *
 	 * @param packet The message data.
 	 */

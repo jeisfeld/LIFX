@@ -26,7 +26,7 @@ public class StateHostInfo extends ResponseMessage {
 	private int mBytesReceived;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StateHostInfo from message data.
 	 *
 	 * @param packet The message data.
 	 */

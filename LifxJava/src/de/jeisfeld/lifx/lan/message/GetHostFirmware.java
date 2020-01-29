@@ -4,16 +4,6 @@ package de.jeisfeld.lifx.lan.message;
  * Request message of type GetHostFirmware.
  */
 public class GetHostFirmware extends RequestMessage {
-
-	/**
-	 * Constructor.
-	 *
-	 * @param targetAddress the target address.
-	 */
-	public GetHostFirmware(final String targetAddress) {
-		super(targetAddress);
-	}
-
 	@Override
 	protected final byte[] getPayload() {
 		return new byte[0];

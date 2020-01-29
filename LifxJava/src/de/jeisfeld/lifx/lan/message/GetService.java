@@ -7,15 +7,6 @@ import de.jeisfeld.lifx.lan.type.Service;
  */
 public class GetService extends RequestMessage {
 	/**
-	 * Constructor.
-	 *
-	 * @param targetAddress The target address.
-	 */
-	public GetService(final String targetAddress) {
-		super(targetAddress);
-	}
-
-	/**
 	 * Constructor for broadcast to all addresses.
 	 */
 	public GetService() {

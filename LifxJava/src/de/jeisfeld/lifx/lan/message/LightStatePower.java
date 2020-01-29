@@ -18,7 +18,7 @@ public class LightStatePower extends ResponseMessage {
 	private short mLevel;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a LightStatePower from message data.
 	 *
 	 * @param packet The message data.
 	 */

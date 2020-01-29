@@ -27,7 +27,7 @@ public class LightState extends ResponseMessage {
 	private String mLabel;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a LightState from message data.
 	 *
 	 * @param packet The message data.
 	 */

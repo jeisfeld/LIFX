@@ -4,16 +4,6 @@ package de.jeisfeld.lifx.lan.message;
  * Request message of type GetWifiFirmware.
  */
 public class GetWifiFirmware extends RequestMessage {
-
-	/**
-	 * Constructor.
-	 *
-	 * @param targetAddress the target address.
-	 */
-	public GetWifiFirmware(final String targetAddress) {
-		super(targetAddress);
-	}
-
 	@Override
 	protected final byte[] getPayload() {
 		return new byte[0];

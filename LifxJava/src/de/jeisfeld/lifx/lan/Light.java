@@ -46,8 +46,7 @@ public class Light extends Device {
 	public final Short getPowerLevel() {
 		LightStatePower lightStatePower;
 		try {
-			lightStatePower = (LightStatePower) new LifxLanConnection(getSourceId(), (byte) 0, getInetAddress(), getPort())
-					.requestWithResponse(new LightGetPower(getTargetAddress()));
+			lightStatePower = (LightStatePower) getConnection().requestWithResponse(new LightGetPower());
 			return lightStatePower.getLevel();
 		}
 		catch (SocketException e) {
@@ -64,8 +63,7 @@ public class Light extends Device {
 	public final LightState getState() {
 		LightState lightStatePower;
 		try {
-			lightStatePower = (LightState) new LifxLanConnection(getSourceId(), (byte) 0, getInetAddress(), getPort())
-					.requestWithResponse(new LightGet(getTargetAddress()));
+			lightStatePower = (LightState) getConnection().requestWithResponse(new LightGet());
 			return lightStatePower;
 		}
 		catch (SocketException e) {

@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
 
+import de.jeisfeld.lifx.lan.message.EchoRequest;
 import de.jeisfeld.lifx.lan.message.GetGroup;
 import de.jeisfeld.lifx.lan.message.GetHostFirmware;
 import de.jeisfeld.lifx.lan.message.GetHostInfo;
@@ -14,6 +15,7 @@ import de.jeisfeld.lifx.lan.message.GetPower;
 import de.jeisfeld.lifx.lan.message.GetVersion;
 import de.jeisfeld.lifx.lan.message.GetWifiFirmware;
 import de.jeisfeld.lifx.lan.message.GetWifiInfo;
+import de.jeisfeld.lifx.lan.message.SetPower;
 import de.jeisfeld.lifx.lan.message.StateGroup;
 import de.jeisfeld.lifx.lan.message.StateHostFirmware;
 import de.jeisfeld.lifx.lan.message.StateHostInfo;
@@ -99,6 +101,16 @@ public class Device {
 	}
 
 	/**
+	 * Get a Lifx LAN Connection for this device.
+	 *
+	 * @return A connection.
+	 * @throws SocketException Exception while creating connection.
+	 */
+	protected LifxLanConnection getConnection() throws SocketException {
+		return new LifxLanConnection(mSourceId, (byte) 0, mTargetAddress, mInetAddress, mPort);
+	}
+
+	/**
 	 * Get version information via GetVersion call.
 	 *
 	 * @return the device including version information.
@@ -107,8 +119,7 @@ public class Device {
 	 */
 	public Device getDeviceProduct() throws SocketException {
 		Device device = this;
-		StateVersion stateVersion =
-				(StateVersion) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetVersion(mTargetAddress));
+		StateVersion stateVersion = (StateVersion) getConnection().requestWithResponse(new GetVersion());
 		setVersionInformation(stateVersion.getVendor(), stateVersion.getProduct(), stateVersion.getVersion());
 		if (mProduct.isChain()) {
 			device = new TileChain(this);
@@ -141,8 +152,7 @@ public class Device {
 	 * @throws SocketException Exception while retrieving data.
 	 */
 	private void retrieveLabel() throws SocketException {
-		StateLabel stateLabel =
-				(StateLabel) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetLabel(mTargetAddress));
+		StateLabel stateLabel = (StateLabel) getConnection().requestWithResponse(new GetLabel());
 		mLabel = stateLabel.getLabel();
 	}
 
@@ -152,8 +162,7 @@ public class Device {
 	 * @throws SocketException Exception while retrieving data.
 	 */
 	private void retrieveLocation() throws SocketException {
-		StateLocation stateLocation =
-				(StateLocation) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetLocation(mTargetAddress));
+		StateLocation stateLocation = (StateLocation) getConnection().requestWithResponse(new GetLocation());
 		mLocation = stateLocation.getLabel();
 	}
 
@@ -163,8 +172,7 @@ public class Device {
 	 * @throws SocketException Exception while retrieving data.
 	 */
 	private void retrieveGroup() throws SocketException {
-		StateGroup stateGroup =
-				(StateGroup) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetGroup(mTargetAddress));
+		StateGroup stateGroup = (StateGroup) getConnection().requestWithResponse(new GetGroup());
 		mGroup = stateGroup.getLabel();
 	}
 
@@ -174,9 +182,7 @@ public class Device {
 	 * @throws SocketException Exception while retrieving data.
 	 */
 	private void retrieveHostFirmware() throws SocketException {
-		StateHostFirmware stateHostFirmware =
-				(StateHostFirmware) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
-						.requestWithResponse(new GetHostFirmware(mTargetAddress));
+		StateHostFirmware stateHostFirmware = (StateHostFirmware) getConnection().requestWithResponse(new GetHostFirmware());
 		mHostFirmwareVersion = stateHostFirmware.getMajorVersion() + "." + stateHostFirmware.getMinorVersion();
 	}
 
@@ -186,9 +192,7 @@ public class Device {
 	 * @throws SocketException Exception while retrieving data.
 	 */
 	private void retrieveWifiFirmware() throws SocketException {
-		StateWifiFirmware stateWifiFirmware =
-				(StateWifiFirmware) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
-						.requestWithResponse(new GetWifiFirmware(mTargetAddress));
+		StateWifiFirmware stateWifiFirmware = (StateWifiFirmware) getConnection().requestWithResponse(new GetWifiFirmware());
 		mWifiFirmwareVersion = stateWifiFirmware.getMajorVersion() + "." + stateWifiFirmware.getMinorVersion();
 	}
 
@@ -229,7 +233,7 @@ public class Device {
 	 *
 	 * @return the sourceId
 	 */
-	protected final int getSourceId() {
+	public final int getSourceId() {
 		return mSourceId;
 	}
 
@@ -238,7 +242,7 @@ public class Device {
 	 *
 	 * @return the targetAddress
 	 */
-	protected final String getTargetAddress() {
+	public final String getTargetAddress() {
 		return mTargetAddress;
 	}
 
@@ -247,7 +251,7 @@ public class Device {
 	 *
 	 * @return the port
 	 */
-	protected final int getPort() {
+	public final int getPort() {
 		return mPort;
 	}
 
@@ -256,7 +260,7 @@ public class Device {
 	 *
 	 * @return the internet address
 	 */
-	protected final InetAddress getInetAddress() {
+	public final InetAddress getInetAddress() {
 		return mInetAddress;
 	}
 
@@ -265,7 +269,7 @@ public class Device {
 	 *
 	 * @return the vendor
 	 */
-	protected final Vendor getVendor() {
+	public final Vendor getVendor() {
 		return mVendor;
 	}
 
@@ -274,7 +278,7 @@ public class Device {
 	 *
 	 * @return the product
 	 */
-	protected final Product getProduct() {
+	public final Product getProduct() {
 		return mProduct;
 	}
 
@@ -283,7 +287,7 @@ public class Device {
 	 *
 	 * @return the version
 	 */
-	protected final int getVersion() {
+	public final int getVersion() {
 		return mVersion;
 	}
 
@@ -380,7 +384,7 @@ public class Device {
 	public final Duration getUptime() {
 		StateInfo stateInfo;
 		try {
-			stateInfo = (StateInfo) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetInfo(mTargetAddress));
+			stateInfo = (StateInfo) getConnection().requestWithResponse(new GetInfo());
 			return stateInfo.getUptime();
 		}
 		catch (SocketException e) {
@@ -397,8 +401,7 @@ public class Device {
 	public final Power getPower() {
 		StatePower statePower;
 		try {
-			statePower =
-					(StatePower) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort).requestWithResponse(new GetPower(mTargetAddress));
+			statePower = (StatePower) getConnection().requestWithResponse(new GetPower());
 			return Power.fromLevel(statePower.getLevel());
 		}
 		catch (SocketException e) {
@@ -415,8 +418,7 @@ public class Device {
 	public final StateHostInfo getHostInfo() {
 		StateHostInfo stateHostInfo;
 		try {
-			stateHostInfo = (StateHostInfo) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
-					.requestWithResponse(new GetHostInfo(mTargetAddress));
+			stateHostInfo = (StateHostInfo) getConnection().requestWithResponse(new GetHostInfo());
 			return stateHostInfo;
 		}
 		catch (SocketException e) {
@@ -433,14 +435,38 @@ public class Device {
 	public final StateWifiInfo getWifiInfo() {
 		StateWifiInfo stateWifiInfo;
 		try {
-			stateWifiInfo = (StateWifiInfo) new LifxLanConnection(mSourceId, (byte) 0, mInetAddress, mPort)
-					.requestWithResponse(new GetWifiInfo(mTargetAddress));
+			stateWifiInfo = (StateWifiInfo) getConnection().requestWithResponse(new GetWifiInfo());
 			return stateWifiInfo;
 		}
 		catch (SocketException e) {
 			Logger.error(e);
 			return null;
 		}
+	}
+
+	/**
+	 * Check if the device is reachable.
+	 *
+	 * @return true if reachable.
+	 */
+	public boolean isReachable() {
+		try {
+			return new LifxLanConnection(mSourceId, (byte) 0, 200, 1, mTargetAddress, mInetAddress, mPort) // MAGIC_NUMBER
+					.requestWithResponse(new EchoRequest()) != null;
+		}
+		catch (Exception e) {
+			return false;
+		}
+	}
+
+	/**
+	 * Set the power.
+	 *
+	 * @param power The power
+	 * @throws SocketException Connection issues
+	 */
+	public void setPower(final Power power) throws SocketException {
+		getConnection().requestWithResponse(new SetPower(power));
 	}
 
 }

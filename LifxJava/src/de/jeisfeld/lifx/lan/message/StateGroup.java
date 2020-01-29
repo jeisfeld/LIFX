@@ -27,7 +27,7 @@ public class StateGroup extends ResponseMessage {
 	private Date mUpdateTime;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StateGroup from message data.
 	 *
 	 * @param packet The message data.
 	 */

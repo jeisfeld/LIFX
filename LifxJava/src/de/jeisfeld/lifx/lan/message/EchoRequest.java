@@ -1,9 +1,9 @@
 package de.jeisfeld.lifx.lan.message;
 
 /**
- * Request message of type GetHostInfo.
+ * Request message of type EchoRequest.
  */
-public class GetHostInfo extends RequestMessage {
+public class EchoRequest extends RequestMessage {
 	@Override
 	protected final byte[] getPayload() {
 		return new byte[0];
@@ -11,12 +11,12 @@ public class GetHostInfo extends RequestMessage {
 
 	@Override
 	protected final MessageType getMessageType() {
-		return MessageType.GET_HOST_INFO;
+		return MessageType.ECHO_REQUEST;
 	}
 
 	@Override
 	protected final MessageType getResponseType() {
-		return MessageType.STATE_HOST_INFO;
+		return MessageType.ECHO_RESPONSE;
 	}
 
 }

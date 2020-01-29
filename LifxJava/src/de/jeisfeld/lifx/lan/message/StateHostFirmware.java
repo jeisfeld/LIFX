@@ -27,7 +27,7 @@ public class StateHostFirmware extends ResponseMessage {
 	private short mMajorVersion;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StateHostFirmware from message data.
 	 *
 	 * @param packet The message data.
 	 */

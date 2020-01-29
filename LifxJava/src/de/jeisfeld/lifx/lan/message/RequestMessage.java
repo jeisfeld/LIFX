@@ -12,7 +12,7 @@ public abstract class RequestMessage {
 	/**
 	 * The broadcast MAC used if there is no MAC given.
 	 */
-	protected static final String BROADCAST_MAC = "00:00:00:00:00:00";
+	public static final String BROADCAST_MAC = "00:00:00:00:00:00";
 	/**
 	 * The size of the header.
 	 */
@@ -29,7 +29,7 @@ public abstract class RequestMessage {
 	/**
 	 * Target address. 64 bits. Either single MAC address or all zeroes for broadcast.
 	 */
-	private final String mTargetAddress;
+	private String mTargetAddress;
 	/**
 	 * The sequence number. 8 bits.
 	 */
@@ -46,22 +46,6 @@ public abstract class RequestMessage {
 	 * The packed message.
 	 */
 	private byte[] mPackedMessage = null;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param targetAddress The target address.
-	 */
-	public RequestMessage(final String targetAddress) {
-		mTargetAddress = targetAddress;
-	}
-
-	/**
-	 * Constructor.
-	 */
-	public RequestMessage() {
-		this(RequestMessage.BROADCAST_MAC);
-	}
 
 	/**
 	 * Generate the byte message from the input.
@@ -204,6 +188,16 @@ public abstract class RequestMessage {
 	 */
 	public void setSourceId(final int sourceId) {
 		mSourceId = sourceId;
+		mPackedMessage = null;
+	}
+
+	/**
+	 * Set the target address.
+	 *
+	 * @param targetAddress the target address
+	 */
+	public void setTargetAddress(final String targetAddress) {
+		mTargetAddress = targetAddress;
 		mPackedMessage = null;
 	}
 

@@ -27,7 +27,7 @@ public class StateWifiFirmware extends ResponseMessage {
 	private short mMajorVersion;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StateWifiFirmware from message data.
 	 *
 	 * @param packet The message data.
 	 */

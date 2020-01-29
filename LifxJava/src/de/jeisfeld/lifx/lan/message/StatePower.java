@@ -18,7 +18,7 @@ public class StatePower extends ResponseMessage {
 	private short mLevel;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StatePower from message data.
 	 *
 	 * @param packet The message data.
 	 */

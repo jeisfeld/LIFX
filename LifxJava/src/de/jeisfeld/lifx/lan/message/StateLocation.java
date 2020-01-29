@@ -27,7 +27,7 @@ public class StateLocation extends ResponseMessage {
 	private Date mUpdateTime;
 
 	/**
-	 * Create a StateLabel from message data.
+	 * Create a StateLocation from message data.
 	 *
 	 * @param packet The message data.
 	 */
