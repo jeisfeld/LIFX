@@ -113,4 +113,14 @@ public final class TypeUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Convert double value 0 - 1 to short value.
+	 *
+	 * @param value the double value
+	 * @return The short value
+	 */
+	public static short toShort(final double value) {
+		return (short) (65535.99999 * Math.min(1, Math.max(0, value))); // MAGIC_NUMBER
+	}
+
 }

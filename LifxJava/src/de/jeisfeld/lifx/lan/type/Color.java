@@ -76,7 +76,7 @@ public class Color {
 	 * @param colorTemperature The color temperature.
 	 */
 	public Color(final double hue, final double saturation, final double brightness, final int colorTemperature) {
-		this(Color.toShort(hue / 360), Color.toShort(saturation), Color.toShort(brightness), (short) colorTemperature); // MAGIC_NUMBER
+		this(TypeUtil.toShort(hue / 360), TypeUtil.toShort(saturation), TypeUtil.toShort(brightness), (short) colorTemperature); // MAGIC_NUMBER
 	}
 
 	@Override
@@ -91,6 +91,16 @@ public class Color {
 				.append(TypeUtil.toUnsignedString(mColorTemperature))
 				.append(")");
 		return result.toString();
+	}
+
+	/**
+	 * Update the color with given brightness.
+	 *
+	 * @param brightness The brightness.
+	 * @return The updated color with this brightness.
+	 */
+	public final Color withBrightness(final double brightness) {
+		return new Color(getHue(), getSaturation(), TypeUtil.toShort(brightness), getColorTemperature());
 	}
 
 	/**
@@ -127,16 +137,6 @@ public class Color {
 	 */
 	public final short getColorTemperature() {
 		return mColorTemperature;
-	}
-
-	/**
-	 * Convert double value 0 - 1 to short value.
-	 *
-	 * @param value the double value
-	 * @return The short value
-	 */
-	public static short toShort(final double value) {
-		return (short) (65535.99999 * Math.min(1, Math.max(0, value))); // MAGIC_NUMBER
 	}
 
 	@Override

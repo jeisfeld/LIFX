@@ -15,6 +15,7 @@ import de.jeisfeld.lifx.lan.message.GetPower;
 import de.jeisfeld.lifx.lan.message.GetVersion;
 import de.jeisfeld.lifx.lan.message.GetWifiFirmware;
 import de.jeisfeld.lifx.lan.message.GetWifiInfo;
+import de.jeisfeld.lifx.lan.message.SetLabel;
 import de.jeisfeld.lifx.lan.message.SetPower;
 import de.jeisfeld.lifx.lan.message.StateGroup;
 import de.jeisfeld.lifx.lan.message.StateHostFirmware;
@@ -119,9 +120,8 @@ public class Device {
 	 * @throws SocketException Exception while retrieving data.
 	 */
 	public Device getDeviceProduct() throws SocketException {
+		retrieveVersionInformation();
 		Device device = this;
-		StateVersion stateVersion = (StateVersion) getConnection().requestWithResponse(new GetVersion());
-		setVersionInformation(stateVersion.getVendor(), stateVersion.getProduct(), stateVersion.getVersion());
 		if (mProduct.isChain()) {
 			device = new TileChain(this);
 		}
@@ -132,6 +132,30 @@ public class Device {
 			device = new Light(this);
 		}
 		return device;
+	}
+
+	/**
+	 * Reset all stored device information.
+	 *
+	 * @throws SocketException Exception while retrieving version info.
+	 */
+	public void reset() throws SocketException {
+		retrieveVersionInformation();
+		mLabel = null;
+		mLocation = null;
+		mGroup = null;
+		mHostFirmwareVersion = null;
+		mWifiFirmwareVersion = null;
+	}
+
+	/**
+	 * Retrieve the version information via GetVersion call.
+	 *
+	 * @throws SocketException Exception while retrieving data.
+	 */
+	private void retrieveVersionInformation() throws SocketException {
+		StateVersion stateVersion = (StateVersion) getConnection().requestWithResponse(new GetVersion());
+		setVersionInformation(stateVersion.getVendor(), stateVersion.getProduct(), stateVersion.getVersion());
 	}
 
 	/**
@@ -468,5 +492,16 @@ public class Device {
 	 */
 	public final void setPower(final boolean status) throws SocketException {
 		getConnection().requestWithResponse(new SetPower(status));
+	}
+
+	/**
+	 * Set the label.
+	 *
+	 * @param label the new label.
+	 * @throws SocketException Connection issues
+	 */
+	public final void setLabel(final String label) throws SocketException {
+		getConnection().requestWithResponse(new SetLabel(label));
+		mLabel = null;
 	}
 }
