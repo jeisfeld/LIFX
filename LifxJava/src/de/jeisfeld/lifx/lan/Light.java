@@ -5,6 +5,7 @@ import java.net.SocketException;
 import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetInfrared;
 import de.jeisfeld.lifx.lan.message.LightGetPower;
+import de.jeisfeld.lifx.lan.message.LightSetColor;
 import de.jeisfeld.lifx.lan.message.LightSetPower;
 import de.jeisfeld.lifx.lan.message.LightState;
 import de.jeisfeld.lifx.lan.message.LightStateInfrared;
@@ -111,4 +112,77 @@ public class Light extends Device {
 	public void setPower(final boolean status, final int duration) throws SocketException {
 		getConnection().requestWithResponse(new LightSetPower(status, duration));
 	}
+
+	/**
+	 * Set the color.
+	 *
+	 * @param color the target color.
+	 * @param duration the duration of power change in millis.
+	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @throws SocketException Connection issues
+	 */
+	public void setColor(final Color color, final int duration, final boolean wait) throws SocketException {
+		getConnection().requestWithResponse(new LightSetColor(color, duration));
+		if (wait) {
+			waitForColor(color);
+		}
+	}
+
+	/**
+	 * Set the color.
+	 *
+	 * @param color the target color.
+	 * @throws SocketException Connection issues
+	 */
+	public void setColor(final Color color) throws SocketException {
+		setColor(color, 0, false);
+	}
+
+	/**
+	 * Wait until the color fulfils a certain condition.
+	 *
+	 * @param filter The filtering condition.
+	 */
+	public void waitForColor(final ColorFilter filter) {
+		Color color = getColor();
+		boolean isMatching = filter.matches(color);
+		while (!isMatching) {
+			try {
+				Thread.sleep(200); // MAGIC_NUMBER
+			}
+			catch (InterruptedException e) {
+				// ignore
+			}
+			color = getColor();
+			isMatching = filter.matches(color);
+		}
+	}
+
+	/**
+	 * Wait until the color matches a certain color.
+	 *
+	 * @param color The matching color.
+	 */
+	public void waitForColor(final Color color) {
+		if (getProduct().hasColor()) {
+			waitForColor(c -> color.isSimilar(c));
+		}
+		else {
+			waitForColor(c -> color.isSimilarBlackWhite(c));
+		}
+	}
+
+	/**
+	 * Interface for filtering colors.
+	 */
+	public interface ColorFilter {
+		/**
+		 * Filtering method.
+		 *
+		 * @param color The color.
+		 * @return true if the color matches the filter.
+		 */
+		boolean matches(Color color);
+	}
+
 }

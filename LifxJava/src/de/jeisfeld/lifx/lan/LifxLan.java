@@ -151,7 +151,7 @@ public final class LifxLan {
 	private List<Device> retrieveDeviceInformation(final int timeout, final int attempts, final Integer numDevices, final DeviceFilter filter)
 			throws SocketException {
 		List<ResponseMessage> responses =
-				new LifxLanConnection(mSourceId, (byte) 1, timeout, attempts, numDevices, filter).broadcastWithResponse(new GetService());
+				new LifxLanConnection(mSourceId, timeout, attempts, filter).broadcastWithResponse(new GetService(), numDevices);
 		Logger.info("Found " + responses.size() + " devices.");
 		if (filter == null) {
 			mDevices = new ArrayList<>();

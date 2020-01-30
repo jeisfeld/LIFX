@@ -108,7 +108,7 @@ public class Device {
 	 * @throws SocketException Exception while creating connection.
 	 */
 	protected LifxLanConnection getConnection() throws SocketException {
-		return new LifxLanConnection(mSourceId, (byte) 0, mTargetAddress, mInetAddress, mPort);
+		return new LifxLanConnection(mSourceId, mTargetAddress, mInetAddress, mPort);
 	}
 
 	/**
@@ -452,7 +452,7 @@ public class Device {
 	 */
 	public boolean isReachable() {
 		try {
-			return new LifxLanConnection(mSourceId, (byte) 0, 200, 1, mTargetAddress, mInetAddress, mPort) // MAGIC_NUMBER
+			return new LifxLanConnection(mSourceId, 200, 1, mTargetAddress, mInetAddress, mPort) // MAGIC_NUMBER
 					.requestWithResponse(new EchoRequest()) != null;
 		}
 		catch (SocketException e) {
