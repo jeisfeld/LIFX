@@ -3,8 +3,10 @@ package de.jeisfeld.lifx.lan;
 import java.net.SocketException;
 
 import de.jeisfeld.lifx.lan.message.LightGet;
+import de.jeisfeld.lifx.lan.message.LightGetInfrared;
 import de.jeisfeld.lifx.lan.message.LightGetPower;
 import de.jeisfeld.lifx.lan.message.LightState;
+import de.jeisfeld.lifx.lan.message.LightStateInfrared;
 import de.jeisfeld.lifx.lan.message.LightStatePower;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.Logger;
@@ -28,7 +30,10 @@ public class Light extends Device {
 	@Override
 	public String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
-		result.append(TypeUtil.INDENT).append("PowerLevel: ").append(TypeUtil.toUnsignedString(getPowerLevel())).append("\n");
+		result.append(TypeUtil.INDENT).append("Power Level: ").append(TypeUtil.toUnsignedString(getPowerLevel())).append("\n");
+		if (getProduct().hasInfrared()) {
+			result.append(TypeUtil.INDENT).append("Infrared Brightness: ").append(TypeUtil.toUnsignedString(getInfraredBrightness())).append("\n");
+		}
 		result.append(TypeUtil.INDENT).append("Color: ").append(getColor()).append("\n");
 		return result.toString();
 	}
@@ -61,10 +66,27 @@ public class Light extends Device {
 	 * @return the light state.
 	 */
 	public final LightState getState() {
-		LightState lightStatePower;
+		LightState lightState;
 		try {
-			lightStatePower = (LightState) getConnection().requestWithResponse(new LightGet());
-			return lightStatePower;
+			lightState = (LightState) getConnection().requestWithResponse(new LightGet());
+			return lightState;
+		}
+		catch (SocketException e) {
+			Logger.error(e);
+			return null;
+		}
+	}
+
+	/**
+	 * Get the infrared brightness.
+	 *
+	 * @return the infrared brightness.
+	 */
+	public final Short getInfraredBrightness() {
+		LightStateInfrared lightStateInfrared;
+		try {
+			lightStateInfrared = (LightStateInfrared) getConnection().requestWithResponse(new LightGetInfrared());
+			return lightStateInfrared.getBrightness();
 		}
 		catch (SocketException e) {
 			Logger.error(e);

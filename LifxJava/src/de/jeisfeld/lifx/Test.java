@@ -18,10 +18,13 @@ public class Test {
 
 	public static void main(final String[] args) throws Exception {
 		Logger.setLogDetails(false);
+
 		new Test().test();
 	}
 
 	private void test() throws Exception {
+		System.out.println(FARBLAMPE.getFullInformation());
+
 		long startTime = System.currentTimeMillis();
 		FARBLAMPE.setPower(Power.OFF);
 		short powerLevel = -1;

@@ -208,6 +208,8 @@ public abstract class ResponseMessage {
 			return new LightStatePower(packet);
 		case LIGHT_STATE:
 			return new LightState(packet);
+		case LIGHT_STATE_INFRARED:
+			return new LightStateInfrared(packet);
 		case ECHO_RESPONSE:
 			return new EchoResponse(packet);
 		case ACKNOWLEDGEMENT:
