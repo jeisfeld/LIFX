@@ -1,36 +1,74 @@
 package de.jeisfeld.lifx.lan.type;
 
+import de.jeisfeld.lifx.lan.util.TypeUtil;
+
 /**
  * Possible power values.
  */
-public enum Power {
+public class Power {
 	/**
-	 * Power is on.
+	 * The Power for OFF.
 	 */
-	ON,
+	public static final Power OFF = new Power((short) 0);
 	/**
-	 * Power is off.
+	 * The Power for ON.
 	 */
-	OFF,
-	/**
-	 * Power is unknown.
-	 */
-	UNKNOWN;
+	public static final Power ON = new Power((short) -1);
 
 	/**
-	 * Get the power value from level.
+	 * The power level.
+	 */
+	private final short mLevel;
+
+	/**
+	 * Constructor.
 	 *
 	 * @param level The power level.
-	 * @return The power value.
 	 */
-	public static Power fromLevel(final short level) {
-		switch (level) {
-		case -1:
-			return ON;
-		case 0:
-			return OFF;
-		default:
-			return UNKNOWN;
-		}
+	public Power(final short level) {
+		mLevel = level;
 	}
+
+	/**
+	 * Get the power level.
+	 *
+	 * @return the power level.
+	 */
+	public short getLevel() {
+		return mLevel;
+	}
+
+	/**
+	 * Determine if power is on.
+	 *
+	 * @return true if power is on.
+	 */
+	public boolean isOn() {
+		return equals(Power.ON);
+	}
+
+	/**
+	 * Determine if power is off.
+	 *
+	 * @return true if power is off.
+	 */
+	public boolean isOff() {
+		return equals(Power.OFF);
+	}
+
+	@Override
+	public final String toString() {
+		return (isOn() ? "ON" : isOff() ? "OFF" : "?") + " (" + TypeUtil.toUnsignedString(mLevel) + ")";
+	}
+
+	@Override
+	public final int hashCode() {
+		return mLevel;
+	}
+
+	@Override
+	public final boolean equals(final Object other) {
+		return other instanceof Power && ((Power) other).getLevel() == getLevel();
+	}
+
 }

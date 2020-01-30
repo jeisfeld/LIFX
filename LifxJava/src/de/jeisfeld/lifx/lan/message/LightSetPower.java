@@ -6,34 +6,41 @@ import java.nio.ByteOrder;
 import de.jeisfeld.lifx.lan.type.Power;
 
 /**
- * Request message of type SetPower.
+ * Request message of type LightSetPower.
  */
-public class SetPower extends RequestMessage {
+public class LightSetPower extends RequestMessage {
 	/**
 	 * The status.
 	 */
 	private final boolean mStatus;
+	/**
+	 * The duration in millis.
+	 */
+	private final int mDuration;
 
 	/**
-	 * Create SetPower.
+	 * Create LightSetPower.
 	 *
 	 * @param status The target power status.
+	 * @param duration The status change duration in millis.
 	 */
-	public SetPower(final boolean status) {
+	public LightSetPower(final boolean status, final int duration) {
 		mStatus = status;
+		mDuration = duration;
 	}
 
 	@Override
 	protected final byte[] getPayload() {
-		ByteBuffer byteBuffer = ByteBuffer.allocate(2);
+		ByteBuffer byteBuffer = ByteBuffer.allocate(6); // MAGIC_NUMBER
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		byteBuffer.putShort((mStatus ? Power.ON : Power.OFF).getLevel());
+		byteBuffer.putInt(mDuration);
 		return byteBuffer.array();
 	}
 
 	@Override
 	protected final MessageType getMessageType() {
-		return MessageType.SET_POWER;
+		return MessageType.LIGHT_SET_POWER;
 	}
 
 	@Override

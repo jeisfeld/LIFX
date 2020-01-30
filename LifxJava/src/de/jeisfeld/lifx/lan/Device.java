@@ -26,6 +26,7 @@ import de.jeisfeld.lifx.lan.message.StatePower;
 import de.jeisfeld.lifx.lan.message.StateVersion;
 import de.jeisfeld.lifx.lan.message.StateWifiFirmware;
 import de.jeisfeld.lifx.lan.message.StateWifiInfo;
+import de.jeisfeld.lifx.lan.type.ConnectionInfo;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
@@ -398,15 +399,15 @@ public class Device {
 	 *
 	 * @return the power level.
 	 */
-	public final Power getPower() {
+	public Power getPower() {
 		StatePower statePower;
 		try {
 			statePower = (StatePower) getConnection().requestWithResponse(new GetPower());
-			return Power.fromLevel(statePower.getLevel());
+			return new Power(statePower.getLevel());
 		}
 		catch (SocketException e) {
 			Logger.error(e);
-			return Power.UNKNOWN;
+			return null;
 		}
 	}
 
@@ -415,11 +416,11 @@ public class Device {
 	 *
 	 * @return The host info.
 	 */
-	public final StateHostInfo getHostInfo() {
+	public final ConnectionInfo getHostInfo() {
 		StateHostInfo stateHostInfo;
 		try {
 			stateHostInfo = (StateHostInfo) getConnection().requestWithResponse(new GetHostInfo());
-			return stateHostInfo;
+			return stateHostInfo.getConnectionInfo();
 		}
 		catch (SocketException e) {
 			Logger.error(e);
@@ -432,11 +433,11 @@ public class Device {
 	 *
 	 * @return The wifi info.
 	 */
-	public final StateWifiInfo getWifiInfo() {
+	public final ConnectionInfo getWifiInfo() {
 		StateWifiInfo stateWifiInfo;
 		try {
 			stateWifiInfo = (StateWifiInfo) getConnection().requestWithResponse(new GetWifiInfo());
-			return stateWifiInfo;
+			return stateWifiInfo.getConnectionInfo();
 		}
 		catch (SocketException e) {
 			Logger.error(e);
@@ -454,7 +455,7 @@ public class Device {
 			return new LifxLanConnection(mSourceId, (byte) 0, 200, 1, mTargetAddress, mInetAddress, mPort) // MAGIC_NUMBER
 					.requestWithResponse(new EchoRequest()) != null;
 		}
-		catch (Exception e) {
+		catch (SocketException e) {
 			return false;
 		}
 	}
@@ -462,11 +463,10 @@ public class Device {
 	/**
 	 * Set the power.
 	 *
-	 * @param power The power
+	 * @param status true for switching on, false for switching off
 	 * @throws SocketException Connection issues
 	 */
-	public void setPower(final Power power) throws SocketException {
-		getConnection().requestWithResponse(new SetPower(power));
+	public final void setPower(final boolean status) throws SocketException {
+		getConnection().requestWithResponse(new SetPower(status));
 	}
-
 }

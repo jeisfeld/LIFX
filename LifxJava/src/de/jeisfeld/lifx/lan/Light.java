@@ -5,10 +5,12 @@ import java.net.SocketException;
 import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetInfrared;
 import de.jeisfeld.lifx.lan.message.LightGetPower;
+import de.jeisfeld.lifx.lan.message.LightSetPower;
 import de.jeisfeld.lifx.lan.message.LightState;
 import de.jeisfeld.lifx.lan.message.LightStateInfrared;
 import de.jeisfeld.lifx.lan.message.LightStatePower;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.Logger;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -30,7 +32,6 @@ public class Light extends Device {
 	@Override
 	public String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
-		result.append(TypeUtil.INDENT).append("Power Level: ").append(TypeUtil.toUnsignedString(getPowerLevel())).append("\n");
 		if (getProduct().hasInfrared()) {
 			result.append(TypeUtil.INDENT).append("Infrared Brightness: ").append(TypeUtil.toUnsignedString(getInfraredBrightness())).append("\n");
 		}
@@ -43,16 +44,12 @@ public class Light extends Device {
 		return "Light: " + getTargetAddress() + ", " + getInetAddress().getHostAddress() + ":" + getPort();
 	}
 
-	/**
-	 * Get the power level.
-	 *
-	 * @return the power level.
-	 */
-	public final Short getPowerLevel() {
+	@Override
+	public final Power getPower() {
 		LightStatePower lightStatePower;
 		try {
 			lightStatePower = (LightStatePower) getConnection().requestWithResponse(new LightGetPower());
-			return lightStatePower.getLevel();
+			return new Power(lightStatePower.getLevel());
 		}
 		catch (SocketException e) {
 			Logger.error(e);
@@ -104,4 +101,14 @@ public class Light extends Device {
 		return lightState == null ? null : lightState.getColor();
 	}
 
+	/**
+	 * Set the power.
+	 *
+	 * @param status true for switching on, false for switching off
+	 * @param duration the duration of power change in millis.
+	 * @throws SocketException Connection issues
+	 */
+	public void setPower(final boolean status, final int duration) throws SocketException {
+		getConnection().requestWithResponse(new LightSetPower(status, duration));
+	}
 }

@@ -264,11 +264,17 @@ public class LifxLanConnection {
 	 *
 	 * @param request The request to be sent.
 	 * @return the response.
+	 * @exception SocketException No response.
 	 */
-	public ResponseMessage requestWithResponse(final RequestMessage request) {
+	public ResponseMessage requestWithResponse(final RequestMessage request) throws SocketException {
 		mExpectedNumDevices = 1;
 		List<ResponseMessage> responses = broadcastWithResponse(request);
-		return responses.get(0);
+		if (responses.size() == 0) {
+			throw new SocketException("Did not get response from socket.");
+		}
+		else {
+			return responses.get(0);
+		}
 	}
 
 	/**

@@ -6,6 +6,7 @@ import java.nio.ByteOrder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import de.jeisfeld.lifx.lan.type.ConnectionInfo;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -58,30 +59,11 @@ public class StateHostInfo extends ResponseMessage {
 	}
 
 	/**
-	 * Get the signal strength.
+	 * Get the connection info.
 	 *
-	 * @return the signal strength
+	 * @return The connection info.
 	 */
-	public final float getSignalStrength() {
-		return mSignalStrength;
+	public final ConnectionInfo getConnectionInfo() {
+		return new ConnectionInfo(mSignalStrength, mBytesSent, mBytesReceived);
 	}
-
-	/**
-	 * Get the number of bytes sent.
-	 *
-	 * @return the number of bytes sent.
-	 */
-	public final int getBytesSent() {
-		return mBytesSent;
-	}
-
-	/**
-	 * Get the number of bytes received.
-	 *
-	 * @return the number of bytes received.
-	 */
-	public final int getBytesReceived() {
-		return mBytesReceived;
-	}
-
 }

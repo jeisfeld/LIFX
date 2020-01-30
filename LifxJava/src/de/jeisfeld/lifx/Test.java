@@ -4,7 +4,6 @@ import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.Logger;
-import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Test class for testing LIFX API.
@@ -26,16 +25,14 @@ public class Test {
 		System.out.println(FARBLAMPE.getFullInformation());
 
 		long startTime = System.currentTimeMillis();
-		FARBLAMPE.setPower(Power.OFF);
-		short powerLevel = -1;
-		while (powerLevel != 0) {
-			powerLevel = FARBLAMPE.getPowerLevel();
-			System.out.println((System.currentTimeMillis() - startTime) + " - " + TypeUtil.toUnsignedString(powerLevel));
+		FARBLAMPE.setPower(false, 2000);
+		Power power = Power.ON;
+		while (!power.isOff()) {
+			System.out.println((System.currentTimeMillis() - startTime) + " - " + (power = FARBLAMPE.getPower()) + " - " + FARBLAMPE.getColor());
 		}
-		FARBLAMPE.setPower(Power.ON);
-		while (powerLevel != -1) {
-			powerLevel = FARBLAMPE.getPowerLevel();
-			System.out.println((System.currentTimeMillis() - startTime) + " - " + TypeUtil.toUnsignedString(powerLevel));
+		FARBLAMPE.setPower(true, 2000);
+		while (!power.isOn()) {
+			System.out.println((System.currentTimeMillis() - startTime) + " - " + (power = FARBLAMPE.getPower()) + " - " + FARBLAMPE.getColor());
 		}
 	}
 
