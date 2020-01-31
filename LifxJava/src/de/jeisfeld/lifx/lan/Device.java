@@ -15,7 +15,9 @@ import de.jeisfeld.lifx.lan.message.GetPower;
 import de.jeisfeld.lifx.lan.message.GetVersion;
 import de.jeisfeld.lifx.lan.message.GetWifiFirmware;
 import de.jeisfeld.lifx.lan.message.GetWifiInfo;
+import de.jeisfeld.lifx.lan.message.SetGroup;
 import de.jeisfeld.lifx.lan.message.SetLabel;
+import de.jeisfeld.lifx.lan.message.SetLocation;
 import de.jeisfeld.lifx.lan.message.SetPower;
 import de.jeisfeld.lifx.lan.message.StateGroup;
 import de.jeisfeld.lifx.lan.message.StateHostFirmware;
@@ -73,11 +75,11 @@ public class Device {
 	/**
 	 * The location.
 	 */
-	private String mLocation = null;
+	private Location mLocation = null;
 	/**
 	 * The group.
 	 */
-	private String mGroup = null;
+	private Group mGroup = null;
 	/**
 	 * The host firmware version.
 	 */
@@ -188,7 +190,7 @@ public class Device {
 	 */
 	private void retrieveLocation() throws SocketException {
 		StateLocation stateLocation = (StateLocation) getConnection().requestWithResponse(new GetLocation());
-		mLocation = stateLocation.getLabel();
+		mLocation = stateLocation.getLocation();
 	}
 
 	/**
@@ -198,7 +200,7 @@ public class Device {
 	 */
 	private void retrieveGroup() throws SocketException {
 		StateGroup stateGroup = (StateGroup) getConnection().requestWithResponse(new GetGroup());
-		mGroup = stateGroup.getLabel();
+		mGroup = stateGroup.getGroup();
 	}
 
 	/**
@@ -221,10 +223,10 @@ public class Device {
 		mWifiFirmwareVersion = stateWifiFirmware.getMajorVersion() + "." + stateWifiFirmware.getMinorVersion();
 	}
 
-	// OVERRIDABLE
 	@Override
-	public String toString() {
-		return "Device: " + mTargetAddress + ", " + mInetAddress.getHostAddress() + ":" + TypeUtil.toUnsignedString(mPort);
+	public final String toString() {
+		return getClass().getSimpleName() + "[" + mTargetAddress + "] (" + getLabel() + "@" + mInetAddress.getHostAddress() + ":"
+				+ TypeUtil.toUnsignedString(mPort) + ")";
 	}
 
 	// OVERRIDABLE
@@ -243,8 +245,8 @@ public class Device {
 		result.append(TypeUtil.INDENT).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
 		result.append(TypeUtil.INDENT).append("Colored: ").append(getProduct().hasColor()).append("\n");
 		result.append(TypeUtil.INDENT).append("Label: ").append(getLabel()).append("\n");
-		result.append(TypeUtil.INDENT).append("Location: ").append(getLocation()).append("\n");
-		result.append(TypeUtil.INDENT).append("Group: ").append(getGroup()).append("\n");
+		result.append(TypeUtil.INDENT).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
+		result.append(TypeUtil.INDENT).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
 		result.append(TypeUtil.INDENT).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
 		result.append(TypeUtil.INDENT).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
 		result.append(TypeUtil.INDENT).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
@@ -338,7 +340,7 @@ public class Device {
 	 *
 	 * @return the location
 	 */
-	public final String getLocation() {
+	public final Location getLocation() {
 		if (mLocation == null) {
 			try {
 				retrieveLocation();
@@ -355,7 +357,7 @@ public class Device {
 	 *
 	 * @return the group
 	 */
-	public final String getGroup() {
+	public final Group getGroup() {
 		if (mGroup == null) {
 			try {
 				retrieveGroup();
@@ -503,5 +505,27 @@ public class Device {
 	public final void setLabel(final String label) throws SocketException {
 		getConnection().requestWithResponse(new SetLabel(label));
 		mLabel = null;
+	}
+
+	/**
+	 * Set the group.
+	 *
+	 * @param group the group.
+	 * @throws SocketException Connection issues
+	 */
+	public final void setGroup(final Group group) throws SocketException {
+		getConnection().requestWithResponse(new SetGroup(group));
+		mGroup = null;
+	}
+
+	/**
+	 * Set the location.
+	 *
+	 * @param location the location.
+	 * @throws SocketException Connection issues
+	 */
+	public final void setLocation(final Location location) throws SocketException {
+		getConnection().requestWithResponse(new SetLocation(location));
+		mLocation = null;
 	}
 }

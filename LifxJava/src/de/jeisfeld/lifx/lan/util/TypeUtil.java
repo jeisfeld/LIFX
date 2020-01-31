@@ -1,7 +1,9 @@
 package de.jeisfeld.lifx.lan.util;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Helper class for converting types.
@@ -108,7 +110,12 @@ public final class TypeUtil {
 			}
 		}
 		if (separated) {
-			sb.replace(sb.length() - 1, sb.length(), "]");
+			if (byteArray.length == 0) {
+				sb.append("]");
+			}
+			else {
+				sb.replace(sb.length() - 1, sb.length(), "]");
+			}
 		}
 		return sb.toString();
 	}
@@ -121,6 +128,19 @@ public final class TypeUtil {
 	 */
 	public static short toShort(final double value) {
 		return (short) (65535.99999 * Math.min(1, Math.max(0, value))); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Generate a GUID to be used as new groupId or locationId.
+	 *
+	 * @return A GUID as byte array.
+	 */
+	public static byte[] generateGuid() {
+		UUID uuid = UUID.randomUUID();
+		ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[16]); // MAGIC_NUMBER
+		byteBuffer.putLong(uuid.getMostSignificantBits());
+		byteBuffer.putLong(uuid.getLeastSignificantBits());
+		return byteBuffer.array();
 	}
 
 }

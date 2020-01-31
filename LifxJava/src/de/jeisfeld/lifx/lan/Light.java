@@ -45,11 +45,6 @@ public class Light extends Device {
 	}
 
 	@Override
-	public final String toString() {
-		return "Light: " + getTargetAddress() + ", " + getInetAddress().getHostAddress() + ":" + getPort();
-	}
-
-	@Override
 	public final Power getPower() {
 		LightStatePower lightStatePower;
 		try {

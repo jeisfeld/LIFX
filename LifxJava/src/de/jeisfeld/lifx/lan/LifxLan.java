@@ -100,6 +100,38 @@ public final class LifxLan {
 	}
 
 	/**
+	 * Get all devices by a filter.
+	 *
+	 * @param filter the filter.
+	 * @return the devices matching this filter.
+	 */
+	public List<Device> getDevicesByFilter(final DeviceFilter filter) {
+		List<Device> resultList = new ArrayList<>();
+		for (Device device : mDevices) {
+			if (filter.matches(device)) {
+				resultList.add(device);
+			}
+		}
+		if (resultList.size() > 0) {
+			return resultList;
+		}
+		else {
+			try {
+				retrieveDeviceInformation();
+			}
+			catch (SocketException e) {
+				Logger.error(e);
+			}
+			for (Device device : mDevices) {
+				if (filter.matches(device)) {
+					resultList.add(device);
+				}
+			}
+			return resultList;
+		}
+	}
+
+	/**
 	 * Get a light by its MAC.
 	 *
 	 * @param mac The mac.
@@ -125,7 +157,7 @@ public final class LifxLan {
 	 * @param numDevices the number of devices after which the search is stopped.
 	 * @throws SocketException Exception while getting information.
 	 */
-	private void retrieveDeviceInformation(final Integer numDevices) throws SocketException {
+	public void retrieveDeviceInformation(final Integer numDevices) throws SocketException {
 		retrieveDeviceInformation(2000, 1, numDevices, null); // MAGIC_NUMBER
 	}
 
@@ -134,7 +166,7 @@ public final class LifxLan {
 	 *
 	 * @throws SocketException Exception while getting information.
 	 */
-	private void retrieveDeviceInformation() throws SocketException {
+	public void retrieveDeviceInformation() throws SocketException {
 		retrieveDeviceInformation(null);
 	}
 

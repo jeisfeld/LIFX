@@ -2,7 +2,7 @@ package de.jeisfeld.lifx;
 
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
-import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.Logger;
 
 /**
@@ -23,23 +23,9 @@ public class Test {
 	private void test() throws Exception {
 		// System.out.println(LifxLan.getInstance().getLights());
 		System.out.println(FARBLAMPE.getFullInformation());
-		FARBLAMPE.setLabel("Farblampe");
-		System.out.println(FARBLAMPE.getFullInformation());
+		FARBLAMPE.setColor(Color.RED, 2000, true);
+		FARBLAMPE.setColor(Color.GOLD.withBrightness(0.1), 5000, true);
 
-	}
-
-	private void test1() throws Exception {
-
-		long startTime = System.currentTimeMillis();
-		FARBLAMPE.setPower(false, 2000);
-		Power power = Power.ON;
-		while (!power.isOff()) {
-			System.out.println((System.currentTimeMillis() - startTime) + " - " + (power = FARBLAMPE.getPower()) + " - " + FARBLAMPE.getColor());
-		}
-		FARBLAMPE.setPower(true, 2000);
-		while (!power.isOn()) {
-			System.out.println((System.currentTimeMillis() - startTime) + " - " + (power = FARBLAMPE.getPower()) + " - " + FARBLAMPE.getColor());
-		}
 	}
 
 }
