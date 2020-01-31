@@ -27,7 +27,7 @@ public final class TypeUtil {
 	 * @return The unsigned String.
 	 */
 	public static String toUnsignedString(final byte b) {
-		return Integer.toString(0xff & b); // MAGIC_NUMBER
+		return Integer.toString(TypeUtil.toUnsignedInt(b));
 	}
 
 	/**
@@ -37,7 +37,7 @@ public final class TypeUtil {
 	 * @return The unsigned String.
 	 */
 	public static String toUnsignedString(final short s) {
-		return Integer.toString(0xffff & s); // MAGIC_NUMBER
+		return Integer.toString(TypeUtil.toUnsignedInt(s));
 	}
 
 	/**
@@ -48,6 +48,26 @@ public final class TypeUtil {
 	 */
 	public static String toUnsignedString(final int i) {
 		return Long.toString(0xffffffffL & i); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert an unsigned byte to integer.
+	 *
+	 * @param b The unsigned byte.
+	 * @return The corresponding integer.
+	 */
+	public static int toUnsignedInt(final byte b) {
+		return 0xff & b; // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert an unsigned short to integer.
+	 *
+	 * @param s The unsigned short.
+	 * @return The corresponding integer.
+	 */
+	public static int toUnsignedInt(final short s) {
+		return 0xffff & s; // MAGIC_NUMBER
 	}
 
 	/**
@@ -127,7 +147,17 @@ public final class TypeUtil {
 	 * @return The short value
 	 */
 	public static short toShort(final double value) {
-		return (short) (65535.99999 * Math.min(1, Math.max(0, value))); // MAGIC_NUMBER
+		return (short) (65535.0 * Math.min(1, Math.max(0, value))); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert short value to 0 - 1 double value.
+	 *
+	 * @param value the short value
+	 * @return The double value
+	 */
+	public static double toDouble(final short value) {
+		return TypeUtil.toUnsignedInt(value) / 65535.0; // MAGIC_NUMBER
 	}
 
 	/**

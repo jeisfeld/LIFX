@@ -21,10 +21,10 @@ public class Test {
 	}
 
 	private void test() throws Exception {
-		// System.out.println(LifxLan.getInstance().getLights());
-		System.out.println(FARBLAMPE.getFullInformation());
-		FARBLAMPE.setColor(Color.RED, 2000, true);
-		FARBLAMPE.setColor(Color.GOLD.withBrightness(0.1), 5000, true);
+		FARBLAMPE.setColor(Color.RED.addRgb(Color.GREEN, 0.5));
+		FARBLAMPE.setColor(Color.GREEN.addRgb(Color.BLUE, 0.5), 2000, true);
+		FARBLAMPE.setColor(Color.BLUE.addRgb(Color.RED, 0.5), 2000, true);
+		FARBLAMPE.setColor(Color.RED.addRgb(Color.GREEN, 0.5), 2000, true);
 
 	}
 

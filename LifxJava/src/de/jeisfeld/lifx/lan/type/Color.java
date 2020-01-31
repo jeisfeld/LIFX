@@ -7,9 +7,9 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
  */
 public class Color {
 	// JAVADOC:OFF
-	public static final Color WHITE = new Color(50., 0, 1, Color.WHITE_TEMPERATURE);
-	public static final Color WARM_WHITE = new Color(50., 0, 1, 3000);
-	public static final Color COLD_WHITE = new Color(50., 0, 1, 8000);
+	public static final Color WHITE = new Color(Color.WHITE_HUE_D, 0, 1, Color.WHITE_TEMPERATURE);
+	public static final Color WARM_WHITE = new Color(Color.WHITE_HUE_D, 0, 1, 3000);
+	public static final Color COLD_WHITE = new Color(Color.WHITE_HUE_D, 0, 1, 8000);
 	public static final Color RED = new Color(0., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color ORANGE = new Color(35., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color YELLOW = new Color(60., 1, 1, Color.WHITE_TEMPERATURE);
@@ -22,14 +22,23 @@ public class Color {
 	public static final Color PURPLE = new Color(270., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color MAGENTA = new Color(300., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color PINK = new Color(325., 1, 1, Color.WHITE_TEMPERATURE);
-	public static final Color GOLD = new Color(50., .5, 1, 2500);
+	public static final Color GOLD = new Color(Color.WHITE_HUE_D, .5, 1, 2500);
 	public static final Color SILVER = new Color(180., .1, 1, 9000);
 	// JAVADOC:ON
 
 	/**
-	 * The color temperature used for basic white.
+	 * The color temperature used for neutral white.
 	 */
-	private static final short WHITE_TEMPERATURE = 5000;
+	private static final short WHITE_TEMPERATURE = 4000;
+	/**
+	 * The hue used for white as short.
+	 */
+	private static final short WHITE_HUE_S = 9100;
+	/**
+	 * The hue used for white as double.
+	 */
+	private static final double WHITE_HUE_D = Color.WHITE_HUE_S / 65536.0 * 360.0;
+
 	/**
 	 * The difference below which colors are considered similar.
 	 */
@@ -101,6 +110,43 @@ public class Color {
 	 */
 	public final Color withBrightness(final double brightness) {
 		return new Color(getHue(), getSaturation(), TypeUtil.toShort(brightness), getColorTemperature());
+	}
+
+	/**
+	 * Mix with another color.
+	 *
+	 * @param other The other color.
+	 * @param quota The quota of the other color (between 0 and 1)
+	 * @return The mixed color.
+	 */
+	public final Color add(final Color other, final double quota) {
+		double q = Math.min(1, Math.max(0, quota));
+		int h1 = TypeUtil.toUnsignedInt(getHue());
+		int h2 = TypeUtil.toUnsignedInt(other.getHue());
+		if (Math.abs(h1 - h2) > 32768) { // MAGIC_NUMBER
+			if (h2 > h1) {
+				h2 -= 65536; // MAGIC_NUMBER
+			}
+			else {
+				h2 += 65536; // MAGIC_NUMBER
+			}
+		}
+
+		return new Color((short) (h2 * q + h1 * (1 - q)),
+				(short) (TypeUtil.toUnsignedInt(other.getSaturation()) * q + TypeUtil.toUnsignedInt(getSaturation()) * (1 - q)),
+				(short) (TypeUtil.toUnsignedInt(other.getBrightness()) * q + TypeUtil.toUnsignedInt(getBrightness()) * (1 - q)),
+				(short) (TypeUtil.toUnsignedInt(other.getColorTemperature()) * q + TypeUtil.toUnsignedInt(getColorTemperature()) * (1 - q)));
+	}
+
+	/**
+	 * Mix with another color in RGB mode.
+	 *
+	 * @param other The other color.
+	 * @param quota The quota of the other color (between 0 and 1)
+	 * @return The mixed color.
+	 */
+	public final Color addRgb(final Color other, final double quota) {
+		return toRgbk().add(other.toRgbk(), quota).toHsbk();
 	}
 
 	/**
@@ -209,6 +255,202 @@ public class Color {
 		}
 		else {
 			return areSame && !(a < 0 && b >= 0) && !(b < 0 && a >= 0); // BOOLEAN_EXPRESSION_COMPLEXITY
+		}
+	}
+
+	/**
+	 * Convert to RGBK color.
+	 *
+	 * @return The color as RGBK.
+	 */
+	public RGBK toRgbk() {
+		double h = 6.0 * TypeUtil.toUnsignedInt(mHue) / 65536; // MAGIC_NUMBER hue from 0 to 6
+		double s = TypeUtil.toDouble(mSaturation);
+		double v = TypeUtil.toDouble(mBrightness);
+
+		double c = v * s;
+		double x = c * (1 - Math.abs(h % 2 - 1));
+		double m = v - c;
+
+		double r;
+		double g;
+		double b;
+
+		switch ((int) h) {
+		case 0:
+			r = c;
+			g = x;
+			b = 0;
+			break;
+		case 1:
+			r = x;
+			g = c;
+			b = 0;
+			break;
+		case 2:
+			r = 0;
+			g = c;
+			b = x;
+			break;
+		case 3: // MAGIC_NUMBER
+			r = 0;
+			g = x;
+			b = c;
+			break;
+		case 4: // MAGIC_NUMBER
+			r = x;
+			g = 0;
+			b = c;
+			break;
+		case 5: // MAGIC_NUMBER
+			r = c;
+			g = 0;
+			b = x;
+			break;
+		default:
+			r = 0;
+			g = 0;
+			b = 0;
+		}
+
+		return new RGBK(TypeUtil.toShort(r + m), TypeUtil.toShort(g + m), TypeUtil.toShort(b + m), mColorTemperature);
+	}
+
+	/**
+	 * A color in RGB plus Kelvin format.
+	 */
+	public static class RGBK { // SUPPRESS_CHECKSTYLE
+		/**
+		 * The red part.
+		 */
+		private final short mRed;
+		/**
+		 * The green part.
+		 */
+		private final short mGreen;
+		/**
+		 * The blue part.
+		 */
+		private final short mBlue;
+		/**
+		 * The color temperature.
+		 */
+		private final short mColorTemperature;
+
+		/**
+		 * Create the RGBK color.
+		 *
+		 * @param red the red part
+		 * @param green the green part
+		 * @param blue ghe blue part
+		 * @param colorTemperature the color temperature in Kelvin.
+		 */
+		public RGBK(final short red, final short green, final short blue, final short colorTemperature) {
+			mRed = red;
+			mGreen = green;
+			mBlue = blue;
+			mColorTemperature = colorTemperature;
+		}
+
+		/**
+		 * Convert a color from RGBK to HSBK.
+		 *
+		 * @return The Color as HSBK.
+		 */
+		public Color toHsbk() {
+			int r = TypeUtil.toUnsignedInt(mRed);
+			int g = TypeUtil.toUnsignedInt(mGreen);
+			int b = TypeUtil.toUnsignedInt(mBlue);
+			int maxrgb = Math.max(r, Math.max(g, b));
+			int minrgb = Math.min(r, Math.min(g, b));
+			double span = maxrgb - minrgb;
+			int brightness = maxrgb;
+
+			if (span == 0) {
+				return new Color(Color.WHITE_HUE_S, 0, (short) brightness, mColorTemperature);
+			}
+			else {
+				int saturation = (int) (span * 65535 / maxrgb); // MAGIC_NUMBER
+
+				double hue;
+				if (maxrgb == r) {
+					hue = ((g - b) / span) % 6; // MAGIC_NUMBER
+				}
+				else if (maxrgb == g) {
+					hue = (b - r) / span + 2;
+				}
+				else {
+					hue = (r - g) / span + 4; // MAGIC_NUMBER
+				}
+
+				hue = hue / 6 * 65536; // MAGIC_NUMBER
+				return new Color((short) hue, (short) saturation, (short) brightness, mColorTemperature);
+			}
+		}
+
+		/**
+		 * Get the red part.
+		 *
+		 * @return the red part
+		 */
+		public final short getRed() {
+			return mRed;
+		}
+
+		/**
+		 * Get the green part.
+		 *
+		 * @return the green part
+		 */
+		public final short getGreen() {
+			return mGreen;
+		}
+
+		/**
+		 * Get the blue part.
+		 *
+		 * @return the blue part
+		 */
+		public final short getBlue() {
+			return mBlue;
+		}
+
+		/**
+		 * Get the color temperature in Kelvin.
+		 *
+		 * @return the color temperature in Kelvin
+		 */
+		public final short getColorTemperature() {
+			return mColorTemperature;
+		}
+
+		@Override
+		public final String toString() {
+			StringBuilder result = new StringBuilder("Color(");
+			result.append(TypeUtil.toUnsignedString(mRed))
+					.append(",")
+					.append(TypeUtil.toUnsignedString(mGreen))
+					.append(",")
+					.append(TypeUtil.toUnsignedString(mBlue))
+					.append(",")
+					.append(TypeUtil.toUnsignedString(mColorTemperature))
+					.append(")");
+			return result.toString();
+		}
+
+		/**
+		 * Mix with another color.
+		 *
+		 * @param other The other color.
+		 * @param quota The quota of the other color (between 0 and 1)
+		 * @return The mixed color.
+		 */
+		public final RGBK add(final RGBK other, final double quota) {
+			double q = Math.min(1, Math.max(0, quota));
+			return new RGBK((short) (TypeUtil.toUnsignedInt(other.getRed()) * q + TypeUtil.toUnsignedInt(getRed()) * (1 - q)),
+					(short) (TypeUtil.toUnsignedInt(other.getGreen()) * q + TypeUtil.toUnsignedInt(getGreen()) * (1 - q)),
+					(short) (TypeUtil.toUnsignedInt(other.getBlue()) * q + TypeUtil.toUnsignedInt(getBlue()) * (1 - q)),
+					(short) (TypeUtil.toUnsignedInt(other.getColorTemperature()) * q + TypeUtil.toUnsignedInt(getColorTemperature()) * (1 - q)));
 		}
 	}
 
