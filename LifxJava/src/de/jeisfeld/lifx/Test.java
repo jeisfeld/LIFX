@@ -21,11 +21,16 @@ public class Test {
 	}
 
 	private void test() throws Exception {
-		FARBLAMPE.setColor(Color.RED.addRgb(Color.GREEN, 0.5));
-		FARBLAMPE.setColor(Color.GREEN.addRgb(Color.BLUE, 0.5), 2000, true);
-		FARBLAMPE.setColor(Color.BLUE.addRgb(Color.RED, 0.5), 2000, true);
-		FARBLAMPE.setColor(Color.RED.addRgb(Color.GREEN, 0.5), 2000, true);
+		Color endColor = FARBLAMPE.getColor();
+		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_HIGH)
+				.setCycleDuration(15000)
+				.setStartTransitionTime(1000)
+				.setEndColor(endColor, 1000)
+				.setRelativeBrightness(1)
+				.setCycleCount(2)
+				.start();
 
+		FARBLAMPE.waitForCycleEnd();
 	}
 
 }

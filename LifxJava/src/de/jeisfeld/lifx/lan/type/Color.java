@@ -17,13 +17,27 @@ public class Color {
 	public static final Color GREEN = new Color(120., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color BLUE_GREEN = new Color(155., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color CYAN = new Color(180., 1, 1, Color.WHITE_TEMPERATURE);
-	public static final Color LIGHT_BLUE = new Color(210., 1, 1, Color.WHITE_TEMPERATURE);
+	public static final Color DEEP_SKY_BLUE = new Color(210., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color BLUE = new Color(240., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color PURPLE = new Color(270., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color MAGENTA = new Color(300., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color PINK = new Color(325., 1, 1, Color.WHITE_TEMPERATURE);
 	public static final Color GOLD = new Color(Color.WHITE_HUE_D, .5, 1, 2500);
 	public static final Color SILVER = new Color(180., .1, 1, 9000);
+	public static final Color LIGHT_BLUE = new Color(240., .5, 1, 9000);
+
+	/**
+	 * Cycle through the colors, compensating the rather dark appearance of blue by darkening the other colors.
+	 */
+	public static final Color[] CYCLE_RAINBOW_LOW =
+			{Color.RED.withBrightness(0.4), Color.YELLOW.withBrightness(0.3), Color.GREEN.withBrightness(0.4),
+					Color.CYAN.withBrightness(0.4), Color.BLUE, Color.MAGENTA.withBrightness(0.3)};
+	/**
+	 * Cycle through the colors, compensating the rather dark appearance of blue by whitening the blue.
+	 */
+	public static final Color[] CYCLE_RAINBOW_HIGH =
+			{Color.RED, Color.YELLOW.withBrightness(0.8), Color.GREEN, Color.CYAN, Color.LIGHT_BLUE, Color.MAGENTA.withBrightness(0.8)};
+
 	// JAVADOC:ON
 
 	/**
@@ -110,6 +124,26 @@ public class Color {
 	 */
 	public final Color withBrightness(final double brightness) {
 		return new Color(getHue(), getSaturation(), TypeUtil.toShort(brightness), getColorTemperature());
+	}
+
+	/**
+	 * Update the color with given relative brightness.
+	 *
+	 * @param brightnessFactor The brightness factor (1 meaning unchanged)
+	 * @return The updated color with updated brightness.
+	 */
+	public final Color withRelativeBrightness(final double brightnessFactor) {
+		return new Color(getHue(), getSaturation(), TypeUtil.toShort(brightnessFactor * TypeUtil.toDouble(getBrightness())), getColorTemperature());
+	}
+
+	/**
+	 * Update the color with given saturation.
+	 *
+	 * @param saturation The saturation.
+	 * @return The updated color with this saturation.
+	 */
+	public final Color withSaturation(final double saturation) {
+		return new Color(getHue(), TypeUtil.toShort(saturation), getBrightness(), getColorTemperature());
 	}
 
 	/**
