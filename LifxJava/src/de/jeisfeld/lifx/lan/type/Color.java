@@ -25,6 +25,7 @@ public class Color {
 	public static final Color GOLD = new Color(Color.WHITE_HUE_D, .5, 1, 2500);
 	public static final Color SILVER = new Color(180., .1, 1, 9000);
 	public static final Color LIGHT_BLUE = new Color(240., .5, 1, 9000);
+	public static final Color DARKEST_WHITE = new Color(60., 1, 0.002, 2500);
 
 	/**
 	 * Cycle through the colors, compensating the rather dark appearance of blue by darkening the other colors.
@@ -37,6 +38,10 @@ public class Color {
 	 */
 	public static final Color[] CYCLE_RAINBOW_HIGH =
 			{Color.RED, Color.YELLOW.withBrightness(0.8), Color.GREEN, Color.CYAN, Color.LIGHT_BLUE, Color.MAGENTA.withBrightness(0.8)};
+
+	public static final Color[] CYCLE_WAKEUP =
+			{new Color(50., 1, 0.002, 4000), new Color(50., 0.5, 0.03, 3000), new Color(50., 0.3, 0.1, 3500), new Color(50., 0.1, 0.3, 4500),
+					new Color(50., 0.01, 1, 6000)};
 
 	// JAVADOC:ON
 

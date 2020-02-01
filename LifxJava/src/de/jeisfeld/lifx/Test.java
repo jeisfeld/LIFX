@@ -17,17 +17,27 @@ public class Test {
 
 	public static void main(final String[] args) throws Exception {
 		Logger.setLogDetails(false);
-		new Test().test();
+		new Test().test2();
 	}
 
-	private void test() throws Exception {
+	private void test1() throws Exception {
 		Color endColor = FARBLAMPE.getColor();
-		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_HIGH)
+		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
 				.setCycleDuration(15000)
 				.setStartTransitionTime(1000)
 				.setEndColor(endColor, 1000)
 				.setRelativeBrightness(1)
 				.setCycleCount(2)
+				.start();
+
+		FARBLAMPE.waitForCycleEnd();
+	}
+
+	private void test2() throws Exception {
+		FARBLAMPE.cycle(Color.CYCLE_WAKEUP)
+				.setCycleDuration(30000)
+				.setCycleCount(1)
+				.setStartTransitionTime(2000)
 				.start();
 
 		FARBLAMPE.waitForCycleEnd();

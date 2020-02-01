@@ -111,10 +111,19 @@ public class Light extends Device {
 	 *
 	 * @param status true for switching on, false for switching off
 	 * @param duration the duration of power change in millis.
+	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @throws SocketException Connection issues
 	 */
-	public void setPower(final boolean status, final int duration) throws SocketException {
+	public void setPower(final boolean status, final int duration, final boolean wait) throws SocketException {
 		getConnection().requestWithResponse(new LightSetPower(status, duration));
+		if (wait) {
+			try {
+				Thread.sleep(duration);
+			}
+			catch (InterruptedException e) {
+				// ignore
+			}
+		}
 	}
 
 	/**
@@ -470,9 +479,21 @@ public class Light extends Device {
 					while (!isInterrupted() && (count < mCycleCount || mCycleCount == 0)) {
 						for (Color color : mColors) {
 							long startTime = System.currentTimeMillis();
-							setColor(color.withRelativeBrightness(mRelativeBrightness), firstRun ? mStartTransitionTime : mStepDuration, false);
-							Thread.sleep(Math.max(0, (firstRun ? mStartTransitionTime : mStepDuration) + startTime - System.currentTimeMillis()));
-							firstRun = false;
+							if (firstRun) {
+								if (getPower().isOff()) {
+									setColor(color.withRelativeBrightness(mRelativeBrightness));
+									setPower(true, mStartTransitionTime, false);
+								}
+								else {
+									setColor(color.withRelativeBrightness(mRelativeBrightness), mStartTransitionTime, false);
+								}
+								Thread.sleep(Math.max(0, mStartTransitionTime + startTime - System.currentTimeMillis()));
+								firstRun = false;
+							}
+							else {
+								setColor(color.withRelativeBrightness(mRelativeBrightness), mStepDuration, false);
+								Thread.sleep(Math.max(0, mStepDuration + startTime - System.currentTimeMillis()));
+							}
 						}
 						count++;
 					}
@@ -485,8 +506,8 @@ public class Light extends Device {
 					setColor(mEndColor, mEndTransitionTime, true);
 				}
 				else {
-					// stop the previous color transition by setting the current color.
-					setColor(getColor());
+					// stop the previous color transition by sending setWaveform command with no change.
+					setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
 				}
 			}
 			catch (SocketException e) {
