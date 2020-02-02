@@ -44,7 +44,7 @@ public class Color {
 			{Color.RED, Color.YELLOW.withBrightness(0.8), Color.GREEN, Color.CYAN, Color.LIGHT_BLUE, Color.MAGENTA.withBrightness(0.8)};
 
 	public static final Color[] CYCLE_WAKEUP =
-			{new Color(50., 1, 0.002, 4000), new Color(50., 0.5, 0.03, 3000), new Color(50., 0.3, 0.1, 3500), new Color(50., 0.1, 0.3, 4500),
+			{new Color(50., 1, 0.002, 2000), new Color(50., 0.5, 0.03, 2500), new Color(50., 0.3, 0.1, 3000), new Color(50., 0.1, 0.3, 4000),
 					new Color(50., 0.01, 1, 6000)};
 
 	// JAVADOC:ON

@@ -322,6 +322,21 @@ public class Light extends Device {
 	}
 
 	/**
+	 * Run a wakeup thread.
+	 *
+	 * @param duration The duration of the wakeup routine.
+	 * @param callback Callback to be called in case of error.
+	 */
+	public void wakeup(final int duration, final ExceptionCallback callback) {
+		cycle(Color.CYCLE_WAKEUP)
+				.setCycleDuration(duration)
+				.setCycleCount(1)
+				.endWithLast()
+				.setExceptionCallback(callback)
+				.start();
+	}
+
+	/**
 	 * End the current cycle (if applicable). This interrupts and joins the cycle.
 	 */
 	public void endAnimation() {
@@ -423,6 +438,12 @@ public class Light extends Device {
 			return this;
 		}
 
+		@Override
+		public CycleThread setExceptionCallback(final ExceptionCallback callback) {
+			super.setExceptionCallback(callback);
+			return this;
+		}
+
 		/**
 		 * Set the duration of the cycle in millis.
 		 *
@@ -498,6 +519,10 @@ public class Light extends Device {
 		 * The relative brightness of the colors.
 		 */
 		private double mRelativeBrightness = 1;
+		/**
+		 * An exception callback called in case of SocketException.
+		 */
+		private ExceptionCallback mExceptionCallback = null;
 
 		/**
 		 * Create an animation thread.
@@ -522,7 +547,7 @@ public class Light extends Device {
 		 *
 		 * @param endColor The end color. Brightness 0 switches power off. Null keeps the current color.
 		 * @param endTransitionTime The transition time to the end color.
-		 * @return The updated cycle.
+		 * @return The updated animation thread.
 		 */
 		public AnimationThread setEndColor(final Color endColor, final int endTransitionTime) {
 			mEndColor = endColor;
@@ -534,10 +559,21 @@ public class Light extends Device {
 		 * Set the relative brightness of the cycle colors.
 		 *
 		 * @param brightness The relative brightness of the colors. Value 1 keeps the original brightness.
-		 * @return The updated cycle.
+		 * @return The updated animation thread.
 		 */
 		public AnimationThread setBrightness(final double brightness) {
 			mRelativeBrightness = brightness;
+			return this;
+		}
+
+		/**
+		 * Set the exception callback called in case of SocketException.
+		 *
+		 * @param callback The callback.
+		 * @return The updated animation thread.
+		 */
+		public AnimationThread setExceptionCallback(final ExceptionCallback callback) {
+			mExceptionCallback = callback;
 			return this;
 		}
 
@@ -550,20 +586,14 @@ public class Light extends Device {
 						long startTime = System.currentTimeMillis();
 						Color color = mDefinition.getColor(count);
 						int duration = Math.max(mDefinition.getDuration(count), 0);
-						if (count == 0) {
-							if (getPower().isOff()) {
-								setColor(color.withRelativeBrightness(mRelativeBrightness));
-								setPower(true, duration, false);
-							}
-							else {
-								setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
-							}
-							Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
+						if (count == 0 && getPower().isOff()) {
+							setColor(color.withRelativeBrightness(mRelativeBrightness));
+							setPower(true, duration, false);
 						}
 						else {
 							setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
-							Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
 						}
+						Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
 						count++;
 					}
 				}
@@ -584,6 +614,9 @@ public class Light extends Device {
 			}
 			catch (SocketException e) {
 				Logger.error(e);
+				if (mExceptionCallback != null) {
+					mExceptionCallback.onException(e);
+				}
 			}
 		}
 
@@ -640,6 +673,18 @@ public class Light extends Device {
 		 * @return The duration in millis for the change to color n
 		 */
 		int getDuration(int n);
+	}
+
+	/**
+	 * Callback called by the AnimationThread in case of SocketException.
+	 */
+	public interface ExceptionCallback {
+		/**
+		 * Callback method called in case of SocketException.
+		 *
+		 * @param e The SocketException
+		 */
+		void onException(SocketException e);
 	}
 
 }

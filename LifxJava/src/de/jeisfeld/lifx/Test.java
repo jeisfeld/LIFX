@@ -16,11 +16,11 @@ public class Test {
 	private static String MAC_SWLAMPE = "D0:73:D5:56:40:78";
 
 	private final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE);
-	// private final Light SWLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_SWLAMPE);
+	private final Light SWLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_SWLAMPE);
 
 	public static void main(final String[] args) throws Exception {
 		Logger.setLogDetails(false);
-		new Test().test3();
+		new Test().test2();
 	}
 
 	private void test1() throws Exception {
@@ -37,15 +37,11 @@ public class Test {
 	}
 
 	private void test2() throws Exception {
-		FARBLAMPE.cycle(Color.CYCLE_WAKEUP)
-				.setCycleDuration(30000)
-				.setCycleCount(1)
-				.setStartTransitionTime(2000)
-				.endWithLast()
-				.setEndColor(Color.OFF, 2000)
-				.start();
+		FARBLAMPE.wakeup(30000, null);
+		SWLAMPE.wakeup(30000, null);
 
 		FARBLAMPE.waitForAnimationEnd();
+		SWLAMPE.waitForAnimationEnd();
 	}
 
 	private void test3() throws Exception {
