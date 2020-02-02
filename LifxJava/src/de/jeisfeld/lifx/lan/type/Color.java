@@ -26,6 +26,10 @@ public class Color {
 	public static final Color SILVER = new Color(180., .1, 1, 9000);
 	public static final Color LIGHT_BLUE = new Color(240., .5, 1, 9000);
 	public static final Color DARKEST_WHITE = new Color(60., 1, 0.002, 2500);
+	/**
+	 * The color used to switch an animation finally off.
+	 */
+	public static final Color OFF = new Color(Color.WHITE_HUE_D, 0, 0, Color.WHITE_TEMPERATURE);
 
 	/**
 	 * Cycle through the colors, compensating the rather dark appearance of blue by darkening the other colors.

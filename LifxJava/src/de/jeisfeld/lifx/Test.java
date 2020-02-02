@@ -1,7 +1,10 @@
 package de.jeisfeld.lifx;
 
+import java.util.Random;
+
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.Logger;
 
@@ -17,20 +20,20 @@ public class Test {
 
 	public static void main(final String[] args) throws Exception {
 		Logger.setLogDetails(false);
-		new Test().test2();
+		new Test().test3();
 	}
 
 	private void test1() throws Exception {
 		Color endColor = FARBLAMPE.getColor();
 		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
-				.setCycleDuration(15000)
+				.setCycleDuration(5000)
 				.setStartTransitionTime(1000)
 				.setEndColor(endColor, 1000)
-				.setRelativeBrightness(1)
+				.setBrightness(1)
 				.setCycleCount(2)
 				.start();
 
-		FARBLAMPE.waitForCycleEnd();
+		FARBLAMPE.waitForAnimationEnd();
 	}
 
 	private void test2() throws Exception {
@@ -38,9 +41,33 @@ public class Test {
 				.setCycleDuration(30000)
 				.setCycleCount(1)
 				.setStartTransitionTime(2000)
+				.endWithLast()
+				.setEndColor(Color.OFF, 2000)
 				.start();
 
-		FARBLAMPE.waitForCycleEnd();
+		FARBLAMPE.waitForAnimationEnd();
+	}
+
+	private void test3() throws Exception {
+		Random random = new Random();
+		FARBLAMPE.animation(new AnimationDefinition() {
+
+			@Override
+			public int getDuration(final int n) {
+				return random.nextInt(5000);
+			}
+
+			@Override
+			public Color getColor(final int n) {
+				return new Color(random.nextInt(65536), random.nextInt(65536), random.nextInt(65536), 1500 + random.nextInt(7500));
+			}
+		})
+				.setEndColor(Color.OFF, 2000)
+				.start();
+
+		Thread.sleep(20000);
+		FARBLAMPE.endAnimation();
+
 	}
 
 }

@@ -22,7 +22,7 @@ public class LifxLanConnection {
 	/**
 	 * The default timeout.
 	 */
-	private static final int DEFAULT_TIMEOUT = 2000;
+	private static final int DEFAULT_TIMEOUT = 1000;
 	/**
 	 * The default number of attempts.
 	 */

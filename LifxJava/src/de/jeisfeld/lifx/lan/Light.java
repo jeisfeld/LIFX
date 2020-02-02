@@ -26,7 +26,7 @@ public class Light extends Device {
 	/**
 	 * The cycle thread.
 	 */
-	private Cycle mCycle = null;
+	private AnimationThread mAnimationThread = null;
 
 	/**
 	 * Constructor.
@@ -302,22 +302,32 @@ public class Light extends Device {
 	}
 
 	/**
-	 * Create a cycle.
+	 * Create a cycle thread.
 	 *
 	 * @param colors The colors of the cycle.
 	 * @return The cycle.
 	 */
-	public Cycle cycle(final Color... colors) {
-		return new Cycle(colors);
+	public CycleThread cycle(final Color... colors) {
+		return new CycleThread(colors);
+	}
+
+	/**
+	 * Create an animation thread.
+	 *
+	 * @param definition The rules for the animation.
+	 * @return The cycle.
+	 */
+	public AnimationThread animation(final AnimationDefinition definition) {
+		return new AnimationThread(definition);
 	}
 
 	/**
 	 * End the current cycle (if applicable). This interrupts and joins the cycle.
 	 */
-	public void endCycle() {
+	public void endAnimation() {
 		synchronized (this) {
-			if (mCycle != null) {
-				mCycle.end();
+			if (mAnimationThread != null) {
+				mAnimationThread.end();
 			}
 		}
 	}
@@ -325,10 +335,10 @@ public class Light extends Device {
 	/**
 	 * Wait for the end of the current cycle. In contrast to endCycle, this does not interrupt.
 	 */
-	public void waitForCycleEnd() {
+	public void waitForAnimationEnd() {
 		synchronized (this) {
 			try {
-				mCycle.join();
+				mAnimationThread.join();
 			}
 			catch (InterruptedException e) {
 				// ignore
@@ -352,7 +362,7 @@ public class Light extends Device {
 	/**
 	 * A thread running a cycle of colors.
 	 */
-	public class Cycle extends Thread {
+	public final class CycleThread extends AnimationThread {
 		/**
 		 * The duration of a cycle step in millis.
 		 */
@@ -362,33 +372,55 @@ public class Light extends Device {
 		 */
 		private final Color[] mColors;
 		/**
-		 * The color to be reached after ending the thread.
-		 */
-		private Color mEndColor = null;
-		/**
 		 * The transition time to the start of the cycle.
 		 */
 		private int mStartTransitionTime = 200; // MAGIC_NUMBER
-		/**
-		 * The transition time to the end color.
-		 */
-		private int mEndTransitionTime = 200; // MAGIC_NUMBER
 		/**
 		 * The number of cycles. Value 0 runs eternally.
 		 */
 		private int mCycleCount = 0;
 		/**
-		 * The relative brightness of the colors.
+		 * Flag indicating that the cycle should end with the last color instead the first one.
 		 */
-		private double mRelativeBrightness = 1;
+		private boolean mEndWithLast = false;
 
 		/**
 		 * Create a cycle thread.
 		 *
 		 * @param colors The colors of the cycle.
 		 */
-		public Cycle(final Color... colors) {
+		private CycleThread(final Color... colors) {
+			super(null);
+			setDefinition(new AnimationDefinition() {
+				@Override
+				public int getDuration(final int n) {
+					return n == 0 ? mStartTransitionTime : mStepDuration;
+				}
+
+				@Override
+				public Color getColor(final int n) {
+					if (mColors.length == 0 || (mCycleCount > 0 && n > mCycleCount * mColors.length - (mEndWithLast ? 1 : 0))) {
+						return null;
+					}
+					else {
+						return mColors[n % mColors.length];
+					}
+				}
+			});
+
 			mColors = colors;
+		}
+
+		@Override
+		public CycleThread setEndColor(final Color endColor, final int endTransitionTime) {
+			super.setEndColor(endColor, Math.max(endTransitionTime, 0));
+			return this;
+		}
+
+		@Override
+		public CycleThread setBrightness(final double brightness) {
+			super.setBrightness(Math.max(brightness, 0));
+			return this;
 		}
 
 		/**
@@ -397,8 +429,8 @@ public class Light extends Device {
 		 * @param duration The duration of the cycle in millis
 		 * @return The updated cycle.
 		 */
-		public Cycle setCycleDuration(final int duration) {
-			mStepDuration = duration / mColors.length;
+		public CycleThread setCycleDuration(final int duration) {
+			mStepDuration = Math.max(duration, 0) / mColors.length;
 			return this;
 		}
 
@@ -408,32 +440,19 @@ public class Light extends Device {
 		 * @param duration The duration of a cycle step in millis
 		 * @return The updated cycle.
 		 */
-		public Cycle setStepDuration(final int duration) {
-			mStepDuration = duration;
+		public CycleThread setStepDuration(final int duration) {
+			mStepDuration = Math.max(duration, 0);
 			return this;
 		}
 
 		/**
-		 * Set the color that the lamp should get after finishing the cycle.
+		 * Set the transition time to the start color of the cycle.
 		 *
-		 * @param endColor The end color.
-		 * @param endTransitionTime The transitioning time to the end color.
+		 * @param startTransitionTime The transition time.
 		 * @return The updated cycle.
 		 */
-		public Cycle setEndColor(final Color endColor, final int endTransitionTime) {
-			mEndColor = endColor;
-			mEndTransitionTime = endTransitionTime;
-			return this;
-		}
-
-		/**
-		 * Set the transitioning time to the start color of the cycle.
-		 *
-		 * @param startTransitionTime The transitioning time.
-		 * @return The updated cycle.
-		 */
-		public Cycle setStartTransitionTime(final int startTransitionTime) {
-			mStartTransitionTime = startTransitionTime;
+		public CycleThread setStartTransitionTime(final int startTransitionTime) {
+			mStartTransitionTime = Math.max(startTransitionTime, 0);
 			return this;
 		}
 
@@ -443,57 +462,107 @@ public class Light extends Device {
 		 * @param cycleCount The number of times the cycle should run. Value 0 runs eternally.
 		 * @return The updated cycle.
 		 */
-		public Cycle setCycleCount(final int cycleCount) {
-			mCycleCount = cycleCount;
+		public CycleThread setCycleCount(final int cycleCount) {
+			mCycleCount = Math.max(cycleCount, 0);
+			return this;
+		}
+
+		/**
+		 * Set that the cycle should end with the last color instead the first one.
+		 *
+		 * @return The updated cycle.
+		 */
+		public CycleThread endWithLast() {
+			mEndWithLast = true;
+			return this;
+		}
+	}
+
+	/**
+	 * A thread animating the colors.
+	 */
+	public class AnimationThread extends Thread { // SUPPRESS_CHECKSTYLE
+		/**
+		 * The animation definiation.
+		 */
+		private AnimationDefinition mDefinition;
+		/**
+		 * The color to be reached after ending the thread.
+		 */
+		private Color mEndColor = null;
+		/**
+		 * The transition time to the end color.
+		 */
+		private int mEndTransitionTime = 200; // MAGIC_NUMBER
+		/**
+		 * The relative brightness of the colors.
+		 */
+		private double mRelativeBrightness = 1;
+
+		/**
+		 * Create an animation thread.
+		 *
+		 * @param definition The rules for the animation.
+		 */
+		private AnimationThread(final AnimationDefinition definition) {
+			setDefinition(definition);
+		}
+
+		/**
+		 * Set the animation definition.
+		 *
+		 * @param definition The rules for the animation.
+		 */
+		protected void setDefinition(final AnimationDefinition definition) {
+			mDefinition = definition;
+		}
+
+		/**
+		 * Set the color that the lamp should get after finishing the cycle.
+		 *
+		 * @param endColor The end color. Brightness 0 switches power off. Null keeps the current color.
+		 * @param endTransitionTime The transition time to the end color.
+		 * @return The updated cycle.
+		 */
+		public AnimationThread setEndColor(final Color endColor, final int endTransitionTime) {
+			mEndColor = endColor;
+			mEndTransitionTime = Math.max(endTransitionTime, 0);
 			return this;
 		}
 
 		/**
 		 * Set the relative brightness of the cycle colors.
 		 *
-		 * @param relativeBrightness The relative brightness of the colors.
+		 * @param brightness The relative brightness of the colors. Value 1 keeps the original brightness.
 		 * @return The updated cycle.
 		 */
-		public Cycle setRelativeBrightness(final double relativeBrightness) {
-			mRelativeBrightness = relativeBrightness;
+		public AnimationThread setBrightness(final double brightness) {
+			mRelativeBrightness = brightness;
 			return this;
 		}
 
 		@Override
-		public final void start() {
-			synchronized (Light.this) {
-				if (mCycle != null) {
-					mCycle.end();
-				}
-				mCycle = this;
-			}
-			super.start();
-		}
-
-		@Override
-		public final void run() {
-			boolean firstRun = true;
+		public void run() {
 			int count = 0;
 			try {
 				try {
-					while (!isInterrupted() && (count < mCycleCount || mCycleCount == 0)) {
-						for (Color color : mColors) {
-							long startTime = System.currentTimeMillis();
-							if (firstRun) {
-								if (getPower().isOff()) {
-									setColor(color.withRelativeBrightness(mRelativeBrightness));
-									setPower(true, mStartTransitionTime, false);
-								}
-								else {
-									setColor(color.withRelativeBrightness(mRelativeBrightness), mStartTransitionTime, false);
-								}
-								Thread.sleep(Math.max(0, mStartTransitionTime + startTime - System.currentTimeMillis()));
-								firstRun = false;
+					while (!isInterrupted() && mDefinition.getColor(count) != null) {
+						long startTime = System.currentTimeMillis();
+						Color color = mDefinition.getColor(count);
+						int duration = Math.max(mDefinition.getDuration(count), 0);
+						if (count == 0) {
+							if (getPower().isOff()) {
+								setColor(color.withRelativeBrightness(mRelativeBrightness));
+								setPower(true, duration, false);
 							}
 							else {
-								setColor(color.withRelativeBrightness(mRelativeBrightness), mStepDuration, false);
-								Thread.sleep(Math.max(0, mStepDuration + startTime - System.currentTimeMillis()));
+								setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
 							}
+							Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
+						}
+						else {
+							setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
+							Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
 						}
 						count++;
 					}
@@ -502,12 +571,15 @@ public class Light extends Device {
 					// do nothing
 				}
 
-				if (mEndColor != null) {
-					setColor(mEndColor, mEndTransitionTime, true);
-				}
-				else {
+				if (mEndColor == null) {
 					// stop the previous color transition by sending setWaveform command with no change.
 					setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+				}
+				else if (mEndColor.getBrightness() == 0) {
+					setPower(false, mEndTransitionTime, true);
+				}
+				else {
+					setColor(mEndColor, mEndTransitionTime, true);
 				}
 			}
 			catch (SocketException e) {
@@ -515,8 +587,19 @@ public class Light extends Device {
 			}
 		}
 
+		@Override
+		public void start() {
+			synchronized (Light.this) {
+				if (mAnimationThread != null) {
+					mAnimationThread.end();
+				}
+				mAnimationThread = this;
+			}
+			super.start();
+		}
+
 		/**
-		 * End the cycle and wait for the end of the cycle thread.
+		 * End the animation and wait for the end of the cycle thread.
 		 */
 		public void end() {
 			interrupt();
@@ -527,6 +610,36 @@ public class Light extends Device {
 				// ignore
 			}
 		}
+
+		/**
+		 * Get the relative brightness.
+		 *
+		 * @return The relative brightness.
+		 */
+		protected double getRelativeBrightness() {
+			return mRelativeBrightness;
+		}
+	}
+
+	/**
+	 * Interface for defining an animation.
+	 */
+	public interface AnimationDefinition {
+		/**
+		 * The n-th color of the animation.
+		 *
+		 * @param n counter starting with 0
+		 * @return The n-th color. Null will end the animation.
+		 */
+		Color getColor(int n);
+
+		/**
+		 * The duration of the n-th animation.
+		 *
+		 * @param n counter starting with 0
+		 * @return The duration in millis for the change to color n
+		 */
+		int getDuration(int n);
 	}
 
 }
