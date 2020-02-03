@@ -9,7 +9,7 @@ public class ConnectionInfo {
 	/**
 	 * The signal strength.
 	 */
-	private final float mSignalStrength;
+	private final Signal mSignalStrength;
 	/**
 	 * The number of bytes sent.
 	 */
@@ -27,7 +27,7 @@ public class ConnectionInfo {
 	 * @param bytesReceived the number of bytes received.
 	 */
 	public ConnectionInfo(final float signalStrength, final int bytesSent, final int bytesReceived) {
-		mSignalStrength = signalStrength;
+		mSignalStrength = new Signal(signalStrength);
 		mBytesSent = bytesSent;
 		mBytesReceived = bytesReceived;
 	}
@@ -43,7 +43,7 @@ public class ConnectionInfo {
 	 *
 	 * @return the signal strength
 	 */
-	public final float getSignalStrength() {
+	public final Signal getSignalStrength() {
 		return mSignalStrength;
 	}
 
