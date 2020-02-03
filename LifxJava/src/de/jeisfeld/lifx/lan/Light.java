@@ -529,7 +529,7 @@ public class Light extends Device {
 		 *
 		 * @param definition The rules for the animation.
 		 */
-		private AnimationThread(final AnimationDefinition definition) {
+		protected AnimationThread(final AnimationDefinition definition) {
 			setDefinition(definition);
 		}
 
@@ -577,6 +577,7 @@ public class Light extends Device {
 			return this;
 		}
 
+		// OVERRIDABLE
 		@Override
 		public void run() {
 			int count = 0;
@@ -621,7 +622,7 @@ public class Light extends Device {
 		}
 
 		@Override
-		public void start() {
+		public final void start() {
 			synchronized (Light.this) {
 				if (mAnimationThread != null) {
 					mAnimationThread.end();
@@ -651,6 +652,15 @@ public class Light extends Device {
 		 */
 		protected double getRelativeBrightness() {
 			return mRelativeBrightness;
+		}
+
+		/**
+		 * Get the exception callback.
+		 *
+		 * @return The exception callback.
+		 */
+		protected ExceptionCallback getExceptionCallback() {
+			return mExceptionCallback;
 		}
 	}
 

@@ -214,6 +214,12 @@ public abstract class ResponseMessage {
 			return new EchoResponse(packet);
 		case ACKNOWLEDGEMENT:
 			return new Acknowledgement(packet);
+		case MULTIZONE_STATE_ZONE:
+			return new MultizoneStateZone(packet, false);
+		case MULTIZONE_STATE_MULTIZONE:
+			return new MultizoneStateZone(packet, true);
+		case MULTIZONE_STATE_EXTENDED_COLOR_ZONES:
+			return new MultizoneStateExtendedColorZones(packet);
 		default:
 			return null;
 		}

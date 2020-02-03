@@ -8,74 +8,96 @@ import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.util.Logger;
 
 /**
  * Test class for testing LIFX API.
  */
-public class Test {
-	private static String MAC_FARBLAMPE = "D0:73:D5:53:DC:A7";
-	private static String MAC_SWLAMPE = "D0:73:D5:56:40:78";
-	private static String MAC_LICHTSTREIFEN = "D0:73:D5:14:88:FC";
+public final class Test {
+	// JAVADOC:OFF
+	// SYSTEMOUT:OFF
+	private static final String MAC_FARBLAMPE = "D0:73:D5:53:DC:A7";
+	private static final String MAC_SWLAMPE = "D0:73:D5:56:40:78";
+	private static final String MAC_LICHTSTREIFEN = "D0:73:D5:14:88:FC";
 
-	private final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE);
-	private final Light SWLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_SWLAMPE);
-	private final MultiZoneLight LICHTSTREIFEN = (MultiZoneLight) LifxLan.getInstance().getLightByMac(Test.MAC_LICHTSTREIFEN);
+	private static final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE);
+	private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_SWLAMPE);
+	private static final MultiZoneLight LICHTSTREIFEN = (MultiZoneLight) LifxLan.getInstance().getLightByMac(Test.MAC_LICHTSTREIFEN);
 
-	public static void main(final String[] args) throws Exception {
+	private static final int ONESECOND = 1000;
+	private static final int TWOSECONDS = 2000;
+	private static final int FIVESECONDS = 5000;
+	private static final int HALFMINUTE = 30000;
+
+	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test0();
+		new Test().test5();
 	}
 
-	private void test0() throws Exception {
+	void test0() throws Exception {
 		for (Device device : LifxLan.getInstance().getDevices()) {
 			System.out.println(device.getFullInformation());
 		}
 	}
 
-	private void test1() throws Exception {
-		Color endColor = FARBLAMPE.getColor();
-		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
-				.setCycleDuration(5000)
-				.setStartTransitionTime(1000)
-				.setEndColor(endColor, 1000)
+	void test1() throws Exception { // SUPPRESS_CHECKSTYLE
+		Color endColor = Test.FARBLAMPE.getColor();
+		Test.FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
+				.setCycleDuration(Test.FIVESECONDS)
+				.setStartTransitionTime(Test.ONESECOND)
+				.setEndColor(endColor, Test.ONESECOND)
 				.setBrightness(1)
 				.setCycleCount(2)
 				.start();
 
-		FARBLAMPE.waitForAnimationEnd();
+		Test.FARBLAMPE.waitForAnimationEnd();
 	}
 
-	private void test2() throws Exception {
-		FARBLAMPE.wakeup(30000, null);
-		SWLAMPE.wakeup(30000, null);
-		LICHTSTREIFEN.wakeup(30000, null);
+	void test2() throws Exception { // SUPPRESS_CHECKSTYLE
+		Test.FARBLAMPE.wakeup(Test.HALFMINUTE, null);
+		Test.SWLAMPE.wakeup(Test.HALFMINUTE, null);
+		Test.LICHTSTREIFEN.wakeup(Test.HALFMINUTE, null);
 
-		FARBLAMPE.waitForAnimationEnd();
-		SWLAMPE.waitForAnimationEnd();
-		LICHTSTREIFEN.waitForAnimationEnd();
+		Test.FARBLAMPE.waitForAnimationEnd();
+		Test.SWLAMPE.waitForAnimationEnd();
+		Test.LICHTSTREIFEN.waitForAnimationEnd();
 	}
 
-	private void test3() throws Exception {
+	void test3() throws Exception { // SUPPRESS_CHECKSTYLE
 		Random random = new Random();
-		FARBLAMPE.animation(new AnimationDefinition() {
+		Test.FARBLAMPE.animation(new AnimationDefinition() {
 
 			@Override
 			public int getDuration(final int n) {
-				return random.nextInt(5000);
+				return random.nextInt(Test.FIVESECONDS);
 			}
 
 			@Override
 			public Color getColor(final int n) {
-				return new Color(random.nextInt(65536), random.nextInt(65536), random.nextInt(65536), 1500 + random.nextInt(7500));
+				return new Color(random.nextInt(65536), random.nextInt(65536), random.nextInt(65536), 1500 + random.nextInt(7500)); // MAGIC_NUMBER
 			}
 		})
-				.setEndColor(Color.OFF, 2000)
+				.setEndColor(Color.OFF, Test.TWOSECONDS)
 				.start();
 
-		Thread.sleep(20000);
-		FARBLAMPE.endAnimation();
+		Thread.sleep(Test.HALFMINUTE);
+		Test.FARBLAMPE.endAnimation();
+	}
 
+	void test4() throws Exception { // SUPPRESS_CHECKSTYLE
+		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
+		Test.LICHTSTREIFEN.setColors(Test.FIVESECONDS, true, new MultizoneColors.Interpolated(false,
+				Color.RED, Color.GREEN, Color.BLUE).setRelativeBrightness(0.2)); // MAGIC_NUMBER
+		Test.LICHTSTREIFEN.setPower(true);
+		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
+	}
+
+	void test5() throws Exception { // SUPPRESS_CHECKSTYLE
+		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
+		Test.LICHTSTREIFEN.rollingAnimation(10000, new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
+				.setBrightness(0.6) // MAGIC_NUMBER
+				.start();
 	}
 
 }

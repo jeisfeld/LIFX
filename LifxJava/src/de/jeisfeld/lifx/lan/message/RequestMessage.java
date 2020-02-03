@@ -214,18 +214,37 @@ public abstract class RequestMessage {
 	}
 
 	/**
-	 * Check if the other message has matching messageType, sourceId and sequenceNumber.
+	 * Check if the other message has matching targetAddress, sourceId and sequenceNumber.
+	 *
+	 * @param otherMessage The other message.
+	 * @return true if matching.
+	 */
+	private boolean matchesIds(final ResponseMessage otherMessage) {
+		boolean isTargetAddressValid = RequestMessage.BROADCAST_MAC.equals(mTargetAddress)
+				? !RequestMessage.BROADCAST_MAC.equals(otherMessage.getTargetAddress())
+				: (RequestMessage.BROADCAST_MAC.equals(otherMessage.getTargetAddress()) || mTargetAddress.equals(otherMessage.getTargetAddress()));
+
+		return mSourceId == otherMessage.getSourceId() && mSequenceNumber == otherMessage.getSequenceNumber() && isTargetAddressValid;
+	}
+
+	/**
+	 * Check if the other message has matching messageType.
+	 *
+	 * @param otherMessage The other message.
+	 * @return true if matching.
+	 */
+	protected boolean matchesMessageType(final ResponseMessage otherMessage) {
+		return getResponseType() == otherMessage.getMessageType();
+	}
+
+	/**
+	 * Check if the other message has matching targetAddress, sourceId, sequenceNumber and messageType.
 	 *
 	 * @param otherMessage The other message.
 	 * @return true if matching.
 	 */
 	public boolean matches(final ResponseMessage otherMessage) {
-		boolean isTargetAddressValid = RequestMessage.BROADCAST_MAC.equals(mTargetAddress)
-				? !RequestMessage.BROADCAST_MAC.equals(otherMessage.getTargetAddress())
-				: (RequestMessage.BROADCAST_MAC.equals(otherMessage.getTargetAddress()) || mTargetAddress.equals(otherMessage.getTargetAddress()));
-
-		return getResponseType() == otherMessage.getMessageType() && mSourceId == otherMessage.getSourceId()
-				&& mSequenceNumber == otherMessage.getSequenceNumber() && isTargetAddressValid;
+		return matchesIds(otherMessage) && matchesMessageType(otherMessage);
 	}
 
 }

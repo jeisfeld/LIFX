@@ -61,6 +61,7 @@ public final class Logger {
 		}
 		else {
 			System.err.println(e.toString());
+//			e.printStackTrace();
 		}
 	}
 
