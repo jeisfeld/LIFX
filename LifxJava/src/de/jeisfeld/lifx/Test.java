@@ -88,15 +88,17 @@ public final class Test {
 	void test4() throws Exception { // SUPPRESS_CHECKSTYLE
 		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
 		Test.LICHTSTREIFEN.setColors(Test.FIVESECONDS, true, new MultizoneColors.Interpolated(false,
-				Color.RED, Color.GREEN, Color.BLUE).setRelativeBrightness(0.2)); // MAGIC_NUMBER
+				Color.RED, Color.GREEN, Color.BLUE).withRelativeBrightness(0.2)); // MAGIC_NUMBER
 		Test.LICHTSTREIFEN.setPower(true);
 		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
 	}
 
 	void test5() throws Exception { // SUPPRESS_CHECKSTYLE
 		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
-		Test.LICHTSTREIFEN.rollingAnimation(10000, new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
-				.setBrightness(0.6) // MAGIC_NUMBER
+		Test.LICHTSTREIFEN
+				.rollingAnimation(10000,
+						new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
+				.setBrightness(0.4) // MAGIC_NUMBER
 				.start();
 	}
 

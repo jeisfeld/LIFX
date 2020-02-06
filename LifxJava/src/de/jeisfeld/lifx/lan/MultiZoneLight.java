@@ -228,8 +228,7 @@ public class MultiZoneLight extends Light {
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
 						final long startTime = System.currentTimeMillis();
-						MultizoneColors colors = mDefinition.getColors(count);
-						colors.setRelativeBrightness(getRelativeBrightness());
+						MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
 						int duration = Math.max(mDefinition.getDuration(count), 0);
 						if (count == 0 && getPower().isOff()) {
 							setColors(0, false, colors);

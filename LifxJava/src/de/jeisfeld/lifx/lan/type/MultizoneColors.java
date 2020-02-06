@@ -9,52 +9,10 @@ public abstract class MultizoneColors {
 	 */
 	public static final MultizoneColors OFF = new MultizoneColors() {
 		@Override
-		protected Color getBaseColor(final int zoneIndex, final int zoneCount) {
+		public Color getColor(final int zoneIndex, final int zoneCount) {
 			return Color.OFF;
 		}
-
 	};
-
-	/**
-	 * Base constructor.
-	 */
-	protected MultizoneColors() {
-	}
-
-	/**
-	 * Base constructor, cloning existing MultizoneColors.
-	 *
-	 * @param other the base of the clone.
-	 */
-	protected MultizoneColors(final MultizoneColors other) {
-		this();
-		mRelativeBrightness = other.mRelativeBrightness;
-	}
-
-	/**
-	 * The relative brightness.
-	 */
-	private double mRelativeBrightness = 1;
-
-	/**
-	 * Set the relative brightness.
-	 *
-	 * @param relativeBrightness The relative brightness.
-	 * @return the updated MultizoneColors.
-	 */
-	public MultizoneColors setRelativeBrightness(final double relativeBrightness) {
-		mRelativeBrightness = relativeBrightness;
-		return this;
-	}
-
-	/**
-	 * Get the base color at a certain zone index (not considering brightness factor).
-	 *
-	 * @param zoneIndex The zone index
-	 * @param zoneCount The number of zones
-	 * @return the color at this index.
-	 */
-	protected abstract Color getBaseColor(int zoneIndex, int zoneCount);
 
 	/**
 	 * Get the color at a certain zone index.
@@ -63,9 +21,7 @@ public abstract class MultizoneColors {
 	 * @param zoneCount The number of zones
 	 * @return the color at this index.
 	 */
-	public Color getColor(final int zoneIndex, final int zoneCount) {
-		return getBaseColor(zoneIndex, zoneCount).withRelativeBrightness(mRelativeBrightness);
-	}
+	public abstract Color getColor(int zoneIndex, int zoneCount);
 
 	/**
 	 * Shift the colors by a certain amount of zones.
@@ -75,10 +31,43 @@ public abstract class MultizoneColors {
 	 */
 	public MultizoneColors shift(final int shiftCount) {
 		MultizoneColors base = this;
-		return new MultizoneColors(this) {
+		return new MultizoneColors() {
 			@Override
-			protected Color getBaseColor(final int zoneIndex, final int zoneCount) {
-				return base.getBaseColor(zoneIndex - shiftCount, zoneCount);
+			public Color getColor(final int zoneIndex, final int zoneCount) {
+				return base.getColor(zoneIndex - shiftCount, zoneCount);
+			}
+		};
+	}
+
+	/**
+	 * Multiply the colors by a certain brightness factor.
+	 *
+	 * @param brightnessFactor The brightness factor (1 meaning unchanged).
+	 * @return The changed colors.
+	 */
+	public MultizoneColors withRelativeBrightness(final double brightnessFactor) {
+		MultizoneColors base = this;
+		return new MultizoneColors() {
+			@Override
+			public Color getColor(final int zoneIndex, final int zoneCount) {
+				return base.getColor(zoneIndex, zoneCount).withRelativeBrightness(brightnessFactor);
+			}
+		};
+	}
+
+	/**
+	 * Mix with another set of colors.
+	 *
+	 * @param other The other colors.
+	 * @param quota The quota of the other colors (between 0 and 1)
+	 * @return The mixed colors.
+	 */
+	public final MultizoneColors add(final MultizoneColors other, final double quota) {
+		MultizoneColors base = this;
+		return new MultizoneColors() {
+			@Override
+			public Color getColor(final int zoneIndex, final int zoneCount) {
+				return base.getColor(zoneIndex, zoneCount).add(other.getColor(zoneIndex, zoneCount), quota);
 			}
 		};
 	}
@@ -108,7 +97,7 @@ public abstract class MultizoneColors {
 		}
 
 		@Override
-		protected final Color getBaseColor(final int zoneIndex, final int zoneCount) {
+		public final Color getColor(final int zoneIndex, final int zoneCount) {
 			int index = (zoneIndex % zoneCount + zoneCount) % zoneCount;
 			if (mColors == null || mColors.length <= 1) {
 				return mColors == null || mColors.length == 0 ? Color.OFF : mColors[0];
@@ -131,4 +120,27 @@ public abstract class MultizoneColors {
 		}
 	}
 
+	/**
+	 * Multizone colors defined by a fixed color.
+	 */
+	public static class Fixed extends MultizoneColors {
+		/**
+		 * The color.
+		 */
+		private final Color mColor;
+
+		/**
+		 * Create one-color multizone colors.
+		 *
+		 * @param color The defining color.
+		 */
+		public Fixed(final Color color) {
+			mColor = color;
+		}
+
+		@Override
+		public final Color getColor(final int zoneIndex, final int zoneCount) {
+			return mColor;
+		}
+	}
 }
