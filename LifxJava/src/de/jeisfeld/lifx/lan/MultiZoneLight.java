@@ -1,6 +1,6 @@
 package de.jeisfeld.lifx.lan;
 
-import java.net.SocketException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class MultiZoneLight extends Light {
 		try {
 			return (MultizoneStateZone) getConnection().requestWithResponse(new MultizoneGetColorZones(startIndex, endIndex));
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -61,7 +61,7 @@ public class MultiZoneLight extends Light {
 		try {
 			return (MultizoneStateExtendedColorZones) getConnection().requestWithResponse(new MultizoneGetExtendedColorZones());
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -103,10 +103,10 @@ public class MultiZoneLight extends Light {
 	 * @param duration the duration of power change in millis.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @param apply flag indicating if the change should apply.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
 	public void setColor(final byte startIndex, final byte endIndex, final Color color, final int duration, final boolean wait, final boolean apply)
-			throws SocketException {
+			throws IOException {
 		getConnection().requestWithResponse(new MultizoneSetColorZones(startIndex, endIndex, color, duration, apply ? Apply.APPLY : Apply.NO_APPLY));
 	}
 
@@ -116,9 +116,9 @@ public class MultiZoneLight extends Light {
 	 * @param duration the duration of power change in millis.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @param colors the target colors intermediate colors will be interpolated.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void setColors(final int duration, final boolean wait, final MultizoneColors colors) throws SocketException {
+	public void setColors(final int duration, final boolean wait, final MultizoneColors colors) throws IOException {
 		for (int i = 0; i < mZoneCount; i++) {
 			setColor((byte) i, (byte) i, colors.getColor(i, getZoneCount()), duration, false, i == mZoneCount - 1);
 		}
@@ -256,7 +256,7 @@ public class MultiZoneLight extends Light {
 					setColors(mEndTransitionTime, true, mEndColors);
 				}
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 				if (getExceptionCallback() != null) {
 					getExceptionCallback().onException(e);

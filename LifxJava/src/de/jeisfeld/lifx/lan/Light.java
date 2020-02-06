@@ -1,6 +1,6 @@
 package de.jeisfeld.lifx.lan;
 
-import java.net.SocketException;
+import java.io.IOException;
 
 import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetInfrared;
@@ -56,7 +56,7 @@ public class Light extends Device {
 			lightStatePower = (LightStatePower) getConnection().requestWithResponse(new LightGetPower());
 			return new Power(lightStatePower.getLevel());
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -73,7 +73,7 @@ public class Light extends Device {
 			lightState = (LightState) getConnection().requestWithResponse(new LightGet());
 			return lightState;
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -90,7 +90,7 @@ public class Light extends Device {
 			lightStateInfrared = (LightStateInfrared) getConnection().requestWithResponse(new LightGetInfrared());
 			return lightStateInfrared.getBrightness();
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -112,9 +112,9 @@ public class Light extends Device {
 	 * @param status true for switching on, false for switching off
 	 * @param duration the duration of power change in millis.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void setPower(final boolean status, final int duration, final boolean wait) throws SocketException {
+	public void setPower(final boolean status, final int duration, final boolean wait) throws IOException {
 		getConnection().requestWithResponse(new LightSetPower(status, duration));
 		if (wait) {
 			try {
@@ -132,9 +132,9 @@ public class Light extends Device {
 	 * @param color the target color.
 	 * @param duration the duration of power change in millis.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void setColor(final Color color, final int duration, final boolean wait) throws SocketException {
+	public void setColor(final Color color, final int duration, final boolean wait) throws IOException {
 		getConnection().requestWithResponse(new LightSetColor(color, duration));
 		if (wait) {
 			try {
@@ -150,9 +150,9 @@ public class Light extends Device {
 	 * Set the color.
 	 *
 	 * @param color the target color.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void setColor(final Color color) throws SocketException {
+	public void setColor(final Color color) throws IOException {
 		setColor(color, 0, false);
 	}
 
@@ -167,10 +167,10 @@ public class Light extends Device {
 	 * @param skewRatio the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and Triangle this
 	 *            is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final boolean isTransient, final Color color, final int period, final double cycles,
-			final Waveform waveform, final double skewRatio, final boolean wait) throws SocketException {
+			final Waveform waveform, final double skewRatio, final boolean wait) throws IOException {
 		float floatCycles = (float) Math.max(0, Math.min(Float.MAX_VALUE, cycles));
 		getConnection()
 				.requestWithResponse(
@@ -194,10 +194,10 @@ public class Light extends Device {
 	 * @param period the cycle period.
 	 * @param cycles the number of cycles. 0 for eternal run without waiting. Positive number for limited run with waiting.
 	 * @param waveform the waveform.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final Color color, final int period, final int cycles,
-			final Waveform waveform) throws SocketException {
+			final Waveform waveform) throws IOException {
 		setWaveform(true, color, period, cycles <= 0 ? Float.MAX_VALUE : cycles, waveform, 0.5, cycles > 0); // MAGIC_NUMBER
 	}
 
@@ -208,9 +208,9 @@ public class Light extends Device {
 	 * @param period the cycle period.
 	 * @param waveform the waveform.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void setWaveform(final Color color, final int period, final Waveform waveform, final boolean wait) throws SocketException {
+	public void setWaveform(final Color color, final int period, final Waveform waveform, final boolean wait) throws IOException {
 		setWaveform(false, color, period, 1, waveform, 0.5, wait); // MAGIC_NUMBER
 	}
 
@@ -228,11 +228,11 @@ public class Light extends Device {
 	 *            is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @param waveform the waveform.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final boolean isTransient, final Double hue, final Double saturation, final Double brightness, // SUPPRESS_CHECKSTYLE
 			final Integer colorTemperature, final int period, final double cycles, final double skewRatio,
-			final Waveform waveform, final boolean wait) throws SocketException {
+			final Waveform waveform, final boolean wait) throws IOException {
 		float floatCycles = (float) Math.max(0, Math.min(Float.MAX_VALUE, cycles));
 		short hueValue = TypeUtil.toShort((hue == null ? 180 : hue) / 360); // MAGIC_NUMBER
 		short saturationValue = TypeUtil.toShort(saturation == null ? 1 : saturation);
@@ -258,9 +258,9 @@ public class Light extends Device {
 	 * Set the infrared brightness.
 	 *
 	 * @param brightness the infrared brightness.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void setInfraredBrightness(final short brightness) throws SocketException {
+	public void setInfraredBrightness(final short brightness) throws IOException {
 		getConnection().requestWithResponse(new LightSetInfrared(brightness));
 	}
 
@@ -613,7 +613,7 @@ public class Light extends Device {
 					setColor(mEndColor, mEndTransitionTime, true);
 				}
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 				if (mExceptionCallback != null) {
 					mExceptionCallback.onException(e);
@@ -690,11 +690,11 @@ public class Light extends Device {
 	 */
 	public interface ExceptionCallback {
 		/**
-		 * Callback method called in case of SocketException.
+		 * Callback method called in case of IOException.
 		 *
-		 * @param e The SocketException
+		 * @param e The IOException
 		 */
-		void onException(SocketException e);
+		void onException(IOException e);
 	}
 
 }

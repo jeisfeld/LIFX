@@ -98,7 +98,7 @@ public final class Test {
 		Test.LICHTSTREIFEN
 				.rollingAnimation(10000,
 						new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
-				.setBrightness(0.4) // MAGIC_NUMBER
+				.setBrightness(0.3) // MAGIC_NUMBER
 				.start();
 	}
 

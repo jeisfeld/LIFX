@@ -1,6 +1,6 @@
 package de.jeisfeld.lifx.lan;
 
-import java.net.SocketException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -77,9 +77,9 @@ public class Group {
 	 * Update the group label.
 	 *
 	 * @param newGroupLabel The new group label.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void updateLabel(final String newGroupLabel) throws SocketException {
+	public void updateLabel(final String newGroupLabel) throws IOException {
 		Group updatedGroup = new Group(getGroupId(), newGroupLabel);
 		for (Device device : getDevices()) {
 			device.setGroup(updatedGroup);

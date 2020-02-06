@@ -192,7 +192,7 @@ public class LifxLanConnection {
 
 					}
 					catch (SocketTimeoutException e) {
-						// ignore
+						retryPolicy.onException(attempt, e);
 					}
 					catch (IOException e) {
 						Logger.error(e);
@@ -220,13 +220,13 @@ public class LifxLanConnection {
 	 *
 	 * @param request The request to be sent.
 	 * @return the response.
-	 * @exception SocketException No response.
+	 * @exception IOException No response.
 	 */
-	public ResponseMessage requestWithResponse(final RequestMessage request) throws SocketException {
+	public ResponseMessage requestWithResponse(final RequestMessage request) throws IOException {
 		List<ResponseMessage> responses = broadcastWithResponse(request, new RetryPolicy() {
 		});
 		if (responses.size() == 0) {
-			throw new SocketException("Did not get response from socket.");
+			throw new IOException("Did not get response from socket.");
 		}
 		else {
 			return responses.get(0);
@@ -279,12 +279,12 @@ public class LifxLanConnection {
 		}
 
 		/**
-		 * Action to be done if a SocketException occurs.
+		 * Action to be done if an IOException occurs.
 		 *
 		 * @param attempt The attempt number (starting with 0).
 		 * @param e The exception.
 		 */
-		default void onException(final int attempt, final SocketException e) {
+		default void onException(final int attempt, final IOException e) {
 			// do nothing.
 		}
 	}

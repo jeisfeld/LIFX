@@ -1,5 +1,6 @@
 package de.jeisfeld.lifx.lan;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
@@ -120,9 +121,9 @@ public class Device {
 	 *
 	 * @return the device including version information.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	public Device getDeviceProduct() throws SocketException {
+	public Device getDeviceProduct() throws IOException {
 		retrieveVersionInformation();
 		Device device = this;
 		if (mProduct.isChain()) {
@@ -140,9 +141,9 @@ public class Device {
 	/**
 	 * Reset all stored device information.
 	 *
-	 * @throws SocketException Exception while retrieving version info.
+	 * @throws IOException Exception while retrieving version info.
 	 */
-	public void reset() throws SocketException {
+	public void reset() throws IOException {
 		retrieveVersionInformation();
 		mLabel = null;
 		mLocation = null;
@@ -154,9 +155,9 @@ public class Device {
 	/**
 	 * Retrieve the version information via GetVersion call.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	private void retrieveVersionInformation() throws SocketException {
+	private void retrieveVersionInformation() throws IOException {
 		StateVersion stateVersion = (StateVersion) getConnection().requestWithResponse(new GetVersion());
 		setVersionInformation(stateVersion.getVendor(), stateVersion.getProduct(), stateVersion.getVersion());
 	}
@@ -177,9 +178,9 @@ public class Device {
 	/**
 	 * Get Label via GetLabel call.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	private void retrieveLabel() throws SocketException {
+	private void retrieveLabel() throws IOException {
 		StateLabel stateLabel = (StateLabel) getConnection().requestWithResponse(new GetLabel());
 		mLabel = stateLabel.getLabel();
 	}
@@ -187,9 +188,9 @@ public class Device {
 	/**
 	 * Get Location via GetLocation call.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	private void retrieveLocation() throws SocketException {
+	private void retrieveLocation() throws IOException {
 		StateLocation stateLocation = (StateLocation) getConnection().requestWithResponse(new GetLocation());
 		mLocation = stateLocation.getLocation();
 	}
@@ -197,9 +198,9 @@ public class Device {
 	/**
 	 * Get Group via GetGroup call.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	private void retrieveGroup() throws SocketException {
+	private void retrieveGroup() throws IOException {
 		StateGroup stateGroup = (StateGroup) getConnection().requestWithResponse(new GetGroup());
 		mGroup = stateGroup.getGroup();
 	}
@@ -207,9 +208,9 @@ public class Device {
 	/**
 	 * Get Group via GetHostFirmware call.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	private void retrieveHostFirmware() throws SocketException {
+	private void retrieveHostFirmware() throws IOException {
 		StateHostFirmware stateHostFirmware = (StateHostFirmware) getConnection().requestWithResponse(new GetHostFirmware());
 		mHostFirmwareVersion = stateHostFirmware.getMajorVersion() + "." + stateHostFirmware.getMinorVersion();
 	}
@@ -217,9 +218,9 @@ public class Device {
 	/**
 	 * Get Group via GetWifiFirmware call.
 	 *
-	 * @throws SocketException Exception while retrieving data.
+	 * @throws IOException Exception while retrieving data.
 	 */
-	private void retrieveWifiFirmware() throws SocketException {
+	private void retrieveWifiFirmware() throws IOException {
 		StateWifiFirmware stateWifiFirmware = (StateWifiFirmware) getConnection().requestWithResponse(new GetWifiFirmware());
 		mWifiFirmwareVersion = stateWifiFirmware.getMajorVersion() + "." + stateWifiFirmware.getMinorVersion();
 	}
@@ -329,7 +330,7 @@ public class Device {
 			try {
 				retrieveLabel();
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 			}
 		}
@@ -346,7 +347,7 @@ public class Device {
 			try {
 				retrieveLocation();
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 			}
 		}
@@ -363,7 +364,7 @@ public class Device {
 			try {
 				retrieveGroup();
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 			}
 		}
@@ -380,7 +381,7 @@ public class Device {
 			try {
 				retrieveHostFirmware();
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 			}
 		}
@@ -397,7 +398,7 @@ public class Device {
 			try {
 				retrieveWifiFirmware();
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 			}
 		}
@@ -415,7 +416,7 @@ public class Device {
 			stateInfo = (StateInfo) getConnection().requestWithResponse(new GetInfo());
 			return stateInfo.getUptime();
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -432,7 +433,7 @@ public class Device {
 			statePower = (StatePower) getConnection().requestWithResponse(new GetPower());
 			return new Power(statePower.getLevel());
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -449,7 +450,7 @@ public class Device {
 			stateHostInfo = (StateHostInfo) getConnection().requestWithResponse(new GetHostInfo());
 			return stateHostInfo.getConnectionInfo();
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -466,7 +467,7 @@ public class Device {
 			stateWifiInfo = (StateWifiInfo) getConnection().requestWithResponse(new GetWifiInfo());
 			return stateWifiInfo.getConnectionInfo();
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			Logger.error(e);
 			return null;
 		}
@@ -501,9 +502,9 @@ public class Device {
 	 * Set the power.
 	 *
 	 * @param status true for switching on, false for switching off
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public final void setPower(final boolean status) throws SocketException {
+	public final void setPower(final boolean status) throws IOException {
 		getConnection().requestWithResponse(new SetPower(status));
 	}
 
@@ -511,9 +512,9 @@ public class Device {
 	 * Set the label.
 	 *
 	 * @param label the new label.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public final void setLabel(final String label) throws SocketException {
+	public final void setLabel(final String label) throws IOException {
 		getConnection().requestWithResponse(new SetLabel(label));
 		mLabel = null;
 	}
@@ -522,9 +523,9 @@ public class Device {
 	 * Set the group.
 	 *
 	 * @param group the group.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public final void setGroup(final Group group) throws SocketException {
+	public final void setGroup(final Group group) throws IOException {
 		getConnection().requestWithResponse(new SetGroup(group));
 		mGroup = null;
 	}
@@ -533,9 +534,9 @@ public class Device {
 	 * Set the location.
 	 *
 	 * @param location the location.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public final void setLocation(final Location location) throws SocketException {
+	public final void setLocation(final Location location) throws IOException {
 		getConnection().requestWithResponse(new SetLocation(location));
 		mLocation = null;
 	}

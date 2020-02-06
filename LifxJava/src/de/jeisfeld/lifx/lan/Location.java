@@ -1,6 +1,6 @@
 package de.jeisfeld.lifx.lan;
 
-import java.net.SocketException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -77,9 +77,9 @@ public class Location {
 	 * Update the location label.
 	 *
 	 * @param newLocationLabel The new location label.
-	 * @throws SocketException Connection issues
+	 * @throws IOException Connection issues
 	 */
-	public void updateLabel(final String newLocationLabel) throws SocketException {
+	public void updateLabel(final String newLocationLabel) throws IOException {
 		Location updatedLocation = new Location(getLocationId(), newLocationLabel);
 		for (Device device : getDevices()) {
 			device.setLocation(updatedLocation);

@@ -1,6 +1,6 @@
 package de.jeisfeld.lifx.lan;
 
-import java.net.SocketException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,9 +55,9 @@ public final class LifxLan {
 	 * Get all devices in the LAN.
 	 *
 	 * @return The list of found devices.
-	 * @throws SocketException Exception while getting information
+	 * @throws IOException Exception while getting information
 	 */
-	public List<Device> getDevices() throws SocketException {
+	public List<Device> getDevices() throws IOException {
 		retrieveDeviceInformation();
 		return mDevices;
 	}
@@ -66,9 +66,9 @@ public final class LifxLan {
 	 * Get all lights in the LAN.
 	 *
 	 * @return The list of found lights.
-	 * @throws SocketException Exception while getting information
+	 * @throws IOException Exception while getting information
 	 */
-	public List<Light> getLights() throws SocketException {
+	public List<Light> getLights() throws IOException {
 		retrieveDeviceInformation();
 		return mLights;
 	}
@@ -100,7 +100,7 @@ public final class LifxLan {
 			}, lightFilter);
 			return devices.size() > 0 ? (Light) devices.get(0) : null;
 		}
-		catch (SocketException e) {
+		catch (IOException e) {
 			return null;
 		}
 	}
@@ -125,7 +125,7 @@ public final class LifxLan {
 			try {
 				retrieveDeviceInformation();
 			}
-			catch (SocketException e) {
+			catch (IOException e) {
 				Logger.error(e);
 			}
 			for (Device device : mDevices) {
@@ -161,9 +161,9 @@ public final class LifxLan {
 	 * Get information about devices in the LAN.
 	 *
 	 * @param numDevices the number of devices after which the search is stopped.
-	 * @throws SocketException Exception while getting information.
+	 * @throws IOException Exception while getting information.
 	 */
-	public void retrieveDeviceInformation(final Integer numDevices) throws SocketException {
+	public void retrieveDeviceInformation(final Integer numDevices) throws IOException {
 		retrieveDeviceInformation(new RetryPolicy() {
 			@Override
 			public int getTimeout(final int attempt) {
@@ -181,9 +181,9 @@ public final class LifxLan {
 	/**
 	 * Get information about devices in the LAN.
 	 *
-	 * @throws SocketException Exception while getting information.
+	 * @throws IOException Exception while getting information.
 	 */
-	public void retrieveDeviceInformation() throws SocketException {
+	public void retrieveDeviceInformation() throws IOException {
 		retrieveDeviceInformation(null);
 	}
 
@@ -193,10 +193,10 @@ public final class LifxLan {
 	 * @param retryPolicy the retry policy
 	 * @param filter a filter for responses
 	 * @return the found devices.
-	 * @throws SocketException Exception while getting information.
+	 * @throws IOException Exception while getting information.
 	 */
 	private List<Device> retrieveDeviceInformation(final RetryPolicy retryPolicy, final DeviceFilter filter)
-			throws SocketException {
+			throws IOException {
 		List<ResponseMessage> responses = new LifxLanConnection(mSourceId, filter).broadcastWithResponse(new GetService(), retryPolicy);
 		Logger.info("Found " + responses.size() + " devices.");
 		if (filter == null) {
