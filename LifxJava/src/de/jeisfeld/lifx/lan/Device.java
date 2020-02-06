@@ -4,6 +4,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
 
+import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
 import de.jeisfeld.lifx.lan.message.EchoRequest;
 import de.jeisfeld.lifx.lan.message.GetGroup;
 import de.jeisfeld.lifx.lan.message.GetHostFirmware;
@@ -478,8 +479,18 @@ public class Device {
 	 */
 	public boolean isReachable() {
 		try {
-			return new LifxLanConnection(mSourceId, 200, 1, mTargetAddress, mInetAddress, mPort) // MAGIC_NUMBER
-					.requestWithResponse(new EchoRequest()) != null;
+			return new LifxLanConnection(mSourceId, mTargetAddress, mInetAddress, mPort) // MAGIC_NUMBER
+					.broadcastWithResponse(new EchoRequest(), new RetryPolicy() {
+						@Override
+						public int getAttempts() {
+							return 1;
+						}
+
+						@Override
+						public int getTimeout(final int attempt) {
+							return 200; // MAGIC_NUMBER
+						}
+					}).size() > 0;
 		}
 		catch (SocketException e) {
 			return false;

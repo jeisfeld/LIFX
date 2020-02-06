@@ -48,14 +48,6 @@ public class LifxLanConnection {
 	 */
 	private final String mTargetAddress;
 	/**
-	 * The timeout.
-	 */
-	private final int mTimeout;
-	/**
-	 * The number of attempts.
-	 */
-	private final int mAttempts;
-	/**
 	 * The Internet Address to be called.
 	 */
 	private final InetAddress mInetAddress;
@@ -84,15 +76,11 @@ public class LifxLanConnection {
 	 * Create a UDP connection.
 	 *
 	 * @param sourceId the sourceId
-	 * @param timeout the timeout
-	 * @param attempts the number of attempts
 	 * @param filter a filter for devices. Only relevant for GetService.
 	 */
-	public LifxLanConnection(final int sourceId, final int timeout, final int attempts, final DeviceFilter filter) {
+	public LifxLanConnection(final int sourceId, final DeviceFilter filter) {
 		mSourceId = sourceId;
 		mTargetAddress = RequestMessage.BROADCAST_MAC;
-		mTimeout = timeout;
-		mAttempts = attempts;
 		mInetAddress = null;
 		mPort = LifxLanConnection.UDP_BROADCAST_PORT;
 		mFilter = filter;
@@ -102,18 +90,13 @@ public class LifxLanConnection {
 	 * Create a UDP connection.
 	 *
 	 * @param sourceId the sourceId
-	 * @param timeout the timeout.
-	 * @param attempts the number of attempts
 	 * @param targetAddress the target address
 	 * @param inetAddress the internet address to be used.
 	 * @param port the port to be used.
 	 */
-	public LifxLanConnection(final int sourceId, final int timeout, final int attempts, final String targetAddress,
-			final InetAddress inetAddress, final int port) {
+	public LifxLanConnection(final int sourceId, final String targetAddress, final InetAddress inetAddress, final int port) {
 		mSourceId = sourceId;
 		mTargetAddress = targetAddress == null ? RequestMessage.BROADCAST_MAC : targetAddress;
-		mTimeout = timeout;
-		mAttempts = attempts;
 		mInetAddress = inetAddress;
 		mPort = port;
 		mFilter = null;
@@ -129,54 +112,52 @@ public class LifxLanConnection {
 	}
 
 	/**
-	 * Create a UDP connection.
-	 *
-	 * @param sourceId the sourceId
-	 * @param targetAddress the target address
-	 * @param inetAddress the internet address to be used.
-	 * @param port the port to be used.
-	 */
-	public LifxLanConnection(final int sourceId, final String targetAddress, final InetAddress inetAddress, final int port) {
-		this(sourceId, LifxLanConnection.DEFAULT_TIMEOUT, LifxLanConnection.DEFAULT_ATTEMPTS, targetAddress, inetAddress, port);
-	}
-
-	/**
 	 * Broadcast a request and receive responses.
 	 *
 	 * @param request The request to be sent.
-	 * @param numResponses the expected number of responses.
+	 * @param retryPolicy The retry policy.
 	 * @return the list of responses.
 	 * @throws SocketException Exception while connecting.
 	 */
-	public List<ResponseMessage> broadcastWithResponse(final RequestMessage request, final Integer numResponses) throws SocketException {
+	public List<ResponseMessage> broadcastWithResponse(final RequestMessage request, final RetryPolicy retryPolicy) throws SocketException {
 		byte sequenceNumber = getSequenceNumber();
 		request.setSourceId(mSourceId);
 		request.setSequenceNumber(sequenceNumber);
 		request.setTargetAddress(mTargetAddress);
-
-		DatagramSocket socket = new DatagramSocket();
-		socket.setBroadcast(true);
-		socket.setReuseAddress(true);
-		socket.setSoTimeout(LifxLanConnection.DEFAULT_TIMEOUT);
-
-		int attempts = 0;
-		int numDevicesSeen = 0;
-		byte[] message = request.getPackedMessage();
+		final byte[] message = request.getPackedMessage();
 		Logger.traceRequest(request);
 
+		int attempt = 0;
+		int numDevicesSeen = 0;
 		List<ResponseMessage> responses = new ArrayList<>();
 		List<String> targetAddresses = new ArrayList<>();
 
-		while ((numResponses == null || numDevicesSeen < numResponses) && attempts < mAttempts) {
-			boolean isSent = false;
-			long startTime = System.currentTimeMillis();
-			boolean timedOut = false;
+		while (numDevicesSeen < retryPolicy.getExpectedResponses() && attempt < retryPolicy.getAttempts()) {
+			try {
+				boolean isSent = false;
+				long startTime = System.currentTimeMillis();
 
-			while ((numResponses == null || numDevicesSeen < numResponses) && !timedOut) {
-				if (!isSent) {
-					if (mInetAddress == null) {
-						for (InetAddress address : LifxLanConnection.UDP_BROADCAST_ADDRESSES) {
-							DatagramPacket requestPacket = new DatagramPacket(message, message.length, address, mPort);
+				DatagramSocket socket = new DatagramSocket();
+				socket.setBroadcast(true);
+				socket.setReuseAddress(true);
+				socket.setSoTimeout(retryPolicy.getTimeout(attempt));
+				boolean timedOut = false;
+
+				while (numDevicesSeen < retryPolicy.getExpectedResponses() && !timedOut) {
+					if (!isSent) {
+						if (mInetAddress == null) {
+							for (InetAddress address : LifxLanConnection.UDP_BROADCAST_ADDRESSES) {
+								DatagramPacket requestPacket = new DatagramPacket(message, message.length, address, mPort);
+								try {
+									socket.send(requestPacket);
+								}
+								catch (IOException e) {
+									Logger.error(e);
+								}
+							}
+						}
+						else {
+							DatagramPacket requestPacket = new DatagramPacket(message, message.length, mInetAddress, mPort);
 							try {
 								socket.send(requestPacket);
 							}
@@ -184,54 +165,53 @@ public class LifxLanConnection {
 								Logger.error(e);
 							}
 						}
+						isSent = true;
 					}
-					else {
-						DatagramPacket requestPacket = new DatagramPacket(message, message.length, mInetAddress, mPort);
-						try {
-							socket.send(requestPacket);
+					DatagramPacket responsePacket = new DatagramPacket(new byte[LifxLanConnection.BUFFER_SIZE], LifxLanConnection.BUFFER_SIZE);
+					try {
+						socket.receive(responsePacket);
+						ResponseMessage responseMessage = ResponseMessage.createResponseMessage(responsePacket);
+						boolean isMatch = request.matches(responseMessage);
+						if (mFilter != null && request instanceof GetService) {
+							Device device = ((StateService) responseMessage).getDevice().getDeviceProduct();
+							isMatch = isMatch && mFilter.matches(device);
 						}
-						catch (IOException e) {
-							Logger.error(e);
+
+						if (isMatch) {
+							Logger.traceResponse(responseMessage);
+
+							if (!targetAddresses.contains(responseMessage.getTargetAddress())) {
+								targetAddresses.add(responseMessage.getTargetAddress());
+								numDevicesSeen++;
+								responses.add(responseMessage);
+							}
 						}
-					}
-					isSent = true;
-				}
-				DatagramPacket responsePacket = new DatagramPacket(new byte[LifxLanConnection.BUFFER_SIZE], LifxLanConnection.BUFFER_SIZE);
-				try {
-					socket.receive(responsePacket);
-					ResponseMessage responseMessage = ResponseMessage.createResponseMessage(responsePacket);
-					boolean isMatch = request.matches(responseMessage);
-					if (mFilter != null && request instanceof GetService) {
-						Device device = ((StateService) responseMessage).getDevice().getDeviceProduct();
-						isMatch = isMatch && mFilter.matches(device);
-					}
-
-					if (isMatch) {
-						Logger.traceResponse(responseMessage);
-
-						if (!targetAddresses.contains(responseMessage.getTargetAddress())) {
-							targetAddresses.add(responseMessage.getTargetAddress());
-							numDevicesSeen++;
-							responses.add(responseMessage);
+						else {
+							Logger.info("Ignoring response " + responseMessage);
 						}
+
 					}
-					else {
-						Logger.info("Ignoring response " + responseMessage);
+					catch (SocketTimeoutException e) {
+						// ignore
+					}
+					catch (IOException e) {
+						Logger.error(e);
 					}
 
+					timedOut = System.currentTimeMillis() - startTime > retryPolicy.getTimeout(attempt);
 				}
-				catch (SocketTimeoutException e) {
-					// ignore
-				}
-				catch (IOException e) {
-					Logger.error(e);
-				}
-
-				timedOut = System.currentTimeMillis() - startTime > mTimeout;
+				socket.close();
 			}
-			attempts++;
+			catch (SocketException e) {
+				if (attempt < retryPolicy.getAttempts() - 1) {
+					retryPolicy.onException(attempt, e);
+				}
+				else {
+					throw e;
+				}
+			}
+			attempt++;
 		}
-		socket.close();
 		return responses;
 	}
 
@@ -243,7 +223,8 @@ public class LifxLanConnection {
 	 * @exception SocketException No response.
 	 */
 	public ResponseMessage requestWithResponse(final RequestMessage request) throws SocketException {
-		List<ResponseMessage> responses = broadcastWithResponse(request, 1);
+		List<ResponseMessage> responses = broadcastWithResponse(request, new RetryPolicy() {
+		});
 		if (responses.size() == 0) {
 			throw new SocketException("Did not get response from socket.");
 		}
@@ -263,6 +244,49 @@ public class LifxLanConnection {
 		 * @return true if the device matches the filter.
 		 */
 		boolean matches(Device device);
+	}
+
+	/**
+	 * A retry policy for the connection.
+	 */
+	public interface RetryPolicy {
+		/**
+		 * Get the number of attempts/retries.
+		 *
+		 * @return The number of attempts/retries.
+		 */
+		default int getAttempts() {
+			return LifxLanConnection.DEFAULT_ATTEMPTS;
+		}
+
+		/**
+		 * Get the timeout.
+		 *
+		 * @param attempt The attempt number (starting with 0).
+		 * @return The timeout for this attempt.
+		 */
+		default int getTimeout(final int attempt) {
+			return LifxLanConnection.DEFAULT_TIMEOUT;
+		}
+
+		/**
+		 * Get the expected number of responses.
+		 *
+		 * @return The expected number of responses.
+		 */
+		default int getExpectedResponses() {
+			return 1;
+		}
+
+		/**
+		 * Action to be done if a SocketException occurs.
+		 *
+		 * @param attempt The attempt number (starting with 0).
+		 * @param e The exception.
+		 */
+		default void onException(final int attempt, final SocketException e) {
+			// do nothing.
+		}
 	}
 
 }

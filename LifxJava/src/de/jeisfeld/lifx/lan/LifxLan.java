@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.jeisfeld.lifx.lan.LifxLanConnection.DeviceFilter;
+import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
 import de.jeisfeld.lifx.lan.message.GetService;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 import de.jeisfeld.lifx.lan.message.StateService;
@@ -91,7 +92,12 @@ public final class LifxLan {
 			}
 		};
 		try {
-			List<Device> devices = retrieveDeviceInformation(5000, 2, 1, lightFilter); // MAGIC_NUMBER
+			List<Device> devices = retrieveDeviceInformation(new RetryPolicy() {
+				@Override
+				public int getTimeout(final int attempt) {
+					return 5000; // MAGIC_NUMBER
+				}
+			}, lightFilter);
 			return devices.size() > 0 ? (Light) devices.get(0) : null;
 		}
 		catch (SocketException e) {
@@ -158,7 +164,18 @@ public final class LifxLan {
 	 * @throws SocketException Exception while getting information.
 	 */
 	public void retrieveDeviceInformation(final Integer numDevices) throws SocketException {
-		retrieveDeviceInformation(2000, 1, numDevices, null); // MAGIC_NUMBER
+		retrieveDeviceInformation(new RetryPolicy() {
+			@Override
+			public int getTimeout(final int attempt) {
+				return 2500; // MAGIC_NUMBER
+			}
+
+			@Override
+			public int getExpectedResponses() {
+				return numDevices == null ? Integer.MAX_VALUE : numDevices;
+			}
+
+		}, null);
 	}
 
 	/**
@@ -173,17 +190,14 @@ public final class LifxLan {
 	/**
 	 * Get information about devices in the LAN.
 	 *
-	 * @param timeout the timeout
-	 * @param attempts the number of attempts
-	 * @param numDevices the number of devices after which the search is stopped
+	 * @param retryPolicy the retry policy
 	 * @param filter a filter for responses
 	 * @return the found devices.
 	 * @throws SocketException Exception while getting information.
 	 */
-	private List<Device> retrieveDeviceInformation(final int timeout, final int attempts, final Integer numDevices, final DeviceFilter filter)
+	private List<Device> retrieveDeviceInformation(final RetryPolicy retryPolicy, final DeviceFilter filter)
 			throws SocketException {
-		List<ResponseMessage> responses =
-				new LifxLanConnection(mSourceId, timeout, attempts, filter).broadcastWithResponse(new GetService(), numDevices);
+		List<ResponseMessage> responses = new LifxLanConnection(mSourceId, filter).broadcastWithResponse(new GetService(), retryPolicy);
 		Logger.info("Found " + responses.size() + " devices.");
 		if (filter == null) {
 			mDevices = new ArrayList<>();
