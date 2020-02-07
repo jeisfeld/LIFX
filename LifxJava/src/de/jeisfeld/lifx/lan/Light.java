@@ -1,6 +1,7 @@
 package de.jeisfeld.lifx.lan;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetInfrared;
@@ -15,9 +16,11 @@ import de.jeisfeld.lifx.lan.message.LightStateInfrared;
 import de.jeisfeld.lifx.lan.message.LightStatePower;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.Product;
+import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.type.Waveform;
-import de.jeisfeld.lifx.lan.util.Logger;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Class managing a LIFX light.
@@ -36,6 +39,23 @@ public class Light extends Device {
 	public Light(final Device device) {
 		super(device.getTargetAddress(), device.getInetAddress(), device.getPort(), device.getSourceId());
 		setVersionInformation(device.getVendor(), device.getProduct(), device.getVersion());
+	}
+
+	/**
+	 * Constructor including version information.
+	 *
+	 * @param targetAddress The target address.
+	 * @param inetAddress The internet address.
+	 * @param port The port.
+	 * @param sourceId The sourceId.
+	 * @param vendor The vendor.
+	 * @param product The product.
+	 * @param version The version.
+	 * @param label The label.
+	 */
+	public Light(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
+				 final Vendor vendor, final Product product, final int version, final String label) {
+		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 	}
 
 	// OVERRIDABLE

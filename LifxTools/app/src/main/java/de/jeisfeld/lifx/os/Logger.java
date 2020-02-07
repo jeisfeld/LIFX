@@ -1,5 +1,7 @@
-package de.jeisfeld.lifx.lan.util;
+package de.jeisfeld.lifx.os;
 
+import android.util.Log;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.lan.message.RequestMessage;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 
@@ -8,20 +10,10 @@ import de.jeisfeld.lifx.lan.message.ResponseMessage;
  */
 public final class Logger {
 	/**
-	 * Flag indicating if details should be logged.
+	 * The application tag for logging.
 	 */
-	private static boolean mLogDetails = false;
+	private static final String TAG = Application.TAG;
 
-	/**
-	 * Indicate if details should be logged.
-	 *
-	 * @param logDetails Flag indicating if details should be logged.
-	 */
-	public static void setLogDetails(final boolean logDetails) {
-		Logger.mLogDetails = logDetails;
-	}
-
-	// SYSTEMOUT:OFF
 	/**
 	 * Hide the default constructor.
 	 */
@@ -34,9 +26,7 @@ public final class Logger {
 	 * @param message The request message.
 	 */
 	public static void traceRequest(final RequestMessage message) {
-		if (Logger.mLogDetails) {
-			System.out.println("SEND: " + message.toString());
-		}
+		Log.i(Logger.TAG, "SEND: " + message.toString());
 	}
 
 	/**
@@ -45,9 +35,7 @@ public final class Logger {
 	 * @param message The response message.
 	 */
 	public static void traceResponse(final ResponseMessage message) {
-		if (Logger.mLogDetails) {
-			System.out.println("RECV: " + message.toString());
-		}
+		Log.i(Logger.TAG, "RECV: " + message.toString());
 	}
 
 	/**
@@ -56,13 +44,7 @@ public final class Logger {
 	 * @param e The exception
 	 */
 	public static void error(final Exception e) {
-		if (Logger.mLogDetails) {
-			e.printStackTrace();
-		}
-		else {
-			System.err.println(e.toString());
-//			e.printStackTrace();
-		}
+		Log.e(Logger.TAG, e.toString(), e);
 	}
 
 	/**
@@ -71,8 +53,15 @@ public final class Logger {
 	 * @param message the message
 	 */
 	public static void info(final String message) {
-		if (Logger.mLogDetails) {
-			System.out.println(message);
-		}
+		Log.i(Logger.TAG, message);
+	}
+
+	/**
+	 * Log a message temporarily.
+	 *
+	 * @param message the message
+	 */
+	public static void log(final String message) {
+		Log.i(Logger.TAG, message);
 	}
 }

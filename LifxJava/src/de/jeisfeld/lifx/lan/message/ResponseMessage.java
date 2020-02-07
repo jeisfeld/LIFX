@@ -120,9 +120,9 @@ public abstract class ResponseMessage {
 		}
 		StringBuilder printer = new StringBuilder(getMessageType().toString())
 				.append(" [")
-				.append(getSourceId())
+				.append(TypeUtil.toUnsignedString(getSourceId()))
 				.append(",")
-				.append(getSequenceNumber())
+				.append(TypeUtil.toUnsignedString(getSequenceNumber()))
 				.append(",")
 				.append(getTargetAddress())
 				.append("] ")

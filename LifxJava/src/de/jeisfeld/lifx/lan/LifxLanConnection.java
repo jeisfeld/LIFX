@@ -13,7 +13,7 @@ import de.jeisfeld.lifx.lan.message.GetService;
 import de.jeisfeld.lifx.lan.message.RequestMessage;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 import de.jeisfeld.lifx.lan.message.StateService;
-import de.jeisfeld.lifx.lan.util.Logger;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Handler for a UDP connection.
@@ -76,7 +76,7 @@ public class LifxLanConnection {
 	 * Create a UDP connection.
 	 *
 	 * @param sourceId the sourceId
-	 * @param filter a filter for devices. Only relevant for GetService.
+	 * @param filter   a filter for devices. Only relevant for GetService.
 	 */
 	public LifxLanConnection(final int sourceId, final DeviceFilter filter) {
 		mSourceId = sourceId;
@@ -89,10 +89,10 @@ public class LifxLanConnection {
 	/**
 	 * Create a UDP connection.
 	 *
-	 * @param sourceId the sourceId
+	 * @param sourceId      the sourceId
 	 * @param targetAddress the target address
-	 * @param inetAddress the internet address to be used.
-	 * @param port the port to be used.
+	 * @param inetAddress   the internet address to be used.
+	 * @param port          the port to be used.
 	 */
 	public LifxLanConnection(final int sourceId, final String targetAddress, final InetAddress inetAddress, final int port) {
 		mSourceId = sourceId;
@@ -114,7 +114,7 @@ public class LifxLanConnection {
 	/**
 	 * Broadcast a request and receive responses.
 	 *
-	 * @param request The request to be sent.
+	 * @param request     The request to be sent.
 	 * @param retryPolicy The retry policy.
 	 * @return the list of responses.
 	 * @throws SocketException Exception while connecting.
@@ -184,6 +184,7 @@ public class LifxLanConnection {
 								targetAddresses.add(responseMessage.getTargetAddress());
 								numDevicesSeen++;
 								responses.add(responseMessage);
+								retryPolicy.onResponse(responseMessage);
 							}
 						}
 						else {
@@ -220,7 +221,7 @@ public class LifxLanConnection {
 	 *
 	 * @param request The request to be sent.
 	 * @return the response.
-	 * @exception IOException No response.
+	 * @throws IOException No response.
 	 */
 	public ResponseMessage requestWithResponse(final RequestMessage request) throws IOException {
 		List<ResponseMessage> responses = broadcastWithResponse(request, new RetryPolicy() {
@@ -282,10 +283,19 @@ public class LifxLanConnection {
 		 * Action to be done if an IOException occurs.
 		 *
 		 * @param attempt The attempt number (starting with 0).
-		 * @param e The exception.
+		 * @param e       The exception.
 		 */
 		default void onException(final int attempt, final IOException e) {
 			// do nothing.
+		}
+
+		/**
+		 * Callback on a response message.
+		 *
+		 * @param responseMessage The response message.
+		 */
+		default void onResponse(final ResponseMessage responseMessage) {
+			// do nothing
 		}
 	}
 

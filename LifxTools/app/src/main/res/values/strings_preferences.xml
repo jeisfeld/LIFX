@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="preference_file_key" translatable="false">default</string>
+    <!-- Keys for settings -->
+
+    <string name="key_pref_language" translatable="false">pref_language</string>
+
+    <!-- Keys for device properties -->
+
+    <string name="key_device_ids" translatable="false">device_ids</string>
+    <string name="key_device_max_id" translatable="false">device_max_id</string>
+
+    <string name="key_device_mac" translatable="false">device_mac</string>
+    <string name="key_device_address" translatable="false">device_address</string>
+    <string name="key_device_port" translatable="false">device_port</string>
+    <string name="key_device_label" translatable="false">device_label</string>
+    <string name="key_device_type" translatable="false">device_type</string>
+    <string name="key_device_vendor" translatable="false">device_vendor</string>
+    <string name="key_device_product" translatable="false">device_product</string>
+    <string name="key_device_version" translatable="false">device_version</string>
+    <string name="key_device_zone_count" translatable="false">device_zone_count</string>
+
+
+    <!-- Keys for statistics -->
+
+    <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>
+    <string name="key_statistics_firststarttime" translatable="false">statistics_firststarttime</string>
+    <string name="key_statistics_countstarts" translatable="false">statistics_countstarts</string>
+
+</resources>

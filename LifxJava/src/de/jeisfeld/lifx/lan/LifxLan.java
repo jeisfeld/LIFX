@@ -9,7 +9,8 @@ import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
 import de.jeisfeld.lifx.lan.message.GetService;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 import de.jeisfeld.lifx.lan.message.StateService;
-import de.jeisfeld.lifx.lan.util.Logger;
+import de.jeisfeld.lifx.os.Logger;
+import de.jeisfeld.lifx.os.OsTools;
 
 /**
  * Handler for managing LIFX via LAN API.
@@ -48,7 +49,7 @@ public final class LifxLan {
 	 * Initialize the LIFX handler.
 	 */
 	private LifxLan() {
-		mSourceId = LanCheck.getPid();
+		mSourceId = OsTools.getPid();
 	}
 
 	/**
@@ -195,7 +196,7 @@ public final class LifxLan {
 	 * @return the found devices.
 	 * @throws IOException Exception while getting information.
 	 */
-	private List<Device> retrieveDeviceInformation(final RetryPolicy retryPolicy, final DeviceFilter filter)
+	public List<Device> retrieveDeviceInformation(final RetryPolicy retryPolicy, final DeviceFilter filter)
 			throws IOException {
 		List<ResponseMessage> responses = new LifxLanConnection(mSourceId, filter).broadcastWithResponse(new GetService(), retryPolicy);
 		Logger.info("Found " + responses.size() + " devices.");

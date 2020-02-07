@@ -27,4 +27,12 @@ public enum Vendor {
 			return UNKNOWN;
 		}
 	}
+
+	/**
+	 * Get the value of this vendor.
+	 * @return The value.
+	 */
+	public int value() {
+		return this == LIFX ? 1 : 0;
+	}
 }

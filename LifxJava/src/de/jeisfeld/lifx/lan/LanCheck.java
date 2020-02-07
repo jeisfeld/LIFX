@@ -1,6 +1,5 @@
 package de.jeisfeld.lifx.lan;
 
-import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
@@ -9,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-import de.jeisfeld.lifx.lan.util.Logger;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Utility class to find addresses in the LAN.
@@ -29,6 +28,9 @@ public class LanCheck {
 	public static List<InetAddress> getBroadcastAddresses() throws SocketException {
 		List<InetAddress> result = new ArrayList<>();
 		Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+		if (networkInterfaces == null) {
+			throw new SocketException("Did not find any network interfaces");
+		}
 		while (networkInterfaces.hasMoreElements()) {
 			NetworkInterface networkInterface = networkInterfaces.nextElement();
 			if (networkInterface != null && !networkInterface.isLoopback() && networkInterface.isUp()) {
@@ -71,16 +73,6 @@ public class LanCheck {
 			Logger.error(e);
 		}
 		return mAddresses;
-	}
-
-	/**
-	 * Get the pid of the running process.
-	 *
-	 * @return The pid
-	 */
-	public static int getPid() {
-		String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
-		return Integer.parseInt(pid);
 	}
 
 	/**

@@ -35,8 +35,8 @@ import de.jeisfeld.lifx.lan.type.ConnectionInfo;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
-import de.jeisfeld.lifx.lan.util.Logger;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Class managing a LIFX device.
@@ -104,6 +104,25 @@ public class Device {
 		mInetAddress = inetAddress;
 		mPort = port;
 		mSourceId = sourceId;
+	}
+
+	/**
+	 * Constructor including version information.
+	 *
+	 * @param targetAddress The target address.
+	 * @param inetAddress The internet address.
+	 * @param port The port.
+	 * @param sourceId The sourceId.
+	 * @param vendor The vendor.
+	 * @param product The product.
+	 * @param version The version.
+	 * @param label The label.
+	 */
+	public Device(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
+			final Vendor vendor, final Product product, final int version, final String label) {
+		this(targetAddress, inetAddress, port, sourceId);
+		setVersionInformation(vendor, product, version);
+		mLabel = label;
 	}
 
 	/**

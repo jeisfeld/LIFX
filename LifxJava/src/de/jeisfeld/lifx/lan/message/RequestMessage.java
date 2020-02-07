@@ -161,9 +161,9 @@ public abstract class RequestMessage {
 	public final String toString() {
 		StringBuilder printer = new StringBuilder(getMessageType().toString())
 				.append(" [")
-				.append(mSourceId)
+				.append(TypeUtil.toUnsignedString(mSourceId))
 				.append(",")
-				.append(mSequenceNumber)
+				.append(TypeUtil.toUnsignedString(mSequenceNumber))
 				.append(",")
 				.append(mTargetAddress)
 				.append("] ")

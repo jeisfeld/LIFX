@@ -9,7 +9,7 @@ import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
-import de.jeisfeld.lifx.lan.util.Logger;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Test class for testing LIFX API.
@@ -96,7 +96,7 @@ public final class Test {
 	void test5() throws Exception { // SUPPRESS_CHECKSTYLE
 		System.out.println(Test.LICHTSTREIFEN.getFullInformation());
 		Test.LICHTSTREIFEN
-				.rollingAnimation(10000,
+				.rollingAnimation(10000, // MAGIC_NUMBER
 						new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
 				.setBrightness(0.3) // MAGIC_NUMBER
 				.start();
