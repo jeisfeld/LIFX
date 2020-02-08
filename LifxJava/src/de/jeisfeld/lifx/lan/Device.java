@@ -508,7 +508,7 @@ public class Device {
 
 						@Override
 						public int getTimeout(final int attempt) {
-							return 200; // MAGIC_NUMBER
+							return 100; // MAGIC_NUMBER
 						}
 					}).size() > 0;
 		}

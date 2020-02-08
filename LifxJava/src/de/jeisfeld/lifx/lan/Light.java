@@ -54,7 +54,7 @@ public class Light extends Device {
 	 * @param label The label.
 	 */
 	public Light(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-				 final Vendor vendor, final Product product, final int version, final String label) {
+			final Vendor vendor, final Product product, final int version, final String label) {
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 	}
 
@@ -524,6 +524,10 @@ public class Light extends Device {
 	 */
 	public class AnimationThread extends Thread { // SUPPRESS_CHECKSTYLE
 		/**
+		 * The number of successive errors before the thread is stopped.
+		 */
+		protected static final int ERROR_COUNT_BEFORE_STOP = 5;
+		/**
 		 * The animation definiation.
 		 */
 		private AnimationDefinition mDefinition;
@@ -605,14 +609,27 @@ public class Light extends Device {
 				try {
 					while (!isInterrupted() && mDefinition.getColor(count) != null) {
 						long startTime = System.currentTimeMillis();
+						int errorCount = 0;
+						boolean success = false;
 						Color color = mDefinition.getColor(count);
 						int duration = Math.max(mDefinition.getDuration(count), 0);
-						if (count == 0 && getPower().isOff()) {
-							setColor(color.withRelativeBrightness(mRelativeBrightness));
-							setPower(true, duration, false);
-						}
-						else {
-							setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
+						while (!success) {
+							try { // SUPPRESS_CHECKSTYLE
+								if (count == 0 && getPower().isOff()) {
+									setColor(color.withRelativeBrightness(mRelativeBrightness));
+									setPower(true, duration, false);
+								}
+								else {
+									setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
+								}
+								success = true;
+							}
+							catch (IOException e) {
+								errorCount++;
+								if (errorCount >= AnimationThread.ERROR_COUNT_BEFORE_STOP) {
+									throw e;
+								}
+							}
 						}
 						Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
 						count++;

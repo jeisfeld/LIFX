@@ -14,6 +14,10 @@ public class Power {
 	 * The Power for ON.
 	 */
 	public static final Power ON = new Power((short) -1);
+	/**
+	 * The Power for ON.
+	 */
+	public static final Power UNDEFINED = new Power(Short.MAX_VALUE);
 
 	/**
 	 * The power level.

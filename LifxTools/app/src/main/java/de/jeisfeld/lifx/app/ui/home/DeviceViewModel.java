@@ -7,7 +7,9 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import de.jeisfeld.lifx.R;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.type.Power;
 
@@ -44,6 +46,15 @@ public class DeviceViewModel extends ViewModel {
 	}
 
 	/**
+	 * Get the device.
+	 *
+	 * @return the device.
+	 */
+	protected Device getDevice() {
+		return mDevice;
+	}
+
+	/**
 	 * Check the power of the device.
 	 */
 	public void checkPower() {
@@ -58,6 +69,55 @@ public class DeviceViewModel extends ViewModel {
 				mPower.setValue(power);
 			}
 		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	/**
+	 * Refresh the device. If offline, first check if online again.
+	 */
+	protected void refresh() {
+		if (isRefreshAllowed()) {
+			if (mPower.getValue() == null) {
+				refreshAfterCheckReachabiliby();
+			}
+			else {
+				doRefresh();
+			}
+		}
+	}
+
+	/**
+	 * Check if refresh is allowed.
+	 *
+	 * @return true if refresh is allowed.
+	 */
+	protected boolean isRefreshAllowed() {
+		return PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, 0) > 0;
+	}
+
+	/**
+	 * Check the power of the device.
+	 */
+	public void refreshAfterCheckReachabiliby() {
+		new AsyncTask<String, String, Boolean>() {
+			@Override
+			protected Boolean doInBackground(final String... strings) {
+				return mDevice.isReachable();
+			}
+
+			@Override
+			protected void onPostExecute(final Boolean isReachable) {
+				if (isReachable) {
+					doRefresh();
+				}
+			}
+		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	/**
+	 * Refresh the device.
+	 */
+	private void doRefresh() {
+		checkPower();
 	}
 
 	/**
@@ -76,7 +136,12 @@ public class DeviceViewModel extends ViewModel {
 				}
 				try {
 					mDevice.setPower(!power.isOn());
-					return power.isOn() ? Power.OFF : Power.ON;
+					if (isRefreshAllowed()) {
+						return Power.UNDEFINED;
+					}
+					else {
+						return power.isOn() ? Power.OFF : Power.ON;
+					}
 				}
 				catch (IOException e) {
 					Log.w(Application.TAG, e);

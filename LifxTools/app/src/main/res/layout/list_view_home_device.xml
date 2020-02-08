@@ -13,7 +13,7 @@
         android:layout_marginRight="@dimen/list_vertical_margin"
         android:layout_height="@dimen/circle_button_size"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:background="@drawable/powerbutton_undefined" />
+        android:background="@drawable/powerbutton_offline" />
 
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/textViewHome"

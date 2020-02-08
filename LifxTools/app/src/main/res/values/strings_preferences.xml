@@ -5,6 +5,7 @@
     <!-- Keys for settings -->
 
     <string name="key_pref_language" translatable="false">pref_language</string>
+    <string name="key_pref_refresh_period" translatable="false">pref_refresh_period</string>
 
     <!-- Keys for device properties -->
 

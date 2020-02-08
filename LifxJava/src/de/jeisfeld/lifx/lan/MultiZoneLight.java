@@ -51,7 +51,7 @@ public class MultiZoneLight extends Light {
 	 * @param label The label.
 	 */
 	public MultiZoneLight(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-				 final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount) { // SUPPRESS_CHECKSTYLE
+			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount) { // SUPPRESS_CHECKSTYLE
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 		mZoneCount = zoneCount;
 	}
@@ -207,7 +207,7 @@ public class MultiZoneLight extends Light {
 	 */
 	public class AnimationThread extends Light.AnimationThread { // SUPPRESS_CHECKSTYLE
 		/**
-		 * The animation definiation.
+		 * The animation definition.
 		 */
 		private final AnimationDefinition mDefinition;
 		/**
@@ -249,14 +249,27 @@ public class MultiZoneLight extends Light {
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
 						final long startTime = System.currentTimeMillis();
-						MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
+						int errorCount = 0;
+						boolean success = false;
 						int duration = Math.max(mDefinition.getDuration(count), 0);
-						if (count == 0 && getPower().isOff()) {
-							setColors(0, false, colors);
-							setPower(true, duration, false);
-						}
-						else {
-							setColors(duration, false, colors);
+						while (!success) {
+							try { // SUPPRESS_CHECKSTYLE
+								MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
+								if (count == 0 && getPower().isOff()) {
+									setColors(0, false, colors);
+									setPower(true, duration, false);
+								}
+								else {
+									setColors(duration, false, colors);
+								}
+								success = true;
+							}
+							catch (IOException e) {
+								errorCount++;
+								if (errorCount >= Light.AnimationThread.ERROR_COUNT_BEFORE_STOP) {
+									throw e;
+								}
+							}
 						}
 						Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
 						count++;

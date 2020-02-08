@@ -26,7 +26,7 @@ public final class Logger {
 	 * @param message The request message.
 	 */
 	public static void traceRequest(final RequestMessage message) {
-		Log.i(Logger.TAG, "SEND: " + message.toString());
+		Log.d(Logger.TAG, "SEND: " + message.toString());
 	}
 
 	/**
@@ -35,7 +35,7 @@ public final class Logger {
 	 * @param message The response message.
 	 */
 	public static void traceResponse(final ResponseMessage message) {
-		Log.i(Logger.TAG, "RECV: " + message.toString());
+		Log.d(Logger.TAG, "RECV: " + message.toString());
 	}
 
 	/**
