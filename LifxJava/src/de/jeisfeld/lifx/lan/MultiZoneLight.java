@@ -35,7 +35,8 @@ public class MultiZoneLight extends Light {
 	 */
 	public MultiZoneLight(final Device device) {
 		super(device);
-		mZoneCount = getMultizoneState((byte) 0, (byte) 0).getCount();
+		MultizoneStateZone stateZone = getMultizoneState((byte) 0, (byte) 0);
+		mZoneCount = stateZone == null ? 0 : stateZone.getCount();
 	}
 
 	/**

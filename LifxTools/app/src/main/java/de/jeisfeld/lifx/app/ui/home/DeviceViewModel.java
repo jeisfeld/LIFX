@@ -2,13 +2,15 @@ package de.jeisfeld.lifx.app.ui.home;
 
 import java.io.IOException;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import de.jeisfeld.lifx.R;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.type.Power;
@@ -17,6 +19,11 @@ import de.jeisfeld.lifx.lan.type.Power;
  * Class holding data for the display view of a device.
  */
 public class DeviceViewModel extends ViewModel {
+	/**
+	 * The context.
+	 */
+	private final Context mContext;
+
 	/**
 	 * The device.
 	 */
@@ -29,9 +36,11 @@ public class DeviceViewModel extends ViewModel {
 	/**
 	 * Constructor.
 	 *
-	 * @param device The device.
+	 * @param context the context.
+	 * @param device  The device.
 	 */
-	public DeviceViewModel(final Device device) {
+	public DeviceViewModel(final Context context, final Device device) {
+		mContext = context;
 		mDevice = device;
 		mPower = new MutableLiveData<>();
 	}
@@ -43,6 +52,15 @@ public class DeviceViewModel extends ViewModel {
 	 */
 	public LiveData<Power> getPower() {
 		return mPower;
+	}
+
+	/**
+	 * Get the context.
+	 *
+	 * @return the context.
+	 */
+	protected Context getContext() {
+		return mContext;
 	}
 
 	/**
@@ -74,13 +92,14 @@ public class DeviceViewModel extends ViewModel {
 	/**
 	 * Refresh the device. If offline, first check if online again.
 	 */
-	protected void refresh() {
+	protected final void refresh() {
+		refreshLocalData();
 		if (isRefreshAllowed()) {
 			if (mPower.getValue() == null) {
 				refreshAfterCheckReachabiliby();
 			}
 			else {
-				doRefresh();
+				refreshRemoteData();
 			}
 		}
 	}
@@ -107,17 +126,23 @@ public class DeviceViewModel extends ViewModel {
 			@Override
 			protected void onPostExecute(final Boolean isReachable) {
 				if (isReachable) {
-					doRefresh();
+					refreshRemoteData();
 				}
 			}
 		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	/**
-	 * Refresh the device.
+	 * Refresh the data retrievable from the device.
 	 */
-	private void doRefresh() {
+	protected void refreshRemoteData() {
 		checkPower();
+	}
+
+	/**
+	 * Refresh the data retrievable from the local service.
+	 */
+	protected void refreshLocalData() {
 	}
 
 	/**

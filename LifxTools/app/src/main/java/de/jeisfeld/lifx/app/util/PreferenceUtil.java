@@ -9,7 +9,7 @@ import java.util.Set;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import de.jeisfeld.lifx.R;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.Application;
 
 /**

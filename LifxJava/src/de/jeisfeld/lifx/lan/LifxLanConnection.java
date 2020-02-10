@@ -178,7 +178,7 @@ public class LifxLanConnection {
 						}
 
 						if (isMatch) {
-							Logger.traceResponse(responseMessage);
+							Logger.traceResponse(responseMessage, false);
 
 							if (!targetAddresses.contains(responseMessage.getTargetAddress())) {
 								targetAddresses.add(responseMessage.getTargetAddress());
@@ -188,7 +188,7 @@ public class LifxLanConnection {
 							}
 						}
 						else {
-							Logger.info("Ignoring response " + responseMessage);
+							Logger.traceResponse(responseMessage, true);
 						}
 
 					}

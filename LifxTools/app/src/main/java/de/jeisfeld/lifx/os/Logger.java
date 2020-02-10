@@ -33,9 +33,10 @@ public final class Logger {
 	 * Log a UDP response message.
 	 *
 	 * @param message The response message.
+	 * @param isIgnored flag indicating if the message is ignored.
 	 */
-	public static void traceResponse(final ResponseMessage message) {
-		Log.d(Logger.TAG, "RECV: " + message.toString());
+	public static void traceResponse(final ResponseMessage message, final boolean isIgnored) {
+		Log.d(Logger.TAG, (isIgnored ? "RECX: " : "RECV: ") + message.toString());
 	}
 
 	/**

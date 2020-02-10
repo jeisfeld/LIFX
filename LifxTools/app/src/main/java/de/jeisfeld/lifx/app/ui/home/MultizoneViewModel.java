@@ -1,11 +1,13 @@
 package de.jeisfeld.lifx.app.ui.home;
 
-import java.io.IOException;
+import android.content.Context;
+import android.content.Intent;
 
-import de.jeisfeld.lifx.lan.Light.ExceptionCallback;
+import androidx.core.content.ContextCompat;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
-import de.jeisfeld.lifx.lan.type.Color;
-import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Class holding data for the display view of a multizone light.
@@ -14,10 +16,11 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Constructor.
 	 *
+	 * @param context        the context.
 	 * @param multiZoneLight The multiZone light.
 	 */
-	public MultizoneViewModel(final MultiZoneLight multiZoneLight) {
-		super(multiZoneLight);
+	public MultizoneViewModel(final Context context, final MultiZoneLight multiZoneLight) {
+		super(context, multiZoneLight);
 	}
 
 	/**
@@ -37,21 +40,14 @@ public class MultizoneViewModel extends LightViewModel {
 	protected void updateAnimation(final boolean status) {
 		mAnimationStatus.setValue(status);
 		if (status) {
-			getLight().rollingAnimation(10000, // MAGIC_NUMBER
-					new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
-					.setBrightness(0.3) // MAGIC_NUMBER
-					.setExceptionCallback(new ExceptionCallback() {
-						@Override
-						public void onException(final IOException e) {
-							getLight().endAnimation();
-							mAnimationStatus.postValue(false);
-						}
-					})
-					.start();
+			Intent serviceIntent = new Intent(getContext(), LifxAnimationService.class);
+			serviceIntent.putExtra(LifxAnimationService.EXTRA_NOTIFICATION_TEXT,
+					getContext().getString(R.string.notification_text_multizone_animation_running));
+			serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
+			ContextCompat.startForegroundService(getContext(), serviceIntent);
 		}
 		else {
-			getLight().endAnimation();
+			LifxAnimationService.stopAnimationForMac(getContext(), getLight().getTargetAddress());
 		}
 	}
-
 }

@@ -15,7 +15,7 @@ import android.widget.ToggleButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
-import de.jeisfeld.lifx.R;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
@@ -23,6 +23,7 @@ import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * An adapter for the list of devices in the home fragment.
@@ -68,13 +69,13 @@ class DeviceAdapter extends BaseAdapter {
 		mNoDeviceCallback = callback;
 		for (Device device : mDevices) {
 			if (device instanceof MultiZoneLight) {
-				mViewModels.add(new MultizoneViewModel((MultiZoneLight) device));
+				mViewModels.add(new MultizoneViewModel(mContext, (MultiZoneLight) device));
 			}
 			else if (device instanceof Light) {
-				mViewModels.add(new LightViewModel((Light) device));
+				mViewModels.add(new LightViewModel(mContext, (Light) device));
 			}
 			else {
-				mViewModels.add(new DeviceViewModel(device));
+				mViewModels.add(new DeviceViewModel(mContext, device));
 			}
 		}
 
@@ -232,7 +233,7 @@ class DeviceAdapter extends BaseAdapter {
 	 */
 	public void addDevice(final Device device) {
 		mDevices.add(device);
-		mViewModels.add(new DeviceViewModel(device));
+		mViewModels.add(new DeviceViewModel(mContext, device));
 		notifyDataSetChanged();
 	}
 }

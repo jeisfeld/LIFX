@@ -11,7 +11,7 @@ import java.util.Map;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
-import de.jeisfeld.lifx.R;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
