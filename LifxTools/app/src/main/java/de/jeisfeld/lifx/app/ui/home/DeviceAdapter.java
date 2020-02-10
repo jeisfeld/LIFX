@@ -23,7 +23,6 @@ import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Power;
-import de.jeisfeld.lifx.os.Logger;
 
 /**
  * An adapter for the list of devices in the home fragment.
@@ -164,8 +163,8 @@ class DeviceAdapter extends BaseAdapter {
 
 		model.checkPower();
 
-		if (device instanceof MultiZoneLight) {
-			prepareToggleButton(view.findViewById(R.id.toggleButtonThread), (MultizoneViewModel) model);
+		if (device instanceof Light) {
+			prepareToggleButton(view.findViewById(R.id.toggleButtonAnimation), (LightViewModel) model);
 		}
 
 		return view;
@@ -210,7 +209,7 @@ class DeviceAdapter extends BaseAdapter {
 	 * @param toggleButton The toggle button.
 	 * @param model The multizone device view model.
 	 */
-	private void prepareToggleButton(final ToggleButton toggleButton, final MultizoneViewModel model) {
+	private void prepareToggleButton(final ToggleButton toggleButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, new Observer<Boolean>() {
 			@Override
 			public void onChanged(final Boolean animationStatus) {

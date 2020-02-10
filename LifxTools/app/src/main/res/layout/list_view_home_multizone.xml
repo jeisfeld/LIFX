@@ -22,7 +22,7 @@
         android:textSize="@dimen/text_size" />
 
     <ToggleButton
-        android:id="@+id/toggleButtonThread"
+        android:id="@+id/toggleButtonAnimation"
         android:layout_width="wrap_content"
         android:layout_height="match_parent" />
 

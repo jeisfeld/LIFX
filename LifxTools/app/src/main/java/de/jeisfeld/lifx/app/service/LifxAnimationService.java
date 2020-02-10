@@ -1,5 +1,9 @@
 package de.jeisfeld.lifx.app.service;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,21 +13,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import androidx.core.app.NotificationCompat;
-import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.MainActivity;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
-import de.jeisfeld.lifx.lan.Light.ExceptionCallback;
+import de.jeisfeld.lifx.lan.Light.AnimationCallback;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
-import de.jeisfeld.lifx.os.Logger;
 
 /**
  * A service handling LIFX animations in the background.
@@ -47,12 +45,12 @@ public class LifxAnimationService extends Service {
 	private static final Map<String, Light> ANIMATED_LIGHTS = new HashMap<>();
 
 	@Override
-	public void onCreate() {
+	public final void onCreate() {
 		super.onCreate();
 	}
 
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
 		final String input = intent.getStringExtra(EXTRA_NOTIFICATION_TEXT);
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
 
@@ -68,36 +66,52 @@ public class LifxAnimationService extends Service {
 				.build();
 		startForeground(1, notification);
 
-
 		new Thread() {
+			@Override
 			public void run() {
-				Light light;
+				Light tmpLight;
 				synchronized (ANIMATED_LIGHTS) {
-					light = ANIMATED_LIGHTS.get(mac);
+					tmpLight = ANIMATED_LIGHTS.get(mac);
 				}
-				if (light == null) {
-					light = LifxLan.getInstance().getLightByMac(mac);
-					ANIMATED_LIGHTS.put(mac, light);
+				if (tmpLight == null) {
+					tmpLight = LifxLan.getInstance().getLightByMac(mac);
+					ANIMATED_LIGHTS.put(mac, tmpLight);
 				}
 				else {
-					light.endAnimation();
+					tmpLight.endAnimation();
 				}
 
-				if (light instanceof MultiZoneLight) {
-					final MultiZoneLight multizoneLight = (MultiZoneLight) light;
-					multizoneLight.rollingAnimation(10000, // MAGIC_NUMBER
+				if (tmpLight instanceof MultiZoneLight) {
+					final MultiZoneLight light = (MultiZoneLight) tmpLight;
+					light.rollingAnimation(10000, // MAGIC_NUMBER
 							new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
 							.setBrightness(0.3) // MAGIC_NUMBER
-							.setExceptionCallback(new ExceptionCallback() {
+							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
-									endAnimation(multizoneLight);
+									endAnimation(light);
+								}
+
+								@Override
+								public void onAnimationEnd() {
+									// TODO Auto-generated method stub
 								}
 							})
 							.start();
 				}
 				else {
-					// to be implemented later.
+					final Light light = tmpLight;
+					light.wakeup(30000, new AnimationCallback() {
+						@Override
+						public void onException(final IOException e) {
+							endAnimation(light);
+						}
+
+						@Override
+						public void onAnimationEnd() {
+							// TODO Auto-generated method stub
+						}
+					});
 				}
 			}
 		}.start();
@@ -106,12 +120,12 @@ public class LifxAnimationService extends Service {
 	}
 
 	@Override
-	public void onDestroy() {
+	public final void onDestroy() {
 		super.onDestroy();
 	}
 
 	@Override
-	public IBinder onBind(Intent intent) {
+	public final IBinder onBind(final Intent intent) {
 		return null;
 	}
 
@@ -121,8 +135,7 @@ public class LifxAnimationService extends Service {
 	private void createNotificationChannel() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			NotificationChannel animationChannel = new NotificationChannel(
-					CHANNEL_ID, getString(R.string.notification_channel_animation), NotificationManager.IMPORTANCE_DEFAULT
-			);
+					CHANNEL_ID, getString(R.string.notification_channel_animation), NotificationManager.IMPORTANCE_DEFAULT);
 			NotificationManager manager = getSystemService(NotificationManager.class);
 			manager.createNotificationChannel(animationChannel);
 		}
@@ -132,7 +145,7 @@ public class LifxAnimationService extends Service {
 	 * Stop the animation for a given MAC.
 	 *
 	 * @param context the context.
-	 * @param mac     The MAC
+	 * @param mac The MAC
 	 */
 	public static void stopAnimationForMac(final Context context, final String mac) {
 		Light light = null;
@@ -160,14 +173,12 @@ public class LifxAnimationService extends Service {
 		light.endAnimation();
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(light.getTargetAddress());
-			Logger.log("Animations: " + ANIMATED_LIGHTS);
 			if (ANIMATED_LIGHTS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAnimationService.class);
 				stopService(serviceIntent);
 			}
 		}
 	}
-
 
 	/**
 	 * Check if there is a running animation for a given MAC.

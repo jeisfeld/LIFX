@@ -347,12 +347,12 @@ public class Light extends Device {
 	 * @param duration The duration of the wakeup routine.
 	 * @param callback Callback to be called in case of error.
 	 */
-	public void wakeup(final int duration, final ExceptionCallback callback) {
+	public void wakeup(final int duration, final AnimationCallback callback) {
 		cycle(Color.CYCLE_WAKEUP)
 				.setCycleDuration(duration)
 				.setCycleCount(1)
 				.endWithLast()
-				.setExceptionCallback(callback)
+				.setAnimationCallback(callback)
 				.start();
 	}
 
@@ -459,8 +459,8 @@ public class Light extends Device {
 		}
 
 		@Override
-		public CycleThread setExceptionCallback(final ExceptionCallback callback) {
-			super.setExceptionCallback(callback);
+		public CycleThread setAnimationCallback(final AnimationCallback callback) {
+			super.setAnimationCallback(callback);
 			return this;
 		}
 
@@ -546,7 +546,7 @@ public class Light extends Device {
 		/**
 		 * An exception callback called in case of SocketException.
 		 */
-		private ExceptionCallback mExceptionCallback = null;
+		private AnimationCallback mAnimationCallback = null;
 
 		/**
 		 * Create an animation thread.
@@ -591,13 +591,13 @@ public class Light extends Device {
 		}
 
 		/**
-		 * Set the exception callback called in case of SocketException.
+		 * Set the exception callback called in case of Exception.
 		 *
 		 * @param callback The callback.
 		 * @return The updated animation thread.
 		 */
-		public AnimationThread setExceptionCallback(final ExceptionCallback callback) {
-			mExceptionCallback = callback;
+		public AnimationThread setAnimationCallback(final AnimationCallback callback) {
+			mAnimationCallback = callback;
 			return this;
 		}
 
@@ -649,11 +649,14 @@ public class Light extends Device {
 				else {
 					setColor(mEndColor, mEndTransitionTime, true);
 				}
+				if (mAnimationCallback != null) {
+					mAnimationCallback.onAnimationEnd();
+				}
 			}
 			catch (IOException e) {
 				Logger.error(e);
-				if (mExceptionCallback != null) {
-					mExceptionCallback.onException(e);
+				if (mAnimationCallback != null) {
+					mAnimationCallback.onException(e);
 				}
 			}
 		}
@@ -696,8 +699,8 @@ public class Light extends Device {
 		 *
 		 * @return The exception callback.
 		 */
-		protected ExceptionCallback getExceptionCallback() {
-			return mExceptionCallback;
+		protected AnimationCallback getAnimationCallback() {
+			return mAnimationCallback;
 		}
 	}
 
@@ -723,15 +726,20 @@ public class Light extends Device {
 	}
 
 	/**
-	 * Callback called by the AnimationThread in case of SocketException.
+	 * Callback called by the AnimationThread in case of Exception.
 	 */
-	public interface ExceptionCallback {
+	public interface AnimationCallback {
 		/**
 		 * Callback method called in case of IOException.
 		 *
 		 * @param e The IOException
 		 */
 		void onException(IOException e);
+
+		/**
+		 * Callback method called at the end of the animation.
+		 */
+		void onAnimationEnd();
 	}
 
 }

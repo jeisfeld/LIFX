@@ -290,11 +290,14 @@ public class MultiZoneLight extends Light {
 				else {
 					setColors(mEndTransitionTime, true, mEndColors);
 				}
+				if (getAnimationCallback() != null) {
+					getAnimationCallback().onAnimationEnd();
+				}
 			}
 			catch (IOException e) {
 				Logger.error(e);
-				if (getExceptionCallback() != null) {
-					getExceptionCallback().onException(e);
+				if (getAnimationCallback() != null) {
+					getAnimationCallback().onException(e);
 				}
 			}
 		}
