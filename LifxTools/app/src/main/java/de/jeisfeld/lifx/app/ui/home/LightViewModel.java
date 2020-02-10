@@ -2,14 +2,13 @@ package de.jeisfeld.lifx.app.ui.home;
 
 import android.content.Context;
 import android.content.Intent;
-
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.lan.Light;
-import de.jeisfeld.lifx.os.Logger;
+import de.jeisfeld.lifx.lan.type.Power;
 
 /**
  * Class holding data for the display view of a light.
@@ -24,7 +23,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light   The light.
+	 * @param light The light.
 	 */
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
@@ -53,20 +52,7 @@ public class LightViewModel extends DeviceViewModel {
 	// OVERRIDABLE
 	@Override
 	protected boolean isRefreshAllowed() {
-		return super.isRefreshAllowed() && !mAnimationStatus.getValue();
-	}
-
-	@Override
-	protected void refreshRemoteData() {
-		super.refreshRemoteData();
-	}
-
-	@Override
-	protected void refreshLocalData() {
-		boolean hasRunningAnimation = LifxAnimationService.hasRunningAnimation(getLight().getTargetAddress());
-		if(hasRunningAnimation != mAnimationStatus.getValue()) {
-			mAnimationStatus.postValue(hasRunningAnimation);
-		}
+		return super.isRefreshAllowed() && !Boolean.TRUE.equals(mAnimationStatus.getValue());
 	}
 
 	/**
@@ -75,16 +61,21 @@ public class LightViewModel extends DeviceViewModel {
 	 * @param status true to switch on, false to switch off.
 	 */
 	protected void updateAnimation(final boolean status) {
+		Context context = getContext().get();
+		if (context == null) {
+			return;
+		}
 		mAnimationStatus.setValue(status);
 		if (status) {
-			Intent serviceIntent = new Intent(getContext(), LifxAnimationService.class);
+			Intent serviceIntent = new Intent(context, LifxAnimationService.class);
 			serviceIntent.putExtra(LifxAnimationService.EXTRA_NOTIFICATION_TEXT,
-					getContext().getString(R.string.notification_text_multizone_animation_running));
+					context.getString(R.string.notification_text_multizone_animation_running));
 			serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
-			ContextCompat.startForegroundService(getContext(), serviceIntent);
+			ContextCompat.startForegroundService(context, serviceIntent);
+			mPower.setValue(Power.ON);
 		}
 		else {
-			LifxAnimationService.stopAnimationForMac(getContext(), getLight().getTargetAddress());
+			LifxAnimationService.stopAnimationForMac(context, getLight().getTargetAddress());
 		}
 	}
 }

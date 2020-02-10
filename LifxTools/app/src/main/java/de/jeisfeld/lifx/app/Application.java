@@ -15,7 +15,6 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import android.util.Log;
-import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 

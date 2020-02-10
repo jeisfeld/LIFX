@@ -82,7 +82,7 @@ public final class Test {
 				.start();
 
 		Thread.sleep(Test.HALFMINUTE);
-		Test.FARBLAMPE.endAnimation();
+		Test.FARBLAMPE.endAnimation(true);
 	}
 
 	void test4() throws Exception { // SUPPRESS_CHECKSTYLE

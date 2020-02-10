@@ -244,8 +244,8 @@ public class Light extends Device {
 	 * @param colorTemperature The color temperature value in Kelvin. May be null.
 	 * @param period the cycle period.
 	 * @param cycles the number of cycles.
-	 * @param skewRatio the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and Triangle this
-	 *            is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
+	 * @param skewRatio the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and
+	 *            Triangle this is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @param waveform the waveform.
 	 * @throws IOException Connection issues
@@ -358,11 +358,13 @@ public class Light extends Device {
 
 	/**
 	 * End the current cycle (if applicable). This interrupts and joins the cycle.
+	 *
+	 * @param waitForEnd flag indicating if the method should wait for end of the animation.
 	 */
-	public void endAnimation() {
+	public void endAnimation(final boolean waitForEnd) {
 		synchronized (this) {
 			if (mAnimationThread != null) {
-				mAnimationThread.end();
+				mAnimationThread.end(waitForEnd);
 			}
 		}
 	}
@@ -606,6 +608,7 @@ public class Light extends Device {
 		public void run() {
 			int count = 0;
 			try {
+				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColor(count) != null) {
 						long startTime = System.currentTimeMillis();
@@ -636,7 +639,7 @@ public class Light extends Device {
 					}
 				}
 				catch (InterruptedException e) {
-					// do nothing
+					isInterrupted = true;
 				}
 
 				if (mEndColor == null) {
@@ -650,7 +653,7 @@ public class Light extends Device {
 					setColor(mEndColor, mEndTransitionTime, true);
 				}
 				if (mAnimationCallback != null) {
-					mAnimationCallback.onAnimationEnd();
+					mAnimationCallback.onAnimationEnd(isInterrupted);
 				}
 			}
 			catch (IOException e) {
@@ -665,7 +668,7 @@ public class Light extends Device {
 		public final void start() {
 			synchronized (Light.this) {
 				if (mAnimationThread != null) {
-					mAnimationThread.end();
+					mAnimationThread.end(false);
 				}
 				mAnimationThread = this;
 			}
@@ -674,14 +677,18 @@ public class Light extends Device {
 
 		/**
 		 * End the animation and wait for the end of the cycle thread.
+		 *
+		 * @param waitForEnd flag indicating if the method should wait for end of the animation.
 		 */
-		public void end() {
+		public void end(final boolean waitForEnd) {
 			interrupt();
-			try {
-				join();
-			}
-			catch (InterruptedException e) {
-				// ignore
+			if (waitForEnd) {
+				try {
+					join();
+				}
+				catch (InterruptedException e) {
+					// ignore
+				}
 			}
 		}
 
@@ -738,8 +745,10 @@ public class Light extends Device {
 
 		/**
 		 * Callback method called at the end of the animation.
+		 *
+		 * @param isInterrupted true if the animation had no natural end but was interrupted.
 		 */
-		void onAnimationEnd();
+		void onAnimationEnd(boolean isInterrupted);
 	}
 
 }

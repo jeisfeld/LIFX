@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.LifxLan;
@@ -40,13 +41,27 @@ public class LifxAnimationService extends Service {
 	 */
 	public static final String EXTRA_DEVICE_MAC = "de.jeisfeld.lifx.DEVICE_MAC";
 	/**
+	 * The intent of the broadcast for stopping an animation.
+	 */
+	public static final String EXTRA_ANIMATION_STOP_INTENT = "de.jeisfeld.lifx.ANIMATION_STOP_INTENT";
+	/**
+	 * Key for the broadcast data giving MAC of stopped animation.
+	 */
+	public static final String EXTRA_ANIMATION_STOP_MAC = "de.jeisfeld.lifx.ANIMATION_STOP_MAC";
+	/**
 	 * Map from MACs to Lights for all lights with running animations.
 	 */
 	private static final Map<String, Light> ANIMATED_LIGHTS = new HashMap<>();
+	/**
+	 * The local broadcast manager.
+	 */
+	private LocalBroadcastManager mBroadcastManager;
 
 	@Override
 	public final void onCreate() {
 		super.onCreate();
+		createNotificationChannel();
+		mBroadcastManager = LocalBroadcastManager.getInstance(this);
 	}
 
 	@Override
@@ -54,7 +69,6 @@ public class LifxAnimationService extends Service {
 		final String input = intent.getStringExtra(EXTRA_NOTIFICATION_TEXT);
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
 
-		createNotificationChannel();
 		Intent notificationIntent = new Intent(this, MainActivity.class);
 		PendingIntent pendingIntent = PendingIntent.getActivity(this,
 				0, notificationIntent, 0);
@@ -78,7 +92,7 @@ public class LifxAnimationService extends Service {
 					ANIMATED_LIGHTS.put(mac, tmpLight);
 				}
 				else {
-					tmpLight.endAnimation();
+					tmpLight.endAnimation(false);
 				}
 
 				if (tmpLight instanceof MultiZoneLight) {
@@ -93,23 +107,23 @@ public class LifxAnimationService extends Service {
 								}
 
 								@Override
-								public void onAnimationEnd() {
-									// TODO Auto-generated method stub
+								public void onAnimationEnd(final boolean isInterrupted) {
+									endAnimation(light);
 								}
 							})
 							.start();
 				}
 				else {
 					final Light light = tmpLight;
-					light.wakeup(30000, new AnimationCallback() {
+					light.wakeup(10000, new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
 							endAnimation(light);
 						}
 
 						@Override
-						public void onAnimationEnd() {
-							// TODO Auto-generated method stub
+						public void onAnimationEnd(final boolean isInterrupted) {
+							endAnimation(light);
 						}
 					});
 				}
@@ -127,6 +141,17 @@ public class LifxAnimationService extends Service {
 	@Override
 	public final IBinder onBind(final Intent intent) {
 		return null;
+	}
+
+	/**
+	 * Send broadcast informing about the end of an animation.
+	 *
+	 * @param mac The MAC for which the animation ended.
+	 */
+	public void sendBroadcastStopAnimation(final String mac) {
+		Intent intent = new Intent(EXTRA_ANIMATION_STOP_INTENT);
+		intent.putExtra(EXTRA_ANIMATION_STOP_MAC, mac);
+		mBroadcastManager.sendBroadcast(intent);
 	}
 
 	/**
@@ -160,7 +185,7 @@ public class LifxAnimationService extends Service {
 			}
 		}
 		if (light != null) {
-			light.endAnimation();
+			light.endAnimation(false);
 		}
 	}
 
@@ -170,7 +195,8 @@ public class LifxAnimationService extends Service {
 	 * @param light The light.
 	 */
 	private void endAnimation(final Light light) {
-		light.endAnimation();
+		light.endAnimation(false);
+		sendBroadcastStopAnimation(light.getTargetAddress());
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(light.getTargetAddress());
 			if (ANIMATED_LIGHTS.size() == 0) {

@@ -247,6 +247,7 @@ public class MultiZoneLight extends Light {
 		public void run() {
 			int count = 0;
 			try {
+				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
 						final long startTime = System.currentTimeMillis();
@@ -277,7 +278,7 @@ public class MultiZoneLight extends Light {
 					}
 				}
 				catch (InterruptedException e) {
-					// do nothing
+					isInterrupted = true;
 				}
 
 				if (mEndColors == null) {
@@ -291,7 +292,7 @@ public class MultiZoneLight extends Light {
 					setColors(mEndTransitionTime, true, mEndColors);
 				}
 				if (getAnimationCallback() != null) {
-					getAnimationCallback().onAnimationEnd();
+					getAnimationCallback().onAnimationEnd(isInterrupted);
 				}
 			}
 			catch (IOException e) {

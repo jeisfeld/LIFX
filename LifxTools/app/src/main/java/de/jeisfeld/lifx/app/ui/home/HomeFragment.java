@@ -4,13 +4,19 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.fragment.app.ListFragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 
@@ -22,6 +28,10 @@ public class HomeFragment extends ListFragment {
 	 * Executor service for tasks run while the fragment is active.
 	 */
 	private ScheduledExecutorService mExecutor;
+	/**
+	 * Broadcast receiver for receiving messages while the fragment is active.
+	 */
+	private BroadcastReceiver mReceiver;
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
@@ -36,8 +46,19 @@ public class HomeFragment extends ListFragment {
 			getListView().setVisibility(View.GONE);
 			getView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}
-		DeviceAdapter adapter = new DeviceAdapter(this, new NoDeviceCallback());
+		final DeviceAdapter adapter = new DeviceAdapter(this, new NoDeviceCallback());
 		setListAdapter(adapter);
+
+		mReceiver = new BroadcastReceiver() {
+			@Override
+			public void onReceive(final Context context, final Intent intent) {
+				String mac = intent.getStringExtra(LifxAnimationService.EXTRA_ANIMATION_STOP_MAC);
+				DeviceViewModel viewModel = adapter.getViewModel(mac);
+				if (viewModel instanceof LightViewModel) {
+					((LightViewModel) viewModel).mAnimationStatus.setValue(false);
+				}
+			}
+		};
 	}
 
 	@Override
@@ -47,16 +68,12 @@ public class HomeFragment extends ListFragment {
 		// TODO: Move to preferences
 		PreferenceUtil.setSharedPreferenceLongString(R.string.key_pref_refresh_period, 500);
 
-		mExecutor = Executors.newScheduledThreadPool(1);
-		Runnable runnable = new Runnable() {
-			@Override
-			public void run() {
-				((DeviceAdapter) getListAdapter()).refresh();
-			}
-		};
+		LocalBroadcastManager.getInstance(getContext()).registerReceiver(mReceiver,
+				new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
 
+		mExecutor = Executors.newScheduledThreadPool(1);
 		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, 0) > 0) {
-			mExecutor.scheduleAtFixedRate(runnable, 0,
+			mExecutor.scheduleAtFixedRate(() -> ((DeviceAdapter) getListAdapter()).refresh(), 0,
 					PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, 0), TimeUnit.MILLISECONDS);
 		}
 	}
@@ -66,6 +83,8 @@ public class HomeFragment extends ListFragment {
 		super.onPause();
 		mExecutor.shutdown();
 		mExecutor = null;
+
+		LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mReceiver);
 	}
 
 	/**

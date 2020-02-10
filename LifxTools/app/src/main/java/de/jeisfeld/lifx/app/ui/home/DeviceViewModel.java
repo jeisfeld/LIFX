@@ -1,11 +1,11 @@
 package de.jeisfeld.lifx.app.ui.home;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -22,7 +22,7 @@ public class DeviceViewModel extends ViewModel {
 	/**
 	 * The context.
 	 */
-	private final Context mContext;
+	private final WeakReference<Context> mContext;
 
 	/**
 	 * The device.
@@ -31,16 +31,16 @@ public class DeviceViewModel extends ViewModel {
 	/**
 	 * The stored power of the device.
 	 */
-	private final MutableLiveData<Power> mPower;
+	protected final MutableLiveData<Power> mPower;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param device  The device.
+	 * @param device The device.
 	 */
 	public DeviceViewModel(final Context context, final Device device) {
-		mContext = context;
+		mContext = new WeakReference<>(context);
 		mDevice = device;
 		mPower = new MutableLiveData<>();
 	}
@@ -50,7 +50,7 @@ public class DeviceViewModel extends ViewModel {
 	 *
 	 * @return The power.
 	 */
-	public LiveData<Power> getPower() {
+	protected LiveData<Power> getPower() {
 		return mPower;
 	}
 
@@ -59,7 +59,7 @@ public class DeviceViewModel extends ViewModel {
 	 *
 	 * @return the context.
 	 */
-	protected Context getContext() {
+	protected WeakReference<Context> getContext() {
 		return mContext;
 	}
 
@@ -76,27 +76,16 @@ public class DeviceViewModel extends ViewModel {
 	 * Check the power of the device.
 	 */
 	public void checkPower() {
-		new AsyncTask<String, String, Power>() {
-			@Override
-			protected Power doInBackground(final String... strings) {
-				return mDevice.getPower();
-			}
-
-			@Override
-			protected void onPostExecute(final Power power) {
-				mPower.setValue(power);
-			}
-		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		new CheckPowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
 	/**
 	 * Refresh the device. If offline, first check if online again.
 	 */
 	protected final void refresh() {
-		refreshLocalData();
 		if (isRefreshAllowed()) {
 			if (mPower.getValue() == null) {
-				refreshAfterCheckReachabiliby();
+				new RefreshAfterCheckReachabilityTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 			else {
 				refreshRemoteData();
@@ -114,25 +103,6 @@ public class DeviceViewModel extends ViewModel {
 	}
 
 	/**
-	 * Check the power of the device.
-	 */
-	public void refreshAfterCheckReachabiliby() {
-		new AsyncTask<String, String, Boolean>() {
-			@Override
-			protected Boolean doInBackground(final String... strings) {
-				return mDevice.isReachable();
-			}
-
-			@Override
-			protected void onPostExecute(final Boolean isReachable) {
-				if (isReachable) {
-					refreshRemoteData();
-				}
-			}
-		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-	}
-
-	/**
 	 * Refresh the data retrievable from the device.
 	 */
 	protected void refreshRemoteData() {
@@ -140,45 +110,143 @@ public class DeviceViewModel extends ViewModel {
 	}
 
 	/**
-	 * Refresh the data retrievable from the local service.
-	 */
-	protected void refreshLocalData() {
-	}
-
-	/**
 	 * Toggle the power state.
 	 */
 	public void togglePower() {
-		new AsyncTask<String, String, Power>() {
-			@Override
-			protected Power doInBackground(final String... strings) {
-				Power power = mPower.getValue();
+		new TogglePowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	/**
+	 * An async task for checking the power.
+	 */
+	private static final class CheckPowerTask extends AsyncTask<String, String, Power> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<DeviceViewModel> mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model The underlying model.
+		 */
+		private CheckPowerTask(final DeviceViewModel model) {
+			mModel = new WeakReference<>(model);
+		}
+
+		@Override
+		protected Power doInBackground(final String... strings) {
+			DeviceViewModel model = mModel.get();
+			if (model == null) {
+				return null;
+			}
+			return model.mDevice.getPower();
+		}
+
+		@Override
+		protected void onPostExecute(final Power power) {
+			DeviceViewModel model = mModel.get();
+			if (model == null) {
+				return;
+			}
+			model.mPower.postValue(power);
+		}
+	}
+
+	/**
+	 * An async task for first checking reachability and in case device is reachable do refresh.
+	 */
+	private static final class RefreshAfterCheckReachabilityTask extends AsyncTask<String, String, Boolean> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<DeviceViewModel> mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model The underlying model.
+		 */
+		private RefreshAfterCheckReachabilityTask(final DeviceViewModel model) {
+			mModel = new WeakReference<>(model);
+		}
+
+		@Override
+		protected Boolean doInBackground(final String... strings) {
+			DeviceViewModel model = mModel.get();
+			if (model == null) {
+				return false;
+			}
+			return model.mDevice.isReachable();
+		}
+
+		@Override
+		protected void onPostExecute(final Boolean isReachable) {
+			DeviceViewModel model = mModel.get();
+			if (model == null) {
+				return;
+			}
+			if (isReachable) {
+				model.refreshRemoteData();
+			}
+		}
+	}
+
+	/**
+	 * An async task for toggling the power.
+	 */
+	private static final class TogglePowerTask extends AsyncTask<String, String, Power> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<DeviceViewModel> mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model The underlying model.
+		 */
+		private TogglePowerTask(final DeviceViewModel model) {
+			mModel = new WeakReference<>(model);
+		}
+
+		@Override
+		protected Power doInBackground(final String... strings) {
+			DeviceViewModel model = mModel.get();
+			if (model == null) {
+				return null;
+			}
+
+			Power power = model.mPower.getValue();
+			if (power == null) {
+				power = model.mDevice.getPower();
 				if (power == null) {
-					power = mDevice.getPower();
-					if (power == null) {
-						return null;
-					}
-				}
-				try {
-					mDevice.setPower(!power.isOn());
-					if (isRefreshAllowed()) {
-						return Power.UNDEFINED;
-					}
-					else {
-						return power.isOn() ? Power.OFF : Power.ON;
-					}
-				}
-				catch (IOException e) {
-					Log.w(Application.TAG, e);
 					return null;
 				}
 			}
-
-			@Override
-			protected void onPostExecute(final Power power) {
-				mPower.setValue(power);
+			try {
+				model.mDevice.setPower(!power.isOn());
+				if (model.isRefreshAllowed()) {
+					return Power.UNDEFINED;
+				}
+				else {
+					return power.isOn() ? Power.OFF : Power.ON;
+				}
 			}
-		}.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+			catch (IOException e) {
+				Log.w(Application.TAG, e);
+				return null;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(final Power power) {
+			DeviceViewModel model = mModel.get();
+			if (model == null) {
+				return;
+			}
+			model.mPower.postValue(power);
+		}
 	}
 
 }

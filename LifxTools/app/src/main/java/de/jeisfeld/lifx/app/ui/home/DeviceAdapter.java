@@ -235,4 +235,19 @@ class DeviceAdapter extends BaseAdapter {
 		mViewModels.add(new DeviceViewModel(mContext, device));
 		notifyDataSetChanged();
 	}
+
+	/**
+	 * Get the view model from a MAC (if available).
+	 *
+	 * @param mac The MAC
+	 * @return the view model
+	 */
+	protected DeviceViewModel getViewModel(final String mac) {
+		for (int i = 0; i < mDevices.size(); i++) {
+			if (mac.equals(mDevices.get(i).getTargetAddress())) {
+				return mViewModels.get(i);
+			}
+		}
+		return null;
+	}
 }
