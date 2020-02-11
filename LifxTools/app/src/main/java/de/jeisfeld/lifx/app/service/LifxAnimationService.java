@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
+
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
@@ -41,6 +42,10 @@ public class LifxAnimationService extends Service {
 	 */
 	public static final String EXTRA_DEVICE_MAC = "de.jeisfeld.lifx.DEVICE_MAC";
 	/**
+	 * Key for the device Label within the intent.
+	 */
+	public static final String EXTRA_DEVICE_LABEL = "de.jeisfeld.lifx.DEVICE_LABEL";
+	/**
 	 * The intent of the broadcast for stopping an animation.
 	 */
 	public static final String EXTRA_ANIMATION_STOP_INTENT = "de.jeisfeld.lifx.ANIMATION_STOP_INTENT";
@@ -52,6 +57,10 @@ public class LifxAnimationService extends Service {
 	 * Map from MACs to Lights for all lights with running animations.
 	 */
 	private static final Map<String, Light> ANIMATED_LIGHTS = new HashMap<>();
+	/**
+	 * Map from MACs to Light labels for all lights with running animations.
+	 */
+	private static final Map<String, String> ANIMATED_LIGHT_LABELS = new HashMap<>();
 	/**
 	 * The local broadcast manager.
 	 */
@@ -66,30 +75,22 @@ public class LifxAnimationService extends Service {
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
-		final String input = intent.getStringExtra(EXTRA_NOTIFICATION_TEXT);
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
+		final String label = intent.getStringExtra(EXTRA_DEVICE_LABEL);
+		ANIMATED_LIGHT_LABELS.put(mac, label);
 
-		Intent notificationIntent = new Intent(this, MainActivity.class);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this,
-				0, notificationIntent, 0);
-		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-				.setContentTitle(getString(R.string.notification_title_animation))
-				.setContentText(input)
-				.setSmallIcon(R.drawable.ic_menu_share)
-				.setContentIntent(pendingIntent)
-				.build();
-		startForeground(1, notification);
+		startNotification();
 
 		new Thread() {
 			@Override
 			public void run() {
 				Light tmpLight;
-				synchronized (ANIMATED_LIGHTS) {
-					tmpLight = ANIMATED_LIGHTS.get(mac);
-				}
+				tmpLight = ANIMATED_LIGHTS.get(mac);
 				if (tmpLight == null) {
 					tmpLight = LifxLan.getInstance().getLightByMac(mac);
-					ANIMATED_LIGHTS.put(mac, tmpLight);
+					synchronized (ANIMATED_LIGHTS) {
+						ANIMATED_LIGHTS.put(mac, tmpLight);
+					}
 				}
 				else {
 					tmpLight.endAnimation(false);
@@ -103,12 +104,12 @@ public class LifxAnimationService extends Service {
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
-									endAnimation(light);
+									updateOnEndAnimation(light);
 								}
 
 								@Override
 								public void onAnimationEnd(final boolean isInterrupted) {
-									endAnimation(light);
+									updateOnEndAnimation(light);
 								}
 							})
 							.start();
@@ -118,12 +119,12 @@ public class LifxAnimationService extends Service {
 					light.wakeup(10000, new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
-							endAnimation(light);
+							updateOnEndAnimation(light);
 						}
 
 						@Override
 						public void onAnimationEnd(final boolean isInterrupted) {
-							endAnimation(light);
+							updateOnEndAnimation(light);
 						}
 					});
 				}
@@ -167,41 +168,51 @@ public class LifxAnimationService extends Service {
 	}
 
 	/**
-	 * Stop the animation for a given MAC.
+	 * Start the notification.
+	 */
+	private void startNotification() {
+		Intent notificationIntent = new Intent(this, MainActivity.class);
+		PendingIntent pendingIntent = PendingIntent.getActivity(this,
+				0, notificationIntent, 0);
+		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+				.setContentTitle(getString(R.string.notification_title_animation))
+				.setContentText(getString(R.string.notification_text_animation_running, getAnimatedDevicesString()))
+				.setSmallIcon(R.drawable.ic_notification_icon_logo)
+				.setContentIntent(pendingIntent)
+				.build();
+		startForeground(1, notification);
+	}
+
+
+	/**
+	 * Stop the animation from UI for a given MAC.
 	 *
 	 * @param context the context.
-	 * @param mac The MAC
+	 * @param mac     The MAC
 	 */
 	public static void stopAnimationForMac(final Context context, final String mac) {
-		Light light = null;
-		synchronized (ANIMATED_LIGHTS) {
-			if (ANIMATED_LIGHTS.containsKey(mac)) {
-				light = ANIMATED_LIGHTS.get(mac);
-				ANIMATED_LIGHTS.remove(mac);
-			}
-			if (ANIMATED_LIGHTS.size() == 0) {
-				Intent serviceIntent = new Intent(context, LifxAnimationService.class);
-				context.stopService(serviceIntent);
-			}
-		}
+		Light light = ANIMATED_LIGHTS.get(mac);
 		if (light != null) {
 			light.endAnimation(false);
 		}
 	}
 
 	/**
-	 * End the animation for a given light.
+	 * Update the service after the animation has ended.
 	 *
 	 * @param light The light.
 	 */
-	private void endAnimation(final Light light) {
-		light.endAnimation(false);
+	private void updateOnEndAnimation(final Light light) {
 		sendBroadcastStopAnimation(light.getTargetAddress());
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(light.getTargetAddress());
+			ANIMATED_LIGHT_LABELS.remove(light.getTargetAddress());
 			if (ANIMATED_LIGHTS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAnimationService.class);
 				stopService(serviceIntent);
+			}
+			else {
+				startNotification();
 			}
 		}
 	}
@@ -213,9 +224,23 @@ public class LifxAnimationService extends Service {
 	 * @return true if there is a running animation for this MAC.
 	 */
 	public static boolean hasRunningAnimation(final String mac) {
-		synchronized (ANIMATED_LIGHTS) {
-			return ANIMATED_LIGHTS.containsKey(mac);
+		return ANIMATED_LIGHTS.containsKey(mac);
+	}
+
+	/**
+	 * Get a display String for all animated devices.
+	 *
+	 * @return a display String for all animated devices.
+	 */
+	public static String getAnimatedDevicesString() {
+		StringBuilder builder = new StringBuilder();
+		for (String label : ANIMATED_LIGHT_LABELS.values()) {
+			if (builder.length() > 0) {
+				builder.append(", ");
+			}
+			builder.append(label);
 		}
+		return builder.toString();
 	}
 
 }

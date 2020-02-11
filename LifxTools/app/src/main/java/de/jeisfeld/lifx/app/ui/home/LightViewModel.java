@@ -68,9 +68,8 @@ public class LightViewModel extends DeviceViewModel {
 		mAnimationStatus.setValue(status);
 		if (status) {
 			Intent serviceIntent = new Intent(context, LifxAnimationService.class);
-			serviceIntent.putExtra(LifxAnimationService.EXTRA_NOTIFICATION_TEXT,
-					context.getString(R.string.notification_text_multizone_animation_running));
 			serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
+			serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, getLight().getLabel());
 			ContextCompat.startForegroundService(context, serviceIntent);
 			mPower.setValue(Power.ON);
 		}

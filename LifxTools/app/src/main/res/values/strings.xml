@@ -10,14 +10,14 @@
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
-    <string name="menu_tools">Tools</string>
+    <string name="menu_settings">Settings</string>
     <string name="menu_share">Share</string>
     <string name="menu_send">Send</string>
 
-    <string name="message_searching_devices">Searching devices&#8230;</string>
+    <string name="message_searching_devices">Searching LIFX devices&#8230;</string>
     <string name="message_no_devices_found">No devices found.</string>
 
     <string name="notification_channel_animation">LIFX Animations</string>
     <string name="notification_title_animation">LIFX Animation</string>
-    <string name="notification_text_multizone_animation_running">Multizone Animation running</string>
+    <string name="notification_text_animation_running">Animation running for %1$s</string>
 </resources>

@@ -365,6 +365,7 @@ public class Light extends Device {
 		synchronized (this) {
 			if (mAnimationThread != null) {
 				mAnimationThread.end(waitForEnd);
+				mAnimationThread = null;
 			}
 		}
 	}
@@ -376,6 +377,7 @@ public class Light extends Device {
 		synchronized (this) {
 			try {
 				mAnimationThread.join();
+				mAnimationThread = null;
 			}
 			catch (InterruptedException e) {
 				// ignore
