@@ -1,16 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ListPreference
         android:defaultValue="@string/pref_default_power_duration"
         android:entries="@array/power_duration_names"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false"
         android:entryValues="@array/power_duration_values"
         android:key="@string/key_pref_power_duration"
         android:title="@string/pref_title_power_duration" />
     <ListPreference
         android:defaultValue="@string/pref_default_refresh_period"
         android:entries="@array/refresh_period_names"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false"
         android:entryValues="@array/refresh_period_values"
         android:key="@string/key_pref_refresh_period"
         android:title="@string/pref_title_refresh_period" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        app:iconSpaceReserved="false"
+        android:key="@string/key_pref_use_wakelock"
+        android:title="@string/pref_title_use_wakelock" />
+    <CheckBoxPreference
+        android:defaultValue="false"
+        app:iconSpaceReserved="false"
+        android:key="@string/key_pref_quick_power_on"
+        android:title="@string/pref_title_quick_power_on" />
 </PreferenceScreen>

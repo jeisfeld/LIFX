@@ -13,11 +13,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-
+import android.os.PowerManager;
+import android.os.PowerManager.WakeLock;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
@@ -96,20 +99,22 @@ public class LifxAnimationService extends Service {
 					tmpLight.endAnimation(false);
 				}
 
+				final WakeLock wakeLock = acquireWakelock(tmpLight);
 				if (tmpLight instanceof MultiZoneLight) {
 					final MultiZoneLight light = (MultiZoneLight) tmpLight;
+
 					light.rollingAnimation(30000, // MAGIC_NUMBER
 							new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
 							.setBrightness(0.3) // MAGIC_NUMBER
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
-									updateOnEndAnimation(light);
+									updateOnEndAnimation(light, wakeLock);
 								}
 
 								@Override
 								public void onAnimationEnd(final boolean isInterrupted) {
-									updateOnEndAnimation(light);
+									updateOnEndAnimation(light, wakeLock);
 								}
 							})
 							.start();
@@ -119,12 +124,12 @@ public class LifxAnimationService extends Service {
 					light.wakeup(10000, new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
-							updateOnEndAnimation(light);
+							updateOnEndAnimation(light, wakeLock);
 						}
 
 						@Override
 						public void onAnimationEnd(final boolean isInterrupted) {
-							updateOnEndAnimation(light);
+							updateOnEndAnimation(light, wakeLock);
 						}
 					});
 				}
@@ -142,6 +147,24 @@ public class LifxAnimationService extends Service {
 	@Override
 	public final IBinder onBind(final Intent intent) {
 		return null;
+	}
+
+	/**
+	 * Get a wakelock for a device and acquire it.
+	 *
+	 * @param device The device.
+	 * @return The wakelock.
+	 */
+	private WakeLock acquireWakelock(final Device device) {
+		if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_use_wakelock, true)) {
+			PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+			WakeLock wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "de.jeisfeld.lifx." + device.getTargetAddress());
+			wakelock.acquire();
+			return wakelock;
+		}
+		else {
+			return null;
+		}
 	}
 
 	/**
@@ -183,12 +206,11 @@ public class LifxAnimationService extends Service {
 		startForeground(1, notification);
 	}
 
-
 	/**
 	 * Stop the animation from UI for a given MAC.
 	 *
 	 * @param context the context.
-	 * @param mac     The MAC
+	 * @param mac The MAC
 	 */
 	public static void stopAnimationForMac(final Context context, final String mac) {
 		Light light = ANIMATED_LIGHTS.get(mac);
@@ -201,8 +223,12 @@ public class LifxAnimationService extends Service {
 	 * Update the service after the animation has ended.
 	 *
 	 * @param light The light.
+	 * @param wakeLock The wakelock on that light.
 	 */
-	private void updateOnEndAnimation(final Light light) {
+	private void updateOnEndAnimation(final Light light, final WakeLock wakeLock) {
+		if (wakeLock != null) {
+			wakeLock.release();
+		}
 		sendBroadcastStopAnimation(light.getTargetAddress());
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(light.getTargetAddress());

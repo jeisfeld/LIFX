@@ -7,6 +7,8 @@
     <string name="key_pref_language" translatable="false">pref_language</string>
     <string name="key_pref_refresh_period" translatable="false">pref_refresh_period</string>
     <string name="key_pref_power_duration" translatable="false">pref_power_duration</string>
+    <string name="key_pref_use_wakelock" translatable="false">pref_use_wakelock</string>
+    <string name="key_pref_quick_power_on" translatable="false">pref_quick_power_on</string>
 
     <!-- Keys for device properties -->
     <string name="key_device_ids" translatable="false">device_ids</string>
@@ -31,6 +33,8 @@
     <string name="pref_default_power_duration" translatable="false">200</string>
     <string name="pref_title_refresh_period">Refresh Period</string>
     <string name="pref_default_refresh_period" translatable="false">1000</string>
+    <string name="pref_title_use_wakelock">Use wakelock on animation</string>
+    <string name="pref_title_quick_power_on">Keep light awake for quick power on/off</string>
 
     <!-- Arrays for list preferences -->
     <string-array name="power_duration_names">

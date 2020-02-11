@@ -3,6 +3,8 @@
     <!-- Titles and defaults of preferences -->
     <string name="pref_title_power_duration">Schaltdauer</string>
     <string name="pref_title_refresh_period">Aktualisierungszeitraum</string>
+    <string name="pref_title_use_wakelock">Gerät bei Animation wach halten</string>
+    <string name="pref_title_quick_power_on">Lampe zum schnellen an-/ausschalte wach halten</string>
 
     <!-- Arrays for list preferences -->
     <string-array name="power_duration_names">

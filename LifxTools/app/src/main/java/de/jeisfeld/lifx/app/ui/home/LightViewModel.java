@@ -5,7 +5,6 @@ import android.content.Intent;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Power;

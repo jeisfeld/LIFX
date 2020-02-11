@@ -6,12 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-
 import androidx.preference.PreferenceManager;
-import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.Application;
 
 /**
@@ -80,7 +77,18 @@ public final class PreferenceUtil {
 	 * @return the corresponding preference value.
 	 */
 	public static boolean getSharedPreferenceBoolean(final int preferenceId) {
-		return PreferenceUtil.getSharedPreferences().getBoolean(Application.getAppContext().getString(preferenceId), false);
+		return getSharedPreferenceBoolean(preferenceId, false);
+	}
+
+	/**
+	 * Retrieve a boolean shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param defaultValue the default value
+	 * @return the corresponding preference value.
+	 */
+	public static boolean getSharedPreferenceBoolean(final int preferenceId, final boolean defaultValue) {
+		return PreferenceUtil.getSharedPreferences().getBoolean(Application.getAppContext().getString(preferenceId), defaultValue);
 	}
 
 	/**

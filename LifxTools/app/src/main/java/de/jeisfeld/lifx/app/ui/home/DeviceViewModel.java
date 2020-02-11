@@ -15,7 +15,6 @@ import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Power;
-import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Class holding data for the display view of a device.
@@ -228,7 +227,7 @@ public class DeviceViewModel extends ViewModel {
 			}
 			try {
 				// TODO: enable quick power switch via setColor. Requires to know the current color.
-				if(model.mDevice instanceof Light) {
+				if (model.mDevice instanceof Light) {
 					((Light) model.mDevice).setPower(!power.isOn(),
 							PreferenceUtil.getSharedPreferenceIntString(R.string.key_pref_power_duration, R.string.pref_default_power_duration),
 							false);
