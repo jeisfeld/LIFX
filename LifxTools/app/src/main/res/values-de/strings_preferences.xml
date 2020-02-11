@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Titles and defaults of preferences -->
+    <string name="pref_title_power_duration">Schaltdauer</string>
+    <string name="pref_title_refresh_period">Aktualisierungszeitraum</string>
+
+    <!-- Arrays for list preferences -->
+    <string-array name="power_duration_names">
+        <item>1/5 Sekunde</item>
+        <item>1/2 Sekunde</item>
+        <item>1 Sekunde</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+    </string-array>
+    <string-array name="refresh_period_names">
+        <item>Nie</item>
+        <item>1/5 Sekunde</item>
+        <item>1/2 Sekunde</item>
+        <item>1 Sekunde</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+        <item>15 Sekunden</item>
+        <item>30 Sekunden</item>
+    </string-array>
+</resources>

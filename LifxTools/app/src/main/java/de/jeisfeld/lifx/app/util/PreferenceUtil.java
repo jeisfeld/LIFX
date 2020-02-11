@@ -9,6 +9,8 @@ import java.util.Set;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+
+import androidx.preference.PreferenceManager;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.Application;
 
@@ -30,8 +32,7 @@ public final class PreferenceUtil {
 	 * @return the default shared preferences.
 	 */
 	private static SharedPreferences getSharedPreferences() {
-		return Application.getAppContext()
-				.getSharedPreferences(Application.getAppContext().getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+		return PreferenceManager.getDefaultSharedPreferences(Application.getAppContext());
 	}
 
 	/**

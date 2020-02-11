@@ -65,16 +65,14 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
-		// TODO: Move to preferences
-		PreferenceUtil.setSharedPreferenceLongString(R.string.key_pref_refresh_period, 500);
-
 		LocalBroadcastManager.getInstance(getContext()).registerReceiver(mReceiver,
 				new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
 
 		mExecutor = Executors.newScheduledThreadPool(1);
-		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, 0) > 0) {
+		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0) {
 			mExecutor.scheduleAtFixedRate(() -> ((DeviceAdapter) getListAdapter()).refresh(), 0,
-					PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, 0), TimeUnit.MILLISECONDS);
+					PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period),
+					TimeUnit.MILLISECONDS);
 		}
 	}
 

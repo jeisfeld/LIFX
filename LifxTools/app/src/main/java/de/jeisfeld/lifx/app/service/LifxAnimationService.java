@@ -98,7 +98,7 @@ public class LifxAnimationService extends Service {
 
 				if (tmpLight instanceof MultiZoneLight) {
 					final MultiZoneLight light = (MultiZoneLight) tmpLight;
-					light.rollingAnimation(10000, // MAGIC_NUMBER
+					light.rollingAnimation(30000, // MAGIC_NUMBER
 							new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
 							.setBrightness(0.3) // MAGIC_NUMBER
 							.setAnimationCallback(new AnimationCallback() {

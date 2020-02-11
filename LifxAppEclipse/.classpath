@@ -36,5 +36,6 @@
 	<classpathentry kind="lib" path="libs-local/activity-1.1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="libs-local/localbroadcastmanager-1.0.0.jar"/>
+	<classpathentry kind="lib" path="libs-local/preference-1.1.0.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

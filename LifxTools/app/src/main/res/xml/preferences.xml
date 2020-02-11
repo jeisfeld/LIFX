@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="@string/pref_default_power_duration"
+        android:entries="@array/power_duration_names"
+        android:entryValues="@array/power_duration_values"
+        android:key="@string/key_pref_power_duration"
+        android:title="@string/pref_title_power_duration" />
+    <ListPreference
+        android:defaultValue="@string/pref_default_refresh_period"
+        android:entries="@array/refresh_period_names"
+        android:entryValues="@array/refresh_period_values"
+        android:key="@string/key_pref_refresh_period"
+        android:title="@string/pref_title_refresh_period" />
+</PreferenceScreen>
