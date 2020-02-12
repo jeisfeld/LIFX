@@ -32,7 +32,7 @@ public class DeviceViewModel extends ViewModel {
 	/**
 	 * The stored power of the device.
 	 */
-	protected final MutableLiveData<Power> mPower;
+	protected final MutableLiveData<Power> mPower; // SUPPRESS_CHECKSTYLE
 
 	/**
 	 * Constructor.

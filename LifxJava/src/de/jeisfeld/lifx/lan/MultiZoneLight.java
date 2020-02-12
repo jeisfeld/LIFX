@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.jeisfeld.lifx.lan.Light.AnimationThread;
 import de.jeisfeld.lifx.lan.message.MultizoneGetColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneGetExtendedColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneSetColorZones;
@@ -105,7 +104,7 @@ public class MultiZoneLight extends Light {
 		for (int blockIndex = start / 8; blockIndex <= end / 8; blockIndex++) { // MAGIC_NUMBER
 			MultizoneStateZone multizoneState =
 					getMultizoneState((byte) Math.max(start, blockIndex * 8), (byte) Math.min(end, blockIndex * 8 + 7)); // MAGIC_NUMBER
-			if(multizoneState == null) {
+			if (multizoneState == null) {
 				return null;
 			}
 			else {
@@ -266,7 +265,7 @@ public class MultiZoneLight extends Light {
 							try { // SUPPRESS_CHECKSTYLE
 								MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
 								Power power;
-								if (count == 0 && (power = getPower()) != null && power.isOff()) {
+								if (count == 0 && (power = getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
 									setColors(0, false, colors);
 									setPower(true, duration, false);
 								}

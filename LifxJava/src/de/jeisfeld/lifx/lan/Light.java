@@ -29,7 +29,7 @@ public class Light extends Device {
 	/**
 	 * The waiting times before retry after error (increasing delays for repeated errors).
 	 */
-	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[] { 1000, 2000, 5000, 10000, 10000, 10000 };
+	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[] {1000, 2000, 5000, 10000, 10000, 10000};
 	/**
 	 * The cycle thread.
 	 */
@@ -621,7 +621,7 @@ public class Light extends Device {
 						while (!success) {
 							try { // SUPPRESS_CHECKSTYLE
 								Power power;
-								if (count == 0 && (power = getPower()) != null && power.isOff()) {
+								if (count == 0 && (power = getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
 									setColor(color.withRelativeBrightness(mRelativeBrightness));
 									setPower(true, duration, false);
 								}

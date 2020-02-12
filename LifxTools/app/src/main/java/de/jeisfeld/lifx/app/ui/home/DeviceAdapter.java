@@ -2,11 +2,15 @@ package de.jeisfeld.lifx.app.ui.home;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff.Mode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -22,11 +26,17 @@ import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * An adapter for the list of devices in the home fragment.
  */
 class DeviceAdapter extends BaseAdapter {
+	/**
+	 * The IDs of seekbars within this view.
+	 */
+	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarHue, R.id.seekBarSaturation};
+
 	/**
 	 * The list of devices.
 	 */
@@ -164,8 +174,16 @@ class DeviceAdapter extends BaseAdapter {
 		model.checkPower();
 
 		if (device instanceof Light) {
-			prepareBrightnessButton(view.findViewById(R.id.buttonBrightness), (LightViewModel) model);
-			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), (LightViewModel) model);
+			LightViewModel lightModel = (LightViewModel) model;
+
+			if (device.getProduct().hasColor()) {
+				prepareHueButton(view, view.findViewById(R.id.buttonHue), view.findViewById(R.id.seekBarHue), lightModel);
+				prepareSaturationButton(view, view.findViewById(R.id.buttonSaturation), view.findViewById(R.id.seekBarSaturation), lightModel);
+			}
+			prepareBrightnessButton(view, view.findViewById(R.id.buttonBrightness), view.findViewById(R.id.seekBarBrightness), lightModel);
+			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
+
+			lightModel.checkColor();
 		}
 
 		return view;
@@ -175,7 +193,7 @@ class DeviceAdapter extends BaseAdapter {
 	 * Prepare the power button.
 	 *
 	 * @param powerButton The power button.
-	 * @param model The device view model.
+	 * @param model       The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
@@ -197,25 +215,171 @@ class DeviceAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * Prepare the brightness button.
+	 * Prepare the brightness button and seekbar.
 	 *
-	 * @param brightnessButton The brightness button.
-	 * @param model The light view model.
+	 * @param listView The listView.
+	 * @param button   The brightness button.
+	 * @param seekBar  The brightness seekbar.
+	 * @param model    The light view model.
 	 */
-	private void prepareBrightnessButton(final Button brightnessButton, final LightViewModel model) {
-		// TODO
+	private void prepareBrightnessButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
+		model.getColor().observe(mLifeCycleOwner, color -> {
+			if (color == null) {
+				seekBar.setEnabled(false);
+			}
+			else {
+				seekBar.setEnabled(true);
+				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
+			}
+		});
+
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
+				if (fromUser) {
+					model.setBrightness((short) seekBar.getProgress(), false);
+				}
+			}
+
+			@Override
+			public void onStartTrackingTouch(final SeekBar seekBar) {
+				// do nothing
+			}
+
+			@Override
+			public void onStopTrackingTouch(final SeekBar seekBar) {
+				model.setBrightness((short) seekBar.getProgress(), true);
+			}
+		});
+
+		button.setOnClickListener(v -> {
+			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
+			hideSeekBars(listView);
+			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
+		});
 	}
+
+	/**
+	 * Prepare the hue button and seekbar.
+	 *
+	 * @param listView The listView.
+	 * @param button   The hue button.
+	 * @param seekBar  The hue seekbar.
+	 * @param model    The light view model.
+	 */
+	private void prepareHueButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
+		button.setVisibility(View.VISIBLE);
+
+		model.getColor().observe(mLifeCycleOwner, color -> {
+			if (color == null) {
+				seekBar.setEnabled(false);
+			}
+			else {
+				seekBar.setEnabled(true);
+				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getHue()));
+			}
+		});
+
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
+				if (fromUser) {
+					model.setHue((short) seekBar.getProgress(), false);
+				}
+				seekBar.getThumb().setColorFilter(
+						Color.HSVToColor(new float[]{(float) (TypeUtil.toDouble((short) progress) * 360), 1f, 1f}), Mode.MULTIPLY);
+			}
+
+			@Override
+			public void onStartTrackingTouch(final SeekBar seekBar) {
+				// do nothing
+			}
+
+			@Override
+			public void onStopTrackingTouch(final SeekBar seekBar) {
+				model.setHue((short) seekBar.getProgress(), true);
+			}
+		});
+
+		button.setOnClickListener(v -> {
+			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
+			hideSeekBars(listView);
+			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
+		});
+	}
+
+	/**
+	 * Prepare the saturation button and seekbar.
+	 *
+	 * @param listView The listView.
+	 * @param button   The saturation button.
+	 * @param seekBar  The saturation seekbar.
+	 * @param model    The light view model.
+	 */
+	private void prepareSaturationButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
+		button.setVisibility(View.VISIBLE);
+
+		model.getColor().observe(mLifeCycleOwner, color -> {
+			if (color == null) {
+				seekBar.setEnabled(false);
+			}
+			else {
+				seekBar.setEnabled(true);
+				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getSaturation()));
+			}
+		});
+
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
+				if (fromUser) {
+					model.setSaturation((short) seekBar.getProgress(), false);
+				}
+			}
+
+			@Override
+			public void onStartTrackingTouch(final SeekBar seekBar) {
+				// do nothing
+			}
+
+			@Override
+			public void onStopTrackingTouch(final SeekBar seekBar) {
+				model.setSaturation((short) seekBar.getProgress(), true);
+			}
+		});
+
+		button.setOnClickListener(v -> {
+			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
+			hideSeekBars(listView);
+			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
+		});
+	}
+
 
 	/**
 	 * Prepare the animation button.
 	 *
 	 * @param animationButton The animation button.
-	 * @param model The multizone device view model.
+	 * @param model           The multizone device view model.
 	 */
 	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
 
 		animationButton.setOnClickListener(v -> model.updateAnimation(((ToggleButton) v).isChecked()));
+	}
+
+	/**
+	 * Hide all seekbars within the main view.
+	 *
+	 * @param view The main view.
+	 */
+	private void hideSeekBars(final View view) {
+		for (int id : SEEKBAR_IDS) {
+			SeekBar seekBar = view.findViewById(id);
+			if (seekBar != null) {
+				seekBar.setVisibility(View.GONE);
+			}
+		}
 	}
 
 	/**

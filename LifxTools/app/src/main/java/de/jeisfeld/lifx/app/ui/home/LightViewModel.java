@@ -1,12 +1,24 @@
 package de.jeisfeld.lifx.app.ui.home;
 
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
+import android.util.Log;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
 
 /**
@@ -17,6 +29,14 @@ public class LightViewModel extends DeviceViewModel {
 	 * The status of animation thread.
 	 */
 	protected final MutableLiveData<Boolean> mAnimationStatus; // SUPPRESS_CHECKSTYLE
+	/**
+	 * The stored Color of the device.
+	 */
+	protected final MutableLiveData<Color> mColor; // SUPPRESS_CHECKSTYLE
+	/**
+	 * A storage to keep track on running setColor tasks.
+	 */
+	private final List<SetColorTask> mRunningSetColorTasks = new ArrayList<>();
 
 	/**
 	 * Constructor.
@@ -27,6 +47,7 @@ public class LightViewModel extends DeviceViewModel {
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
 		mAnimationStatus = new MutableLiveData<>();
+		mColor = new MutableLiveData<>();
 		mAnimationStatus.setValue(LifxAnimationService.hasRunningAnimation(light.getTargetAddress()));
 	}
 
@@ -48,10 +69,107 @@ public class LightViewModel extends DeviceViewModel {
 		return mAnimationStatus;
 	}
 
+	/**
+	 * Get the color.
+	 *
+	 * @return The color.
+	 */
+	public LiveData<Color> getColor() {
+		return mColor;
+	}
+
 	// OVERRIDABLE
 	@Override
 	protected boolean isRefreshAllowed() {
 		return super.isRefreshAllowed() && !Boolean.TRUE.equals(mAnimationStatus.getValue());
+	}
+
+	@Override
+	protected final void refreshRemoteData() {
+		super.refreshRemoteData();
+		checkColor();
+	}
+
+	/**
+	 * Check the Color of the device.
+	 */
+	public void checkColor() {
+		new CheckColorTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	/**
+	 * Set the brightness.
+	 *
+	 * @param brightness the new brightness
+	 * @param force flag indicating if the change must be sent.
+	 */
+	public void setBrightness(final short brightness, final boolean force) {
+		Color color = mColor.getValue();
+		if (color == null) {
+			return;
+		}
+		Color newColor = new Color(color.getHue(), color.getSaturation(), brightness, color.getColorTemperature());
+		mColor.postValue(newColor);
+
+		SetColorTask task;
+		synchronized (mRunningSetColorTasks) {
+			if (mRunningSetColorTasks.size() > 0 && !force) {
+				return;
+			}
+			task = new SetColorTask(this);
+		}
+
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newColor);
+	}
+
+	/**
+	 * Set the hue.
+	 *
+	 * @param hue the new hue
+	 * @param force flag indicating if the change must be sent.
+	 */
+	public void setHue(final short hue, final boolean force) {
+		Color color = mColor.getValue();
+		if (color == null) {
+			return;
+		}
+		Color newColor = new Color(hue, color.getSaturation(), color.getBrightness(), color.getColorTemperature());
+		mColor.postValue(newColor);
+
+		SetColorTask task;
+		synchronized (mRunningSetColorTasks) {
+			if (mRunningSetColorTasks.size() > 0 && !force) {
+				return;
+			}
+			task = new SetColorTask(this);
+		}
+
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newColor);
+	}
+
+	/**
+	 * Set the saturation.
+	 *
+	 * @param saturation the new saturation
+	 * @param force flag indicating if the change must be sent.
+	 */
+	public void setSaturation(final short saturation, final boolean force) {
+		Color color = mColor.getValue();
+		if (color == null) {
+			return;
+		}
+		Color newColor = new Color(color.getHue(), saturation, color.getBrightness(), color.getColorTemperature());
+		mColor.postValue(newColor);
+
+		SetColorTask task;
+		synchronized (mRunningSetColorTasks) {
+			if (mRunningSetColorTasks.size() > 0 && !force) {
+				return;
+			}
+			task = new SetColorTask(this);
+		}
+
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newColor);
 	}
 
 	/**
@@ -74,6 +192,103 @@ public class LightViewModel extends DeviceViewModel {
 		}
 		else {
 			LifxAnimationService.stopAnimationForMac(context, getLight().getTargetAddress());
+		}
+	}
+
+	/**
+	 * An async task for checking the color.
+	 */
+	private static final class CheckColorTask extends AsyncTask<String, String, Color> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<LightViewModel> mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model The underlying model.
+		 */
+		private CheckColorTask(final LightViewModel model) {
+			mModel = new WeakReference<>(model);
+		}
+
+		@Override
+		protected Color doInBackground(final String... strings) {
+			LightViewModel model = mModel.get();
+			if (model == null) {
+				return null;
+			}
+			return model.getLight().getColor();
+		}
+
+		@Override
+		protected void onPostExecute(final Color color) {
+			LightViewModel model = mModel.get();
+			if (model == null) {
+				return;
+			}
+			model.mColor.postValue(color);
+		}
+	}
+
+	/**
+	 * An async task for setting the color.
+	 */
+	private static final class SetColorTask extends AsyncTask<Color, String, Color> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<LightViewModel> mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model The underlying model.
+		 */
+		private SetColorTask(final LightViewModel model) {
+			mModel = new WeakReference<>(model);
+			model.mRunningSetColorTasks.add(this);
+		}
+
+		@Override
+		protected Color doInBackground(final Color... colors) {
+			LightViewModel model = mModel.get();
+			if (model == null || colors == null || colors.length == 0) {
+				return null;
+			}
+
+			synchronized (model.mRunningSetColorTasks) {
+				if (model.mRunningSetColorTasks.size() > 1 && model.mRunningSetColorTasks.get(0) != this) {
+					// In case of force, give prior running call some time to complete
+					try {
+						model.mRunningSetColorTasks.get(0).get(1, TimeUnit.SECONDS);
+					}
+					catch (ExecutionException | InterruptedException | TimeoutException e) {
+						// ignore
+					}
+				}
+			}
+
+			Color color = colors[0];
+			try {
+				model.getLight().setColor(color);
+				return color;
+			}
+			catch (IOException e) {
+				Log.w(Application.TAG, e);
+				return null;
+			}
+		}
+
+		@Override
+		protected void onPostExecute(final Color color) {
+			LightViewModel model = mModel.get();
+			if (model == null) {
+				return;
+			}
+			model.mRunningSetColorTasks.remove(this);
+			model.mColor.postValue(color);
 		}
 	}
 }
