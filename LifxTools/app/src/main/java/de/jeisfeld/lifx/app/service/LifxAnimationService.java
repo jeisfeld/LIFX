@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
@@ -80,6 +81,8 @@ public class LifxAnimationService extends Service {
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
 		final String label = intent.getStringExtra(EXTRA_DEVICE_LABEL);
+		assert mac != null;
+		assert label != null;
 		ANIMATED_LIGHT_LABELS.put(mac, label);
 
 		startNotification();
@@ -91,6 +94,10 @@ public class LifxAnimationService extends Service {
 				tmpLight = ANIMATED_LIGHTS.get(mac);
 				if (tmpLight == null) {
 					tmpLight = LifxLan.getInstance().getLightByMac(mac);
+					if (tmpLight == null || tmpLight.getTargetAddress() == null || !mac.equals(tmpLight.getTargetAddress())) {
+						updateOnEndAnimation(mac, null);
+						return;
+					}
 					synchronized (ANIMATED_LIGHTS) {
 						ANIMATED_LIGHTS.put(mac, tmpLight);
 					}
@@ -109,12 +116,12 @@ public class LifxAnimationService extends Service {
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
-									updateOnEndAnimation(light, wakeLock);
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 								}
 
 								@Override
 								public void onAnimationEnd(final boolean isInterrupted) {
-									updateOnEndAnimation(light, wakeLock);
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 								}
 							})
 							.start();
@@ -124,12 +131,12 @@ public class LifxAnimationService extends Service {
 					light.wakeup(10000, new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
-							updateOnEndAnimation(light, wakeLock);
+							updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 						}
 
 						@Override
 						public void onAnimationEnd(final boolean isInterrupted) {
-							updateOnEndAnimation(light, wakeLock);
+							updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 						}
 					});
 				}
@@ -158,6 +165,7 @@ public class LifxAnimationService extends Service {
 	private WakeLock acquireWakelock(final Device device) {
 		if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_use_wakelock, true)) {
 			PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+			assert powerManager != null;
 			WakeLock wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "de.jeisfeld.lifx." + device.getTargetAddress());
 			wakelock.acquire();
 			return wakelock;
@@ -186,6 +194,7 @@ public class LifxAnimationService extends Service {
 			NotificationChannel animationChannel = new NotificationChannel(
 					CHANNEL_ID, getString(R.string.notification_channel_animation), NotificationManager.IMPORTANCE_DEFAULT);
 			NotificationManager manager = getSystemService(NotificationManager.class);
+			assert manager != null;
 			manager.createNotificationChannel(animationChannel);
 		}
 	}
@@ -210,7 +219,7 @@ public class LifxAnimationService extends Service {
 	 * Stop the animation from UI for a given MAC.
 	 *
 	 * @param context the context.
-	 * @param mac The MAC
+	 * @param mac     The MAC
 	 */
 	public static void stopAnimationForMac(final Context context, final String mac) {
 		Light light = ANIMATED_LIGHTS.get(mac);
@@ -222,17 +231,17 @@ public class LifxAnimationService extends Service {
 	/**
 	 * Update the service after the animation has ended.
 	 *
-	 * @param light The light.
+	 * @param mac      the MAC.
 	 * @param wakeLock The wakelock on that light.
 	 */
-	private void updateOnEndAnimation(final Light light, final WakeLock wakeLock) {
+	private void updateOnEndAnimation(final String mac, final WakeLock wakeLock) {
 		if (wakeLock != null) {
 			wakeLock.release();
 		}
-		sendBroadcastStopAnimation(light.getTargetAddress());
+		sendBroadcastStopAnimation(mac);
 		synchronized (ANIMATED_LIGHTS) {
-			ANIMATED_LIGHTS.remove(light.getTargetAddress());
-			ANIMATED_LIGHT_LABELS.remove(light.getTargetAddress());
+			ANIMATED_LIGHTS.remove(mac);
+			ANIMATED_LIGHT_LABELS.remove(mac);
 			if (ANIMATED_LIGHTS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAnimationService.class);
 				stopService(serviceIntent);

@@ -27,6 +27,10 @@ import de.jeisfeld.lifx.os.Logger;
  */
 public class Light extends Device {
 	/**
+	 * The waiting times before retry after error (increasing delays for repeated errors).
+	 */
+	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[] { 1000, 2000, 5000, 10000, 10000, 10000 };
+	/**
 	 * The cycle thread.
 	 */
 	private AnimationThread mAnimationThread = null;
@@ -314,10 +318,10 @@ public class Light extends Device {
 	 */
 	public void waitForColor(final Color color, final long timeout) {
 		if (getProduct().hasColor()) {
-			waitForColor(c -> color.isSimilar(c), timeout);
+			waitForColor(color::isSimilar, timeout);
 		}
 		else {
-			waitForColor(c -> color.isSimilarBlackWhite(c), timeout);
+			waitForColor(color::isSimilarBlackWhite, timeout);
 		}
 	}
 
@@ -528,10 +532,6 @@ public class Light extends Device {
 	 */
 	public class AnimationThread extends Thread { // SUPPRESS_CHECKSTYLE
 		/**
-		 * The number of successive errors before the thread is stopped.
-		 */
-		protected static final int ERROR_COUNT_BEFORE_STOP = 5;
-		/**
 		 * The animation definiation.
 		 */
 		private AnimationDefinition mDefinition;
@@ -620,7 +620,8 @@ public class Light extends Device {
 						int duration = Math.max(mDefinition.getDuration(count), 0);
 						while (!success) {
 							try { // SUPPRESS_CHECKSTYLE
-								if (count == 0 && getPower().isOff()) {
+								Power power;
+								if (count == 0 && (power = getPower()) != null && power.isOff()) {
 									setColor(color.withRelativeBrightness(mRelativeBrightness));
 									setPower(true, duration, false);
 								}
@@ -631,9 +632,10 @@ public class Light extends Device {
 							}
 							catch (IOException e) {
 								errorCount++;
-								if (errorCount >= AnimationThread.ERROR_COUNT_BEFORE_STOP) {
+								if (errorCount >= WAITING_TIMES_AFTER_ERROR.length) {
 									throw e;
 								}
+								Thread.sleep(WAITING_TIMES_AFTER_ERROR[errorCount]);
 							}
 						}
 						Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));

@@ -1,20 +1,20 @@
 package de.jeisfeld.lifx.app.ui.home;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.Observer;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
@@ -22,7 +22,6 @@ import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
-import de.jeisfeld.lifx.lan.type.Power;
 
 /**
  * An adapter for the list of devices in the home fragment.
@@ -122,6 +121,7 @@ class DeviceAdapter extends BaseAdapter {
 		}
 	}
 
+	@SuppressLint("ViewHolder")
 	@Override
 	public synchronized View getView(final int position, final View convertView, final ViewGroup parent) {
 		final View view;
@@ -164,7 +164,8 @@ class DeviceAdapter extends BaseAdapter {
 		model.checkPower();
 
 		if (device instanceof Light) {
-			prepareToggleButton(view.findViewById(R.id.toggleButtonAnimation), (LightViewModel) model);
+			prepareBrightnessButton(view.findViewById(R.id.buttonBrightness), (LightViewModel) model);
+			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), (LightViewModel) model);
 		}
 
 		return view;
@@ -177,52 +178,44 @@ class DeviceAdapter extends BaseAdapter {
 	 * @param model The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
-		model.getPower().observe(mLifeCycleOwner, new Observer<Power>() {
-			@Override
-			public void onChanged(final Power power) {
-				if (power == null) {
-					powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
-				}
-				else if (power.isOn()) {
-					powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
-				}
-				else if (power.isOff()) {
-					powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
-				}
-				else {
-					powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_undefined));
-				}
+		model.getPower().observe(mLifeCycleOwner, power -> {
+			if (power == null) {
+				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
+			}
+			else if (power.isOn()) {
+				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
+			}
+			else if (power.isOff()) {
+				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
+			}
+			else {
+				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_undefined));
 			}
 		});
 
-		powerButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(final View v) {
-				model.togglePower();
-			}
-		});
+		powerButton.setOnClickListener(v -> model.togglePower());
 	}
 
 	/**
-	 * Prepare the power button.
+	 * Prepare the brightness button.
 	 *
-	 * @param toggleButton The toggle button.
+	 * @param brightnessButton The brightness button.
+	 * @param model The light view model.
+	 */
+	private void prepareBrightnessButton(final Button brightnessButton, final LightViewModel model) {
+		// TODO
+	}
+
+	/**
+	 * Prepare the animation button.
+	 *
+	 * @param animationButton The animation button.
 	 * @param model The multizone device view model.
 	 */
-	private void prepareToggleButton(final ToggleButton toggleButton, final LightViewModel model) {
-		model.getAnimationStatus().observe(mLifeCycleOwner, new Observer<Boolean>() {
-			@Override
-			public void onChanged(final Boolean animationStatus) {
-				toggleButton.setChecked(animationStatus);
-			}
-		});
+	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
+		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
 
-		toggleButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(final View v) {
-				model.updateAnimation(((ToggleButton) v).isChecked());
-			}
-		});
+		animationButton.setOnClickListener(v -> model.updateAnimation(((ToggleButton) v).isChecked()));
 	}
 
 	/**

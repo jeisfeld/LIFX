@@ -26,8 +26,8 @@ public final class TypeUtil {
 	 * @param b The byte
 	 * @return The unsigned String.
 	 */
-	public static String toUnsignedString(final byte b) {
-		return Integer.toString(TypeUtil.toUnsignedInt(b));
+	public static String toUnsignedString(final Byte b) {
+		return b == null ? null : Integer.toString(TypeUtil.toUnsignedInt(b));
 	}
 
 	/**
@@ -36,8 +36,8 @@ public final class TypeUtil {
 	 * @param s The short
 	 * @return The unsigned String.
 	 */
-	public static String toUnsignedString(final short s) {
-		return Integer.toString(TypeUtil.toUnsignedInt(s));
+	public static String toUnsignedString(final Short s) {
+		return s == null ? null : Integer.toString(TypeUtil.toUnsignedInt(s));
 	}
 
 	/**
@@ -46,8 +46,8 @@ public final class TypeUtil {
 	 * @param i The integer
 	 * @return The unsigned String.
 	 */
-	public static String toUnsignedString(final int i) {
-		return Long.toString(0xffffffffL & i); // MAGIC_NUMBER
+	public static String toUnsignedString(final Integer i) {
+		return i == null ? null : Long.toString(0xffffffffL & i); // MAGIC_NUMBER
 	}
 
 	/**

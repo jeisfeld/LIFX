@@ -2,28 +2,51 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/listViewHome"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="@dimen/listelement_light_height"
     android:orientation="horizontal"
     android:paddingTop="@dimen/list_vertical_margin"
     android:paddingBottom="@dimen/list_vertical_margin">
 
     <Button
         android:id="@+id/buttonPower"
-        android:layout_width="@dimen/circle_button_size"
-        android:layout_height="@dimen/circle_button_size"
+        android:layout_width="@dimen/power_button_size"
+        android:layout_height="@dimen/power_button_size"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_marginRight="@dimen/list_vertical_margin"
+        android:layout_marginEnd="@dimen/list_horizontal_margin"
         android:background="@drawable/powerbutton_offline" />
 
-    <TextView
-        android:id="@+id/textViewHome"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:textSize="@dimen/text_size" />
+        android:orientation="vertical">
 
-    <ToggleButton
-        android:id="@+id/toggleButtonAnimation"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent" />
+        <TextView
+            android:id="@+id/textViewHome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/buttonBrightness"
+                android:layout_width="@dimen/small_button_size"
+                android:layout_height="@dimen/small_button_size"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:layout_marginEnd="@dimen/list_horizontal_margin"
+                android:background="@drawable/ic_button_brightness" />
+
+            <ToggleButton
+                android:id="@+id/toggleButtonAnimation"
+                android:layout_width="@dimen/small_button_size"
+                android:layout_height="@dimen/small_button_size"
+                android:background="@drawable/ic_button_animation"
+                android:textOff=""
+                android:textOn="" />
+
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>

@@ -23,7 +23,7 @@
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:text="@string/message_searching_devices"
-        android:textSize="@dimen/text_size"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

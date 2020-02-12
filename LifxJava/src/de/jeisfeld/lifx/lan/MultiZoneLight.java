@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.jeisfeld.lifx.lan.Light.AnimationThread;
 import de.jeisfeld.lifx.lan.message.MultizoneGetColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneGetExtendedColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneSetColorZones;
@@ -13,6 +14,7 @@ import de.jeisfeld.lifx.lan.message.MultizoneStateExtendedColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneStateZone;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.type.Waveform;
@@ -101,8 +103,14 @@ public class MultiZoneLight extends Light {
 		int end = TypeUtil.toUnsignedInt(endIndex);
 		List<Color> result = new ArrayList<>();
 		for (int blockIndex = start / 8; blockIndex <= end / 8; blockIndex++) { // MAGIC_NUMBER
-			result.addAll(
-					getMultizoneState((byte) Math.max(start, blockIndex * 8), (byte) Math.min(end, blockIndex * 8 + 7)).getColors()); // MAGIC_NUMBER
+			MultizoneStateZone multizoneState =
+					getMultizoneState((byte) Math.max(start, blockIndex * 8), (byte) Math.min(end, blockIndex * 8 + 7)); // MAGIC_NUMBER
+			if(multizoneState == null) {
+				return null;
+			}
+			else {
+				result.addAll(multizoneState.getColors());
+			}
 		}
 		return result;
 	}
@@ -257,7 +265,8 @@ public class MultiZoneLight extends Light {
 						while (!success) {
 							try { // SUPPRESS_CHECKSTYLE
 								MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
-								if (count == 0 && getPower().isOff()) {
+								Power power;
+								if (count == 0 && (power = getPower()) != null && power.isOff()) {
 									setColors(0, false, colors);
 									setPower(true, duration, false);
 								}
@@ -268,9 +277,10 @@ public class MultiZoneLight extends Light {
 							}
 							catch (IOException e) {
 								errorCount++;
-								if (errorCount >= Light.AnimationThread.ERROR_COUNT_BEFORE_STOP) {
+								if (errorCount >= WAITING_TIMES_AFTER_ERROR.length) {
 									throw e;
 								}
+								Thread.sleep(WAITING_TIMES_AFTER_ERROR[errorCount]);
 							}
 						}
 						Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
