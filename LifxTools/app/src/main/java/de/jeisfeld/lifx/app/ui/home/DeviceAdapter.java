@@ -1,5 +1,8 @@
 package de.jeisfeld.lifx.app.ui.home;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
@@ -13,9 +16,6 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
@@ -35,7 +35,7 @@ class DeviceAdapter extends BaseAdapter {
 	/**
 	 * The IDs of seekbars within this view.
 	 */
-	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarHue, R.id.seekBarSaturation};
+	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarHue, R.id.seekBarSaturation, R.id.seekBarColorTemperature};
 
 	/**
 	 * The list of devices.
@@ -181,6 +181,8 @@ class DeviceAdapter extends BaseAdapter {
 				prepareSaturationButton(view, view.findViewById(R.id.buttonSaturation), view.findViewById(R.id.seekBarSaturation), lightModel);
 			}
 			prepareBrightnessButton(view, view.findViewById(R.id.buttonBrightness), view.findViewById(R.id.seekBarBrightness), lightModel);
+			prepareColorTemperatureButton(view, view.findViewById(R.id.buttonColorTemperature),
+					view.findViewById(R.id.seekBarColorTemperature), lightModel);
 			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
 
 			lightModel.checkColor();
@@ -237,7 +239,7 @@ class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.setBrightness((short) seekBar.getProgress(), false);
+					model.updateColor(null, null, (short) progress, null, false);
 				}
 			}
 
@@ -248,7 +250,7 @@ class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.setBrightness((short) seekBar.getProgress(), true);
+				model.updateColor(null, null, (short) seekBar.getProgress(), null, true);
 			}
 		});
 
@@ -284,10 +286,10 @@ class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.setHue((short) seekBar.getProgress(), false);
+					model.updateColor((short) progress, null, null, null, false);
 				}
 				seekBar.getThumb().setColorFilter(
-						Color.HSVToColor(new float[]{(float) (TypeUtil.toDouble((short) progress) * 360), 1f, 1f}), Mode.MULTIPLY);
+						Color.HSVToColor(new float[]{(float) (TypeUtil.toDouble((short) progress) * 360), 1f, 1f}), Mode.MULTIPLY); // MAGIC_NUMBER
 			}
 
 			@Override
@@ -297,7 +299,7 @@ class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.setHue((short) seekBar.getProgress(), true);
+				model.updateColor((short) seekBar.getProgress(), null, null, null, true);
 			}
 		});
 
@@ -333,7 +335,7 @@ class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.setSaturation((short) seekBar.getProgress(), false);
+					model.updateColor(null, (short) progress, null, null, false);
 				}
 			}
 
@@ -344,7 +346,7 @@ class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.setSaturation((short) seekBar.getProgress(), true);
+				model.updateColor(null, (short) seekBar.getProgress(), null, null, false);
 			}
 		});
 
@@ -355,6 +357,54 @@ class DeviceAdapter extends BaseAdapter {
 		});
 	}
 
+	/**
+	 * Prepare the color temperature button and seekbar.
+	 *
+	 * @param listView The listView.
+	 * @param button   The color temperature button.
+	 * @param seekBar  The color temperature seekbar.
+	 * @param model    The light view model.
+	 */
+	private void prepareColorTemperatureButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
+		button.setVisibility(View.VISIBLE);
+
+		model.getColor().observe(mLifeCycleOwner, color -> {
+			if (color == null) {
+				seekBar.setEnabled(false);
+			}
+			else {
+				seekBar.setEnabled(true);
+				seekBar.setProgress(colorTemperatureToProgress(color.getColorTemperature()));
+			}
+		});
+
+		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
+				if (fromUser) {
+					double p = 38.3 + progress;
+					model.updateColor(null, null, null, progressBarToColorTemperature(progress), false);
+				}
+			}
+
+			@Override
+			public void onStartTrackingTouch(final SeekBar seekBar) {
+				// do nothing
+			}
+
+			@Override
+			public void onStopTrackingTouch(final SeekBar seekBar) {
+				double p = 38.3 + seekBar.getProgress();
+				model.updateColor(null, null, null, progressBarToColorTemperature(seekBar.getProgress()), false);
+			}
+		});
+
+		button.setOnClickListener(v -> {
+			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
+			hideSeekBars(listView);
+			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
+		});
+	}
 
 	/**
 	 * Prepare the animation button.
@@ -406,5 +456,27 @@ class DeviceAdapter extends BaseAdapter {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Convert seekbar value to color temperature.
+	 *
+	 * @param progress The seekbar value
+	 * @return The color temperature
+	 */
+	private static short progressBarToColorTemperature(int progress) {
+		double p = 38.3 + progress; // MAGIC_NUMBER
+		return (short) Math.max(1500, Math.min(9000, p * p)); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert color temperature to seekbar value.
+	 *
+	 * @param colorTemperature The color temperature
+	 * @return The seekbar value
+	 */
+	private static int colorTemperatureToProgress(short colorTemperature) {
+		int progress = (int) Math.round(Math.sqrt(TypeUtil.toUnsignedInt(colorTemperature)) - 38.3); // MAGIC_NUMBER
+		return Math.max(0, Math.min(57, progress)); // MAGIC_NUMBER
 	}
 }

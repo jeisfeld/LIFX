@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -42,7 +43,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light The light.
+	 * @param light   The light.
 	 */
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
@@ -98,67 +99,21 @@ public class LightViewModel extends DeviceViewModel {
 	}
 
 	/**
-	 * Set the brightness.
+	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param brightness the new brightness
-	 * @param force flag indicating if the change must be sent.
+	 * @param hue              the new hue. May be null to keep unchanged.
+	 * @param saturation       the new saturation. May be null to keep unchanged.
+	 * @param brightness       the new brightness. May be null to keep unchanged.
+	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
+	 * @param force            flag indicating if the change must be sent.
 	 */
-	public void setBrightness(final short brightness, final boolean force) {
+	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature, final boolean force) {
 		Color color = mColor.getValue();
 		if (color == null) {
 			return;
 		}
-		Color newColor = new Color(color.getHue(), color.getSaturation(), brightness, color.getColorTemperature());
-		mColor.postValue(newColor);
-
-		SetColorTask task;
-		synchronized (mRunningSetColorTasks) {
-			if (mRunningSetColorTasks.size() > 0 && !force) {
-				return;
-			}
-			task = new SetColorTask(this);
-		}
-
-		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newColor);
-	}
-
-	/**
-	 * Set the hue.
-	 *
-	 * @param hue the new hue
-	 * @param force flag indicating if the change must be sent.
-	 */
-	public void setHue(final short hue, final boolean force) {
-		Color color = mColor.getValue();
-		if (color == null) {
-			return;
-		}
-		Color newColor = new Color(hue, color.getSaturation(), color.getBrightness(), color.getColorTemperature());
-		mColor.postValue(newColor);
-
-		SetColorTask task;
-		synchronized (mRunningSetColorTasks) {
-			if (mRunningSetColorTasks.size() > 0 && !force) {
-				return;
-			}
-			task = new SetColorTask(this);
-		}
-
-		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newColor);
-	}
-
-	/**
-	 * Set the saturation.
-	 *
-	 * @param saturation the new saturation
-	 * @param force flag indicating if the change must be sent.
-	 */
-	public void setSaturation(final short saturation, final boolean force) {
-		Color color = mColor.getValue();
-		if (color == null) {
-			return;
-		}
-		Color newColor = new Color(color.getHue(), saturation, color.getBrightness(), color.getColorTemperature());
+		Color newColor = new Color(hue == null ? color.getHue() : hue, saturation == null ? color.getSaturation() : saturation,
+				brightness == null ? color.getBrightness() : brightness, colorTemperature == null ? color.getColorTemperature() : colorTemperature);
 		mColor.postValue(newColor);
 
 		SetColorTask task;
