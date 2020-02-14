@@ -1,9 +1,5 @@
 package de.jeisfeld.lifx.app.service;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,6 +11,10 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;

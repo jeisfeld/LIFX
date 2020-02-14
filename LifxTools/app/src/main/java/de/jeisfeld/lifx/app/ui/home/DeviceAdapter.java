@@ -2,21 +2,30 @@ package de.jeisfeld.lifx.app.ui.home;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import com.skydoves.colorpickerview.ColorPickerDialog;
+import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
+import com.skydoves.colorpickerview.listeners.ColorListener;
+import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
+import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.PorterDuff.Mode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
@@ -26,6 +35,7 @@ import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -36,6 +46,10 @@ class DeviceAdapter extends BaseAdapter {
 	 * The IDs of seekbars within this view.
 	 */
 	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarHue, R.id.seekBarSaturation, R.id.seekBarColorTemperature};
+	/**
+	 * Divisor for transform from short to byte.
+	 */
+	private static final int SHORT_TO_BYTE_FACTOR = 256;
 
 	/**
 	 * The list of devices.
@@ -177,6 +191,7 @@ class DeviceAdapter extends BaseAdapter {
 			LightViewModel lightModel = (LightViewModel) model;
 
 			if (device.getProduct().hasColor()) {
+				prepareColorPicker(view.findViewById(R.id.buttonColorPicker), lightModel);
 				prepareHueButton(view, view.findViewById(R.id.buttonHue), view.findViewById(R.id.seekBarHue), lightModel);
 				prepareSaturationButton(view, view.findViewById(R.id.buttonSaturation), view.findViewById(R.id.seekBarSaturation), lightModel);
 			}
@@ -195,7 +210,7 @@ class DeviceAdapter extends BaseAdapter {
 	 * Prepare the power button.
 	 *
 	 * @param powerButton The power button.
-	 * @param model       The device view model.
+	 * @param model The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
@@ -217,12 +232,77 @@ class DeviceAdapter extends BaseAdapter {
 	}
 
 	/**
+	 * Prepare the color picker.
+	 *
+	 * @param colorPickerButton The color picker button.
+	 * @param model The device view model.
+	 */
+	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
+		colorPickerButton.setVisibility(View.VISIBLE);
+
+		colorPickerButton.setOnClickListener(v -> {
+			ColorPickerDialog.Builder builder = new ColorPickerDialog.Builder(mContext)
+					.setTitle("ColorPicker Dialog")
+					.setPositiveButton("OK",
+							(ColorEnvelopeListener) (envelope, fromUser) -> {
+								// TODO
+							})
+					.setNegativeButton("Cancel",
+							(dialogInterface, i) -> dialogInterface.dismiss())
+					.attachAlphaSlideBar(true)
+					.attachBrightnessSlideBar(true);
+			final ColorPickerView colorPickerView = builder.getColorPickerView();
+			colorPickerView.setPaletteDrawable(Objects.requireNonNull(mContext.getDrawable(R.drawable.ic_color_wheel)));
+			colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
+				if (fromUser) {
+					float[] hsv = new float[3]; // MAGIC_NUMBER
+					android.graphics.Color.colorToHSV(color, hsv);
+					// Use alpha as color temperature
+					short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 57 / 255); // MAGIC_NUMBER
+					model.updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature), false);
+				}
+			});
+
+			// setup data on start
+			colorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(
+					() -> {
+						Color color = model.getColor().getValue();
+						if (color != null) {
+							int xRadius = colorPickerView.getMeasuredWidth() / 2;
+							int yRadius = colorPickerView.getMeasuredHeight() / 2;
+							double hue01 = TypeUtil.toDouble(color.getHue());
+							double saturation01 =
+									color.getSaturation() == 0 ? 0 : 0.1 + 0.9 * TypeUtil.toDouble(color.getSaturation()); // MAGIC_NUMBER
+
+							double x = saturation01 * Math.cos(2 * Math.PI * hue01);
+							double y = saturation01 * Math.sin(2 * Math.PI * hue01);
+
+							int pointX = (int) ((x + 1) * xRadius);
+							int pointY = (int) ((1 - y) * yRadius);
+							colorPickerView.moveSelectorPoint(pointX, pointY, getAndroidColor(color));
+
+							BrightnessSlideBar brightnessSlideBar = colorPickerView.getBrightnessSlider();
+							double realWidth = (brightnessSlideBar.getMeasuredWidth() - brightnessSlideBar.getMeasuredHeight())
+									/ (double) brightnessSlideBar.getMeasuredWidth();
+							brightnessSlideBar.setSelectorPosition(
+									(float) (TypeUtil.toDouble(color.getBrightness()) * realWidth + (1 - realWidth) / 2));
+
+							AlphaSlideBar alphaSlideBar = colorPickerView.getAlphaSlideBar();
+							double relativeColorTemp = colorTemperatureToProgress(color.getColorTemperature()) / 57.0; // MAGIC_NUMBER
+							alphaSlideBar.setSelectorPosition((float) (relativeColorTemp * realWidth + (1 - realWidth) / 2));
+						}
+					});
+			builder.show();
+		});
+	}
+
+	/**
 	 * Prepare the brightness button and seekbar.
 	 *
 	 * @param listView The listView.
-	 * @param button   The brightness button.
-	 * @param seekBar  The brightness seekbar.
-	 * @param model    The light view model.
+	 * @param button The brightness button.
+	 * @param seekBar The brightness seekbar.
+	 * @param model The light view model.
 	 */
 	private void prepareBrightnessButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
 		model.getColor().observe(mLifeCycleOwner, color -> {
@@ -265,9 +345,9 @@ class DeviceAdapter extends BaseAdapter {
 	 * Prepare the hue button and seekbar.
 	 *
 	 * @param listView The listView.
-	 * @param button   The hue button.
-	 * @param seekBar  The hue seekbar.
-	 * @param model    The light view model.
+	 * @param button The hue button.
+	 * @param seekBar The hue seekbar.
+	 * @param model The light view model.
 	 */
 	private void prepareHueButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
 		button.setVisibility(View.VISIBLE);
@@ -288,8 +368,8 @@ class DeviceAdapter extends BaseAdapter {
 				if (fromUser) {
 					model.updateColor((short) progress, null, null, null, false);
 				}
-				seekBar.getThumb().setColorFilter(
-						Color.HSVToColor(new float[]{(float) (TypeUtil.toDouble((short) progress) * 360), 1f, 1f}), Mode.MULTIPLY); // MAGIC_NUMBER
+				seekBar.getThumb().setColorFilter(android.graphics.Color.HSVToColor(
+						new float[] {(float) (TypeUtil.toDouble((short) progress) * 360), 1f, 1f}), Mode.MULTIPLY); // MAGIC_NUMBER
 			}
 
 			@Override
@@ -314,9 +394,9 @@ class DeviceAdapter extends BaseAdapter {
 	 * Prepare the saturation button and seekbar.
 	 *
 	 * @param listView The listView.
-	 * @param button   The saturation button.
-	 * @param seekBar  The saturation seekbar.
-	 * @param model    The light view model.
+	 * @param button The saturation button.
+	 * @param seekBar The saturation seekbar.
+	 * @param model The light view model.
 	 */
 	private void prepareSaturationButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
 		button.setVisibility(View.VISIBLE);
@@ -361,9 +441,9 @@ class DeviceAdapter extends BaseAdapter {
 	 * Prepare the color temperature button and seekbar.
 	 *
 	 * @param listView The listView.
-	 * @param button   The color temperature button.
-	 * @param seekBar  The color temperature seekbar.
-	 * @param model    The light view model.
+	 * @param button The color temperature button.
+	 * @param seekBar The color temperature seekbar.
+	 * @param model The light view model.
 	 */
 	private void prepareColorTemperatureButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
 		button.setVisibility(View.VISIBLE);
@@ -382,7 +462,6 @@ class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					double p = 38.3 + progress;
 					model.updateColor(null, null, null, progressBarToColorTemperature(progress), false);
 				}
 			}
@@ -394,7 +473,6 @@ class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				double p = 38.3 + seekBar.getProgress();
 				model.updateColor(null, null, null, progressBarToColorTemperature(seekBar.getProgress()), false);
 			}
 		});
@@ -410,7 +488,7 @@ class DeviceAdapter extends BaseAdapter {
 	 * Prepare the animation button.
 	 *
 	 * @param animationButton The animation button.
-	 * @param model           The multizone device view model.
+	 * @param model The multizone device view model.
 	 */
 	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
@@ -464,7 +542,7 @@ class DeviceAdapter extends BaseAdapter {
 	 * @param progress The seekbar value
 	 * @return The color temperature
 	 */
-	private static short progressBarToColorTemperature(int progress) {
+	private static short progressBarToColorTemperature(final int progress) {
 		double p = 38.3 + progress; // MAGIC_NUMBER
 		return (short) Math.max(1500, Math.min(9000, p * p)); // MAGIC_NUMBER
 	}
@@ -475,8 +553,23 @@ class DeviceAdapter extends BaseAdapter {
 	 * @param colorTemperature The color temperature
 	 * @return The seekbar value
 	 */
-	private static int colorTemperatureToProgress(short colorTemperature) {
+	private static int colorTemperatureToProgress(final short colorTemperature) {
 		int progress = (int) Math.round(Math.sqrt(TypeUtil.toUnsignedInt(colorTemperature)) - 38.3); // MAGIC_NUMBER
 		return Math.max(0, Math.min(57, progress)); // MAGIC_NUMBER
 	}
+
+	/**
+	 * Gonvert a color to Android format.
+	 *
+	 * @param color The Android color.
+	 * @return The color as int.
+	 */
+	private static Integer getAndroidColor(final Color color) {
+		Color.RGBK rgbk = color.toRgbk();
+		return android.graphics.Color.rgb(
+				TypeUtil.toUnsignedInt(rgbk.getRed()) / SHORT_TO_BYTE_FACTOR,
+				TypeUtil.toUnsignedInt(rgbk.getGreen()) / SHORT_TO_BYTE_FACTOR,
+				TypeUtil.toUnsignedInt(rgbk.getBlue()) / SHORT_TO_BYTE_FACTOR);
+	}
+
 }

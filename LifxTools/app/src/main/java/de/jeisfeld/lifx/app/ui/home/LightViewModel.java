@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -43,7 +42,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light   The light.
+	 * @param light The light.
 	 */
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
@@ -101,11 +100,11 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param hue              the new hue. May be null to keep unchanged.
-	 * @param saturation       the new saturation. May be null to keep unchanged.
-	 * @param brightness       the new brightness. May be null to keep unchanged.
+	 * @param hue the new hue. May be null to keep unchanged.
+	 * @param saturation the new saturation. May be null to keep unchanged.
+	 * @param brightness the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
-	 * @param force            flag indicating if the change must be sent.
+	 * @param force flag indicating if the change must be sent.
 	 */
 	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature, final boolean force) {
 		Color color = mColor.getValue();
@@ -114,7 +113,17 @@ public class LightViewModel extends DeviceViewModel {
 		}
 		Color newColor = new Color(hue == null ? color.getHue() : hue, saturation == null ? color.getSaturation() : saturation,
 				brightness == null ? color.getBrightness() : brightness, colorTemperature == null ? color.getColorTemperature() : colorTemperature);
-		mColor.postValue(newColor);
+		updateColor(newColor, force);
+	}
+
+	/**
+	 * Set the color.
+	 *
+	 * @param color the color to be set.
+	 * @param force flag indicating if the change must be sent.
+	 */
+	public void updateColor(final Color color, final boolean force) {
+		mColor.postValue(color);
 
 		SetColorTask task;
 		synchronized (mRunningSetColorTasks) {
@@ -123,8 +132,7 @@ public class LightViewModel extends DeviceViewModel {
 			}
 			task = new SetColorTask(this);
 		}
-
-		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, newColor);
+		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, color);
 	}
 
 	/**
