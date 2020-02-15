@@ -1,0 +1,464 @@
+/*
+ * Original file designed and developed by 2017 skydoves (Jaewoong Eum)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package de.jeisfeld.lifx.app.util;
+
+import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
+import com.skydoves.colorpickerview.listeners.ColorListener;
+import com.skydoves.colorpickerview.listeners.ColorPickerViewListener;
+import com.skydoves.colorpickerview.preference.ColorPickerPreferenceManager;
+import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
+import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
+import androidx.appcompat.app.AlertDialog;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.ui.home.DeviceAdapter;
+import de.jeisfeld.lifx.app.ui.home.LightViewModel;
+import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
+
+/**
+ * Variation of original com.skydoves.colorpickerview.ColorPickerDialog.
+ */
+public class ColorPickerDialog extends AlertDialog {
+	/**
+	 * Divisor for transform from short to byte.
+	 */
+	private static final int SHORT_TO_BYTE_FACTOR = 256;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param context The context.
+	 */
+	public ColorPickerDialog(final Context context) {
+		super(context);
+	}
+
+	/**
+	 * Convert a color to Android format.
+	 *
+	 * @param color The Android color.
+	 * @return The color as int.
+	 */
+	private static Integer getAndroidColor(final Color color) {
+		Color.RGBK rgbk = color.toRgbk();
+		return android.graphics.Color.rgb(
+				TypeUtil.toUnsignedInt(rgbk.getRed()) / SHORT_TO_BYTE_FACTOR,
+				TypeUtil.toUnsignedInt(rgbk.getGreen()) / SHORT_TO_BYTE_FACTOR,
+				TypeUtil.toUnsignedInt(rgbk.getBlue()) / SHORT_TO_BYTE_FACTOR);
+	}
+
+	/**
+	 * Update a color picker view with color from a light.
+	 *
+	 * @param colorPickerView The color picker view to be updated.
+	 * @param model the light date from which to update.
+	 */
+	public static void updateColorPickerFromLight(final ColorPickerView colorPickerView, final LightViewModel model) {
+		Color color = model.getColor().getValue();
+		if (color != null) {
+			int radius = colorPickerView.getMeasuredWidth() / 2;
+			int heightDifference = (colorPickerView.getMeasuredHeight() - colorPickerView.getMeasuredWidth()) / 2;
+			double hue01 = TypeUtil.toDouble(color.getHue());
+			double saturation01 =
+					color.getSaturation() == 0 ? 0 : 0.1 + 0.9 * TypeUtil.toDouble(color.getSaturation()); // MAGIC_NUMBER
+
+			double x = saturation01 * Math.cos(2 * Math.PI * hue01);
+			double y = saturation01 * Math.sin(2 * Math.PI * hue01);
+
+			int pointX;
+			int pointY;
+			if (heightDifference >= 0) {
+				pointX = (int) ((x + 1) * radius);
+				pointY = (int) ((1 - y) * radius) + heightDifference;
+			}
+			else {
+				pointX = (int) ((x + 1) * radius) - heightDifference;
+				pointY = (int) ((1 - y) * radius);
+			}
+			colorPickerView.moveSelectorPoint(pointX, pointY, getAndroidColor(color));
+
+			BrightnessSlideBar brightnessSlideBar = colorPickerView.getBrightnessSlider();
+			double realWidth = (brightnessSlideBar.getMeasuredWidth() - brightnessSlideBar.getMeasuredHeight())
+					/ (double) brightnessSlideBar.getMeasuredWidth();
+			brightnessSlideBar.setSelectorPosition(
+					(float) (TypeUtil.toDouble(color.getBrightness()) * realWidth + (1 - realWidth) / 2));
+
+			AlphaSlideBar alphaSlideBar = colorPickerView.getAlphaSlideBar();
+			double relativeColorTemp = DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 57.0; // MAGIC_NUMBER
+			alphaSlideBar.setSelectorPosition((float) (relativeColorTemp * realWidth + (1 - realWidth) / 2));
+		}
+	}
+
+	/**
+	 * Builder class for create {@link ColorPickerDialog}.
+	 */
+	public static class Builder extends AlertDialog.Builder {
+		/**
+		 * The colorPickerView contained in the dialog.
+		 */
+		private ColorPickerView mColorPickerView;
+		/**
+		 * The parent view.
+		 */
+		private final View mParentView;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param context The context
+		 * @param parentView The parent view
+		 */
+		public Builder(final Context context, final View parentView) {
+			super(context);
+			mParentView = parentView;
+			prepare();
+		}
+
+		/**
+		 * Constructor.
+		 *
+		 * @param context The context
+		 * @param layoutResourceId The layout resource
+		 */
+		public Builder(final Context context, final int layoutResourceId) {
+			super(context);
+			LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			assert layoutInflater != null;
+			mParentView = layoutInflater.inflate(layoutResourceId, null);
+			prepare();
+		}
+
+		/**
+		 * Prepare the color picker.
+		 */
+		private void prepare() {
+			mColorPickerView = mParentView.findViewById(R.id.ColorPickerView);
+			ColorTemperatureSlideBar colorTemperatureSlider = mParentView.findViewById(R.id.ColorTemperatureSlideBar);
+			if (colorTemperatureSlider != null) {
+				mColorPickerView.attachAlphaSlider(colorTemperatureSlider);
+			}
+			BrightnessSlideBar brightnessSlider = mParentView.findViewById(R.id.BrightnessSlideBar);
+			if (brightnessSlider != null) {
+				mColorPickerView.attachBrightnessSlider(brightnessSlider);
+			}
+			mColorPickerView.setColorListener(
+					(ColorEnvelopeListener) (envelope, fromUser) -> {
+						// nothing
+					});
+			super.setView(mParentView);
+		}
+
+		/**
+		 * Prepare the view to initialize with data from a light.
+		 *
+		 * @param model The light view model.
+		 * @return {@link Builder}.
+		 */
+		public Builder initializeFromLight(final LightViewModel model) {
+			mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model));
+			return this;
+		}
+
+		/**
+		 * gets {@link ColorPickerView} on {@link Builder}.
+		 *
+		 * @return {@link ColorPickerView}.
+		 */
+		public ColorPickerView getColorPickerView() {
+			return mColorPickerView;
+		}
+
+		/**
+		 * sets positive button with {@link ColorPickerViewListener} on the {@link ColorPickerDialog}.
+		 *
+		 * @param textId string resource integer id.
+		 * @param colorListener {@link ColorListener}.
+		 * @return {@link Builder}.
+		 */
+		public Builder setPositiveButton(final int textId, final ColorPickerViewListener colorListener) {
+			super.setPositiveButton(textId, getOnClickListener(colorListener));
+			return this;
+		}
+
+		/**
+		 * sets positive button with {@link ColorPickerViewListener} on the {@link ColorPickerDialog}.
+		 *
+		 * @param text string text value.
+		 * @param colorListener {@link ColorListener}.
+		 * @return {@link Builder}.
+		 */
+		public Builder setPositiveButton(
+				final CharSequence text, final ColorPickerViewListener colorListener) {
+			super.setPositiveButton(text, getOnClickListener(colorListener));
+			return this;
+		}
+
+		/**
+		 * Set the color listerer.
+		 *
+		 * @param colorListener The color listener.
+		 * @return {@link Builder}.
+		 */
+		public Builder setColorListener(final ColorListener colorListener) {
+			mColorPickerView.setColorListener(colorListener);
+			return this;
+		}
+
+		@Override
+		public final Builder setNegativeButton(final int textId, final OnClickListener listener) {
+			super.setNegativeButton(textId, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setNegativeButton(final CharSequence text, final OnClickListener listener) {
+			super.setNegativeButton(text, listener);
+			return this;
+		}
+
+		/**
+		 * Get the onClickListener.
+		 *
+		 * @param colorListener The color listener.
+		 * @return The onClickListener.
+		 */
+		private OnClickListener getOnClickListener(final ColorPickerViewListener colorListener) {
+			return (dialogInterface, i) -> {
+				if (colorListener instanceof ColorListener) {
+					((ColorListener) colorListener).onColorSelected(mColorPickerView.getColor(), true);
+				}
+				else if (colorListener instanceof ColorEnvelopeListener) {
+					((ColorEnvelopeListener) colorListener)
+							.onColorSelected(mColorPickerView.getColorEnvelope(), true);
+				}
+				if (getColorPickerView() != null) {
+					ColorPickerPreferenceManager.getInstance(getContext())
+							.saveColorPickerData(getColorPickerView());
+				}
+			};
+		}
+
+		/**
+		 * shows a created {@link ColorPickerDialog}.
+		 *
+		 * @return {@link AlertDialog}.
+		 */
+		@Override
+		public AlertDialog show() {
+			super.setView(mParentView);
+			return super.show();
+		}
+
+		@Override
+		public final Builder setTitle(final int titleId) {
+			super.setTitle(titleId);
+			return this;
+		}
+
+		@Override
+		public final Builder setTitle(final CharSequence title) {
+			super.setTitle(title);
+			return this;
+		}
+
+		@Override
+		public final Builder setCustomTitle(final View customTitleView) {
+			super.setCustomTitle(customTitleView);
+			return this;
+		}
+
+		@Override
+		public final Builder setMessage(final int messageId) {
+			super.setMessage(getContext().getString(messageId));
+			return this;
+		}
+
+		@Override
+		public final Builder setMessage(final CharSequence message) {
+			super.setMessage(message);
+			return this;
+		}
+
+		@Override
+		public final Builder setIcon(final int iconId) {
+			super.setIcon(iconId);
+			return this;
+		}
+
+		@Override
+		public final Builder setIcon(final Drawable icon) {
+			super.setIcon(icon);
+			return this;
+		}
+
+		@Override
+		public final Builder setIconAttribute(final int attrId) {
+			super.setIconAttribute(attrId);
+			return this;
+		}
+
+		@Override
+		public final Builder setCancelable(final boolean cancelable) {
+			super.setCancelable(cancelable);
+			return this;
+		}
+
+		@Override
+		public final Builder setOnCancelListener(final OnCancelListener onCancelListener) {
+			super.setOnCancelListener(onCancelListener);
+			return this;
+		}
+
+		@Override
+		public final Builder setOnDismissListener(final OnDismissListener onDismissListener) {
+			super.setOnDismissListener(onDismissListener);
+			return this;
+		}
+
+		@Override
+		public final Builder setOnKeyListener(final OnKeyListener onKeyListener) {
+			super.setOnKeyListener(onKeyListener);
+			return this;
+		}
+
+		@Override
+		public final Builder setPositiveButton(final int textId, final OnClickListener listener) {
+			super.setPositiveButton(textId, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setPositiveButton(final CharSequence text, final OnClickListener listener) {
+			super.setPositiveButton(text, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setNeutralButton(final int textId, final OnClickListener listener) {
+			super.setNeutralButton(textId, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setNeutralButton(final CharSequence text, final OnClickListener listener) {
+			super.setNeutralButton(text, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setItems(final int itemsId, final OnClickListener listener) {
+			super.setItems(itemsId, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setItems(final CharSequence[] items, final OnClickListener listener) {
+			super.setItems(items, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setAdapter(final ListAdapter adapter, final OnClickListener listener) {
+			super.setAdapter(adapter, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setCursor(final Cursor cursor, final OnClickListener listener, final String labelColumn) {
+			super.setCursor(cursor, listener, labelColumn);
+			return this;
+		}
+
+		@Override
+		public final Builder setMultiChoiceItems(
+				final int itemsId, final boolean[] checkedItems, final OnMultiChoiceClickListener listener) {
+			super.setMultiChoiceItems(itemsId, checkedItems, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setMultiChoiceItems(
+				final CharSequence[] items, final boolean[] checkedItems, final OnMultiChoiceClickListener listener) {
+			super.setMultiChoiceItems(items, checkedItems, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setMultiChoiceItems(
+				final Cursor cursor,
+				final String isCheckedColumn,
+				final String labelColumn,
+				final OnMultiChoiceClickListener listener) {
+			super.setMultiChoiceItems(cursor, isCheckedColumn, labelColumn, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setSingleChoiceItems(final int itemsId, final int checkedItem, final OnClickListener listener) {
+			super.setSingleChoiceItems(itemsId, checkedItem, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setSingleChoiceItems(
+				final Cursor cursor, final int checkedItem, final String labelColumn, final OnClickListener listener) {
+			super.setSingleChoiceItems(cursor, checkedItem, labelColumn, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setSingleChoiceItems(
+				final CharSequence[] items, final int checkedItem, final OnClickListener listener) {
+			super.setSingleChoiceItems(items, checkedItem, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setSingleChoiceItems(
+				final ListAdapter adapter, final int checkedItem, final OnClickListener listener) {
+			super.setSingleChoiceItems(adapter, checkedItem, listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setOnItemSelectedListener(final AdapterView.OnItemSelectedListener listener) {
+			super.setOnItemSelectedListener(listener);
+			return this;
+		}
+
+		@Override
+		public final Builder setView(final int layoutResId) {
+			super.setView(layoutResId);
+			return this;
+		}
+
+		@Override
+		public final Builder setView(final View view) {
+			super.setView(view);
+			return this;
+		}
+	}
+}

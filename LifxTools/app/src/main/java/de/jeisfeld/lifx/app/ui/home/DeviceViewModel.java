@@ -33,6 +33,11 @@ public class DeviceViewModel extends ViewModel {
 	 * The stored power of the device.
 	 */
 	protected final MutableLiveData<Power> mPower; // SUPPRESS_CHECKSTYLE
+	/**
+	 * The flag if the device is selected.
+	 */
+	protected final MutableLiveData<Boolean> mIsSelected; // SUPPRESS_CHECKSTYLE
+
 
 	/**
 	 * Constructor.
@@ -44,6 +49,8 @@ public class DeviceViewModel extends ViewModel {
 		mContext = new WeakReference<>(context);
 		mDevice = device;
 		mPower = new MutableLiveData<>();
+		mIsSelected = new MutableLiveData<>();
+		mIsSelected.setValue(false);
 	}
 
 	/**
@@ -53,6 +60,15 @@ public class DeviceViewModel extends ViewModel {
 	 */
 	protected LiveData<Power> getPower() {
 		return mPower;
+	}
+
+	/**
+	 * Get the selected flag.
+	 *
+	 * @return The power.
+	 */
+	protected LiveData<Boolean> getIsSelected() {
+		return mIsSelected;
 	}
 
 	/**

@@ -1,35 +1,30 @@
 package de.jeisfeld.lifx.app.ui.home;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.skydoves.colorpickerview.ColorPickerDialog;
 import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
-import com.skydoves.colorpickerview.listeners.ColorListener;
-import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
-import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.PorterDuff.Mode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
+import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
+import de.jeisfeld.lifx.app.util.ColorPickerDialog;
+import de.jeisfeld.lifx.app.util.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.lan.Device;
@@ -41,15 +36,11 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
 /**
  * An adapter for the list of devices in the home fragment.
  */
-class DeviceAdapter extends BaseAdapter {
+public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * The IDs of seekbars within this view.
 	 */
 	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarHue, R.id.seekBarSaturation, R.id.seekBarColorTemperature};
-	/**
-	 * Divisor for transform from short to byte.
-	 */
-	private static final int SHORT_TO_BYTE_FACTOR = 256;
 
 	/**
 	 * The list of devices.
@@ -64,6 +55,11 @@ class DeviceAdapter extends BaseAdapter {
 	 * The context.
 	 */
 	private final Context mContext;
+	/**
+	 * Reference to the fragment.
+	 */
+	private final WeakReference<Fragment> mFragment;
+
 	/**
 	 * The lifecycle owner.
 	 */
@@ -87,6 +83,7 @@ class DeviceAdapter extends BaseAdapter {
 		super();
 		mDevices = DeviceRegistry.getInstance().getDevices();
 		mContext = fragment.getContext();
+		mFragment = new WeakReference<>(fragment);
 		mLifeCycleOwner = fragment.getViewLifecycleOwner();
 		mNoDeviceCallback = callback;
 		for (Device device : mDevices) {
@@ -122,17 +119,17 @@ class DeviceAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public int getCount() {
+	public final int getCount() {
 		return mDevices.size();
 	}
 
 	@Override
-	public Device getItem(final int position) {
+	public final Device getItem(final int position) {
 		return mDevices.get(position);
 	}
 
 	@Override
-	public long getItemId(final int position) {
+	public final long getItemId(final int position) {
 		return position;
 	}
 
@@ -147,7 +144,7 @@ class DeviceAdapter extends BaseAdapter {
 
 	@SuppressLint("ViewHolder")
 	@Override
-	public synchronized View getView(final int position, final View convertView, final ViewGroup parent) {
+	public final synchronized View getView(final int position, final View convertView, final ViewGroup parent) {
 		final View view;
 
 		// do not use convertView, as information is stored in the views
@@ -161,7 +158,7 @@ class DeviceAdapter extends BaseAdapter {
 
 		int layoutId = R.layout.list_view_home_device;
 		if (device instanceof MultiZoneLight) {
-			layoutId = R.layout.list_view_home_multizone;
+			layoutId = R.layout.list_view_home_light;
 		}
 		else if (device instanceof Light) {
 			layoutId = R.layout.list_view_home_light;
@@ -173,6 +170,20 @@ class DeviceAdapter extends BaseAdapter {
 		text.setText(device.getLabel());
 
 		DeviceViewModel model = mViewModels.get(position);
+
+		final CheckBox checkBoxSelectLight = view.findViewById(R.id.checkboxSelectLight);
+		if (checkBoxSelectLight != null) {
+			checkBoxSelectLight.setOnClickListener(v -> {
+				model.mIsSelected.setValue(((CheckBox) v).isChecked());
+				Fragment fragment = mFragment.get();
+				if (fragment != null && model instanceof LightViewModel && ((CheckBox) v).isChecked()) {
+					ColorPickerView colorPickerView = Objects.requireNonNull(fragment.getView()).findViewById(R.id.ColorPickerView);
+					if (colorPickerView != null) {
+						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, (LightViewModel) model);
+					}
+				}
+			});
+		}
 
 		preparePowerButton(view.findViewById(R.id.buttonPower), model);
 
@@ -191,9 +202,10 @@ class DeviceAdapter extends BaseAdapter {
 			LightViewModel lightModel = (LightViewModel) model;
 
 			if (device.getProduct().hasColor()) {
-				prepareColorPicker(view.findViewById(R.id.buttonColorPicker), lightModel);
-				prepareHueButton(view, view.findViewById(R.id.buttonHue), view.findViewById(R.id.seekBarHue), lightModel);
-				prepareSaturationButton(view, view.findViewById(R.id.buttonSaturation), view.findViewById(R.id.seekBarSaturation), lightModel);
+				Button buttonColorPicker = view.findViewById(R.id.buttonColorPicker);
+				if (buttonColorPicker != null) {
+					prepareColorPicker(buttonColorPicker, lightModel);
+				}
 			}
 			prepareBrightnessButton(view, view.findViewById(R.id.buttonBrightness), view.findViewById(R.id.seekBarBrightness), lightModel);
 			prepareColorTemperatureButton(view, view.findViewById(R.id.buttonColorTemperature),
@@ -232,7 +244,7 @@ class DeviceAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * Prepare the color picker.
+	 * Prepare the color picker started via button.
 	 *
 	 * @param colorPickerButton The color picker button.
 	 * @param model The device view model.
@@ -240,60 +252,17 @@ class DeviceAdapter extends BaseAdapter {
 	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
 		colorPickerButton.setVisibility(View.VISIBLE);
 
-		colorPickerButton.setOnClickListener(v -> {
-			ColorPickerDialog.Builder builder = new ColorPickerDialog.Builder(mContext)
-					.setTitle("ColorPicker Dialog")
-					.setPositiveButton("OK",
-							(ColorEnvelopeListener) (envelope, fromUser) -> {
-								// TODO
-							})
-					.setNegativeButton("Cancel",
-							(dialogInterface, i) -> dialogInterface.dismiss())
-					.attachAlphaSlideBar(true)
-					.attachBrightnessSlideBar(true);
-			final ColorPickerView colorPickerView = builder.getColorPickerView();
-			colorPickerView.setPaletteDrawable(Objects.requireNonNull(mContext.getDrawable(R.drawable.ic_color_wheel)));
-			colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
-				if (fromUser) {
-					float[] hsv = new float[3]; // MAGIC_NUMBER
-					android.graphics.Color.colorToHSV(color, hsv);
-					// Use alpha as color temperature
-					short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 57 / 255); // MAGIC_NUMBER
-					model.updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature), false);
-				}
-			});
-
-			// setup data on start
-			colorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(
-					() -> {
-						Color color = model.getColor().getValue();
-						if (color != null) {
-							int xRadius = colorPickerView.getMeasuredWidth() / 2;
-							int yRadius = colorPickerView.getMeasuredHeight() / 2;
-							double hue01 = TypeUtil.toDouble(color.getHue());
-							double saturation01 =
-									color.getSaturation() == 0 ? 0 : 0.1 + 0.9 * TypeUtil.toDouble(color.getSaturation()); // MAGIC_NUMBER
-
-							double x = saturation01 * Math.cos(2 * Math.PI * hue01);
-							double y = saturation01 * Math.sin(2 * Math.PI * hue01);
-
-							int pointX = (int) ((x + 1) * xRadius);
-							int pointY = (int) ((1 - y) * yRadius);
-							colorPickerView.moveSelectorPoint(pointX, pointY, getAndroidColor(color));
-
-							BrightnessSlideBar brightnessSlideBar = colorPickerView.getBrightnessSlider();
-							double realWidth = (brightnessSlideBar.getMeasuredWidth() - brightnessSlideBar.getMeasuredHeight())
-									/ (double) brightnessSlideBar.getMeasuredWidth();
-							brightnessSlideBar.setSelectorPosition(
-									(float) (TypeUtil.toDouble(color.getBrightness()) * realWidth + (1 - realWidth) / 2));
-
-							AlphaSlideBar alphaSlideBar = colorPickerView.getAlphaSlideBar();
-							double relativeColorTemp = colorTemperatureToProgress(color.getColorTemperature()) / 57.0; // MAGIC_NUMBER
-							alphaSlideBar.setSelectorPosition((float) (relativeColorTemp * realWidth + (1 - realWidth) / 2));
-						}
-					});
-			builder.show();
-		});
+		colorPickerButton.setOnClickListener(v -> new Builder(mContext, R.layout.dialog_colorpicker)
+				.initializeFromLight(model)
+				.setColorListener((color, fromUser) -> {
+					if (fromUser) {
+						float[] hsv = new float[3]; // MAGIC_NUMBER
+						android.graphics.Color.colorToHSV(color, hsv);
+						// Use alpha as color temperature
+						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 57 / 255); // MAGIC_NUMBER
+						model.updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature), false);
+					}
+				}).show());
 	}
 
 	/**
@@ -331,102 +300,6 @@ class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
 				model.updateColor(null, null, (short) seekBar.getProgress(), null, true);
-			}
-		});
-
-		button.setOnClickListener(v -> {
-			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
-			hideSeekBars(listView);
-			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
-		});
-	}
-
-	/**
-	 * Prepare the hue button and seekbar.
-	 *
-	 * @param listView The listView.
-	 * @param button The hue button.
-	 * @param seekBar The hue seekbar.
-	 * @param model The light view model.
-	 */
-	private void prepareHueButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
-		button.setVisibility(View.VISIBLE);
-
-		model.getColor().observe(mLifeCycleOwner, color -> {
-			if (color == null) {
-				seekBar.setEnabled(false);
-			}
-			else {
-				seekBar.setEnabled(true);
-				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getHue()));
-			}
-		});
-
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
-				if (fromUser) {
-					model.updateColor((short) progress, null, null, null, false);
-				}
-				seekBar.getThumb().setColorFilter(android.graphics.Color.HSVToColor(
-						new float[] {(float) (TypeUtil.toDouble((short) progress) * 360), 1f, 1f}), Mode.MULTIPLY); // MAGIC_NUMBER
-			}
-
-			@Override
-			public void onStartTrackingTouch(final SeekBar seekBar) {
-				// do nothing
-			}
-
-			@Override
-			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor((short) seekBar.getProgress(), null, null, null, true);
-			}
-		});
-
-		button.setOnClickListener(v -> {
-			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
-			hideSeekBars(listView);
-			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
-		});
-	}
-
-	/**
-	 * Prepare the saturation button and seekbar.
-	 *
-	 * @param listView The listView.
-	 * @param button The saturation button.
-	 * @param seekBar The saturation seekbar.
-	 * @param model The light view model.
-	 */
-	private void prepareSaturationButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
-		button.setVisibility(View.VISIBLE);
-
-		model.getColor().observe(mLifeCycleOwner, color -> {
-			if (color == null) {
-				seekBar.setEnabled(false);
-			}
-			else {
-				seekBar.setEnabled(true);
-				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getSaturation()));
-			}
-		});
-
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
-				if (fromUser) {
-					model.updateColor(null, (short) progress, null, null, false);
-				}
-			}
-
-			@Override
-			public void onStartTrackingTouch(final SeekBar seekBar) {
-				// do nothing
-			}
-
-			@Override
-			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor(null, (short) seekBar.getProgress(), null, null, false);
 			}
 		});
 
@@ -537,12 +410,27 @@ class DeviceAdapter extends BaseAdapter {
 	}
 
 	/**
+	 * Get all checked devices.
+	 *
+	 * @return The list of checked devices.
+	 */
+	protected List<DeviceViewModel> getCheckedDevices() {
+		List<DeviceViewModel> checkedDevices = new ArrayList<>();
+		for (DeviceViewModel model : mViewModels) {
+			if (model.getIsSelected().getValue()) {
+				checkedDevices.add(model);
+			}
+		}
+		return checkedDevices;
+	}
+
+	/**
 	 * Convert seekbar value to color temperature.
 	 *
 	 * @param progress The seekbar value
 	 * @return The color temperature
 	 */
-	private static short progressBarToColorTemperature(final int progress) {
+	protected static short progressBarToColorTemperature(final int progress) {
 		double p = 38.3 + progress; // MAGIC_NUMBER
 		return (short) Math.max(1500, Math.min(9000, p * p)); // MAGIC_NUMBER
 	}
@@ -553,23 +441,9 @@ class DeviceAdapter extends BaseAdapter {
 	 * @param colorTemperature The color temperature
 	 * @return The seekbar value
 	 */
-	private static int colorTemperatureToProgress(final short colorTemperature) {
+	public static int colorTemperatureToProgress(final short colorTemperature) {
 		int progress = (int) Math.round(Math.sqrt(TypeUtil.toUnsignedInt(colorTemperature)) - 38.3); // MAGIC_NUMBER
 		return Math.max(0, Math.min(57, progress)); // MAGIC_NUMBER
-	}
-
-	/**
-	 * Gonvert a color to Android format.
-	 *
-	 * @param color The Android color.
-	 * @return The color as int.
-	 */
-	private static Integer getAndroidColor(final Color color) {
-		Color.RGBK rgbk = color.toRgbk();
-		return android.graphics.Color.rgb(
-				TypeUtil.toUnsignedInt(rgbk.getRed()) / SHORT_TO_BYTE_FACTOR,
-				TypeUtil.toUnsignedInt(rgbk.getGreen()) / SHORT_TO_BYTE_FACTOR,
-				TypeUtil.toUnsignedInt(rgbk.getBlue()) / SHORT_TO_BYTE_FACTOR);
 	}
 
 }

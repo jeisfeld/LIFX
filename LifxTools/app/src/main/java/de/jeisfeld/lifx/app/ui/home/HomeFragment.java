@@ -1,8 +1,13 @@
 package de.jeisfeld.lifx.app.ui.home;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorListener;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,12 +18,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
+import de.jeisfeld.lifx.app.util.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * The home fragment of the app.
@@ -44,10 +52,15 @@ public class HomeFragment extends ListFragment {
 
 		if (DeviceRegistry.getInstance().getDevices().size() == 0) {
 			getListView().setVisibility(View.GONE);
-			getView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
+			Objects.requireNonNull(getView()).findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}
 		final DeviceAdapter adapter = new DeviceAdapter(this, new NoDeviceCallback());
 		setListAdapter(adapter);
+
+		ConstraintLayout layoutColorPicker = Objects.requireNonNull(getView()).findViewById(R.id.layoutColorPicker);
+		if (layoutColorPicker != null) {
+			prepareColorPicker(layoutColorPicker);
+		}
 
 		mReceiver = new BroadcastReceiver() {
 			@Override
@@ -65,7 +78,7 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
-		LocalBroadcastManager.getInstance(getContext()).registerReceiver(mReceiver,
+		LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).registerReceiver(mReceiver,
 				new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
 
 		mExecutor = Executors.newScheduledThreadPool(1);
@@ -82,7 +95,32 @@ public class HomeFragment extends ListFragment {
 		mExecutor.shutdown();
 		mExecutor = null;
 
-		LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mReceiver);
+		LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).unregisterReceiver(mReceiver);
+	}
+
+	/**
+	 * Prepare the color picker shown in ConstraintLayout.
+	 *
+	 * @param layoutColorPicker The color picker layout.
+	 */
+	private void prepareColorPicker(final ConstraintLayout layoutColorPicker) {
+		Builder builder = new Builder(getContext(), layoutColorPicker);
+		final ColorPickerView colorPickerView = builder.getColorPickerView();
+		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
+			if (fromUser) {
+				float[] hsv = new float[3]; // MAGIC_NUMBER
+				android.graphics.Color.colorToHSV(color, hsv);
+				// Use alpha as color temperature
+				short colorTemperature = DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 57 / 255); // MAGIC_NUMBER
+
+				List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
+				for (DeviceViewModel model : checkedDevices) {
+					if (model instanceof LightViewModel) {
+						((LightViewModel) model).updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature), false);
+					}
+				}
+			}
+		});
 	}
 
 	/**
@@ -95,7 +133,7 @@ public class HomeFragment extends ListFragment {
 		 * @param hasDevice true if there is a device.
 		 */
 		void onChange(final boolean hasDevice) {
-			TextView textViewNoDevice = getView().findViewById(R.id.textViewNoDevice);
+			TextView textViewNoDevice = Objects.requireNonNull(getView()).findViewById(R.id.textViewNoDevice);
 			if (hasDevice) {
 				textViewNoDevice.setVisibility(View.GONE);
 				getListView().setVisibility(View.VISIBLE);

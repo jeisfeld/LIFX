@@ -7,6 +7,11 @@
     android:paddingTop="@dimen/list_vertical_margin"
     android:paddingBottom="@dimen/list_vertical_margin">
 
+    <CheckBox
+        android:id="@+id/checkboxSelectLight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/buttonPower"
         android:layout_width="@dimen/power_button_size"
@@ -30,33 +35,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/buttonColorPicker"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_marginEnd="@dimen/list_horizontal_margin"
-                android:background="@drawable/ic_color_wheel"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/buttonHue"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_marginEnd="@dimen/list_horizontal_margin"
-                android:background="@drawable/ic_button_hue"
-                android:visibility="gone" />
-
-            <Button
-                android:id="@+id/buttonSaturation"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_marginEnd="@dimen/list_horizontal_margin"
-                android:background="@drawable/ic_button_saturation"
-                android:visibility="gone" />
 
             <Button
                 android:id="@+id/buttonBrightness"
