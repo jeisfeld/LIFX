@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -40,7 +41,7 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * The IDs of seekbars within this view.
 	 */
-	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarHue, R.id.seekBarSaturation, R.id.seekBarColorTemperature};
+	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarColorTemperature};
 
 	/**
 	 * The list of devices.
@@ -177,9 +178,14 @@ public class DeviceAdapter extends BaseAdapter {
 				model.mIsSelected.setValue(((CheckBox) v).isChecked());
 				Fragment fragment = mFragment.get();
 				if (fragment != null && model instanceof LightViewModel && ((CheckBox) v).isChecked()) {
-					ColorPickerView colorPickerView = Objects.requireNonNull(fragment.getView()).findViewById(R.id.ColorPickerView);
+					ColorPickerView colorPickerView = Objects.requireNonNull(fragment.getView()).findViewById(R.id.colorPickerMain);
 					if (colorPickerView != null) {
 						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, (LightViewModel) model);
+					}
+					ColorPickerView brightnessColorTempPickerView =
+							Objects.requireNonNull(fragment.getView()).findViewById(R.id.colorPickerBrightnessColorTemp);
+					if (brightnessColorTempPickerView != null) {
+						ColorPickerDialog.updateBrightnessColorTempFromLight(brightnessColorTempPickerView, (LightViewModel) model);
 					}
 				}
 			});
@@ -207,6 +213,11 @@ public class DeviceAdapter extends BaseAdapter {
 					prepareColorPicker(buttonColorPicker, lightModel);
 				}
 			}
+			Button buttonBrightnessColorTemp = view.findViewById(R.id.buttonBrightnessColortemp);
+			if (buttonBrightnessColorTemp != null) {
+				prepareBrightnessColortempButton(buttonBrightnessColorTemp, lightModel);
+			}
+
 			prepareBrightnessButton(view, view.findViewById(R.id.buttonBrightness), view.findViewById(R.id.seekBarBrightness), lightModel);
 			prepareColorTemperatureButton(view, view.findViewById(R.id.buttonColorTemperature),
 					view.findViewById(R.id.seekBarColorTemperature), lightModel);
@@ -259,8 +270,26 @@ public class DeviceAdapter extends BaseAdapter {
 						float[] hsv = new float[3]; // MAGIC_NUMBER
 						android.graphics.Color.colorToHSV(color, hsv);
 						// Use alpha as color temperature
-						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 57 / 255); // MAGIC_NUMBER
-						model.updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature), false);
+						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
+						model.updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature));
+					}
+				}).show());
+	}
+
+	/**
+	 * Prepare the picker for brightness and color temperature started via button.
+	 *
+	 * @param brightnessColorTempButton The color picker button.
+	 * @param model The device view model.
+	 */
+	private void prepareBrightnessColortempButton(final Button brightnessColorTempButton, final LightViewModel model) {
+		brightnessColorTempButton.setVisibility(View.VISIBLE);
+
+		brightnessColorTempButton.setOnClickListener(v -> new Builder(mContext, R.layout.dialog_brightness_colortemp)
+				.initializeFromBrightnessColorTemp(model)
+				.setColorListener((color, fromUser) -> {
+					if (fromUser) {
+						model.updateColor(convertBrightnessColorTempPickerColor(color));
 					}
 				}).show());
 	}
@@ -288,7 +317,7 @@ public class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.updateColor(null, null, (short) progress, null, false);
+					model.updateColor(null, null, (short) progress, null);
 				}
 			}
 
@@ -299,7 +328,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor(null, null, (short) seekBar.getProgress(), null, true);
+				model.updateColor(null, null, (short) seekBar.getProgress(), null);
 			}
 		});
 
@@ -335,7 +364,7 @@ public class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.updateColor(null, null, null, progressBarToColorTemperature(progress), false);
+					model.updateColor(null, null, null, progressBarToColorTemperature(progress));
 				}
 			}
 
@@ -346,7 +375,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor(null, null, null, progressBarToColorTemperature(seekBar.getProgress()), false);
+				model.updateColor(null, null, null, progressBarToColorTemperature(seekBar.getProgress()));
 			}
 		});
 
@@ -425,25 +454,69 @@ public class DeviceAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * Convert seekbar value to color temperature.
+	 * Convert seekbar value (0 to 120) to color temperature.
 	 *
 	 * @param progress The seekbar value
 	 * @return The color temperature
 	 */
 	protected static short progressBarToColorTemperature(final int progress) {
-		double p = 38.3 + progress; // MAGIC_NUMBER
-		return (short) Math.max(1500, Math.min(9000, p * p)); // MAGIC_NUMBER
+		int colorTemp;
+		if (progress <= 72) { // MAGIC_NUMBER
+			colorTemp = (1000 * progress / 36) + 1500; // MAGIC_NUMBER
+		}
+		else if (progress <= 96) { // MAGIC_NUMBER
+			colorTemp = (1000 * (progress - 72) / 16) + 3500; // MAGIC_NUMBER
+		}
+		else {
+			colorTemp = (1000 * (progress - 96) / 6) + 5000; // MAGIC_NUMBER
+		}
+		return (short) Math.max(1500, Math.min(9000, colorTemp)); // MAGIC_NUMBER
 	}
 
 	/**
-	 * Convert color temperature to seekbar value.
+	 * Convert color temperature to seekbar value (0 to 120).
 	 *
 	 * @param colorTemperature The color temperature
 	 * @return The seekbar value
 	 */
 	public static int colorTemperatureToProgress(final short colorTemperature) {
-		int progress = (int) Math.round(Math.sqrt(TypeUtil.toUnsignedInt(colorTemperature)) - 38.3); // MAGIC_NUMBER
-		return Math.max(0, Math.min(57, progress)); // MAGIC_NUMBER
+		int progress;
+		if (colorTemperature <= 3500) { // MAGIC_NUMBER
+			progress = (colorTemperature - 1500) * 36 / 1000; // MAGIC_NUMBER
+		}
+		else if (colorTemperature <= 5000) { // MAGIC_NUMBER
+			progress = 72 + (colorTemperature - 3500) * 16 / 1000; // MAGIC_NUMBER
+		}
+		else {
+			progress = 96 + (colorTemperature - 5000) * 6 / 1000; // MAGIC_NUMBER
+		}
+		return Math.max(0, Math.min(120, progress)); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert the color from brightness/colorTemp picker to light color.
+	 *
+	 * @param color The brightness/colotTemp picker color
+	 * @return The light color
+	 */
+	protected static Color convertBrightnessColorTempPickerColor(final int color) {
+		float[] hsv = new float[3]; // MAGIC_NUMBER
+		android.graphics.Color.colorToHSV(color, hsv);
+
+		double red = android.graphics.Color.red(color) / 255.0; // MAGIC_NUMBER
+		double green = android.graphics.Color.green(color) / 255.0; // MAGIC_NUMBER
+		double blue = android.graphics.Color.blue(color) / 255.0; // MAGIC_NUMBER
+		double colorTemp;
+		if (blue == 0) {
+			colorTemp = (green / red - 0.375) * 0.48; // MAGIC_NUMBER
+		}
+		else if (blue < green) {
+			colorTemp = 0.3 * (1 + blue / green); // MAGIC_NUMBER
+		}
+		else {
+			colorTemp = (1 - red / green) * 0.8 + 0.6; // MAGIC_NUMBER
+		}
+		return new Color(0.0, 0.0, hsv[2], progressBarToColorTemperature((int) (colorTemp * 120))); // MAGIC_NUMBER
 	}
 
 }

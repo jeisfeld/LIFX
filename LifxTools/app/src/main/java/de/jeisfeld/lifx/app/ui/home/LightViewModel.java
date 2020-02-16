@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import android.content.Context;
 import android.content.Intent;
@@ -104,35 +101,34 @@ public class LightViewModel extends DeviceViewModel {
 	 * @param saturation the new saturation. May be null to keep unchanged.
 	 * @param brightness the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
-	 * @param force flag indicating if the change must be sent.
 	 */
-	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature, final boolean force) {
+	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
 		Color color = mColor.getValue();
 		if (color == null) {
 			return;
 		}
 		Color newColor = new Color(hue == null ? color.getHue() : hue, saturation == null ? color.getSaturation() : saturation,
 				brightness == null ? color.getBrightness() : brightness, colorTemperature == null ? color.getColorTemperature() : colorTemperature);
-		updateColor(newColor, force);
+		updateColor(newColor);
 	}
 
 	/**
 	 * Set the color.
 	 *
 	 * @param color the color to be set.
-	 * @param force flag indicating if the change must be sent.
 	 */
-	public void updateColor(final Color color, final boolean force) {
+	public void updateColor(final Color color) {
 		mColor.postValue(color);
 
-		SetColorTask task;
 		synchronized (mRunningSetColorTasks) {
-			if (mRunningSetColorTasks.size() > 0 && !force) {
-				return;
+			mRunningSetColorTasks.add(new SetColorTask(this, color));
+			if (mRunningSetColorTasks.size() > 2) {
+				mRunningSetColorTasks.remove(1);
 			}
-			task = new SetColorTask(this);
+			if (mRunningSetColorTasks.size() == 1) {
+				mRunningSetColorTasks.get(0).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, color);
+			}
 		}
-		task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, color);
 	}
 
 	/**
@@ -203,40 +199,32 @@ public class LightViewModel extends DeviceViewModel {
 		 * A weak reference to the underlying model.
 		 */
 		private final WeakReference<LightViewModel> mModel;
+		/**
+		 * The color to be set.
+		 */
+		private final Color mColor;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param model The underlying model.
+		 * @param color The color.
 		 */
-		private SetColorTask(final LightViewModel model) {
+		private SetColorTask(final LightViewModel model, final Color color) {
 			mModel = new WeakReference<>(model);
-			model.mRunningSetColorTasks.add(this);
+			mColor = color;
 		}
 
 		@Override
 		protected Color doInBackground(final Color... colors) {
 			LightViewModel model = mModel.get();
-			if (model == null || colors == null || colors.length == 0) {
+			if (model == null) {
 				return null;
 			}
 
-			synchronized (model.mRunningSetColorTasks) {
-				if (model.mRunningSetColorTasks.size() > 1 && model.mRunningSetColorTasks.get(0) != this) {
-					// In case of force, give prior running call some time to complete
-					try {
-						model.mRunningSetColorTasks.get(0).get(1, TimeUnit.SECONDS);
-					}
-					catch (ExecutionException | InterruptedException | TimeoutException e) {
-						// ignore
-					}
-				}
-			}
-
-			Color color = colors[0];
 			try {
-				model.getLight().setColor(color);
-				return color;
+				model.getLight().setColor(mColor);
+				return mColor;
 			}
 			catch (IOException e) {
 				Log.w(Application.TAG, e);
@@ -250,7 +238,12 @@ public class LightViewModel extends DeviceViewModel {
 			if (model == null) {
 				return;
 			}
-			model.mRunningSetColorTasks.remove(this);
+			synchronized (model.mRunningSetColorTasks) {
+				model.mRunningSetColorTasks.remove(this);
+				if (model.mRunningSetColorTasks.size() > 0) {
+					model.mRunningSetColorTasks.get(0).executeOnExecutor(THREAD_POOL_EXECUTOR);
+				}
+			}
 			model.mColor.postValue(color);
 		}
 	}

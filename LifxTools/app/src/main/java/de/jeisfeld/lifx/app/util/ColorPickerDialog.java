@@ -107,8 +107,24 @@ public class ColorPickerDialog extends AlertDialog {
 					(float) (TypeUtil.toDouble(color.getBrightness()) * realWidth + (1 - realWidth) / 2));
 
 			AlphaSlideBar alphaSlideBar = colorPickerView.getAlphaSlideBar();
-			double relativeColorTemp = DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 57.0; // MAGIC_NUMBER
+			double relativeColorTemp = DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 120.0; // MAGIC_NUMBER
 			alphaSlideBar.setSelectorPosition((float) (relativeColorTemp * realWidth + (1 - realWidth) / 2));
+		}
+	}
+
+	/**
+	 * Update a brightness/colorTemp view with color from a light.
+	 *
+	 * @param colorPickerView The brightness/colorTemp view to be updated.
+	 * @param model the light date from which to update.
+	 */
+	public static void updateBrightnessColorTempFromLight(final ColorPickerView colorPickerView, final LightViewModel model) {
+		Color color = model.getColor().getValue();
+		if (color != null) {
+			double x = colorPickerView.getMeasuredWidth() * TypeUtil.toDouble(color.getBrightness());
+			double y = colorPickerView.getMeasuredHeight()
+					* (1 - DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 120.0); // MAGIC_NUMBER
+			colorPickerView.moveSelectorPoint((int) x, (int) y, getAndroidColor(color));
 		}
 	}
 
@@ -130,11 +146,12 @@ public class ColorPickerDialog extends AlertDialog {
 		 *
 		 * @param context The context
 		 * @param parentView The parent view
+		 * @param colorPickerViewId The view id of the color picker
 		 */
-		public Builder(final Context context, final View parentView) {
+		public Builder(final Context context, final View parentView, final int colorPickerViewId) {
 			super(context);
 			mParentView = parentView;
-			prepare();
+			prepare(colorPickerViewId);
 		}
 
 		/**
@@ -148,14 +165,16 @@ public class ColorPickerDialog extends AlertDialog {
 			LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			assert layoutInflater != null;
 			mParentView = layoutInflater.inflate(layoutResourceId, null);
-			prepare();
+			prepare(R.id.ColorPickerView);
 		}
 
 		/**
 		 * Prepare the color picker.
+		 *
+		 * @param colorPickerViewId The view id of the color picker.
 		 */
-		private void prepare() {
-			mColorPickerView = mParentView.findViewById(R.id.ColorPickerView);
+		private void prepare(final int colorPickerViewId) {
+			mColorPickerView = mParentView.findViewById(colorPickerViewId);
 			ColorTemperatureSlideBar colorTemperatureSlider = mParentView.findViewById(R.id.ColorTemperatureSlideBar);
 			if (colorTemperatureSlider != null) {
 				mColorPickerView.attachAlphaSlider(colorTemperatureSlider);
@@ -179,6 +198,17 @@ public class ColorPickerDialog extends AlertDialog {
 		 */
 		public Builder initializeFromLight(final LightViewModel model) {
 			mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model));
+			return this;
+		}
+
+		/**
+		 * Prepare the view to initialize with data from a light as brightness and color temperature.
+		 *
+		 * @param model The light view model.
+		 * @return {@link Builder}.
+		 */
+		public Builder initializeFromBrightnessColorTemp(final LightViewModel model) {
+			mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() -> updateBrightnessColorTempFromLight(mColorPickerView, model));
 			return this;
 		}
 

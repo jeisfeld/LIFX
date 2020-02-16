@@ -30,7 +30,6 @@
         android:id="@+id/BrightnessSlideBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ColorTemperatureSlideBar"
         app:selector_BrightnessSlider="@drawable/wheel" />

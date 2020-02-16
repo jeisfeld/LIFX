@@ -41,6 +41,15 @@
                 android:visibility="gone" />
 
             <Button
+                android:id="@+id/buttonBrightnessColortemp"
+                android:layout_width="@dimen/small_button_size"
+                android:layout_height="@dimen/small_button_size"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:layout_marginEnd="@dimen/list_horizontal_margin"
+                android:background="@drawable/ic_brightness_colortemp"
+                android:visibility="gone" />
+
+            <Button
                 android:id="@+id/buttonBrightness"
                 android:layout_width="@dimen/small_button_size"
                 android:layout_height="@dimen/small_button_size"
@@ -76,32 +85,12 @@
             android:visibility="gone" />
 
         <SeekBar
-            android:id="@+id/seekBarHue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/listelement_vertical_margin"
-            android:clickable="false"
-            android:max="65535"
-            android:thumb="@drawable/ic_thumb_hue"
-            android:visibility="gone" />
-
-        <SeekBar
-            android:id="@+id/seekBarSaturation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/listelement_vertical_margin"
-            android:clickable="false"
-            android:max="65535"
-            android:thumb="@drawable/ic_button_saturation"
-            android:visibility="gone" />
-
-        <SeekBar
             android:id="@+id/seekBarColorTemperature"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/listelement_vertical_margin"
             android:clickable="false"
-            android:max="57"
+            android:max="120"
             android:thumb="@drawable/ic_button_temperature"
             android:visibility="gone" />
     </LinearLayout>

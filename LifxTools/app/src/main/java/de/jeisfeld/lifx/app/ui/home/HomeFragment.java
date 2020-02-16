@@ -61,6 +61,10 @@ public class HomeFragment extends ListFragment {
 		if (layoutColorPicker != null) {
 			prepareColorPicker(layoutColorPicker);
 		}
+		ConstraintLayout layoutBrightnessContrastPicker = Objects.requireNonNull(getView()).findViewById(R.id.layoutBrightnessContrastPicker);
+		if (layoutColorPicker != null) {
+			prepareBrightnessColorTempPicker(layoutBrightnessContrastPicker);
+		}
 
 		mReceiver = new BroadcastReceiver() {
 			@Override
@@ -83,7 +87,7 @@ public class HomeFragment extends ListFragment {
 
 		mExecutor = Executors.newScheduledThreadPool(1);
 		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0) {
-			mExecutor.scheduleAtFixedRate(() -> ((DeviceAdapter) getListAdapter()).refresh(), 0,
+			mExecutor.scheduleAtFixedRate(() -> ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).refresh(), 0,
 					PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period),
 					TimeUnit.MILLISECONDS);
 		}
@@ -104,19 +108,41 @@ public class HomeFragment extends ListFragment {
 	 * @param layoutColorPicker The color picker layout.
 	 */
 	private void prepareColorPicker(final ConstraintLayout layoutColorPicker) {
-		Builder builder = new Builder(getContext(), layoutColorPicker);
+		Builder builder = new Builder(getContext(), layoutColorPicker, R.id.colorPickerMain);
 		final ColorPickerView colorPickerView = builder.getColorPickerView();
 		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
 			if (fromUser) {
 				float[] hsv = new float[3]; // MAGIC_NUMBER
 				android.graphics.Color.colorToHSV(color, hsv);
 				// Use alpha as color temperature
-				short colorTemperature = DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 57 / 255); // MAGIC_NUMBER
+				short colorTemperature = DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
 
 				List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
 				for (DeviceViewModel model : checkedDevices) {
 					if (model instanceof LightViewModel) {
-						((LightViewModel) model).updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature), false);
+						((LightViewModel) model).updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature));
+					}
+				}
+			}
+		});
+	}
+
+	/**
+	 * Prepare the brightness/contrast picker shown in ConstraintLayout.
+	 *
+	 * @param layoutBrightnessColorTempPicker The brightness/contrast picker layout.
+	 */
+	private void prepareBrightnessColorTempPicker(final ConstraintLayout layoutBrightnessColorTempPicker) {
+		Builder builder = new Builder(getContext(), layoutBrightnessColorTempPicker, R.id.colorPickerBrightnessColorTemp);
+		final ColorPickerView colorPickerView = builder.getColorPickerView();
+		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
+			if (fromUser) {
+				Color lightColor = DeviceAdapter.convertBrightnessColorTempPickerColor(color);
+
+				List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
+				for (DeviceViewModel model : checkedDevices) {
+					if (model instanceof LightViewModel) {
+						((LightViewModel) model).updateColor(lightColor);
 					}
 				}
 			}
