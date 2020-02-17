@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -38,11 +37,6 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
  * An adapter for the list of devices in the home fragment.
  */
 public class DeviceAdapter extends BaseAdapter {
-	/**
-	 * The IDs of seekbars within this view.
-	 */
-	private static final int[] SEEKBAR_IDS = {R.id.seekBarBrightness, R.id.seekBarColorTemperature};
-
 	/**
 	 * The list of devices.
 	 */
@@ -180,12 +174,13 @@ public class DeviceAdapter extends BaseAdapter {
 				if (fragment != null && model instanceof LightViewModel && ((CheckBox) v).isChecked()) {
 					ColorPickerView colorPickerView = Objects.requireNonNull(fragment.getView()).findViewById(R.id.colorPickerMain);
 					if (colorPickerView != null) {
-						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, (LightViewModel) model);
+						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, ((LightViewModel) model).getColor().getValue());
 					}
 					ColorPickerView brightnessColorTempPickerView =
 							Objects.requireNonNull(fragment.getView()).findViewById(R.id.colorPickerBrightnessColorTemp);
 					if (brightnessColorTempPickerView != null) {
-						ColorPickerDialog.updateBrightnessColorTempFromLight(brightnessColorTempPickerView, (LightViewModel) model);
+						ColorPickerDialog.updateBrightnessColorTempFromLight(brightnessColorTempPickerView,
+								((LightViewModel) model).getColor().getValue());
 					}
 				}
 			});
@@ -218,9 +213,7 @@ public class DeviceAdapter extends BaseAdapter {
 				prepareBrightnessColortempButton(buttonBrightnessColorTemp, lightModel);
 			}
 
-			prepareBrightnessButton(view, view.findViewById(R.id.buttonBrightness), view.findViewById(R.id.seekBarBrightness), lightModel);
-			prepareColorTemperatureButton(view, view.findViewById(R.id.buttonColorTemperature),
-					view.findViewById(R.id.seekBarColorTemperature), lightModel);
+			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), lightModel);
 			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
 
 			lightModel.checkColor();
@@ -271,7 +264,8 @@ public class DeviceAdapter extends BaseAdapter {
 						android.graphics.Color.colorToHSV(color, hsv);
 						// Use alpha as color temperature
 						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-						model.updateColor(new Color(hsv[0], hsv[1], hsv[2], colorTemperature));
+						double brightness = hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
+						model.updateColor(new Color(hsv[0], hsv[1], brightness, colorTemperature));
 					}
 				}).show());
 	}
@@ -297,18 +291,14 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * Prepare the brightness button and seekbar.
 	 *
-	 * @param listView The listView.
-	 * @param button The brightness button.
 	 * @param seekBar The brightness seekbar.
 	 * @param model The light view model.
 	 */
-	private void prepareBrightnessButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
+	private void prepareBrightnessSeekbar(final SeekBar seekBar, final LightViewModel model) {
+		seekBar.setVisibility(View.VISIBLE);
+
 		model.getColor().observe(mLifeCycleOwner, color -> {
-			if (color == null) {
-				seekBar.setEnabled(false);
-			}
-			else {
-				seekBar.setEnabled(true);
+			if (color != null) {
 				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
 			}
 		});
@@ -317,7 +307,7 @@ public class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.updateColor(null, null, (short) progress, null);
+					model.updateColor(null, null, (short) (progress + 1), null);
 				}
 			}
 
@@ -328,61 +318,8 @@ public class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor(null, null, (short) seekBar.getProgress(), null);
+				model.updateColor(null, null, (short) (seekBar.getProgress() + 1), null);
 			}
-		});
-
-		button.setOnClickListener(v -> {
-			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
-			hideSeekBars(listView);
-			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
-		});
-	}
-
-	/**
-	 * Prepare the color temperature button and seekbar.
-	 *
-	 * @param listView The listView.
-	 * @param button The color temperature button.
-	 * @param seekBar The color temperature seekbar.
-	 * @param model The light view model.
-	 */
-	private void prepareColorTemperatureButton(final View listView, final Button button, final SeekBar seekBar, final LightViewModel model) {
-		button.setVisibility(View.VISIBLE);
-
-		model.getColor().observe(mLifeCycleOwner, color -> {
-			if (color == null) {
-				seekBar.setEnabled(false);
-			}
-			else {
-				seekBar.setEnabled(true);
-				seekBar.setProgress(colorTemperatureToProgress(color.getColorTemperature()));
-			}
-		});
-
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
-				if (fromUser) {
-					model.updateColor(null, null, null, progressBarToColorTemperature(progress));
-				}
-			}
-
-			@Override
-			public void onStartTrackingTouch(final SeekBar seekBar) {
-				// do nothing
-			}
-
-			@Override
-			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor(null, null, null, progressBarToColorTemperature(seekBar.getProgress()));
-			}
-		});
-
-		button.setOnClickListener(v -> {
-			boolean isSeekbarVisible = seekBar.getVisibility() == View.VISIBLE;
-			hideSeekBars(listView);
-			seekBar.setVisibility(isSeekbarVisible ? View.GONE : View.VISIBLE);
 		});
 	}
 
@@ -396,20 +333,6 @@ public class DeviceAdapter extends BaseAdapter {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
 
 		animationButton.setOnClickListener(v -> model.updateAnimation(((ToggleButton) v).isChecked()));
-	}
-
-	/**
-	 * Hide all seekbars within the main view.
-	 *
-	 * @param view The main view.
-	 */
-	private void hideSeekBars(final View view) {
-		for (int id : SEEKBAR_IDS) {
-			SeekBar seekBar = view.findViewById(id);
-			if (seekBar != null) {
-				seekBar.setVisibility(View.GONE);
-			}
-		}
 	}
 
 	/**
@@ -516,7 +439,11 @@ public class DeviceAdapter extends BaseAdapter {
 		else {
 			colorTemp = (1 - red / green) * 0.8 + 0.6; // MAGIC_NUMBER
 		}
-		return new Color(0.0, 0.0, hsv[2], progressBarToColorTemperature((int) (colorTemp * 120))); // MAGIC_NUMBER
+		double brightness = (hsv[2] - 1.0 / 16) * 16 / 15; // MAGIC_NUMBER
+		if (brightness <= 0) {
+			brightness = 1.0 / 65535; // MAGIC_NUMBER
+		}
+		return new Color(0.0, 0.0, brightness, progressBarToColorTemperature((int) (colorTemp * 120))); // MAGIC_NUMBER
 	}
 
 }

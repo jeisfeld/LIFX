@@ -74,10 +74,9 @@ public class ColorPickerDialog extends AlertDialog {
 	 * Update a color picker view with color from a light.
 	 *
 	 * @param colorPickerView The color picker view to be updated.
-	 * @param model the light date from which to update.
+	 * @param color the color from which to update.
 	 */
-	public static void updateColorPickerFromLight(final ColorPickerView colorPickerView, final LightViewModel model) {
-		Color color = model.getColor().getValue();
+	public static void updateColorPickerFromLight(final ColorPickerView colorPickerView, final Color color) {
 		if (color != null) {
 			int radius = colorPickerView.getMeasuredWidth() / 2;
 			int heightDifference = (colorPickerView.getMeasuredHeight() - colorPickerView.getMeasuredWidth()) / 2;
@@ -116,10 +115,9 @@ public class ColorPickerDialog extends AlertDialog {
 	 * Update a brightness/colorTemp view with color from a light.
 	 *
 	 * @param colorPickerView The brightness/colorTemp view to be updated.
-	 * @param model the light date from which to update.
+	 * @param color The color for update.
 	 */
-	public static void updateBrightnessColorTempFromLight(final ColorPickerView colorPickerView, final LightViewModel model) {
-		Color color = model.getColor().getValue();
+	public static void updateBrightnessColorTempFromLight(final ColorPickerView colorPickerView, final Color color) {
 		if (color != null) {
 			double x = colorPickerView.getMeasuredWidth() * TypeUtil.toDouble(color.getBrightness());
 			double y = colorPickerView.getMeasuredHeight()
@@ -197,7 +195,8 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @return {@link Builder}.
 		 */
 		public Builder initializeFromLight(final LightViewModel model) {
-			mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model));
+			mColorPickerView.getViewTreeObserver()
+					.addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model.getColor().getValue()));
 			return this;
 		}
 
@@ -208,7 +207,8 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @return {@link Builder}.
 		 */
 		public Builder initializeFromBrightnessColorTemp(final LightViewModel model) {
-			mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() -> updateBrightnessColorTempFromLight(mColorPickerView, model));
+			mColorPickerView.getViewTreeObserver()
+					.addOnGlobalLayoutListener(() -> updateBrightnessColorTempFromLight(mColorPickerView, model.getColor().getValue()));
 			return this;
 		}
 
