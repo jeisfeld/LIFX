@@ -20,8 +20,10 @@ public final class Test {
 	private static final String MAC_FARBLAMPE = "D0:73:D5:53:DC:A7";
 	private static final String MAC_SWLAMPE = "D0:73:D5:56:40:78";
 	private static final String MAC_LICHTSTREIFEN = "D0:73:D5:14:88:FC";
+	private static final String MAC_FARBLAMPE_PLUS = "D0:73:D5:2F:51:94";
 
 	private static final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE);
+	private static final Light FARBLAMPE_PLUS = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE_PLUS);
 	private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_SWLAMPE);
 	private static final MultiZoneLight LICHTSTREIFEN = (MultiZoneLight) LifxLan.getInstance().getLightByMac(Test.MAC_LICHTSTREIFEN);
 
@@ -32,7 +34,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test5();
+		new Test().test0();
 	}
 
 	void test0() throws Exception {

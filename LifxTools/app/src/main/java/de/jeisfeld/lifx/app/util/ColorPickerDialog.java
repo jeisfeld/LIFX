@@ -35,6 +35,7 @@ import androidx.appcompat.app.AlertDialog;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.DeviceAdapter;
 import de.jeisfeld.lifx.app.ui.home.LightViewModel;
+import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -195,8 +196,17 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @return {@link Builder}.
 		 */
 		public Builder initializeFromLight(final LightViewModel model) {
+			Color color;
+			if (model instanceof MultizoneViewModel) {
+				Double brightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
+				color = Color.WHITE.withBrightness(brightness == null ? 1 : brightness);
+			}
+			else {
+				color = model.getColor().getValue();
+			}
+
 			mColorPickerView.getViewTreeObserver()
-					.addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model.getColor().getValue()));
+					.addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, color));
 			return this;
 		}
 

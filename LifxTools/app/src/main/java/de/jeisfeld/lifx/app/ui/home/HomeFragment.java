@@ -177,7 +177,10 @@ public class HomeFragment extends ListFragment {
 		 * @param hasDevice true if there is a device.
 		 */
 		void onChange(final boolean hasDevice) {
-			TextView textViewNoDevice = Objects.requireNonNull(getView()).findViewById(R.id.textViewNoDevice);
+			if (getView() == null) {
+				return;
+			}
+			TextView textViewNoDevice = getView().findViewById(R.id.textViewNoDevice);
 			if (hasDevice) {
 				textViewNoDevice.setVisibility(View.GONE);
 				getListView().setVisibility(View.VISIBLE);

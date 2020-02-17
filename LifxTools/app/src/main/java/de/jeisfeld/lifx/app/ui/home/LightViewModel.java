@@ -29,11 +29,11 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * The stored Color of the device.
 	 */
-	protected final MutableLiveData<Color> mColor; // SUPPRESS_CHECKSTYLE
+	private final MutableLiveData<Color> mColor;
 	/**
 	 * A storage to keep track on running setColor tasks.
 	 */
-	private final List<SetColorTask> mRunningSetColorTasks = new ArrayList<>();
+	protected final List<AsyncExecutable> mRunningSetColorTasks = new ArrayList<>(); // SUPPRESS_CHECKSTYLE
 
 	/**
 	 * Constructor.
@@ -113,6 +113,15 @@ public class LightViewModel extends DeviceViewModel {
 	}
 
 	/**
+	 * Update the brightness.
+	 *
+	 * @param brightness The new brightness.
+	 */
+	public void updateBrightness(final short brightness) {
+		updateColor(null, null, brightness, null);
+	}
+
+	/**
 	 * Set the color.
 	 *
 	 * @param color the color to be set.
@@ -126,7 +135,7 @@ public class LightViewModel extends DeviceViewModel {
 				mRunningSetColorTasks.remove(1);
 			}
 			if (mRunningSetColorTasks.size() == 1) {
-				mRunningSetColorTasks.get(0).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, color);
+				mRunningSetColorTasks.get(0).execute();
 			}
 		}
 	}
@@ -194,7 +203,7 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * An async task for setting the color.
 	 */
-	private static final class SetColorTask extends AsyncTask<Color, String, Color> {
+	private static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
 		/**
 		 * A weak reference to the underlying model.
 		 */
@@ -241,10 +250,26 @@ public class LightViewModel extends DeviceViewModel {
 			synchronized (model.mRunningSetColorTasks) {
 				model.mRunningSetColorTasks.remove(this);
 				if (model.mRunningSetColorTasks.size() > 0) {
-					model.mRunningSetColorTasks.get(0).executeOnExecutor(THREAD_POOL_EXECUTOR);
+					model.mRunningSetColorTasks.get(0).execute();
 				}
 			}
 			model.mColor.postValue(color);
 		}
+
+		@Override
+		public void execute() {
+			executeOnExecutor(THREAD_POOL_EXECUTOR);
+		}
 	}
+
+	/**
+	 * Interface for an async task.
+	 */
+	protected interface AsyncExecutable {
+		/**
+		 * Execute the task.
+		 */
+		void execute();
+	}
+
 }

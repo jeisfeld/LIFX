@@ -119,8 +119,8 @@ public class DeviceAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public final Device getItem(final int position) {
-		return mDevices.get(position);
+	public final DeviceViewModel getItem(final int position) {
+		return mViewModels.get(position);
 	}
 
 	@Override
@@ -149,22 +149,20 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 		}
 
-		final Device device = getItem(position);
+		final DeviceViewModel model = getItem(position);
 
 		int layoutId = R.layout.list_view_home_device;
-		if (device instanceof MultiZoneLight) {
+		if (model instanceof MultizoneViewModel) {
 			layoutId = R.layout.list_view_home_light;
 		}
-		else if (device instanceof Light) {
+		else if (model instanceof LightViewModel) {
 			layoutId = R.layout.list_view_home_light;
 		}
 
 		view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
 
 		final TextView text = view.findViewById(R.id.textViewHome);
-		text.setText(device.getLabel());
-
-		DeviceViewModel model = mViewModels.get(position);
+		text.setText(model.getDevice().getLabel());
 
 		final CheckBox checkBoxSelectLight = view.findViewById(R.id.checkboxSelectLight);
 		if (checkBoxSelectLight != null) {
@@ -199,10 +197,10 @@ public class DeviceAdapter extends BaseAdapter {
 
 		model.checkPower();
 
-		if (device instanceof Light) {
+		if (model instanceof LightViewModel) {
 			LightViewModel lightModel = (LightViewModel) model;
 
-			if (device.getProduct().hasColor()) {
+			if (lightModel.getDevice().getProduct().hasColor()) {
 				Button buttonColorPicker = view.findViewById(R.id.buttonColorPicker);
 				if (buttonColorPicker != null) {
 					prepareColorPicker(buttonColorPicker, lightModel);
@@ -297,17 +295,26 @@ public class DeviceAdapter extends BaseAdapter {
 	private void prepareBrightnessSeekbar(final SeekBar seekBar, final LightViewModel model) {
 		seekBar.setVisibility(View.VISIBLE);
 
-		model.getColor().observe(mLifeCycleOwner, color -> {
-			if (color != null) {
-				seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
-			}
-		});
+		if (model instanceof MultizoneViewModel) {
+			((MultizoneViewModel) model).getRelativeBrightness().observe(mLifeCycleOwner, relativeBrightness -> {
+				if (relativeBrightness != null) {
+					seekBar.setProgress(TypeUtil.toUnsignedInt(TypeUtil.toShort(relativeBrightness)));
+				}
+			});
+		}
+		else {
+			model.getColor().observe(mLifeCycleOwner, color -> {
+				if (color != null) {
+					seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
+				}
+			});
+		}
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.updateColor(null, null, (short) (progress + 1), null);
+					model.updateBrightness((short) (progress + 1));
 				}
 			}
 
@@ -318,7 +325,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateColor(null, null, (short) (seekBar.getProgress() + 1), null);
+				model.updateBrightness((short) (seekBar.getProgress() + 1));
 			}
 		});
 	}

@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.lan.type;
 
+import java.util.List;
+
 /**
  * Class to hold multizone colors.
  */
@@ -53,6 +55,20 @@ public abstract class MultizoneColors {
 				return base.getColor(zoneIndex, zoneCount).withRelativeBrightness(brightnessFactor);
 			}
 		};
+	}
+
+	/**
+	 * Return the colors as String output.
+	 *
+	 * @param zoneCount The number of zones.
+	 * @return The String output.
+	 */
+	public String getColorString(final int zoneCount) {
+		StringBuilder result = new StringBuilder("Multizone Colors: \n");
+		for (int i = 0; i < zoneCount; i++) {
+			result.append("      ").append(getColor(i, zoneCount)).append("\n");
+		}
+		return result.toString();
 	}
 
 	/**
@@ -141,6 +157,30 @@ public abstract class MultizoneColors {
 		@Override
 		public final Color getColor(final int zoneIndex, final int zoneCount) {
 			return mColor;
+		}
+	}
+
+	/**
+	 * Multizone colors defined by a list of colors.
+	 */
+	public static class Exact extends MultizoneColors {
+		/**
+		 * The color list.
+		 */
+		private final List<Color> mColors;
+
+		/**
+		 * Create one-color multizone colors.
+		 *
+		 * @param colors The defining colors.
+		 */
+		public Exact(final List<Color> colors) {
+			mColors = colors;
+		}
+
+		@Override
+		public final Color getColor(final int zoneIndex, final int zoneCount) {
+			return zoneIndex >= mColors.size() ? Color.OFF : mColors.get(zoneIndex);
 		}
 	}
 }
