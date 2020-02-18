@@ -93,6 +93,9 @@ public final class TypeUtil {
 	 * @return The String.
 	 */
 	public static String toString(final Duration duration) {
+		if (duration == null) {
+			return null;
+		}
 		StringBuilder result = new StringBuilder();
 		long days = duration.toDays();
 		if (days > 0) {

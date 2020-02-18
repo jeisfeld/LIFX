@@ -6,6 +6,8 @@
     <string name="nav_header_subtitle">lifxtools@jeisfeld.de</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_delete">Delete</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_temp">Temp</string>

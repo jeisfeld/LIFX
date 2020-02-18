@@ -81,8 +81,9 @@ public class LightViewModel extends DeviceViewModel {
 		return super.isRefreshAllowed() && !Boolean.TRUE.equals(mAnimationStatus.getValue());
 	}
 
+	// OVERRIDABLE
 	@Override
-	protected final void refreshRemoteData() {
+	protected void refreshRemoteData() {
 		super.refreshRemoteData();
 		checkColor();
 	}

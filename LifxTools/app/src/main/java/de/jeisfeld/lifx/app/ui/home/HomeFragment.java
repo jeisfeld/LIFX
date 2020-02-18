@@ -51,7 +51,7 @@ public class HomeFragment extends ListFragment {
 	public final void onActivityCreated(final Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		if (DeviceRegistry.getInstance().getDevices().size() == 0) {
+		if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
 			getListView().setVisibility(View.GONE);
 			Objects.requireNonNull(getView()).findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}

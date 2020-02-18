@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_dialog_confirmation">Bestätigung</string>
+
+    <string name="message_confirm_delete_light">Wollen Sie die Lampe %1$s aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
+</resources>

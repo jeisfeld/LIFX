@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.lan;
 
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -164,8 +166,8 @@ public class MultiZoneLight extends Light {
 	@Override
 	public final String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
-		result.append(TypeUtil.INDENT).append("Zone count: ").append(getZoneCount()).append("\n");
-		result.append(TypeUtil.INDENT).append("Colors: ").append(getColors()).append("\n");
+		result.append(INDENT).append("Zone count: ").append(getZoneCount()).append("\n");
+		result.append(INDENT).append("Colors: ").append(getColors()).append("\n");
 		return result.toString();
 	}
 

@@ -13,6 +13,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -98,6 +99,12 @@ public class MultizoneViewModel extends LightViewModel {
 	@Override
 	public final void checkColor() {
 		new CheckMultizoneColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	@Override
+	protected final boolean isRefreshAllowed() {
+		// Due to tendency for connectivity issues, check Multizone light only if disconnected.
+		return super.isRefreshAllowed() && mPower.getValue() == Power.UNDEFINED;
 	}
 
 	/**

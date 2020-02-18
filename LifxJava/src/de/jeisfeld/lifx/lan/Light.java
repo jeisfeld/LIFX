@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.lan;
 
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
+
 import java.io.IOException;
 import java.net.InetAddress;
 
@@ -67,9 +69,9 @@ public class Light extends Device {
 	public String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
 		if (getProduct().hasInfrared()) {
-			result.append(TypeUtil.INDENT).append("Infrared Brightness: ").append(TypeUtil.toUnsignedString(getInfraredBrightness())).append("\n");
+			result.append(INDENT).append("Infrared Brightness: ").append(TypeUtil.toUnsignedString(getInfraredBrightness())).append("\n");
 		}
-		result.append(TypeUtil.INDENT).append("Color: ").append(getColor()).append("\n");
+		result.append(INDENT).append("Color: ").append(getColor()).append("\n");
 		return result.toString();
 	}
 

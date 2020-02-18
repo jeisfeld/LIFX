@@ -1,9 +1,13 @@
 package de.jeisfeld.lifx.lan;
 
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
 import de.jeisfeld.lifx.lan.message.EchoRequest;
@@ -45,7 +49,7 @@ public class Device {
 	/**
 	 * Source ID. 32 bits. Unique ID sent by client. If zero, broadcast reply requested. If non-zero, unicast reply requested.
 	 */
-	private int mSourceId = 0;
+	private final int mSourceId;
 	/**
 	 * Target address. 64 bits. Either single MAC address or all zeroes for broadcast.
 	 */
@@ -90,6 +94,10 @@ public class Device {
 	 * The wifi firmware version.
 	 */
 	private String mWifiFirmwareVersion = null;
+	/**
+	 * Additional parameters which may be stored in the device.
+	 */
+	private final Map<String, Object> mParameters = new HashMap<>();
 
 	/**
 	 * Constructor.
@@ -129,9 +137,8 @@ public class Device {
 	 * Get a Lifx LAN Connection for this device.
 	 *
 	 * @return A connection.
-	 * @throws SocketException Exception while creating connection.
 	 */
-	protected LifxLanConnection getConnection() throws SocketException {
+	protected LifxLanConnection getConnection() {
 		return new LifxLanConnection(mSourceId, mTargetAddress, mInetAddress, mPort);
 	}
 
@@ -139,7 +146,6 @@ public class Device {
 	 * Get version information via GetVersion call.
 	 *
 	 * @return the device including version information.
-	 *
 	 * @throws IOException Exception while retrieving data.
 	 */
 	public Device getDeviceProduct() throws IOException {
@@ -251,6 +257,7 @@ public class Device {
 	}
 
 	// OVERRIDABLE
+
 	/**
 	 * Get the device information as String.
 	 *
@@ -258,21 +265,24 @@ public class Device {
 	 */
 	public String getFullInformation() {
 		StringBuilder result = new StringBuilder(getClass().getSimpleName()).append(":\n");
-		result.append(TypeUtil.INDENT).append("MAC: ").append(mTargetAddress).append("\n");
-		result.append(TypeUtil.INDENT).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
-		result.append(TypeUtil.INDENT).append("Port: ").append(mPort).append("\n");
-		result.append(TypeUtil.INDENT).append("Vendor: ").append(mVendor).append("\n");
-		result.append(TypeUtil.INDENT).append("Product: ").append(getProduct()).append("\n");
-		result.append(TypeUtil.INDENT).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
-		result.append(TypeUtil.INDENT).append("Colored: ").append(getProduct().hasColor()).append("\n");
-		result.append(TypeUtil.INDENT).append("Label: ").append(getLabel()).append("\n");
-		result.append(TypeUtil.INDENT).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
-		result.append(TypeUtil.INDENT).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
-		result.append(TypeUtil.INDENT).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
-		result.append(TypeUtil.INDENT).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
-		result.append(TypeUtil.INDENT).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
-		result.append(TypeUtil.INDENT).append("WiFi Signal Strength: ").append(getWifiInfo().getSignalStrength()).append("\n");
-		result.append(TypeUtil.INDENT).append("Power: ").append(getPower()).append("\n");
+		result.append(INDENT).append("MAC: ").append(mTargetAddress).append("\n");
+		result.append(INDENT).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
+		result.append(INDENT).append("Port: ").append(mPort).append("\n");
+		result.append(INDENT).append("Vendor: ").append(mVendor).append("\n");
+		result.append(INDENT).append("Product: ").append(getProduct()).append("\n");
+		result.append(INDENT).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
+		result.append(INDENT).append("Colored: ").append(getProduct().hasColor()).append("\n");
+		result.append(INDENT).append("Label: ").append(getLabel()).append("\n");
+		result.append(INDENT).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
+		result.append(INDENT).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
+		result.append(INDENT).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
+		result.append(INDENT).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
+		result.append(INDENT).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
+		ConnectionInfo wifiInfo = getWifiInfo();
+		if (wifiInfo != null) {
+			result.append(INDENT).append("WiFi Signal Strength: ").append(wifiInfo.getSignalStrength()).append("\n");
+		}
+		result.append(INDENT).append("Power: ").append(getPower()).append("\n");
 		return result.toString();
 	}
 
@@ -559,4 +569,25 @@ public class Device {
 		getConnection().requestWithResponse(new SetLocation(location));
 		mLocation = null;
 	}
+
+	/**
+	 * Set a parameter on the device.
+	 *
+	 * @param key The key.
+	 * @param value The value.
+	 */
+	public void setParameter(final String key, final Object value) {
+		mParameters.put(key, value);
+	}
+
+	/**
+	 * Get a parameter from the device.
+	 *
+	 * @param key The key.
+	 * @return The value.
+	 */
+	public Object getParameter(final String key) {
+		return mParameters.get(key);
+	}
+
 }

@@ -72,25 +72,17 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Constructor.
 	 *
 	 * @param fragment The triggering fragment.
-	 * @param callback A calllback called in case of no devices.
+	 * @param callback A callback called in case of no devices.
 	 */
 	DeviceAdapter(final Fragment fragment, final NoDeviceCallback callback) {
 		super();
-		mDevices = DeviceRegistry.getInstance().getDevices();
+		mDevices = DeviceRegistry.getInstance().getDevices(true);
 		mContext = fragment.getContext();
 		mFragment = new WeakReference<>(fragment);
 		mLifeCycleOwner = fragment.getViewLifecycleOwner();
 		mNoDeviceCallback = callback;
 		for (Device device : mDevices) {
-			if (device instanceof MultiZoneLight) {
-				mViewModels.add(new MultizoneViewModel(mContext, (MultiZoneLight) device));
-			}
-			else if (device instanceof Light) {
-				mViewModels.add(new LightViewModel(mContext, (Light) device));
-			}
-			else {
-				mViewModels.add(new DeviceViewModel(mContext, device));
-			}
+			addViewModel(device);
 		}
 
 		DeviceRegistry.getInstance().update(new DeviceUpdateCallback() {
@@ -126,6 +118,23 @@ public class DeviceAdapter extends BaseAdapter {
 	@Override
 	public final long getItemId(final int position) {
 		return position;
+	}
+
+	/**
+	 * Add the view model for a device.
+	 *
+	 * @param device The device.
+	 */
+	private void addViewModel(final Device device) {
+		if (device instanceof MultiZoneLight) {
+			mViewModels.add(new MultizoneViewModel(mContext, (MultiZoneLight) device));
+		}
+		else if (device instanceof Light) {
+			mViewModels.add(new LightViewModel(mContext, (Light) device));
+		}
+		else {
+			mViewModels.add(new DeviceViewModel(mContext, device));
+		}
 	}
 
 	/**
@@ -349,7 +358,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 */
 	public void addDevice(final Device device) {
 		mDevices.add(device);
-		mViewModels.add(new DeviceViewModel(mContext, device));
+		addViewModel(device);
 		notifyDataSetChanged();
 	}
 

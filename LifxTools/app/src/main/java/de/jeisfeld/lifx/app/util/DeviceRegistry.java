@@ -11,8 +11,9 @@ import java.util.Map;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
-import de.jeisfeld.lifx.app.R;
+
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
@@ -33,6 +34,14 @@ public final class DeviceRegistry {
 	 * The default port.
 	 */
 	private static final int DEFAULT_PORT = 56700;
+	/**
+	 * Device parameter for device id.
+	 */
+	public static final String DEVICE_ID = "deviceId";
+	/**
+	 * Device parameter for "show" flag.
+	 */
+	public static final String DEVICE_PARAMETER_SHOW = "showDevice";
 
 	/**
 	 * The singleton instance of DeviceRegistry.
@@ -78,19 +87,20 @@ public final class DeviceRegistry {
 
 			mMacToIdMap.put(mac, deviceId);
 
+			Device device;
 			if (type == DeviceType.DEVICE) {
-				Device device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-				mDevices.put(deviceId, device);
+				device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
 			}
 			else if (type == DeviceType.MULTIZONE) {
 				int zoneCount = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, 0);
-				MultiZoneLight light = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, (byte) zoneCount);
-				mDevices.put(deviceId, light);
+				device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, (byte) zoneCount);
 			}
 			else {
-				Light light = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-				mDevices.put(deviceId, light);
+				device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
 			}
+			device.setParameter(DEVICE_ID, deviceId);
+			device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
+			mDevices.put(deviceId, device);
 		}
 
 	}
@@ -98,26 +108,15 @@ public final class DeviceRegistry {
 	/**
 	 * Get the list of known devices.
 	 *
+	 * @param onlyFlagged Get only devices which are flagged.
 	 * @return The list of known devices.
 	 */
-	public List<Device> getDevices() {
+	public List<Device> getDevices(final boolean onlyFlagged) {
 		List<Device> result = new ArrayList<>();
-		for (int i = 0; i < mDevices.size(); i++) {
-			result.add(mDevices.valueAt(i));
-		}
-		return result;
-	}
-
-	/**
-	 * Get the list of known lights.
-	 *
-	 * @return The list of known lights.
-	 */
-	public List<Light> getLights() {
-		List<Light> result = new ArrayList<>();
-		for (int i = 0; i < mDevices.size(); i++) {
-			if (mDevices.valueAt(i) instanceof Light) {
-				result.add((Light) mDevices.valueAt(i));
+		for (int deviceId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids)) {
+			Device device = mDevices.get(deviceId);
+			if (device != null && !(onlyFlagged && Boolean.FALSE.equals(device.getParameter(DEVICE_PARAMETER_SHOW)))) {
+				result.add(device);
 			}
 		}
 		return result;
@@ -140,6 +139,8 @@ public final class DeviceRegistry {
 			mMacToIdMap.put(device.getTargetAddress(), newId);
 		}
 		int deviceId = mMacToIdMap.get(device.getTargetAddress());
+		device.setParameter(DEVICE_ID, deviceId);
+		device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
 		mDevices.put(deviceId, device);
 
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_mac, deviceId, device.getTargetAddress());
@@ -182,6 +183,7 @@ public final class DeviceRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_product, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_version, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_zone_count, deviceId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_show, deviceId);
 	}
 
 	/**
@@ -298,7 +300,7 @@ public final class DeviceRegistry {
 		@Override
 		protected List<Device> doInBackground(final String... params) {
 			try {
-				List<Device> devices = LifxLan.getInstance().retrieveDeviceInformation(new RetryPolicy() {
+				return LifxLan.getInstance().retrieveDeviceInformation(new RetryPolicy() {
 					@Override
 					public int getAttempts() {
 						return 2;
@@ -329,7 +331,6 @@ public final class DeviceRegistry {
 						}
 					}
 				}, null);
-				return devices;
 			}
 			catch (IOException e) {
 				Log.w(Application.TAG, e);
@@ -368,8 +369,8 @@ public final class DeviceRegistry {
 		/**
 		 * Method called on device search results.
 		 *
-		 * @param device the device.
-		 * @param isNew true if the device is unknown.
+		 * @param device    the device.
+		 * @param isNew     true if the device is unknown.
 		 * @param isMissing true if the device is known but was not found.
 		 */
 		void onDeviceUpdated(Device device, boolean isNew, boolean isMissing);

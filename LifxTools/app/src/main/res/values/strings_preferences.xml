@@ -22,6 +22,8 @@
     <string name="key_device_product" translatable="false">device_product</string>
     <string name="key_device_version" translatable="false">device_version</string>
     <string name="key_device_zone_count" translatable="false">device_zone_count</string>
+    <string name="key_device_show" translatable="false">device_show</string>
+
 
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>

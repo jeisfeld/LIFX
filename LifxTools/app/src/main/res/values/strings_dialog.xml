@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_dialog_confirmation">Confirmation</string>
+
+    <string name="message_confirm_delete_light">Do you want to delete the device %1$s from the app? (Will be re-created if detected in the LAN.)</string>
+</resources>

@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.lan.message;
 
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
+
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
@@ -158,7 +160,7 @@ public abstract class ResponseMessage {
 	public String getPayloadFormattedString(final String prefix) {
 		StringBuilder result = new StringBuilder();
 		for (Entry<String, String> entry : getPayloadMap().entrySet()) {
-			result.append(TypeUtil.INDENT).append(prefix).append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+			result.append(INDENT).append(prefix).append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
 		}
 		return result.toString();
 	}
