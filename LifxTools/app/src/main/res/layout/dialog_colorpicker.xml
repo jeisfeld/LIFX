@@ -16,7 +16,7 @@
         app:selector="@drawable/wheel" />
 
 
-    <de.jeisfeld.lifx.app.util.ColorTemperatureSlideBar
+    <de.jeisfeld.lifx.app.ui.view.ColorTemperatureSlideBar
         android:id="@+id/ColorTemperatureSlideBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

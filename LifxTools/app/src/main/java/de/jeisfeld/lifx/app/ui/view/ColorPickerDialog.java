@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package de.jeisfeld.lifx.app.util;
+package de.jeisfeld.lifx.app.ui.view;
 
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;

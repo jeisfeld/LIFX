@@ -23,8 +23,8 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
-import de.jeisfeld.lifx.app.util.ColorPickerDialog;
-import de.jeisfeld.lifx.app.util.ColorPickerDialog.Builder;
+import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
+import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.lan.Device;
@@ -153,10 +153,10 @@ public class DeviceAdapter extends BaseAdapter {
 
 		int layoutId = R.layout.list_view_home_device;
 		if (model instanceof MultizoneViewModel) {
-			layoutId = R.layout.list_view_home_light;
+			layoutId = R.layout.list_view_home;
 		}
 		else if (model instanceof LightViewModel) {
-			layoutId = R.layout.list_view_home_light;
+			layoutId = R.layout.list_view_home;
 		}
 
 		view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
@@ -376,7 +376,7 @@ public class DeviceAdapter extends BaseAdapter {
 	protected List<DeviceViewModel> getCheckedDevices() {
 		List<DeviceViewModel> checkedDevices = new ArrayList<>();
 		for (DeviceViewModel model : mViewModels) {
-			if (model.getIsSelected().getValue()) {
+			if (Boolean.TRUE.equals(model.getIsSelected().getValue())) {
 				checkedDevices.add(model);
 			}
 		}

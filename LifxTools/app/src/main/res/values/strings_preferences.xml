@@ -34,27 +34,27 @@
     <string name="pref_title_refresh_period">Refresh Period</string>
     <string name="pref_default_refresh_period" translatable="false">1000</string>
     <string name="pref_title_use_wakelock">Use wakelock on animation</string>
-    <string name="pref_title_quick_power_on">Keep light awake for quick power on/off</string>
+    <string name="pref_title_quick_power_on">Quick power on/off</string>
 
     <!-- Arrays for list preferences -->
     <string-array name="power_duration_names">
-        <item>1/5 second</item>
-        <item>1/2 second</item>
+        <item>&#188; second</item>
+        <item>&#189; second</item>
         <item>1 second</item>
         <item>2 seconds</item>
         <item>5 seconds</item>
     </string-array>
     <string-array name="power_duration_values" translatable="false">
-        <item>200</item>
+        <item>250</item>
         <item>500</item>
         <item>1000</item>
         <item>2000</item>
         <item>5000</item>
     </string-array>
     <string-array name="refresh_period_names">
-        <item>Never</item>
-        <item>1/5 second</item>
-        <item>1/2 second</item>
+        <item>Only on start</item>
+        <item>&#188; second</item>
+        <item>&#189; second</item>
         <item>1 second</item>
         <item>2 seconds</item>
         <item>5 seconds</item>
