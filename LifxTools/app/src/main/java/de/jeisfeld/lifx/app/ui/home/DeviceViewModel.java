@@ -269,12 +269,7 @@ public class DeviceViewModel extends ViewModel {
 				else {
 					model.mDevice.setPower(!power.isOn());
 				}
-				if (model.isRefreshAllowed()) {
-					return Power.UNDEFINED;
-				}
-				else {
-					return power.isOn() ? Power.OFF : Power.ON;
-				}
+				return power.isOn() ? Power.OFF : Power.ON;
 			}
 			catch (IOException e) {
 				Log.w(Application.TAG, e);

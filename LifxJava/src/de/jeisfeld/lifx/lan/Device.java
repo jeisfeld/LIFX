@@ -590,4 +590,12 @@ public class Device {
 		return mParameters.get(key);
 	}
 
+	/**
+	 * Store the label in the object.. May be helpful if there are connection issues.
+	 *
+	 * @param label The label to be stored.
+	 */
+	public void storeLabel(final String label) {
+		mLabel = label;
+	}
 }

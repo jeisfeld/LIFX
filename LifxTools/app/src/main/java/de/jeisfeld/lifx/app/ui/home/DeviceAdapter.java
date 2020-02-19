@@ -254,9 +254,7 @@ public class DeviceAdapter extends BaseAdapter {
 			else if (power.isOn()) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
 			}
-			else {
-				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_undefined));
-			}
+			// do not update power button if undefined
 		});
 
 		if (model instanceof LightViewModel && !(model instanceof MultizoneViewModel)) {

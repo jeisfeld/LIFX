@@ -11,7 +11,6 @@ import java.util.Map;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
-
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.Device;
@@ -84,25 +83,43 @@ public final class DeviceRegistry {
 			Vendor vendor = Vendor.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_vendor, deviceId, 0));
 			Product product = Product.fromId(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0));
 			int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
+			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, 1);
 
 			mMacToIdMap.put(mac, deviceId);
 
-			Device device;
-			if (type == DeviceType.DEVICE) {
-				device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-			}
-			else if (type == DeviceType.MULTIZONE) {
-				int zoneCount = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, 0);
-				device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, (byte) zoneCount);
-			}
-			else {
-				device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-			}
+			Device device = createDevice(type, mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount);
 			device.setParameter(DEVICE_ID, deviceId);
 			device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
 			mDevices.put(deviceId, device);
 		}
 
+	}
+
+	/**
+	 * Create a device instance from stored data.
+	 *
+	 * @param type The device type.
+	 * @param mac The MAC.
+	 * @param inetAddress The internet address.
+	 * @param port The port.
+	 * @param sourceId The sourceId.
+	 * @param vendor The vendor.
+	 * @param product The product.
+	 * @param version The version.
+	 * @param label The label.
+	 * @param zoneCount The number of zones.
+	 */
+	private Device createDevice(final DeviceType type, final String mac, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
+			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount) {
+		if (type == DeviceType.DEVICE) {
+			return new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+		}
+		else if (type == DeviceType.MULTIZONE) {
+			return new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount);
+		}
+		else {
+			return new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+		}
 	}
 
 	/**
@@ -139,6 +156,18 @@ public final class DeviceRegistry {
 			mMacToIdMap.put(device.getTargetAddress(), newId);
 		}
 		int deviceId = mMacToIdMap.get(device.getTargetAddress());
+
+		String label = device.getLabel();
+		if (label == null) {
+			label = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_label, deviceId);
+			if (label == null) {
+				device.storeLabel("???");
+			}
+			else {
+				device.storeLabel(label);
+			}
+		}
+
 		device.setParameter(DEVICE_ID, deviceId);
 		device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
 		mDevices.put(deviceId, device);
@@ -147,7 +176,6 @@ public final class DeviceRegistry {
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_address, deviceId,
 				new String(device.getInetAddress().getAddress(), StandardCharsets.ISO_8859_1));
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_port, deviceId, device.getPort());
-		String label = device.getLabel();
 		if (label != null) {
 			PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_label, deviceId, label);
 		}
@@ -299,7 +327,7 @@ public final class DeviceRegistry {
 		 * Create a DeviceUpdateTask.
 		 *
 		 * @param deviceRegistry The calling deviceRegistry.
-		 * @param callback       The callback to be called for found devices.
+		 * @param callback The callback to be called for found devices.
 		 */
 		private DeviceUpdateTask(final DeviceRegistry deviceRegistry, final DeviceUpdateCallback callback) {
 			mDeviceRegistry = deviceRegistry;
@@ -378,8 +406,8 @@ public final class DeviceRegistry {
 		/**
 		 * Method called on device search results.
 		 *
-		 * @param device    the device.
-		 * @param isNew     true if the device is unknown.
+		 * @param device the device.
+		 * @param isNew true if the device is unknown.
 		 * @param isMissing true if the device is known but was not found.
 		 */
 		void onDeviceUpdated(Device device, boolean isNew, boolean isMissing);
