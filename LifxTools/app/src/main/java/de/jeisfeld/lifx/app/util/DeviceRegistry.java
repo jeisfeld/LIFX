@@ -147,7 +147,10 @@ public final class DeviceRegistry {
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_address, deviceId,
 				new String(device.getInetAddress().getAddress(), StandardCharsets.ISO_8859_1));
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_port, deviceId, device.getPort());
-		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_label, deviceId, device.getLabel());
+		String label = device.getLabel();
+		if (label != null) {
+			PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_label, deviceId, label);
+		}
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_type, deviceId, DeviceType.fromDevice(device).ordinal());
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_vendor, deviceId, device.getVendor().value());
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, device.getProduct().getId());
@@ -213,7 +216,7 @@ public final class DeviceRegistry {
 	 * @param callback Callback called in case of found devices.
 	 */
 	public void update(final DeviceUpdateCallback callback) {
-		new DeviceUpdateTask(callback).execute();
+		new DeviceUpdateTask(this, callback).execute();
 	}
 
 	/**
@@ -278,7 +281,7 @@ public final class DeviceRegistry {
 	/**
 	 * Asynchronous task for updating the list of devices.
 	 */
-	private final class DeviceUpdateTask extends AsyncTask<String, Device, List<Device>> {
+	private static final class DeviceUpdateTask extends AsyncTask<String, Device, List<Device>> {
 		/**
 		 * The callback called for found devices.
 		 */
@@ -287,13 +290,19 @@ public final class DeviceRegistry {
 		 * The MACs of new devices.
 		 */
 		private final List<String> mNewDeviceMacs = new ArrayList<>();
+		/**
+		 * The device registry.
+		 */
+		private final DeviceRegistry mDeviceRegistry;
 
 		/**
 		 * Create a DeviceUpdateTask.
 		 *
-		 * @param callback The callback to be called for found devices.
+		 * @param deviceRegistry The calling deviceRegistry.
+		 * @param callback       The callback to be called for found devices.
 		 */
-		private DeviceUpdateTask(final DeviceUpdateCallback callback) {
+		private DeviceUpdateTask(final DeviceRegistry deviceRegistry, final DeviceUpdateCallback callback) {
+			mDeviceRegistry = deviceRegistry;
 			mCallback = callback;
 		}
 
@@ -320,10 +329,10 @@ public final class DeviceRegistry {
 					public void onResponse(final ResponseMessage responseMessage) {
 						try {
 							Device device = ((StateService) responseMessage).getDevice().getDeviceProduct();
-							if (!mMacToIdMap.containsKey(device.getTargetAddress())) {
+							if (!mDeviceRegistry.mMacToIdMap.containsKey(device.getTargetAddress())) {
 								mNewDeviceMacs.add(device.getTargetAddress());
 							}
-							addOrUpdate(device);
+							mDeviceRegistry.addOrUpdate(device);
 							publishProgress(device);
 						}
 						catch (IOException e) {
@@ -351,9 +360,9 @@ public final class DeviceRegistry {
 			for (Device device : devices) {
 				foundMacs.add(device.getTargetAddress());
 			}
-			for (String mac : mMacToIdMap.keySet()) {
+			for (String mac : mDeviceRegistry.mMacToIdMap.keySet()) {
 				if (!foundMacs.contains(mac)) {
-					mCallback.onDeviceUpdated(mDevices.get(mMacToIdMap.get(mac)), false, true);
+					mCallback.onDeviceUpdated(mDeviceRegistry.mDevices.get(mDeviceRegistry.mMacToIdMap.get(mac)), false, true);
 				}
 			}
 			if (devices.size() == 0) {

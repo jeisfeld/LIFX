@@ -271,6 +271,10 @@ public class DeviceViewModel extends ViewModel {
 				return;
 			}
 			model.mPower.postValue(power);
+
+			if(model instanceof MultizoneViewModel && ((MultizoneViewModel) model).getColors().getValue() == null) {
+				((MultizoneViewModel) model).checkColor();
+			}
 		}
 	}
 
