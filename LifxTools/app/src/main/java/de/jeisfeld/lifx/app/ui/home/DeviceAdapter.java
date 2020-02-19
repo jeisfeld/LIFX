@@ -27,10 +27,12 @@ import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -240,16 +242,39 @@ public class DeviceAdapter extends BaseAdapter {
 			if (power == null) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
 			}
-			else if (power.isOn()) {
-				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
-			}
 			else if (power.isOff()) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
+			}
+			else if (model instanceof LightViewModel && !(model instanceof MultizoneViewModel) // BOOLEAN_EXPRESSION_COMPLEXITY
+					&& PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on)
+					&& ((LightViewModel) model).getColor().getValue() != null
+					&& ((LightViewModel) model).getColor().getValue().getBrightness() == 0) {
+				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
+			}
+			else if (power.isOn()) {
+				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
 			}
 			else {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_undefined));
 			}
 		});
+
+		if (model instanceof LightViewModel && !(model instanceof MultizoneViewModel)) {
+			LightViewModel lightModel = (LightViewModel) model;
+			lightModel.getColor().observe(mLifeCycleOwner, color -> {
+				if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on) && Power.ON.equals(model.mPower.getValue())) {
+					if (color == null) {
+						powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
+					}
+					else if (color.getBrightness() == 0) {
+						powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
+					}
+					else {
+						powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
+					}
+				}
+			});
+		}
 
 		powerButton.setOnClickListener(v -> model.togglePower());
 	}

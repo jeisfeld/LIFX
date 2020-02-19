@@ -8,6 +8,7 @@
 
     <!-- Arrays for list preferences -->
     <string-array name="power_duration_names">
+        <item>Sofort</item>
         <item>&#188; Sekunde</item>
         <item>&#189; Sekunde</item>
         <item>1 Sekunde</item>

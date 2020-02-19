@@ -15,6 +15,8 @@ import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.Waveform;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Class holding data for the display view of a device.
@@ -24,7 +26,6 @@ public class DeviceViewModel extends ViewModel {
 	 * The context.
 	 */
 	private final WeakReference<Context> mContext;
-
 	/**
 	 * The device.
 	 */
@@ -37,7 +38,10 @@ public class DeviceViewModel extends ViewModel {
 	 * The flag if the device is selected.
 	 */
 	protected final MutableLiveData<Boolean> mIsSelected; // SUPPRESS_CHECKSTYLE
-
+	/**
+	 * Brightness when switching off. Used for quick power.
+	 */
+	private double mBrightnessAtSwitchOff = 0;
 
 	/**
 	 * Constructor.
@@ -242,11 +246,25 @@ public class DeviceViewModel extends ViewModel {
 				}
 			}
 			try {
-				// TODO: enable quick power switch via setColor. Requires to know the current color.
-				if (model.mDevice instanceof Light) {
-					((Light) model.mDevice).setPower(!power.isOn(),
-							PreferenceUtil.getSharedPreferenceIntString(R.string.key_pref_power_duration, R.string.pref_default_power_duration),
-							false);
+				if (model instanceof LightViewModel) {
+					LightViewModel lightModel = (LightViewModel) model;
+					int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
+							R.string.key_pref_power_duration, R.string.pref_default_power_duration);
+					if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on) && !power.isOff()
+							&& !(model instanceof MultizoneViewModel)) {
+						short brightness = lightModel.getColor().getValue() == null ? 0 : lightModel.getColor().getValue().getBrightness();
+						Light light = lightModel.getLight();
+						if (brightness == 0) {
+							light.setWaveform(false, null, null, model.mBrightnessAtSwitchOff, null, powerDuration, 1, 0, Waveform.PULSE, false);
+						}
+						else {
+							model.mBrightnessAtSwitchOff = TypeUtil.toDouble(brightness);
+							light.setWaveform(false, null, null, 0.0, null, powerDuration, 1, 0, Waveform.PULSE, false);
+						}
+					}
+					else {
+						lightModel.getLight().setPower(!power.isOn(), powerDuration, false);
+					}
 				}
 				else {
 					model.mDevice.setPower(!power.isOn());
@@ -272,7 +290,7 @@ public class DeviceViewModel extends ViewModel {
 			}
 			model.mPower.postValue(power);
 
-			if(model instanceof MultizoneViewModel && ((MultizoneViewModel) model).getColors().getValue() == null) {
+			if (model instanceof MultizoneViewModel && ((MultizoneViewModel) model).getColors().getValue() == null) {
 				((MultizoneViewModel) model).checkColor();
 			}
 		}

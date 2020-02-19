@@ -138,7 +138,7 @@ public class Device {
 	 *
 	 * @return A connection.
 	 */
-	protected LifxLanConnection getConnection() {
+	public LifxLanConnection getConnection() {
 		return new LifxLanConnection(mSourceId, mTargetAddress, mInetAddress, mPort);
 	}
 

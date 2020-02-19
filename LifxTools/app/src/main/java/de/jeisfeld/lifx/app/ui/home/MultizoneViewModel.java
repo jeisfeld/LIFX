@@ -47,7 +47,7 @@ public class MultizoneViewModel extends LightViewModel {
 	 *
 	 * @return The light.
 	 */
-	private MultiZoneLight getLight() {
+	protected MultiZoneLight getLight() {
 		return (MultiZoneLight) getDevice();
 	}
 

@@ -32,7 +32,7 @@
 
     <!-- Titles and defaults of preferences -->
     <string name="pref_title_power_duration">Power duration</string>
-    <string name="pref_default_power_duration" translatable="false">200</string>
+    <string name="pref_default_power_duration" translatable="false">250</string>
     <string name="pref_title_refresh_period">Refresh Period</string>
     <string name="pref_default_refresh_period" translatable="false">1000</string>
     <string name="pref_title_use_wakelock">Use wakelock on animation</string>
@@ -40,6 +40,7 @@
 
     <!-- Arrays for list preferences -->
     <string-array name="power_duration_names">
+        <item>Immediate</item>
         <item>&#188; second</item>
         <item>&#189; second</item>
         <item>1 second</item>
@@ -47,6 +48,7 @@
         <item>5 seconds</item>
     </string-array>
     <string-array name="power_duration_values" translatable="false">
+        <item>0</item>
         <item>250</item>
         <item>500</item>
         <item>1000</item>

@@ -53,7 +53,7 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @return The light.
 	 */
-	private Light getLight() {
+	protected Light getLight() {
 		return (Light) getDevice();
 	}
 
