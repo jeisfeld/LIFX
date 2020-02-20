@@ -39,7 +39,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test6();
+		new Test().test0();
 	}
 
 	void test0() throws Exception {

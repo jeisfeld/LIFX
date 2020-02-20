@@ -13,6 +13,10 @@ public final class Logger {
 	 * The application tag for logging.
 	 */
 	private static final String TAG = Application.TAG;
+	/**
+	 * The tag used for logging errors.
+	 */
+	private static final String ERROR_TAG = "LIFX.ERR";
 
 	/**
 	 * Hide the default constructor.
@@ -45,7 +49,7 @@ public final class Logger {
 	 * @param e The exception
 	 */
 	public static void error(final Exception e) {
-		Log.e(Logger.TAG, e.toString(), e);
+		Log.e(ERROR_TAG, e.toString(), e);
 	}
 
 	/**

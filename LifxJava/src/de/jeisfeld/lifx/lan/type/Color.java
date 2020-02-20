@@ -52,7 +52,7 @@ public class Color {
 	/**
 	 * The color temperature used for neutral white.
 	 */
-	private static final short WHITE_TEMPERATURE = 4000;
+	public static final short WHITE_TEMPERATURE = 4000;
 	/**
 	 * The hue used for white as short.
 	 */
@@ -113,16 +113,14 @@ public class Color {
 
 	@Override
 	public final String toString() {
-		StringBuilder result = new StringBuilder("Color(");
-		result.append(TypeUtil.toUnsignedString(mHue))
-				.append(",")
-				.append(TypeUtil.toUnsignedString(mSaturation))
-				.append(",")
-				.append(TypeUtil.toUnsignedString(mBrightness))
-				.append(",")
-				.append(TypeUtil.toUnsignedString(mColorTemperature))
-				.append(")");
-		return result.toString();
+		return "Color(" + TypeUtil.toUnsignedString(mHue)
+				+ ","
+				+ TypeUtil.toUnsignedString(mSaturation)
+				+ ","
+				+ TypeUtil.toUnsignedString(mBrightness)
+				+ ","
+				+ TypeUtil.toUnsignedString(mColorTemperature)
+				+ ")";
 	}
 
 	/**
@@ -245,7 +243,7 @@ public class Color {
 
 	@Override
 	public final boolean equals(final Object obj) {
-		if (obj == null || !(obj instanceof Color)) {
+		if (!(obj instanceof Color)) {
 			return false;
 		}
 		Color other = (Color) obj;
@@ -407,10 +405,9 @@ public class Color {
 			int maxrgb = Math.max(r, Math.max(g, b));
 			int minrgb = Math.min(r, Math.min(g, b));
 			double span = maxrgb - minrgb;
-			int brightness = maxrgb;
 
 			if (span == 0) {
-				return new Color(Color.WHITE_HUE_S, 0, (short) brightness, mColorTemperature);
+				return new Color(Color.WHITE_HUE_S, 0, (short) maxrgb, mColorTemperature);
 			}
 			else {
 				int saturation = (int) (span * 65535 / maxrgb); // MAGIC_NUMBER
@@ -427,7 +424,7 @@ public class Color {
 				}
 
 				hue = hue / 6 * 65536; // MAGIC_NUMBER
-				return new Color((short) hue, (short) saturation, (short) brightness, mColorTemperature);
+				return new Color((short) hue, (short) saturation, (short) maxrgb, mColorTemperature);
 			}
 		}
 
@@ -469,16 +466,14 @@ public class Color {
 
 		@Override
 		public final String toString() {
-			StringBuilder result = new StringBuilder("Color(");
-			result.append(TypeUtil.toUnsignedString(mRed))
-					.append(",")
-					.append(TypeUtil.toUnsignedString(mGreen))
-					.append(",")
-					.append(TypeUtil.toUnsignedString(mBlue))
-					.append(",")
-					.append(TypeUtil.toUnsignedString(mColorTemperature))
-					.append(")");
-			return result.toString();
+			return "Color(" + TypeUtil.toUnsignedString(mRed)
+					+ ","
+					+ TypeUtil.toUnsignedString(mGreen)
+					+ ","
+					+ TypeUtil.toUnsignedString(mBlue)
+					+ ","
+					+ TypeUtil.toUnsignedString(mColorTemperature)
+					+ ")";
 		}
 
 		/**

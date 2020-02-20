@@ -47,6 +47,7 @@ public class MultizoneViewModel extends LightViewModel {
 	 *
 	 * @return The light.
 	 */
+	@Override
 	protected MultiZoneLight getLight() {
 		return (MultiZoneLight) getDevice();
 	}
@@ -105,6 +106,32 @@ public class MultizoneViewModel extends LightViewModel {
 	protected final boolean isRefreshAllowed() {
 		// Due to tendency for connectivity issues, check Multizone light only if disconnected.
 		return super.isRefreshAllowed() && !Power.ON.equals(mPower.getValue()) && !Power.OFF.equals(mPower.getValue());
+	}
+
+	/**
+	 * Update the multizone colors from one color picker, converting to interpolated colors.
+	 *
+	 * @param index The zone index for which the color is changed.
+	 * @param color The new color.
+	 */
+	protected void updateFromMulticolorPicker(final int index, final Color color) {
+		if(getColors().getValue() == null) {
+			Log.w(Application.TAG, "MultizoneViewModel has empty colors");
+			return;
+		}
+		Color[] colors = new Color[DeviceAdapter.MULTIZONE_PICKER_COUNT];
+		for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
+			if (i == index) {
+				colors[i] = color;
+			}
+			else {
+				final int zoneCount = getLight().getZoneCount();
+				final int zone = (int) Math.round(i * (zoneCount - 1) / (DeviceAdapter.MULTIZONE_PICKER_COUNT - 1.0));
+				colors[i] = getColors().getValue().getColor(zone, zoneCount).withRelativeBrightness(
+						getRelativeBrightness().getValue() == null ? 1 : getRelativeBrightness().getValue());
+			}
+		}
+		updateColors(new MultizoneColors.Interpolated(false, colors));
 	}
 
 	/**

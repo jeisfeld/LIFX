@@ -27,6 +27,11 @@ import de.jeisfeld.lifx.os.Logger;
  */
 public class MultiZoneLight extends Light {
 	/**
+	 * The size of a bulk of colors.
+	 */
+	private static final int BULK_SIZE = 8;
+
+	/**
 	 * The count of colors zones.
 	 */
 	private final byte mZoneCount;
@@ -168,8 +173,12 @@ public class MultiZoneLight extends Light {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
 		result.append(INDENT).append("Zone count: ").append(getZoneCount()).append("\n");
 		List<Color> colors = getColors();
-		for (int i = 0; i < colors.size(); i++) {
-			result.append(INDENT).append("Colors[").append(i).append("]: ").append(colors.get(i)).append("\n");
+		for (int bulk = 0; bulk < colors.size() / BULK_SIZE; bulk++) {
+			result.append(INDENT).append("Colors[").append(bulk).append("]: [");
+			for (int i = 0; i < BULK_SIZE && bulk * BULK_SIZE + i < colors.size(); i++) {
+				result.append(colors.get(bulk * BULK_SIZE + i).toString()).append(", ");
+			}
+			result.replace(result.length() - 2, result.length(), "\n");
 		}
 		return result.toString();
 	}

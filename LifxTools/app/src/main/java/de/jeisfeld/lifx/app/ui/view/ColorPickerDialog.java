@@ -72,6 +72,21 @@ public class ColorPickerDialog extends AlertDialog {
 	}
 
 	/**
+	 * Convert Android color to custom color.
+	 *
+	 * @param color The Android color.
+	 * @param colorTemperature The color temperature.
+	 * @return The custom color.
+	 */
+	public static Color convertAndroidColorToColor(final int color, final short colorTemperature) {
+		float[] hsv = new float[3]; // MAGIC_NUMBER
+		android.graphics.Color.colorToHSV(color, hsv);
+		// Use alpha as color temperature
+		double brightness = hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
+		return new Color(hsv[0], hsv[1], brightness, colorTemperature);
+	}
+
+	/**
 	 * Update a color picker view with color from a light.
 	 *
 	 * @param colorPickerView The color picker view to be updated.
@@ -107,8 +122,10 @@ public class ColorPickerDialog extends AlertDialog {
 					(float) (TypeUtil.toDouble(color.getBrightness()) * realWidth + (1 - realWidth) / 2));
 
 			AlphaSlideBar alphaSlideBar = colorPickerView.getAlphaSlideBar();
-			double relativeColorTemp = DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 120.0; // MAGIC_NUMBER
-			alphaSlideBar.setSelectorPosition((float) (relativeColorTemp * realWidth + (1 - realWidth) / 2));
+			if (alphaSlideBar != null) {
+				double relativeColorTemp = DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 120.0; // MAGIC_NUMBER
+				alphaSlideBar.setSelectorPosition((float) (relativeColorTemp * realWidth + (1 - realWidth) / 2));
+			}
 		}
 	}
 
@@ -128,30 +145,38 @@ public class ColorPickerDialog extends AlertDialog {
 	}
 
 	/**
+	 * Prepare the color picker.
+	 *
+	 * @param parentView The parent view.
+	 * @param colorPickerView The view of the color picker.
+	 */
+	public static void prepareColorPickerView(final View parentView, final ColorPickerView colorPickerView) {
+		ColorTemperatureSlideBar colorTemperatureSlider = parentView.findViewById(R.id.ColorTemperatureSlideBar);
+		if (colorTemperatureSlider != null) {
+			colorPickerView.attachAlphaSlider(colorTemperatureSlider);
+		}
+		BrightnessSlideBar brightnessSlider = parentView.findViewById(R.id.BrightnessSlideBar);
+		if (brightnessSlider != null) {
+			colorPickerView.attachBrightnessSlider(brightnessSlider);
+		}
+		colorPickerView.setColorListener(
+				(ColorEnvelopeListener) (envelope, fromUser) -> {
+					// nothing
+				});
+	}
+
+	/**
 	 * Builder class for create {@link ColorPickerDialog}.
 	 */
 	public static class Builder extends AlertDialog.Builder {
 		/**
 		 * The colorPickerView contained in the dialog.
 		 */
-		private ColorPickerView mColorPickerView;
+		private final ColorPickerView mColorPickerView;
 		/**
 		 * The parent view.
 		 */
 		private final View mParentView;
-
-		/**
-		 * Constructor.
-		 *
-		 * @param context The context
-		 * @param parentView The parent view
-		 * @param colorPickerViewId The view id of the color picker
-		 */
-		public Builder(final Context context, final View parentView, final int colorPickerViewId) {
-			super(context);
-			mParentView = parentView;
-			prepare(colorPickerViewId);
-		}
 
 		/**
 		 * Constructor.
@@ -164,28 +189,8 @@ public class ColorPickerDialog extends AlertDialog {
 			LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			assert layoutInflater != null;
 			mParentView = layoutInflater.inflate(layoutResourceId, null);
-			prepare(R.id.ColorPickerView);
-		}
-
-		/**
-		 * Prepare the color picker.
-		 *
-		 * @param colorPickerViewId The view id of the color picker.
-		 */
-		private void prepare(final int colorPickerViewId) {
-			mColorPickerView = mParentView.findViewById(colorPickerViewId);
-			ColorTemperatureSlideBar colorTemperatureSlider = mParentView.findViewById(R.id.ColorTemperatureSlideBar);
-			if (colorTemperatureSlider != null) {
-				mColorPickerView.attachAlphaSlider(colorTemperatureSlider);
-			}
-			BrightnessSlideBar brightnessSlider = mParentView.findViewById(R.id.BrightnessSlideBar);
-			if (brightnessSlider != null) {
-				mColorPickerView.attachBrightnessSlider(brightnessSlider);
-			}
-			mColorPickerView.setColorListener(
-					(ColorEnvelopeListener) (envelope, fromUser) -> {
-						// nothing
-					});
+			mColorPickerView = mParentView.findViewById(R.id.ColorPickerView);
+			prepareColorPickerView(mParentView, mColorPickerView);
 			super.setView(mParentView);
 		}
 
@@ -229,6 +234,15 @@ public class ColorPickerDialog extends AlertDialog {
 		 */
 		public ColorPickerView getColorPickerView() {
 			return mColorPickerView;
+		}
+
+		/**
+		 * Get the parent view.
+		 *
+		 * @return The parent view.
+		 */
+		public View getParentView() {
+			return mParentView;
 		}
 
 		/**

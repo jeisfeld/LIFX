@@ -36,17 +36,20 @@ public class TileChain extends Light {
 	 */
 	public TileChain(final Device device) {
 		super(device);
-		mTileInfo = getStateDeviceChain().getTileInfo();
+		TileStateDeviceChain stateDeviceChain = getStateDeviceChain();
+		mTileInfo = stateDeviceChain == null ? null : stateDeviceChain.getTileInfo();
 	}
 
 	@Override
 	public final String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
-		for (int i = 0; i < mTileInfo.size(); i++) {
-			result.append(INDENT).append("TileInfo[").append(i).append("]: ").append(mTileInfo.get(i)).append("\n");
-		}
-		for (int i = 0; i < mTileInfo.size(); i++) {
-			result.append(INDENT).append("Colors[").append(i).append("]: ").append(getColors((byte) i)).append("\n");
+		if (mTileInfo != null) {
+			for (int i = 0; i < mTileInfo.size(); i++) {
+				result.append(INDENT).append("TileInfo[").append(i).append("]: ").append(mTileInfo.get(i)).append("\n");
+			}
+			for (int i = 0; i < mTileInfo.size(); i++) {
+				result.append(INDENT).append("Colors[").append(i).append("]: ").append(getColors((byte) i)).append("\n");
+			}
 		}
 		result.append(INDENT).append("Tile Effect: ").append(getEffectInfo());
 		return result.toString();

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -32,6 +33,7 @@ import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -39,6 +41,11 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
  * An adapter for the list of devices in the home fragment.
  */
 public class DeviceAdapter extends BaseAdapter {
+	/**
+	 * The number of multizone color pickers.
+	 */
+	protected static final int MULTIZONE_PICKER_COUNT = 6;
+
 	/**
 	 * The list of devices.
 	 */
@@ -162,15 +169,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 		final DeviceViewModel model = getItem(position);
 
-		int layoutId = R.layout.list_view_home_device;
-		if (model instanceof MultizoneViewModel) {
-			layoutId = R.layout.list_view_home;
-		}
-		else if (model instanceof LightViewModel) {
-			layoutId = R.layout.list_view_home;
-		}
-
-		view = LayoutInflater.from(mContext).inflate(layoutId, parent, false);
+		view = LayoutInflater.from(mContext).inflate(R.layout.list_view_home, parent, false);
 
 		final TextView text = view.findViewById(R.id.textViewHome);
 		text.setText(model.getDevice().getLabel());
@@ -219,13 +218,20 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 			Button buttonBrightnessColorTemp = view.findViewById(R.id.buttonBrightnessColortemp);
 			if (buttonBrightnessColorTemp != null) {
-				prepareBrightnessColortempButton(buttonBrightnessColorTemp, lightModel);
+				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, lightModel);
 			}
 
 			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), lightModel);
 			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
 
 			lightModel.checkColor();
+		}
+		if (model instanceof MultizoneViewModel) {
+			MultizoneViewModel lightModel = (MultizoneViewModel) model;
+			Button buttonMultiColorPicker = view.findViewById(R.id.buttonMultiColorPicker);
+			if (buttonMultiColorPicker != null) {
+				prepareMultiColorPicker(buttonMultiColorPicker, lightModel);
+			}
 		}
 
 		return view;
@@ -281,7 +287,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the color picker started via button.
 	 *
 	 * @param colorPickerButton The color picker button.
-	 * @param model The device view model.
+	 * @param model The light view model.
 	 */
 	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
 		colorPickerButton.setVisibility(View.VISIBLE);
@@ -290,12 +296,9 @@ public class DeviceAdapter extends BaseAdapter {
 				.initializeFromLight(model)
 				.setColorListener((color, fromUser) -> {
 					if (fromUser) {
-						float[] hsv = new float[3]; // MAGIC_NUMBER
-						android.graphics.Color.colorToHSV(color, hsv);
 						// Use alpha as color temperature
 						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-						double brightness = hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
-						model.updateColor(new Color(hsv[0], hsv[1], brightness, colorTemperature));
+						model.updateColor(ColorPickerDialog.convertAndroidColorToColor(color, colorTemperature));
 					}
 				}).show());
 	}
@@ -303,10 +306,10 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * Prepare the picker for brightness and color temperature started via button.
 	 *
-	 * @param brightnessColorTempButton The color picker button.
-	 * @param model The device view model.
+	 * @param brightnessColorTempButton The brightness/colortemp picker button.
+	 * @param model The light view model.
 	 */
-	private void prepareBrightnessColortempButton(final Button brightnessColorTempButton, final LightViewModel model) {
+	private void prepareBrightnessColortempPicker(final Button brightnessColorTempButton, final LightViewModel model) {
 		brightnessColorTempButton.setVisibility(View.VISIBLE);
 
 		brightnessColorTempButton.setOnClickListener(v -> new Builder(mContext, R.layout.dialog_brightness_colortemp)
@@ -316,6 +319,65 @@ public class DeviceAdapter extends BaseAdapter {
 						model.updateColor(convertBrightnessColorTempPickerColor(color));
 					}
 				}).show());
+	}
+
+	/**
+	 * Prepare the multizone color picker started via button.
+	 *
+	 * @param multiColorPickerButton The multizone color picker button.
+	 * @param model The multizone view model.
+	 */
+	private void prepareMultiColorPicker(final Button multiColorPickerButton, final MultizoneViewModel model) {
+		multiColorPickerButton.setVisibility(View.VISIBLE);
+
+		multiColorPickerButton.setOnClickListener(v -> {
+			final int zoneCount = model.getLight().getZoneCount();
+			if (zoneCount == 0) {
+				return;
+			}
+
+			Builder colorPickerDialogBuilder = new Builder(mContext, R.layout.dialog_multi_colorpicker);
+			View dialogView = colorPickerDialogBuilder.getParentView();
+
+			prepareMultiColorPickerView(dialogView, R.id.colorPicker1, model, 0);
+			prepareMultiColorPickerView(dialogView, R.id.colorPicker2, model, 1);
+			prepareMultiColorPickerView(dialogView, R.id.colorPicker3, model, 2);
+			prepareMultiColorPickerView(dialogView, R.id.colorPicker4, model, 3); // MAGIC_NUMBER
+			prepareMultiColorPickerView(dialogView, R.id.colorPicker5, model, 4); // MAGIC_NUMBER
+			prepareMultiColorPickerView(dialogView, R.id.colorPicker6, model, 5); // MAGIC_NUMBER
+
+			colorPickerDialogBuilder.show();
+		});
+	}
+
+	/**
+	 * Prepare a single color picker within the multicolor picker.
+	 *
+	 * @param dialogView The dialog view.
+	 * @param parentViewId The parent view of the single color picker.
+	 * @param model The multizone view model.
+	 * @param index the index of the color picker.
+	 */
+	private void prepareMultiColorPickerView(final View dialogView, final int parentViewId, final MultizoneViewModel model, final int index) {
+		final View parentView = dialogView.findViewById(parentViewId);
+		final ColorPickerView colorPickerView = parentView.findViewById(R.id.ColorPickerView);
+		ColorPickerDialog.prepareColorPickerView(parentView, colorPickerView);
+
+		final int zoneCount = model.getLight().getZoneCount();
+		final int zone = (int) Math.round(index * (zoneCount - 1) / (MULTIZONE_PICKER_COUNT - 1.0));
+		final MultizoneColors colors = model.getColors().getValue();
+		final double relativeBrightness = model.getRelativeBrightness().getValue() == null ? 1 : model.getRelativeBrightness().getValue();
+		if (colors != null) {
+			colorPickerView.getViewTreeObserver()
+					.addOnGlobalLayoutListener(() -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView, colors.getColor(zone, zoneCount)
+							.withRelativeBrightness(relativeBrightness)));
+		}
+
+		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
+			if (fromUser) {
+				model.updateFromMulticolorPicker(index, ColorPickerDialog.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE));
+			}
+		});
 	}
 
 	/**
@@ -484,5 +546,4 @@ public class DeviceAdapter extends BaseAdapter {
 		}
 		return new Color(0.0, 0.0, brightness, progressBarToColorTemperature((int) (colorTemp * 120))); // MAGIC_NUMBER
 	}
-
 }

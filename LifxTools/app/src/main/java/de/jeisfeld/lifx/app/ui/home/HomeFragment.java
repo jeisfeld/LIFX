@@ -24,7 +24,6 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
-import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -107,16 +106,20 @@ public class HomeFragment extends ListFragment {
 	private void prepareColorPickers(final ConstraintLayout layoutColorPicker, final ConstraintLayout layoutBrightnessColorTempPicker) {
 		final ColorPickerView colorPickerView;
 		if (layoutColorPicker != null) {
-			Builder builder = new Builder(getContext(), layoutColorPicker, R.id.colorPickerMain);
-			colorPickerView = builder.getColorPickerView();
+			colorPickerView = layoutColorPicker.findViewById(R.id.colorPickerMain);
+			if (colorPickerView != null) {
+				ColorPickerDialog.prepareColorPickerView(layoutColorPicker, colorPickerView);
+			}
 		}
 		else {
 			colorPickerView = null;
 		}
 		final ColorPickerView brightnessColorTempPickerView;
 		if (layoutBrightnessColorTempPicker != null) {
-			Builder builder = new Builder(getContext(), layoutBrightnessColorTempPicker, R.id.colorPickerBrightnessColorTemp);
-			brightnessColorTempPickerView = builder.getColorPickerView();
+			brightnessColorTempPickerView = layoutBrightnessColorTempPicker.findViewById(R.id.colorPickerBrightnessColorTemp);
+			if (brightnessColorTempPickerView != null) {
+				ColorPickerDialog.prepareColorPickerView(layoutBrightnessColorTempPicker, brightnessColorTempPickerView);
+			}
 		}
 		else {
 			brightnessColorTempPickerView = null;
@@ -125,13 +128,10 @@ public class HomeFragment extends ListFragment {
 		if (colorPickerView != null) {
 			colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
 				if (fromUser) {
-					float[] hsv = new float[3]; // MAGIC_NUMBER
-					android.graphics.Color.colorToHSV(color, hsv);
-					double brightness = hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
 					// Use alpha as color temperature
 					short colorTemperature =
 							DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-					Color newColor = new Color(hsv[0], hsv[1], brightness, colorTemperature);
+					Color newColor = ColorPickerDialog.convertAndroidColorToColor(color, colorTemperature);
 
 					List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {
