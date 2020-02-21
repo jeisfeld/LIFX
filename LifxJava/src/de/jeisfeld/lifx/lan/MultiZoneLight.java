@@ -167,7 +167,10 @@ public class MultiZoneLight extends Light {
 	public final String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
 		result.append(INDENT).append("Zone count: ").append(getZoneCount()).append("\n");
-		result.append(INDENT).append("Colors: ").append(getColors()).append("\n");
+		List<Color> colors = getColors();
+		for (int i = 0; i < colors.size(); i++) {
+			result.append(INDENT).append("Colors[").append(i).append("]: ").append(colors.get(i)).append("\n");
+		}
 		return result.toString();
 	}
 

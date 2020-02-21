@@ -14,7 +14,7 @@ public enum Vendor {
 	UNKNOWN;
 
 	/**
-	 * Get the service from its integer value.
+	 * Get the vendor from its integer value.
 	 *
 	 * @param vendor the vendor integer value.
 	 * @return The vendor.
@@ -30,6 +30,7 @@ public enum Vendor {
 
 	/**
 	 * Get the value of this vendor.
+	 *
 	 * @return The value.
 	 */
 	public int value() {

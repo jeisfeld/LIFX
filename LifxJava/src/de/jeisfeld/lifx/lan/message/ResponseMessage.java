@@ -222,6 +222,12 @@ public abstract class ResponseMessage {
 			return new MultizoneStateZone(packet, true);
 		case MULTIZONE_STATE_EXTENDED_COLOR_ZONES:
 			return new MultizoneStateExtendedColorZones(packet);
+		case TILE_STATE_DEVICE_CHAIN:
+			return new TileStateDeviceChain(packet);
+		case TILE_STATE_TILE_STATE_64:
+			return new TileStateTileState64(packet);
+		case TILE_STATE_TILE_EFFECT:
+			return new TileStateTileEffect(packet);
 		default:
 			return null;
 		}

@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.lan.type;
 
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
+
 import java.util.List;
 
 /**
@@ -66,7 +68,7 @@ public abstract class MultizoneColors {
 	public String getColorString(final int zoneCount) {
 		StringBuilder result = new StringBuilder("Multizone Colors: \n");
 		for (int i = 0; i < zoneCount; i++) {
-			result.append("      ").append(getColor(i, zoneCount)).append("\n");
+			result.append(INDENT).append(getColor(i, zoneCount)).append("\n");
 		}
 		return result.toString();
 	}

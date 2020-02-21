@@ -7,8 +7,11 @@ import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.TileColors;
+import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 import de.jeisfeld.lifx.os.Logger;
 
 /**
@@ -21,11 +24,13 @@ public final class Test {
 	private static final String MAC_SWLAMPE = "D0:73:D5:56:40:78";
 	private static final String MAC_LICHTSTREIFEN = "D0:73:D5:14:88:FC";
 	private static final String MAC_FARBLAMPE_PLUS = "D0:73:D5:2F:51:94";
+	private static final String MAC_TILE_4 = "D0:73:D5:55:1B:DF";
 
-	private static final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE);
-	private static final Light FARBLAMPE_PLUS = LifxLan.getInstance().getLightByMac(Test.MAC_FARBLAMPE_PLUS);
-	private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(Test.MAC_SWLAMPE);
-	private static final MultiZoneLight LICHTSTREIFEN = (MultiZoneLight) LifxLan.getInstance().getLightByMac(Test.MAC_LICHTSTREIFEN);
+	private static final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(MAC_FARBLAMPE);
+	// private static final Light FARBLAMPE_PLUS = LifxLan.getInstance().getLightByMac(MAC_FARBLAMPE_PLUS);
+	private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(MAC_SWLAMPE);
+	private static final MultiZoneLight LICHTSTREIFEN = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_LICHTSTREIFEN);
+	private static final TileChain TILE_4 = (TileChain) LifxLan.getInstance().getLightByMac(MAC_TILE_4);
 
 	private static final int ONESECOND = 1000;
 	private static final int TWOSECONDS = 2000;
@@ -34,7 +39,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test0();
+		new Test().test6();
 	}
 
 	void test0() throws Exception {
@@ -102,6 +107,12 @@ public final class Test {
 						new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
 				.setBrightness(0.3) // MAGIC_NUMBER
 				.start();
+	}
+
+	void test6() throws Exception { // SUPPRESS_CHECKSTYLE
+		TILE_4.setColors((byte) 0, 0,
+				new TileColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.BLUE, Color.WHITE).withRelativeBrightness(0.3));
+		TILE_4.setEffect(new TileEffectInfo.Morph(10000, Color.RED, Color.WHITE));
 	}
 
 }

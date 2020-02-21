@@ -33,7 +33,7 @@ public enum Product {
 	LIFX_MINI_WHITE(51, "LIFX Mini White", true, false, false, false, false, 2700, 2700, false),
 	LIFX_GU10(52, "LIFX GU10", true, true, false, false, false, 2500, 9000, false),
 	LIFX_TILE(55, "LIFX Tile", true, true, false, true, false, 2500, 9000, true),
-	LIFX_CANDLE(55, "LIFX Candle", true, true, false, true, false, 2500, 9000, false),
+	LIFX_CANDLE(57, "LIFX Candle", true, true, false, true, false, 2500, 9000, false),
 	LIFX_MINI_COLOR(59, "LIFX Mini Color", true, true, false, false, false, 2500, 9000, false),
 	LIFX_MINI_WARM_TO_WHITE_2(60, "LIFX Mini Warm to White", true, false, false, false, false, 1500, 4000, false),
 	LIFX_MINI_WHITE_2(61, "LIFX Mini White", true, false, false, false, false, 2700, 2700, false),
