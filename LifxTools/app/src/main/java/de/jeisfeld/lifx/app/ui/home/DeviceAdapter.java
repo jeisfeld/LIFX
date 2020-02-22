@@ -24,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
+import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
@@ -32,6 +33,7 @@ import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.Power;
@@ -137,6 +139,9 @@ public class DeviceAdapter extends BaseAdapter {
 	private void addViewModel(final Device device) {
 		if (device instanceof MultiZoneLight) {
 			mViewModels.add(new MultizoneViewModel(mContext, (MultiZoneLight) device));
+		}
+		else if (device instanceof TileChain) {
+			mViewModels.add(new TileViewModel(mContext, (TileChain) device));
 		}
 		else if (device instanceof Light) {
 			mViewModels.add(new LightViewModel(mContext, (Light) device));
@@ -245,6 +250,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
+			Color tempColor;
 			if (power == null) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
 			}
@@ -253,8 +259,8 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 			else if (model instanceof LightViewModel && !(model instanceof MultizoneViewModel) // BOOLEAN_EXPRESSION_COMPLEXITY
 					&& PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on)
-					&& ((LightViewModel) model).getColor().getValue() != null
-					&& ((LightViewModel) model).getColor().getValue().getBrightness() == 0) {
+					&& (tempColor = ((LightViewModel) model).getColor().getValue()) != null // SUPPRESS_CHECKSTYLE
+					&& tempColor.getBrightness() == 0) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
 			}
 			else if (power.isOn()) {
@@ -368,9 +374,21 @@ public class DeviceAdapter extends BaseAdapter {
 		final MultizoneColors colors = model.getColors().getValue();
 		final double relativeBrightness = model.getRelativeBrightness().getValue() == null ? 1 : model.getRelativeBrightness().getValue();
 		if (colors != null) {
-			colorPickerView.getViewTreeObserver()
-					.addOnGlobalLayoutListener(() -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView, colors.getColor(zone, zoneCount)
-							.withRelativeBrightness(relativeBrightness)));
+			if (colors instanceof FlaggedMultizoneColors && ((FlaggedMultizoneColors) colors).getInterpolationColors() != null) {
+				Color interpolationColor;
+				if (((FlaggedMultizoneColors) colors).getFlags()[index]
+						&& (interpolationColor = ((FlaggedMultizoneColors) colors).getInterpolationColor(index)) != null) { // SUPPRESS_CHECKSTYLE
+					colorPickerView.getViewTreeObserver()
+							.addOnGlobalLayoutListener(() -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView,
+									interpolationColor.withRelativeBrightness(relativeBrightness)));
+				}
+			}
+			else {
+				colorPickerView.getViewTreeObserver()
+						.addOnGlobalLayoutListener(
+								() -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView, colors.getColor(zone, zoneCount)
+										.withRelativeBrightness(relativeBrightness)));
+			}
 		}
 
 		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
@@ -378,6 +396,27 @@ public class DeviceAdapter extends BaseAdapter {
 				model.updateFromMulticolorPicker(index, ColorPickerDialog.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE));
 			}
 		});
+
+		parentView.findViewById(R.id.buttonClose).setOnClickListener(v -> {
+			parentView.findViewById(R.id.ColorPickerView).setVisibility(View.INVISIBLE);
+			parentView.findViewById(R.id.BrightnessSlideBar).setVisibility(View.INVISIBLE);
+			parentView.findViewById(R.id.buttonClose).setVisibility(View.INVISIBLE);
+			parentView.findViewById(R.id.buttonOpen).setVisibility(View.VISIBLE);
+			model.getColorPickerFlags()[index] = false;
+			model.updateFromMulticolorPicker(index, null);
+		});
+
+		parentView.findViewById(R.id.buttonOpen).setOnClickListener(v -> {
+			parentView.findViewById(R.id.ColorPickerView).setVisibility(View.VISIBLE);
+			parentView.findViewById(R.id.BrightnessSlideBar).setVisibility(View.VISIBLE);
+			parentView.findViewById(R.id.buttonClose).setVisibility(View.VISIBLE);
+			parentView.findViewById(R.id.buttonOpen).setVisibility(View.INVISIBLE);
+			model.getColorPickerFlags()[index] = true;
+		});
+
+		if (!model.getColorPickerFlags()[index]) {
+			parentView.findViewById(R.id.buttonClose).performClick();
+		}
 	}
 
 	/**

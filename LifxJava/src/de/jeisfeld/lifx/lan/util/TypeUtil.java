@@ -71,6 +71,15 @@ public final class TypeUtil {
 	}
 
 	/**
+	 * Convert an unsigned integer to unsigned short.
+	 * @param i the unsigned integer
+	 * @return the unsigned short
+	 */
+	public static short toUnsignedShort(final double i) {
+		return (short) Math.min(0xffff, Math.max(0, i)); // MAGIC_NUMBER
+	}
+
+	/**
 	 * Convert byte array to String.
 	 *
 	 * @param b the byte array.

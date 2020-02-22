@@ -2,6 +2,7 @@ package de.jeisfeld.lifx.app.ui.home;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -21,6 +22,15 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
  */
 public class MultizoneViewModel extends LightViewModel {
 	/**
+	 * Colortemp on zone 0 indicating potential custom setting.
+	 */
+	private static final short COLORTEMP_FLAG1 = Color.WHITE_TEMPERATURE + 1;
+	/**
+	 * Colortemp on zone 1 indicating colors set by multipicker.
+	 */
+	private static final short COLORTEMP_FLAG2_MULTIPICKER = Color.WHITE_TEMPERATURE + 2;
+
+	/**
 	 * The stored Colors of the device.
 	 */
 	private final MutableLiveData<MultizoneColors> mColors;
@@ -28,6 +38,10 @@ public class MultizoneViewModel extends LightViewModel {
 	 * The stored relative brightness of the device.
 	 */
 	private final MutableLiveData<Double> mRelativeBrightness;
+	/**
+	 * Flags stored to indicate which multizone pickers are active.
+	 */
+	private final boolean[] mColorPickerFlags;
 
 	/**
 	 * Constructor.
@@ -40,6 +54,10 @@ public class MultizoneViewModel extends LightViewModel {
 		mColors = new MutableLiveData<>();
 		mRelativeBrightness = new MutableLiveData<>();
 		mRelativeBrightness.setValue(1.0);
+		mColorPickerFlags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT];
+		for (int i = 0; i < mColorPickerFlags.length; i++) {
+			mColorPickerFlags[i] = true;
+		}
 	}
 
 	/**
@@ -59,6 +77,36 @@ public class MultizoneViewModel extends LightViewModel {
 	 */
 	public LiveData<MultizoneColors> getColors() {
 		return mColors;
+	}
+
+	/**
+	 * Get the color picker flags.
+	 *
+	 * @return The color picker flags.
+	 */
+	protected boolean[] getColorPickerFlags() {
+		return mColorPickerFlags;
+	}
+
+	/**
+	 * Get the number of current color pickers.
+	 *
+	 * @return The number of current color pickers.
+	 */
+	protected int getNumberOfColorPickers() {
+		int result = 0;
+		for (boolean flag : mColorPickerFlags) {
+			if (flag) {
+				result++;
+			}
+		}
+		return result;
+	}
+
+	@Override
+	public final void updateColor(final Color color) {
+		updateStoredColors(new MultizoneColors.Fixed(color));
+		super.updateColor(color);
 	}
 
 	/**
@@ -115,23 +163,81 @@ public class MultizoneViewModel extends LightViewModel {
 	 * @param color The new color.
 	 */
 	protected void updateFromMulticolorPicker(final int index, final Color color) {
-		if(getColors().getValue() == null) {
+		if (mColors.getValue() == null) {
 			Log.w(Application.TAG, "MultizoneViewModel has empty colors");
 			return;
 		}
-		Color[] colors = new Color[DeviceAdapter.MULTIZONE_PICKER_COUNT];
-		for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
-			if (i == index) {
-				colors[i] = color;
-			}
-			else {
-				final int zoneCount = getLight().getZoneCount();
-				final int zone = (int) Math.round(i * (zoneCount - 1) / (DeviceAdapter.MULTIZONE_PICKER_COUNT - 1.0));
-				colors[i] = getColors().getValue().getColor(zone, zoneCount).withRelativeBrightness(
-						getRelativeBrightness().getValue() == null ? 1 : getRelativeBrightness().getValue());
+		double relativeBrightness = getRelativeBrightness().getValue() == null ? 1 : getRelativeBrightness().getValue();
+		MultizoneColors oldColors = mColors.getValue().withRelativeBrightness(relativeBrightness);
+
+		int pickerCount = getNumberOfColorPickers();
+		List<Color> colors = new ArrayList<>();
+		if (oldColors instanceof FlaggedMultizoneColors && ((FlaggedMultizoneColors) oldColors).getInterpolationColors() != null) {
+			boolean[] oldFlags = ((FlaggedMultizoneColors) oldColors).getFlags();
+			List<Color> oldInterpoloationColors = ((FlaggedMultizoneColors) oldColors).getInterpolationColors();
+			int indexOfOld = 0;
+			for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
+				if (mColorPickerFlags[i]) {
+					if (i == index) {
+						colors.add(color);
+					}
+					else {
+						assert oldInterpoloationColors != null;
+						if (oldFlags[i] && oldInterpoloationColors.size() > indexOfOld) {
+							colors.add(oldInterpoloationColors.get(indexOfOld));
+						}
+					}
+				}
+				if (oldFlags[i]) {
+					indexOfOld++;
+				}
 			}
 		}
-		updateColors(new MultizoneColors.Interpolated(false, colors));
+		else {
+			int j = 0;
+			for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
+				if (mColorPickerFlags[i]) {
+					if (i == index) {
+						j++;
+						colors.add(color);
+					}
+					else {
+						final int zoneCount = getLight().getZoneCount();
+						final int zone = (int) Math.round(j * (zoneCount - 1) / (pickerCount - 1.0));
+						colors.add(oldColors.getColor(zone, zoneCount));
+						j++;
+					}
+				}
+			}
+		}
+
+		updateColors(new FlaggedMultizoneColors(new MultizoneColors.Interpolated(false, colors.toArray(new Color[0])), mColorPickerFlags));
+	}
+
+	/**
+	 * Get MultizoneColors object from the colors read from the device.
+	 *
+	 * @param colors The colors read.
+	 * @return The MultizoneColors object.
+	 */
+	public static MultizoneColors fromColors(final List<Color> colors) {
+		if (colors == null || colors.size() < DeviceAdapter.MULTIZONE_PICKER_COUNT + 2) {
+			return new MultizoneColors.Exact(colors);
+		}
+		else if (colors.get(0).getColorTemperature() == COLORTEMP_FLAG1 && colors.get(1).getColorTemperature() == COLORTEMP_FLAG2_MULTIPICKER) {
+			boolean[] flags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT];
+			int flagCount = 0;
+			for (int i = 0; i < flags.length; i++) {
+				flags[i] = colors.get(i + 2).getColorTemperature() == COLORTEMP_FLAG1;
+				if (flags[i]) {
+					flagCount++;
+				}
+			}
+			return new FlaggedMultizoneColors(MultizoneColors.Interpolated.fromColors(flagCount, colors), flags);
+		}
+		else {
+			return new MultizoneColors.Exact(colors);
+		}
 	}
 
 	/**
@@ -153,6 +259,15 @@ public class MultizoneViewModel extends LightViewModel {
 			mRelativeBrightness.postValue(relativeBrightness);
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
+		if (colors instanceof FlaggedMultizoneColors) {
+			System.arraycopy(((FlaggedMultizoneColors) colors).getFlags(), 0, mColorPickerFlags, 0, mColorPickerFlags.length);
+		}
+		else {
+			for (int i = 0; i < mColorPickerFlags.length; i++) {
+				mColorPickerFlags[i] = true;
+			}
+		}
+
 	}
 
 	/**
@@ -184,7 +299,7 @@ public class MultizoneViewModel extends LightViewModel {
 				return null;
 			}
 
-			model.updateStoredColors(new MultizoneColors.Exact(colors));
+			model.updateStoredColors(fromColors(colors));
 			return null;
 		}
 	}
@@ -248,6 +363,153 @@ public class MultizoneViewModel extends LightViewModel {
 		@Override
 		public void execute() {
 			executeOnExecutor(THREAD_POOL_EXECUTOR);
+		}
+	}
+
+	/**
+	 * Multizone colors storing flags.
+	 */
+	protected static final class FlaggedMultizoneColors extends MultizoneColors {
+		/**
+		 * A set of custom flags that may be set for custom storage.
+		 */
+		private final boolean[] mFlags;
+		/**
+		 * The multizone colors behind this.
+		 */
+		private final MultizoneColors mMultizoneColors;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param multizoneColors The base multizone colors without flag.
+		 */
+		private FlaggedMultizoneColors(final MultizoneColors multizoneColors) {
+			mMultizoneColors = multizoneColors;
+			mFlags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT];
+		}
+
+		/**
+		 * Constructor.
+		 *
+		 * @param multizoneColors The base multizone colors without flag.
+		 * @param flags The flags.
+		 */
+		private FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
+			this(multizoneColors);
+			setFlags(flags);
+		}
+
+		@Override
+		public Color getColor(final int zoneIndex, final int zoneCount) {
+			Color color = mMultizoneColors.getColor(zoneIndex, zoneCount);
+			short colorTemperature;
+			if (zoneIndex == 0) {
+				colorTemperature = COLORTEMP_FLAG1;
+			}
+			else if (zoneIndex == 1) {
+				colorTemperature = COLORTEMP_FLAG2_MULTIPICKER;
+			}
+			else if (zoneIndex < DeviceAdapter.MULTIZONE_PICKER_COUNT + 2) {
+				colorTemperature = mFlags[zoneIndex - 2] ? COLORTEMP_FLAG1 : Color.WHITE_TEMPERATURE;
+			}
+			else {
+				colorTemperature = Color.WHITE_TEMPERATURE;
+			}
+
+			return new Color(color.getHue(), color.getSaturation(), color.getBrightness(), colorTemperature);
+		}
+
+		/**
+		 * Get the custom flags.
+		 *
+		 * @return The custom flags.
+		 */
+		protected boolean[] getFlags() {
+			return mFlags;
+		}
+
+		/**
+		 * Set the flags.
+		 *
+		 * @param flags The flags.
+		 */
+		private void setFlags(final boolean[] flags) {
+			System.arraycopy(flags, 0, mFlags, 0, Math.min(flags.length, mFlags.length));
+		}
+
+		/**
+		 * Get a string representation of the flags.
+		 *
+		 * @return A string representation of the flags
+		 */
+		private String getFlagString() {
+			if (mFlags == null) {
+				return "";
+			}
+			StringBuilder stringBuilder = new StringBuilder("[");
+			for (boolean flag : mFlags) {
+				stringBuilder.append(flag ? "1" : "0");
+			}
+			stringBuilder.append("]");
+			return stringBuilder.toString();
+		}
+
+		@Override
+		public MultizoneColors withRelativeBrightness(final double brightnessFactor) {
+			return new FlaggedMultizoneColors(mMultizoneColors.withRelativeBrightness(brightnessFactor), mFlags);
+		}
+
+		@Override
+		public String toString() {
+			return "Flagged" + mMultizoneColors.toString() + getFlagString();
+		}
+
+		@Override
+		public MultizoneColors shift(final int shiftCount) {
+			return new FlaggedMultizoneColors(mMultizoneColors.shift(shiftCount), mFlags);
+		}
+
+		@Override
+		public MultizoneColors add(final MultizoneColors other, final double quota) {
+			return new FlaggedMultizoneColors(mMultizoneColors.add(other, quota), mFlags);
+		}
+
+		/**
+		 * Get base colors of Interpolation.
+		 *
+		 * @return The base colors if this is Interpolation.
+		 */
+		protected List<Color> getInterpolationColors() {
+			if (mMultizoneColors instanceof MultizoneColors.Interpolated) {
+				return ((Interpolated) mMultizoneColors).getColors();
+			}
+			else {
+				return null;
+			}
+		}
+
+		/**
+		 * Get the interpolation base color for a certain color picker.
+		 *
+		 * @param index The color picker index.
+		 * @return The interpolation base color.
+		 */
+		protected Color getInterpolationColor(final int index) {
+			List<Color> colors = getInterpolationColors();
+			if (colors == null) {
+				return null;
+			}
+			int j = 0;
+			for (int i = 0; i < mFlags.length; i++) {
+				if (mFlags[i]) {
+					if (i == index && colors.size() > j) {
+						return colors.get(j);
+					}
+					j++;
+				}
+			}
+			return null;
 		}
 	}
 }

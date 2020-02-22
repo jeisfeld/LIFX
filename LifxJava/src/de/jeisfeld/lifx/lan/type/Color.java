@@ -161,7 +161,28 @@ public class Color {
 	 * @return The mixed color.
 	 */
 	public final Color add(final Color other, final double quota) {
-		double q = Math.min(1, Math.max(0, quota));
+		return mix(other, Math.min(1, Math.max(0, quota)));
+	}
+
+	/**
+	 * Extrapolate the shift from this color to the other color further.
+	 *
+	 * @param other The other color.
+	 * @param quota The quota of the other color (above 1)
+	 * @return The extrapolated color
+	 */
+	public final Color extrapolate(final Color other, final double quota) {
+		return mix(other, Math.max(1, quota));
+	}
+
+	/**
+	 * Mix with another color. May be extrapolating.
+	 *
+	 * @param other The other color.
+	 * @param quota The quota of the other color.
+	 * @return The mixed color.
+	 */
+	private Color mix(final Color other, final double quota) {
 		int h1 = TypeUtil.toUnsignedInt(getHue());
 		int h2 = TypeUtil.toUnsignedInt(other.getHue());
 		if (Math.abs(h1 - h2) > 32768) { // MAGIC_NUMBER
@@ -172,11 +193,15 @@ public class Color {
 				h2 += 65536; // MAGIC_NUMBER
 			}
 		}
+		double newHue = (h2 * quota + h1 * (1 - quota)) % 65536; // MAGIC_NUMBER
 
-		return new Color((short) (h2 * q + h1 * (1 - q)),
-				(short) (TypeUtil.toUnsignedInt(other.getSaturation()) * q + TypeUtil.toUnsignedInt(getSaturation()) * (1 - q)),
-				(short) (TypeUtil.toUnsignedInt(other.getBrightness()) * q + TypeUtil.toUnsignedInt(getBrightness()) * (1 - q)),
-				(short) (TypeUtil.toUnsignedInt(other.getColorTemperature()) * q + TypeUtil.toUnsignedInt(getColorTemperature()) * (1 - q)));
+		return new Color((short) newHue,
+				TypeUtil.toUnsignedShort(
+						TypeUtil.toUnsignedInt(other.getSaturation()) * quota + TypeUtil.toUnsignedInt(getSaturation()) * (1 - quota)),
+				TypeUtil.toUnsignedShort(
+						TypeUtil.toUnsignedInt(other.getBrightness()) * quota + TypeUtil.toUnsignedInt(getBrightness()) * (1 - quota)),
+				TypeUtil.toUnsignedShort(
+						TypeUtil.toUnsignedInt(other.getColorTemperature()) * quota + TypeUtil.toUnsignedInt(getColorTemperature()) * (1 - quota)));
 	}
 
 	/**

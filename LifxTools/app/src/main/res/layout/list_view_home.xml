@@ -32,9 +32,18 @@
             android:orientation="horizontal">
 
             <Button
+                android:id="@+id/buttonBrightnessColortemp"
+                android:layout_width="@dimen/medium_button_size"
+                android:layout_height="@dimen/medium_button_size"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:layout_marginEnd="@dimen/list_horizontal_margin"
+                android:background="@drawable/ic_brightness_colortemp"
+                android:visibility="gone" />
+
+            <Button
                 android:id="@+id/buttonColorPicker"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
+                android:layout_width="@dimen/medium_button_size"
+                android:layout_height="@dimen/medium_button_size"
                 android:layout_gravity="center_vertical|center_horizontal"
                 android:layout_marginEnd="@dimen/list_horizontal_margin"
                 android:background="@drawable/ic_color_wheel"
@@ -42,26 +51,17 @@
 
             <Button
                 android:id="@+id/buttonMultiColorPicker"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
+                android:layout_width="@dimen/medium_button_size"
+                android:layout_height="@dimen/medium_button_size"
                 android:layout_gravity="center_vertical|center_horizontal"
                 android:layout_marginEnd="@dimen/list_horizontal_margin"
                 android:background="@drawable/ic_button_multizone_colors"
                 android:visibility="gone" />
 
-            <Button
-                android:id="@+id/buttonBrightnessColortemp"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
-                android:layout_gravity="center_vertical|center_horizontal"
-                android:layout_marginEnd="@dimen/list_horizontal_margin"
-                android:background="@drawable/ic_brightness_colortemp"
-                android:visibility="gone" />
-
             <ToggleButton
                 android:id="@+id/toggleButtonAnimation"
-                android:layout_width="@dimen/small_button_size"
-                android:layout_height="@dimen/small_button_size"
+                android:layout_width="@dimen/medium_button_size"
+                android:layout_height="@dimen/medium_button_size"
                 android:background="@drawable/ic_button_animation"
                 android:textOff=""
                 android:textOn="" />

@@ -29,5 +29,22 @@
         app:layout_constraintTop_toBottomOf="@id/ColorPickerView"
         app:selector_BrightnessSlider="@drawable/wheel" />
 
+    <Button
+        android:id="@+id/buttonClose"
+        android:layout_width="@dimen/mini_button_size"
+        android:layout_height="@dimen/mini_button_size"
+        android:background="@drawable/ic_button_close"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonOpen"
+        android:layout_width="@dimen/mini_button_size"
+        android:layout_height="@dimen/mini_button_size"
+        android:background="@drawable/ic_button_open"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 

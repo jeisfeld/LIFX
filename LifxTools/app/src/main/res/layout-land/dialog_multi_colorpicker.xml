@@ -11,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="horizontal"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
         <include
             android:id="@+id/colorPicker1"
@@ -41,8 +41,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="horizontal"
-        android:baselineAligned="false">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
         <include
             android:id="@+id/colorPicker4"
             layout="@layout/grid_colorpicker"
@@ -50,6 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             tools:ignore="NestedWeights" />
+
         <include
             android:id="@+id/colorPicker5"
             layout="@layout/grid_colorpicker"
@@ -64,6 +66,5 @@
             android:layout_height="wrap_content"
             android:layout_weight="1" />
     </LinearLayout>
-
 </LinearLayout>
 
