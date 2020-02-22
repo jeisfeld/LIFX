@@ -398,6 +398,9 @@ public class DeviceAdapter extends BaseAdapter {
 		});
 
 		parentView.findViewById(R.id.buttonClose).setOnClickListener(v -> {
+			if (model.getNumberOfColorPickers() < 2) {
+				return;
+			}
 			parentView.findViewById(R.id.ColorPickerView).setVisibility(View.INVISIBLE);
 			parentView.findViewById(R.id.BrightnessSlideBar).setVisibility(View.INVISIBLE);
 			parentView.findViewById(R.id.buttonClose).setVisibility(View.INVISIBLE);

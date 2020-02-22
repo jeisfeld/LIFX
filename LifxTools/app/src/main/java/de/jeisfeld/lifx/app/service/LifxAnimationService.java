@@ -1,5 +1,9 @@
 package de.jeisfeld.lifx.app.service;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -11,15 +15,11 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
@@ -110,9 +110,13 @@ public class LifxAnimationService extends Service {
 				if (tmpLight instanceof MultiZoneLight) {
 					final MultiZoneLight light = (MultiZoneLight) tmpLight;
 
-					light.rollingAnimation(30000, // MAGIC_NUMBER
-							new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
-							.setBrightness(0.3) // MAGIC_NUMBER
+					MultizoneColors colors = MultizoneViewModel.fromColors(light.getColors());
+					if (colors == null) {
+						colors = new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE)
+								.withRelativeBrightness(0.3);
+					}
+
+					light.rollingAnimation(30000, colors) // MAGIC_NUMBER
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
@@ -219,7 +223,7 @@ public class LifxAnimationService extends Service {
 	 * Stop the animation from UI for a given MAC.
 	 *
 	 * @param context the context.
-	 * @param mac     The MAC
+	 * @param mac The MAC
 	 */
 	public static void stopAnimationForMac(final Context context, final String mac) {
 		Light light = ANIMATED_LIGHTS.get(mac);
@@ -231,7 +235,7 @@ public class LifxAnimationService extends Service {
 	/**
 	 * Update the service after the animation has ended.
 	 *
-	 * @param mac      the MAC.
+	 * @param mac the MAC.
 	 * @param wakeLock The wakelock on that light.
 	 */
 	private void updateOnEndAnimation(final String mac, final WakeLock wakeLock) {

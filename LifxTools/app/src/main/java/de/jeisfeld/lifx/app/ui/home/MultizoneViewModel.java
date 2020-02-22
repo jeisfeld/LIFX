@@ -221,7 +221,10 @@ public class MultizoneViewModel extends LightViewModel {
 	 * @return The MultizoneColors object.
 	 */
 	public static MultizoneColors fromColors(final List<Color> colors) {
-		if (colors == null || colors.size() < DeviceAdapter.MULTIZONE_PICKER_COUNT + 2) {
+		if (colors == null) {
+			return null;
+		}
+		else if (colors.size() < DeviceAdapter.MULTIZONE_PICKER_COUNT + 2) {
 			return new MultizoneColors.Exact(colors);
 		}
 		else if (colors.get(0).getColorTemperature() == COLORTEMP_FLAG1 && colors.get(1).getColorTemperature() == COLORTEMP_FLAG2_MULTIPICKER) {
