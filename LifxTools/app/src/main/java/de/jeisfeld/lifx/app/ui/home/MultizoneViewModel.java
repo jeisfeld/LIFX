@@ -29,6 +29,14 @@ public class MultizoneViewModel extends LightViewModel {
 	 * Colortemp on zone 1 indicating colors set by multipicker.
 	 */
 	private static final short COLORTEMP_FLAG2_MULTIPICKER = Color.WHITE_TEMPERATURE + 2;
+	/**
+	 * Colortemp on zone 1 indicating colors set by multipicker.
+	 */
+	private static final short COLORTEMP_FLAG2_MULTIPICKER_CYCLIC = Color.WHITE_TEMPERATURE + 3; // MAGIC_NUMBER
+	/**
+	 * The index of the cyclic flag in the flag array.
+	 */
+	protected static final int CYCLIC_FLAG_INDEX = DeviceAdapter.MULTIZONE_PICKER_COUNT;
 
 	/**
 	 * The stored Colors of the device.
@@ -54,8 +62,8 @@ public class MultizoneViewModel extends LightViewModel {
 		mColors = new MutableLiveData<>();
 		mRelativeBrightness = new MutableLiveData<>();
 		mRelativeBrightness.setValue(1.0);
-		mColorPickerFlags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT];
-		for (int i = 0; i < mColorPickerFlags.length; i++) {
+		mColorPickerFlags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT + 1];
+		for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
 			mColorPickerFlags[i] = true;
 		}
 	}
@@ -95,8 +103,8 @@ public class MultizoneViewModel extends LightViewModel {
 	 */
 	protected int getNumberOfColorPickers() {
 		int result = 0;
-		for (boolean flag : mColorPickerFlags) {
-			if (flag) {
+		for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
+			if (mColorPickerFlags[i]) {
 				result++;
 			}
 		}
@@ -152,8 +160,9 @@ public class MultizoneViewModel extends LightViewModel {
 
 	@Override
 	protected final boolean isRefreshAllowed() {
-		// Due to tendency for connectivity issues, check Multizone light only if disconnected.
-		return super.isRefreshAllowed() && !Power.ON.equals(mPower.getValue()) && !Power.OFF.equals(mPower.getValue());
+		// Due to tendency for connectivity issues, check Multizone light only if disconnected or if colors have not yet been initialized.
+		return super.isRefreshAllowed()
+				&& (mColors.getValue() == null || (!Power.ON.equals(mPower.getValue()) && !Power.OFF.equals(mPower.getValue())));
 	}
 
 	/**
@@ -211,7 +220,8 @@ public class MultizoneViewModel extends LightViewModel {
 			}
 		}
 
-		updateColors(new FlaggedMultizoneColors(new MultizoneColors.Interpolated(false, colors.toArray(new Color[0])), mColorPickerFlags));
+		updateColors(new FlaggedMultizoneColors(new MultizoneColors.Interpolated(
+				mColorPickerFlags[CYCLIC_FLAG_INDEX], colors.toArray(new Color[0])), mColorPickerFlags));
 	}
 
 	/**
@@ -227,16 +237,19 @@ public class MultizoneViewModel extends LightViewModel {
 		else if (colors.size() < DeviceAdapter.MULTIZONE_PICKER_COUNT + 2) {
 			return new MultizoneColors.Exact(colors);
 		}
-		else if (colors.get(0).getColorTemperature() == COLORTEMP_FLAG1 && colors.get(1).getColorTemperature() == COLORTEMP_FLAG2_MULTIPICKER) {
-			boolean[] flags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT];
+		else if (colors.get(0).getColorTemperature() == COLORTEMP_FLAG1 && (colors.get(1).getColorTemperature() == COLORTEMP_FLAG2_MULTIPICKER
+				|| colors.get(1).getColorTemperature() == COLORTEMP_FLAG2_MULTIPICKER_CYCLIC)) {
+			boolean[] flags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT + 1];
 			int flagCount = 0;
-			for (int i = 0; i < flags.length; i++) {
+			for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
 				flags[i] = colors.get(i + 2).getColorTemperature() == COLORTEMP_FLAG1;
 				if (flags[i]) {
 					flagCount++;
 				}
 			}
-			return new FlaggedMultizoneColors(MultizoneColors.Interpolated.fromColors(flagCount, colors), flags);
+			// Cyclic flag
+			flags[CYCLIC_FLAG_INDEX] = colors.get(1).getColorTemperature() == COLORTEMP_FLAG2_MULTIPICKER_CYCLIC;
+			return new FlaggedMultizoneColors(MultizoneColors.Interpolated.fromColors(flagCount, flags[CYCLIC_FLAG_INDEX], colors), flags);
 		}
 		else {
 			return new MultizoneColors.Exact(colors);
@@ -266,9 +279,10 @@ public class MultizoneViewModel extends LightViewModel {
 			System.arraycopy(((FlaggedMultizoneColors) colors).getFlags(), 0, mColorPickerFlags, 0, mColorPickerFlags.length);
 		}
 		else {
-			for (int i = 0; i < mColorPickerFlags.length; i++) {
+			for (int i = 0; i < DeviceAdapter.MULTIZONE_PICKER_COUNT; i++) {
 				mColorPickerFlags[i] = true;
 			}
+			mColorPickerFlags[CYCLIC_FLAG_INDEX] = false;
 		}
 
 	}
@@ -389,7 +403,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 */
 		private FlaggedMultizoneColors(final MultizoneColors multizoneColors) {
 			mMultizoneColors = multizoneColors;
-			mFlags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT];
+			mFlags = new boolean[DeviceAdapter.MULTIZONE_PICKER_COUNT + 1];
 		}
 
 		/**
@@ -411,7 +425,7 @@ public class MultizoneViewModel extends LightViewModel {
 				colorTemperature = COLORTEMP_FLAG1;
 			}
 			else if (zoneIndex == 1) {
-				colorTemperature = COLORTEMP_FLAG2_MULTIPICKER;
+				colorTemperature = mFlags[CYCLIC_FLAG_INDEX] ? COLORTEMP_FLAG2_MULTIPICKER_CYCLIC : COLORTEMP_FLAG2_MULTIPICKER;
 			}
 			else if (zoneIndex < DeviceAdapter.MULTIZONE_PICKER_COUNT + 2) {
 				colorTemperature = mFlags[zoneIndex - 2] ? COLORTEMP_FLAG1 : Color.WHITE_TEMPERATURE;

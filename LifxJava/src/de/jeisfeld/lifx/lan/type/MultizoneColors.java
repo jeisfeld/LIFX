@@ -163,21 +163,26 @@ public abstract class MultizoneColors {
 		 * Redetect interpolated multizone colors from the device colors.
 		 *
 		 * @param count The number of colors to be interpolated. At least 1.
+		 * @param cyclic flag incidating if it should be cyclic.
 		 * @param colors The colors from the device.
 		 * @return The redetected interpolated colors.
 		 */
-		public static MultizoneColors.Interpolated fromColors(final int count, final List<Color> colors) {
+		public static MultizoneColors.Interpolated fromColors(final int count, final boolean cyclic, final List<Color> colors) {
 			int zoneCount = colors.size();
 			Color[] newColors = new Color[count];
 
-			newColors[count - 1] = colors.get(zoneCount - 1);
 			newColors[0] = colors.get(0);
-
 			double lastZone = 0;
-			Color lastColor = colors.get(0);
+			Color lastColor = newColors[0];
 
-			for (int i = 1; i < count - 1; i++) {
-				double nextZone = (double) i * (zoneCount - 1) / (count - 1);
+			for (int i = 1; i < count; i++) {
+				double nextZone;
+				if (cyclic) {
+					nextZone = (double) i * zoneCount / count;
+				}
+				else {
+					nextZone = (double) i * (zoneCount - 1) / (count - 1);
+				}
 				int realZone = (int) Math.floor(nextZone + 0.000001); // MAGIC_NUMBER - ensure that floor is fine even with rounding issues
 				Color realColor = colors.get(realZone);
 				Color nextColor = lastColor.extrapolate(realColor, (nextZone - lastZone) / (realZone - lastZone));
@@ -186,7 +191,7 @@ public abstract class MultizoneColors {
 				lastColor = nextColor;
 			}
 
-			return new MultizoneColors.Interpolated(false, newColors);
+			return new MultizoneColors.Interpolated(cyclic, newColors);
 		}
 
 		/**

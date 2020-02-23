@@ -352,6 +352,13 @@ public class DeviceAdapter extends BaseAdapter {
 			prepareMultiColorPickerView(dialogView, R.id.colorPicker5, model, 4); // MAGIC_NUMBER
 			prepareMultiColorPickerView(dialogView, R.id.colorPicker6, model, 5); // MAGIC_NUMBER
 
+			ToggleButton toggleButtonCyclic = dialogView.findViewById(R.id.toggleButtonCyclic);
+			toggleButtonCyclic.setChecked(model.getColorPickerFlags()[MultizoneViewModel.CYCLIC_FLAG_INDEX]);
+
+			toggleButtonCyclic.setOnCheckedChangeListener((buttonView, isChecked) -> {
+				model.getColorPickerFlags()[MultizoneViewModel.CYCLIC_FLAG_INDEX] = isChecked;
+				model.updateFromMulticolorPicker(MultizoneViewModel.CYCLIC_FLAG_INDEX, null);
+			});
 			colorPickerDialogBuilder.show();
 		});
 	}
