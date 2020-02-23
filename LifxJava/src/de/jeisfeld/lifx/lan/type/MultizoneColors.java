@@ -264,7 +264,7 @@ public abstract class MultizoneColors {
 
 		@Override
 		public final Color getColor(final int zoneIndex, final int zoneCount) {
-			return zoneIndex >= mColors.size() ? Color.OFF : mColors.get(zoneIndex);
+			return mColors.get((zoneIndex % mColors.size() + zoneCount) % mColors.size());
 		}
 
 		@Override
