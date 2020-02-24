@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import de.jeisfeld.lifx.lan.util.TypeUtil;
+
 /**
  * Class to hold multizone colors.
  */
@@ -90,6 +92,92 @@ public abstract class MultizoneColors {
 				return base.getColor(zoneIndex, zoneCount).add(other.getColor(zoneIndex, zoneCount), quota);
 			}
 		};
+	}
+
+	/**
+	 * Return the max brightness.
+	 *
+	 * @param zoneCount The number of zones.
+	 * @return The max brightness.
+	 */
+	public int getMaxBrightness(final int zoneCount) {
+		int maxBrightness = 0;
+		for (int i = 0; i < zoneCount; i++) {
+			maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(getColor(i, zoneCount).getBrightness()));
+		}
+		return maxBrightness;
+	}
+
+	/**
+	 * Multizone colors defined by a fixed color.
+	 */
+	public static class Fixed extends MultizoneColors {
+		/**
+		 * The color.
+		 */
+		private final Color mColor;
+
+		/**
+		 * Create one-color multizone colors.
+		 *
+		 * @param color The defining color.
+		 */
+		public Fixed(final Color color) {
+			mColor = color;
+		}
+
+		@Override
+		public final Color getColor(final int zoneIndex, final int zoneCount) {
+			return mColor;
+		}
+
+		@Override
+		public final MultizoneColors withRelativeBrightness(final double brightnessFactor) {
+			return new MultizoneColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
+		}
+
+		@Override
+		public final String toString() {
+			return "MultizoneColors.Fixed[" + mColor + "]";
+		}
+	}
+
+	/**
+	 * Multizone colors defined by a list of colors.
+	 */
+	public static class Exact extends MultizoneColors {
+		/**
+		 * The color list.
+		 */
+		private final List<Color> mColors;
+
+		/**
+		 * Create one-color multizone colors.
+		 *
+		 * @param colors The defining colors.
+		 */
+		public Exact(final List<Color> colors) {
+			mColors = colors;
+		}
+
+		@Override
+		public final Color getColor(final int zoneIndex, final int zoneCount) {
+			return mColors.get((zoneIndex % mColors.size() + zoneCount) % mColors.size());
+		}
+
+		@Override
+		public final MultizoneColors withRelativeBrightness(final double brightnessFactor) {
+			List<Color> newColors = new ArrayList<>();
+			for (Color color : mColors) {
+				newColors.add(color.withRelativeBrightness(brightnessFactor));
+			}
+			return new MultizoneColors.Exact(newColors);
+		}
+
+		@Override
+		public final String toString() {
+			return "MultizoneColors.Exact" + mColors;
+		}
 	}
 
 	/**
@@ -208,77 +296,5 @@ public abstract class MultizoneColors {
 			return "MultizoneColors.Interpolated" + (mCyclic ? "°" : "") + mColors;
 		}
 
-	}
-
-	/**
-	 * Multizone colors defined by a fixed color.
-	 */
-	public static class Fixed extends MultizoneColors {
-		/**
-		 * The color.
-		 */
-		private final Color mColor;
-
-		/**
-		 * Create one-color multizone colors.
-		 *
-		 * @param color The defining color.
-		 */
-		public Fixed(final Color color) {
-			mColor = color;
-		}
-
-		@Override
-		public final Color getColor(final int zoneIndex, final int zoneCount) {
-			return mColor;
-		}
-
-		@Override
-		public final MultizoneColors withRelativeBrightness(final double brightnessFactor) {
-			return new MultizoneColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
-		}
-
-		@Override
-		public final String toString() {
-			return "MultizoneColors.Fixed[" + mColor + "]";
-		}
-	}
-
-	/**
-	 * Multizone colors defined by a list of colors.
-	 */
-	public static class Exact extends MultizoneColors {
-		/**
-		 * The color list.
-		 */
-		private final List<Color> mColors;
-
-		/**
-		 * Create one-color multizone colors.
-		 *
-		 * @param colors The defining colors.
-		 */
-		public Exact(final List<Color> colors) {
-			mColors = colors;
-		}
-
-		@Override
-		public final Color getColor(final int zoneIndex, final int zoneCount) {
-			return mColors.get((zoneIndex % mColors.size() + zoneCount) % mColors.size());
-		}
-
-		@Override
-		public final MultizoneColors withRelativeBrightness(final double brightnessFactor) {
-			List<Color> newColors = new ArrayList<>();
-			for (Color color : mColors) {
-				newColors.add(color.withRelativeBrightness(brightnessFactor));
-			}
-			return new MultizoneColors.Exact(newColors);
-		}
-
-		@Override
-		public final String toString() {
-			return "MultizoneColors.Exact" + mColors;
-		}
 	}
 }

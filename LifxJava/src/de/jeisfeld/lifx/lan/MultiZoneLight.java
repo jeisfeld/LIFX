@@ -58,6 +58,7 @@ public class MultiZoneLight extends Light {
 	 * @param product The product.
 	 * @param version The version.
 	 * @param label The label.
+	 * @param zoneCount The number of zones.
 	 */
 	public MultiZoneLight(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
 			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount) { // SUPPRESS_CHECKSTYLE

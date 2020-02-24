@@ -26,8 +26,11 @@ import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.TileChain;
+import de.jeisfeld.lifx.lan.TileChain.AnimationDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 
 /**
  * A service handling LIFX animations in the background.
@@ -130,9 +133,35 @@ public class LifxAnimationService extends Service {
 							})
 							.start();
 				}
+				else if (tmpLight instanceof TileChain) {
+					final TileChain light = (TileChain) tmpLight;
+
+					final double xCenter = (light.getTotalWidth() - 1) / 2.0;
+					final double yCenter = (light.getTotalHeight() - 1) / 2.0;
+					final short brightness = (short) light.getColors().getMaxBrightness(light);
+
+					light.animation(new AnimationDefinition() {
+						@Override
+						public TileChainColors getColors(final int n) {
+							return new TileChainColors() {
+								@Override
+								public Color getColor(final int x, final int y, final int width, final int height) {
+									double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
+									return new Color((int) (1024 * (5 * distance - n)), -1, brightness, 4000); // MAGIC_NUMBER
+								}
+							};
+						}
+
+						@Override
+						public int getDuration(final int n) {
+							return 200; // MAGIC_NUMBER
+						}
+					}).start();
+
+				}
 				else {
 					final Light light = tmpLight;
-					light.wakeup(10000, new AnimationCallback() {
+					light.wakeup(10000, new AnimationCallback() { // MAGIC_NUMBER
 						@Override
 						public void onException(final IOException e) {
 							updateOnEndAnimation(light.getTargetAddress(), wakeLock);

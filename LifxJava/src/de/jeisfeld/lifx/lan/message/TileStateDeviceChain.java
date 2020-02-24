@@ -71,16 +71,31 @@ public class TileStateDeviceChain extends ResponseMessage {
 	}
 
 	/**
+	 * Get the start index.
+	 *
+	 * @return The start index.
+	 */
+	public byte getStartIndex() {
+		return mStartIndex;
+	}
+
+	/**
 	 * Get the tile info.
 	 *
 	 * @return the tile info..
 	 */
 	public List<TileInfo> getTileInfo() {
 		List<TileInfo> result = new ArrayList<>();
+		float mMinX = Float.MAX_VALUE;
+		float mMinY = Float.MAX_VALUE;
 		for (int i = 0; i < mTileCount; i++) {
 			result.add(mTiles[mStartIndex + i]);
+			mMinX = Math.min(mMinX, mTiles[mStartIndex + i].getUserX());
+			mMinY = Math.min(mMinY, mTiles[mStartIndex + i].getUserY());
 		}
-
+		for (TileInfo tileInfo : result) {
+			tileInfo.determineMinCoordinates(mMinX, mMinY);
+		}
 		return result;
 	}
 

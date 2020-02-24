@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import de.jeisfeld.lifx.lan.util.TypeUtil;
+
 /**
  * Class to hold colors for one tile.
  */
@@ -14,7 +16,7 @@ public abstract class TileColors {
 	private static final int WIDTH = 8;
 
 	/**
-	 * The colors used for switching the multizone device off.
+	 * The colors used for switching the tile off.
 	 */
 	public static final TileColors OFF = new TileColors() {
 		@Override
@@ -88,7 +90,7 @@ public abstract class TileColors {
 	 */
 	public List<Color> asList() {
 		List<Color> result = new ArrayList<>();
-		for (int y = 0; y < WIDTH; y++) {
+		for (int y = WIDTH - 1; y >= 0; y--) {
 			for (int x = 0; x < WIDTH; x++) {
 				result.add(getColor(x, y));
 			}
@@ -114,55 +116,22 @@ public abstract class TileColors {
 	}
 
 	/**
-	 * Multizone colors defined by colors in the corners that are linearly interpolated.
+	 * Get the max brightness of the tile.
+	 *
+	 * @return The max brightness.
 	 */
-	public static class InterpolatedCorners extends TileColors {
-		/**
-		 * The color on top left.
-		 */
-		private final Color mColorTopLeft;
-		/**
-		 * The color on top right.
-		 */
-		private final Color mColorTopRight;
-		/**
-		 * The color on bottom left.
-		 */
-		private final Color mColorBottomLeft;
-		/**
-		 * The color on bottom right.
-		 */
-		private final Color mColorBottomRight;
-
-		/**
-		 * Create interpolated colors.
-		 *
-		 * @param colorTopLeft The color on top left
-		 * @param colorTopRight The color on top right
-		 * @param colorBottomLeft The color on bottom left
-		 * @param colorBottomRight The color on bottom right
-		 */
-		public InterpolatedCorners(final Color colorTopLeft, final Color colorTopRight, final Color colorBottomLeft, final Color colorBottomRight) {
-			mColorTopLeft = colorTopLeft;
-			mColorTopRight = colorTopRight;
-			mColorBottomLeft = colorBottomLeft;
-			mColorBottomRight = colorBottomRight;
+	public int getMaxBrightness() {
+		int maxBrightness = 0;
+		for (int x = 0; x < WIDTH; x++) {
+			for (int y = 0; y < WIDTH; y++) {
+				maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(getColor(x, y).getBrightness()));
+			}
 		}
-
-		@Override
-		public final Color getColor(final int x, final int y) {
-			double xquota = (double) x / (WIDTH - 1);
-			double yquota = (double) y / (WIDTH - 1);
-
-			Color colorTop = mColorTopLeft.add(mColorTopRight, xquota);
-			Color colorBottom = mColorBottomLeft.add(mColorBottomRight, xquota);
-
-			return colorTop.add(colorBottom, yquota);
-		}
+		return maxBrightness;
 	}
 
 	/**
-	 * Multizone colors defined by a fixed color.
+	 * Tile colors defined by a fixed color.
 	 */
 	public static class Fixed extends TileColors {
 		/**
@@ -183,10 +152,20 @@ public abstract class TileColors {
 		public final Color getColor(final int x, final int y) {
 			return mColor;
 		}
+
+		@Override
+		public final TileColors withRelativeBrightness(final double brightnessFactor) {
+			return new TileColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
+		}
+
+		@Override
+		public final String toString() {
+			return "TileColors.Fixed[" + mColor + "]";
+		}
 	}
 
 	/**
-	 * Multizone colors defined by a list of colors.
+	 * Tile colors defined by a list of colors.
 	 */
 	public static class Exact extends TileColors {
 		/**
@@ -217,7 +196,7 @@ public abstract class TileColors {
 			}
 			mColors = new Color[WIDTH][WIDTH];
 			Iterator<Color> iterator = colors.iterator();
-			for (int y = 0; y < WIDTH; y++) {
+			for (int y = WIDTH - 1; y >= 0; y--) {
 				for (int x = 0; x < WIDTH; x++) {
 					mColors[y][x] = iterator.next();
 				}
@@ -227,6 +206,92 @@ public abstract class TileColors {
 		@Override
 		public final Color getColor(final int x, final int y) {
 			return mColors[y][x];
+		}
+
+		@Override
+		public final TileColors withRelativeBrightness(final double brightnessFactor) {
+			Color[][] colorsWithBrightness = new Color[WIDTH][WIDTH];
+			for (int y = 0; y < WIDTH; y++) {
+				for (int x = 0; x < WIDTH; x++) {
+					colorsWithBrightness[y][x] = mColors[y][x].withRelativeBrightness(brightnessFactor);
+				}
+			}
+			return new TileColors.Exact(colorsWithBrightness);
+		}
+
+		@Override
+		public final String toString() {
+			StringBuilder stringBuilder = new StringBuilder("TileColors.Exact[");
+			for (int y = 0; y < WIDTH; y++) {
+				stringBuilder.append("[");
+				for (int x = 0; x < WIDTH; x++) {
+					stringBuilder.append(mColors[y][x]).append(", ");
+				}
+				stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "], ");
+			}
+			stringBuilder.replace(stringBuilder.length() - 2, stringBuilder.length(), "");
+			return stringBuilder.toString();
+		}
+	}
+
+	/**
+	 * Tile colors defined by colors in the corners that are linearly interpolated.
+	 */
+	public static class InterpolatedCorners extends TileColors {
+		/**
+		 * The color on top left.
+		 */
+		private final Color mColorTopLeft;
+		/**
+		 * The color on top right.
+		 */
+		private final Color mColorTopRight;
+		/**
+		 * The color on bottom left.
+		 */
+		private final Color mColorBottomLeft;
+		/**
+		 * The color on bottom right.
+		 */
+		private final Color mColorBottomRight;
+
+		/**
+		 * Create interpolated colors.
+		 *
+		 * @param colorTopLeft     The color on top left
+		 * @param colorTopRight    The color on top right
+		 * @param colorBottomLeft  The color on bottom left
+		 * @param colorBottomRight The color on bottom right
+		 */
+		public InterpolatedCorners(final Color colorTopLeft, final Color colorTopRight, final Color colorBottomLeft, final Color colorBottomRight) {
+			mColorTopLeft = colorTopLeft;
+			mColorTopRight = colorTopRight;
+			mColorBottomLeft = colorBottomLeft;
+			mColorBottomRight = colorBottomRight;
+		}
+
+		@Override
+		public final Color getColor(final int x, final int y) {
+			double xquota = (double) x / (WIDTH - 1);
+			double yquota = (double) y / (WIDTH - 1);
+
+			Color colorTop = mColorTopLeft.add(mColorTopRight, xquota);
+			Color colorBottom = mColorBottomLeft.add(mColorBottomRight, xquota);
+
+			return colorBottom.add(colorTop, yquota);
+		}
+
+		@Override
+		public final TileColors withRelativeBrightness(final double brightnessFactor) {
+			return new TileColors.InterpolatedCorners(mColorTopLeft.withRelativeBrightness(brightnessFactor),
+					mColorTopRight.withRelativeBrightness(brightnessFactor), mColorBottomLeft.withRelativeBrightness(brightnessFactor),
+					mColorBottomRight.withRelativeBrightness(brightnessFactor));
+		}
+
+		@Override
+		public final String toString() {
+			return "TileColors.InterpolatedCorners[" + mColorTopLeft + "," + mColorTopRight + ","
+					+ mColorBottomLeft + "," + mColorBottomRight + "," + "]";
 		}
 	}
 }

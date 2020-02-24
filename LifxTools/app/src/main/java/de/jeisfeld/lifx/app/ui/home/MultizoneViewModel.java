@@ -88,6 +88,15 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	/**
+	 * Get the relative brightness.
+	 *
+	 * @return The relative brightness.
+	 */
+	public LiveData<Double> getRelativeBrightness() {
+		return mRelativeBrightness;
+	}
+
+	/**
 	 * Get the color picker flags.
 	 *
 	 * @return The color picker flags.
@@ -134,15 +143,6 @@ public class MultizoneViewModel extends LightViewModel {
 				mRunningSetColorTasks.get(0).execute();
 			}
 		}
-	}
-
-	/**
-	 * Get the relative brightness.
-	 *
-	 * @return The relative brightness.
-	 */
-	public LiveData<Double> getRelativeBrightness() {
-		return mRelativeBrightness;
 	}
 
 	@Override
@@ -262,10 +262,7 @@ public class MultizoneViewModel extends LightViewModel {
 	 * @param colors The given colors.
 	 */
 	private void updateStoredColors(final MultizoneColors colors) {
-		int maxBrightness = 0;
-		for (int i = 0; i < getLight().getZoneCount(); i++) {
-			maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(colors.getColor(i, getLight().getZoneCount()).getBrightness()));
-		}
+		int maxBrightness = colors.getMaxBrightness(getLight().getZoneCount());
 		if (maxBrightness == 0) {
 			mRelativeBrightness.postValue(0.0);
 			mColors.postValue(colors);
@@ -284,7 +281,6 @@ public class MultizoneViewModel extends LightViewModel {
 			}
 			mColorPickerFlags[CYCLIC_FLAG_INDEX] = false;
 		}
-
 	}
 
 	/**

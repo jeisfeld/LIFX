@@ -20,6 +20,10 @@ public class TileInfo {
 	 */
 	private short mAccelerationZ;
 	/**
+	 * The rotation.
+	 */
+	private Rotation mRotation;
+	/**
 	 * The x position of the tile.
 	 */
 	private float mUserX;
@@ -59,6 +63,14 @@ public class TileInfo {
 	 * The major version.
 	 */
 	private short mMajorVersion;
+	/**
+	 * The min x coordinate.
+	 */
+	private int mMinX;
+	/**
+	 * The min y coordinate.
+	 */
+	private int mMinY;
 
 	/**
 	 * Extract tile data from a StateDeviceChain byte buffer.
@@ -71,6 +83,7 @@ public class TileInfo {
 		tileInfo.mAccelerationX = byteBuffer.getShort();
 		tileInfo.mAccelerationY = byteBuffer.getShort();
 		tileInfo.mAccelerationZ = byteBuffer.getShort();
+		tileInfo.mRotation = calculateRotation(tileInfo.mAccelerationX, tileInfo.mAccelerationY, tileInfo.mAccelerationZ);
 		byteBuffer.getShort();
 		tileInfo.mUserX = byteBuffer.getFloat();
 		tileInfo.mUserY = byteBuffer.getFloat();
@@ -94,10 +107,21 @@ public class TileInfo {
 		sb.append("Product=").append(mProduct.getName()).append(" (v").append(mVersion).append("), ");
 		sb.append("Firmware=").append(mMajorVersion).append(".").append(mMinorVersion).append(", ");
 		sb.append("Size=(").append(mWidth).append(",").append(mHeight).append("), ");
-		sb.append("Position=(").append(mUserX).append(",").append(mUserY).append("), ");
-		sb.append("Gravity=").append(getRotationString()).append("(");
+		sb.append("Position=(").append(mUserX).append(",").append(mUserY).append("),(").append(mMinX).append(",").append(mMinY).append("), ");
+		sb.append("Rotation=").append(getRotation()).append("(");
 		sb.append(mAccelerationX).append(",").append(mAccelerationY).append(",").append(mAccelerationZ).append(")");
 		return sb.toString();
+	}
+
+	/**
+	 * Determine the min coordinates.
+	 *
+	 * @param xOffset the x offset.
+	 * @param yOffset the y offset.
+	 */
+	public void determineMinCoordinates(final float xOffset, final float yOffset) {
+		mMinX = Math.round((mUserX - xOffset) * mWidth);
+		mMinY = Math.round((mUserY - yOffset) * mHeight);
 	}
 
 	/**
@@ -125,6 +149,15 @@ public class TileInfo {
 	 */
 	public final short getAccelerationZ() {
 		return mAccelerationZ;
+	}
+
+	/**
+	 * Get the rotation.
+	 *
+	 * @return the rotation.
+	 */
+	public final Rotation getRotation() {
+		return mRotation;
 	}
 
 	/**
@@ -218,45 +251,97 @@ public class TileInfo {
 	}
 
 	/**
-	 * Get a string describing the rotation status.
+	 * Get the min x coordinate.
 	 *
+	 * @return the min x coordinate.
+	 */
+	public final int getMinX() {
+		return mMinX;
+	}
+
+	/**
+	 * Get the min y coordinate.
+	 *
+	 * @return the min y coordinate.
+	 */
+	public final int getMinY() {
+		return mMinY;
+	}
+
+	/**
+	 * Get the rotation status from the acceleration values.
+	 *
+	 * @param accelerationX The x acceleration
+	 * @param accelerationY The y acceleration
+	 * @param accelerationZ The z acceleration
 	 * @return The rotation status.
 	 */
-	public String getRotationString() {
-		float absX = Math.abs(mAccelerationX);
-		float absY = Math.abs(mAccelerationY);
-		float absZ = Math.abs(mAccelerationZ);
+	public static Rotation calculateRotation(final float accelerationX, final float accelerationY, final float accelerationZ) {
+		float absX = Math.abs(accelerationX);
+		float absY = Math.abs(accelerationY);
+		float absZ = Math.abs(accelerationZ);
 
-		if (mAccelerationX == -1 && mAccelerationY == -1 && mAccelerationZ == -1) {
+		if (accelerationX == -1 && accelerationY == -1 && accelerationZ == -1) {
 			// Invalid data, assume right-side up.
-			return "normal";
+			return Rotation.UPRIGHT;
 
 		}
 		else if (absX > absY && absX > absZ) {
-			if (mAccelerationX > 0) {
-				return "rotateRight";
+			if (accelerationX > 0) {
+				return Rotation.ROTATE_RIGHT;
 			}
 			else {
-				return "rotateLeft";
+				return Rotation.ROTATE_LEFT;
 			}
 
 		}
 		else if (absZ > absX && absZ > absY) {
-			if (mAccelerationZ > 0) {
-				return "faceUp";
+			if (accelerationZ > 0) {
+				return Rotation.FACE_UP;
 			}
 			else {
-				return "faceDown";
+				return Rotation.FACE_DOWN;
 			}
 
 		}
 		else {
-			if (mAccelerationY > 0) {
-				return "upsideDown";
+			if (accelerationY > 0) {
+				return Rotation.UPSIDE_DOWN;
 			}
 			else {
-				return "normal";
+				return Rotation.UPRIGHT;
 			}
 		}
 	}
+
+	/**
+	 * Enum for rotation position of the tile.
+	 */
+	public enum Rotation {
+		/**
+		 * Upright position.
+		 */
+		UPRIGHT,
+		/**
+		 * Right rotated position.
+		 */
+		ROTATE_RIGHT,
+		/**
+		 * Upside down position.
+		 */
+		UPSIDE_DOWN,
+		/**
+		 * Rotate left position.
+		 */
+		ROTATE_LEFT,
+		/**
+		 * Face up position.
+		 */
+		FACE_UP,
+		/**
+		 * Face down position.
+		 */
+		FACE_DOWN
+	}
+
 }

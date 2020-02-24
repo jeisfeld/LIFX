@@ -83,11 +83,12 @@ public final class DeviceRegistry {
 			Vendor vendor = Vendor.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_vendor, deviceId, 0));
 			Product product = Product.fromId(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0));
 			int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
-			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, 1);
+			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
+			byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
 
 			mMacToIdMap.put(mac, deviceId);
 
-			Device device = createDevice(type, mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount);
+			Device device = createDevice(type, mac, inetAddress, port, vendor, product, version, label, zoneCount, tileCount);
 			device.setParameter(DEVICE_ID, deviceId);
 			device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
 			mDevices.put(deviceId, device);
@@ -102,20 +103,24 @@ public final class DeviceRegistry {
 	 * @param mac The MAC.
 	 * @param inetAddress The internet address.
 	 * @param port The port.
-	 * @param sourceId The sourceId.
 	 * @param vendor The vendor.
 	 * @param product The product.
 	 * @param version The version.
 	 * @param label The label.
-	 * @param zoneCount The number of zones.
+	 * @param zoneCount The number of zones of Multizone device.
+	 * @param tileCount The number of tiles of TileChain.
 	 */
-	private Device createDevice(final DeviceType type, final String mac, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount) {
+	private Device createDevice(final DeviceType type, final String mac, final InetAddress inetAddress, final int port, // SUPPRESS_CHECKSTYLE
+			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
+			final byte tileCount) {
 		if (type == DeviceType.DEVICE) {
 			return new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
 		}
 		else if (type == DeviceType.MULTIZONE) {
 			return new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount);
+		}
+		else if (type == DeviceType.TILECHAIN) {
+			return new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label, tileCount);
 		}
 		else {
 			return new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
@@ -186,6 +191,9 @@ public final class DeviceRegistry {
 		if (device instanceof MultiZoneLight) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, ((MultiZoneLight) device).getZoneCount());
 		}
+		if (device instanceof TileChain) {
+			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, ((TileChain) device).getTileCount());
+		}
 	}
 
 	/**
@@ -214,6 +222,7 @@ public final class DeviceRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_product, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_version, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_zone_count, deviceId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_count, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_show, deviceId);
 	}
 

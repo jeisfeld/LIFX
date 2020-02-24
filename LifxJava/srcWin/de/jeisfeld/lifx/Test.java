@@ -10,8 +10,7 @@ import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
-import de.jeisfeld.lifx.lan.type.TileColors;
-import de.jeisfeld.lifx.lan.type.TileEffectInfo;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.os.Logger;
 
 /**
@@ -39,7 +38,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test0();
+		new Test().test6();
 	}
 
 	void test0() throws Exception {
@@ -110,9 +109,24 @@ public final class Test {
 	}
 
 	void test6() throws Exception { // SUPPRESS_CHECKSTYLE
-		TILE_4.setColors((byte) 0, 0,
-				new TileColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.BLUE, Color.WHITE).withRelativeBrightness(0.3));
-		TILE_4.setEffect(new TileEffectInfo.Morph(10000, Color.RED, Color.WHITE));
+		double xCenter = (TILE_4.getTotalWidth() - 1) / 2.0;
+		double yCenter = (TILE_4.getTotalHeight() - 1) / 2.0;
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+			final int j = i;
+			TILE_4.setColors(0, new TileChainColors() {
+				@Override
+				public Color getColor(final int x, final int y, final int width, final int height) {
+					double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
+					return new Color((int) (1024 * (5 * distance - j)), -1, 10000, 4000); // MAGIC_NUMBER
+				}
+			});
+		}
+
 	}
 
+	void test7() throws Exception { // SUPPRESS_CHECKSTYLE
+		TILE_4.setColors(0, new TileChainColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.GREEN, Color.RED).withRelativeBrightness(0.01));
+
+		// TILE_4.setEffect(new TileEffectInfo.Morph(10000, Color.RED, Color.WHITE));
+	}
 }

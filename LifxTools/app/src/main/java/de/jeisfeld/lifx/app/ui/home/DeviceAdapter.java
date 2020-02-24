@@ -445,6 +445,13 @@ public class DeviceAdapter extends BaseAdapter {
 				}
 			});
 		}
+		else if (model instanceof TileViewModel) {
+			((TileViewModel) model).getRelativeBrightness().observe(mLifeCycleOwner, relativeBrightness -> {
+				if (relativeBrightness != null) {
+					seekBar.setProgress(TypeUtil.toUnsignedInt(TypeUtil.toShort(relativeBrightness)));
+				}
+			});
+		}
 		else {
 			model.getColor().observe(mLifeCycleOwner, color -> {
 				if (color != null) {
