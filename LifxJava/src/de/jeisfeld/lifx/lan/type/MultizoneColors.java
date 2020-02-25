@@ -32,6 +32,20 @@ public abstract class MultizoneColors {
 	public abstract Color getColor(int zoneIndex, int zoneCount);
 
 	/**
+	 * Get the colors for a certain device.
+	 *
+	 * @param zoneCount The zoneCount of the device.
+	 * @return The colors.
+	 */
+	public Color[] getColors(final int zoneCount) {
+		Color[] colors = new Color[zoneCount];
+		for (int i = 0; i < zoneCount; i++) {
+			colors[i] = getColor(i, zoneCount);
+		}
+		return colors;
+	}
+
+	/**
 	 * Shift the colors by a certain amount of zones.
 	 *
 	 * @param shiftCount The number of zones for the shift.

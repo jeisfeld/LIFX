@@ -23,6 +23,7 @@
     <string name="key_device_version" translatable="false">device_version</string>
     <string name="key_device_zone_count" translatable="false">device_zone_count</string>
     <string name="key_device_tile_count" translatable="false">device_tile_count</string>
+    <string name="key_device_build_timestamp" translatable="false">device_build_timestamp</string>
     <string name="key_device_show" translatable="false">device_show</string>
 
 

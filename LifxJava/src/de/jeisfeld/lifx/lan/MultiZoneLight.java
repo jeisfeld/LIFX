@@ -9,12 +9,17 @@ import java.util.List;
 
 import de.jeisfeld.lifx.lan.message.MultizoneGetColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneGetExtendedColorZones;
+import de.jeisfeld.lifx.lan.message.MultizoneGetMultizoneEffect;
 import de.jeisfeld.lifx.lan.message.MultizoneSetColorZones;
 import de.jeisfeld.lifx.lan.message.MultizoneSetColorZones.Apply;
+import de.jeisfeld.lifx.lan.message.MultizoneSetExtendedColorZones;
+import de.jeisfeld.lifx.lan.message.MultizoneSetMultizoneEffect;
 import de.jeisfeld.lifx.lan.message.MultizoneStateExtendedColorZones;
+import de.jeisfeld.lifx.lan.message.MultizoneStateMultizoneEffect;
 import de.jeisfeld.lifx.lan.message.MultizoneStateZone;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
@@ -45,6 +50,7 @@ public class MultiZoneLight extends Light {
 		super(device);
 		MultizoneStateZone stateZone = getMultizoneState((byte) 0, (byte) 0);
 		mZoneCount = stateZone == null ? 0 : stateZone.getCount();
+		getFirmwareBuildTime();
 	}
 
 	/**
@@ -59,11 +65,23 @@ public class MultiZoneLight extends Light {
 	 * @param version The version.
 	 * @param label The label.
 	 * @param zoneCount The number of zones.
+	 * @param firmwareBuildTimeStamp The firmware build timestamp
 	 */
 	public MultiZoneLight(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount) { // SUPPRESS_CHECKSTYLE
+			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
+			final long firmwareBuildTimeStamp) {
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 		mZoneCount = zoneCount;
+		setFirmwareBuildTime(firmwareBuildTimeStamp);
+	}
+
+	/**
+	 * Check if the device has extended API.
+	 *
+	 * @return true if it has extended API.
+	 */
+	public boolean hasExtendedApi() {
+		return getProduct().hasExtendedApi(getFirmwareBuildTime());
 	}
 
 	/**
@@ -88,9 +106,16 @@ public class MultiZoneLight extends Light {
 	 *
 	 * @return the light state.
 	 */
-	public MultizoneStateExtendedColorZones getMultizoneState() {
+	public List<Color> getMultizoneExtendedColors() {
 		try {
-			return (MultizoneStateExtendedColorZones) getConnection().requestWithResponse(new MultizoneGetExtendedColorZones());
+			MultizoneStateExtendedColorZones multizoneExtendedColorZones =
+					(MultizoneStateExtendedColorZones) getConnection().requestWithResponse(new MultizoneGetExtendedColorZones());
+			if (multizoneExtendedColorZones == null) {
+				return null;
+			}
+			else {
+				return multizoneExtendedColorZones.getColors();
+			}
 		}
 		catch (IOException e) {
 			Logger.error(e);
@@ -128,7 +153,30 @@ public class MultiZoneLight extends Light {
 	 * @return The colors of all zones.
 	 */
 	public final List<Color> getColors() {
-		return getColors((byte) 0, (byte) (getZoneCount() - 1));
+		if (hasExtendedApi()) {
+			return getMultizoneExtendedColors();
+		}
+		else {
+			return getColors((byte) 0, (byte) (getZoneCount() - 1));
+		}
+	}
+
+	/**
+	 * Get the effect info.
+	 *
+	 * @return The effect info.
+	 */
+	public final MultizoneEffectInfo getEffectInfo() {
+		if (!hasExtendedApi()) {
+			return null;
+		}
+		try {
+			return ((MultizoneStateMultizoneEffect) getConnection().requestWithResponse(new MultizoneGetMultizoneEffect())).getEffectInfo();
+		}
+		catch (IOException e) {
+			Logger.error(e);
+			return null;
+		}
 	}
 
 	/**
@@ -156,8 +204,14 @@ public class MultiZoneLight extends Light {
 	 * @throws IOException Connection issues
 	 */
 	public void setColors(final int duration, final boolean wait, final MultizoneColors colors) throws IOException {
-		for (int i = 0; i < mZoneCount; i++) {
-			setColor((byte) i, (byte) i, colors.getColor(i, getZoneCount()), duration, false, i == mZoneCount - 1);
+		if (hasExtendedApi()) {
+			getConnection().requestWithResponse(
+					new MultizoneSetExtendedColorZones((byte) 0, duration, Apply.APPLY, colors.getColors(mZoneCount)));
+		}
+		else {
+			for (int i = 0; i < mZoneCount; i++) {
+				setColor((byte) i, (byte) i, colors.getColor(i, getZoneCount()), duration, false, i == mZoneCount - 1);
+			}
 		}
 		if (wait) {
 			try {
@@ -173,6 +227,9 @@ public class MultiZoneLight extends Light {
 	public final String getFullInformation() {
 		StringBuilder result = new StringBuilder(super.getFullInformation());
 		result.append(INDENT).append("Zone count: ").append(getZoneCount()).append("\n");
+		if (hasExtendedApi()) {
+			result.append(INDENT).append("Effect type: ").append(getEffectInfo()).append("\n");
+		}
 		List<Color> colors = getColors();
 		for (int bulk = 0; bulk < colors.size() / BULK_SIZE; bulk++) {
 			result.append(INDENT).append("Colors[").append(bulk).append("]: [");
@@ -191,6 +248,27 @@ public class MultiZoneLight extends Light {
 	 */
 	public byte getZoneCount() {
 		return mZoneCount;
+	}
+
+	/**
+	 * Set the multizone effect.
+	 *
+	 * @param effectInfo The effect info.
+	 * @param duration the duration of the effect in milliseconds
+	 * @throws IOException Connection issues
+	 */
+	public final void setEffect(final MultizoneEffectInfo effectInfo, final long duration) throws IOException {
+		getConnection().requestWithResponse(new MultizoneSetMultizoneEffect(effectInfo, duration));
+	}
+
+	/**
+	 * Set the multizone effect.
+	 *
+	 * @param effectInfo The effect info.
+	 * @throws IOException Connection issues
+	 */
+	public final void setEffect(final MultizoneEffectInfo effectInfo) throws IOException {
+		setEffect(effectInfo, 0);
 	}
 
 	@Override

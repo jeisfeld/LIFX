@@ -7,11 +7,6 @@
 			<attribute name="ignore_optional_problems" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="genref">
-		<attributes>
-			<attribute name="ignore_optional_problems" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.DEPENDENCIES"/>
 	<classpathentry kind="con" path="org.eclipse.andmore.ANDROID_FRAMEWORK"/>
@@ -39,5 +34,6 @@
 	<classpathentry kind="lib" path="libs-local/preference-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/colorpickerview-2.1.6.jar"/>
 	<classpathentry kind="lib" path="libs-local/recyclerview-1.1.0.jar"/>
+	<classpathentry kind="lib" path="libs-local/R.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

@@ -51,12 +51,11 @@ public class MultizoneStateExtendedColorZones extends ResponseMessage {
 		byte[] payload = getPayload();
 		ByteBuffer byteBuffer = ByteBuffer.wrap(payload);
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-
 		mCount = byteBuffer.getShort();
 		mIndex = byteBuffer.getShort();
 		mColorsCount = byteBuffer.get();
 		mColors = new ArrayList<>();
-		while (byteBuffer.hasRemaining()) {
+		for (int i = 0; i < mColorsCount; i++) {
 			mColors.add(new Color(byteBuffer.getShort(), byteBuffer.getShort(), byteBuffer.getShort(), byteBuffer.getShort()));
 		}
 	}

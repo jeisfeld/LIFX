@@ -76,4 +76,13 @@ public final class Logger {
 			System.out.println(message);
 		}
 	}
+
+	/**
+	 * Log a message - can be used temporarily during debugging phase.
+	 *
+	 * @param message the message
+	 */
+	public static void log(final String message) {
+		System.out.println(message);
+	}
 }

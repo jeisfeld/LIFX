@@ -44,7 +44,7 @@ public class MultizoneSetExtendedColorZones extends RequestMessage {
 
 	@Override
 	protected final byte[] getPayload() {
-		ByteBuffer byteBuffer = ByteBuffer.allocate(8 + 8 * mColors.length); // MAGIC_NUMBER
+		ByteBuffer byteBuffer = ByteBuffer.allocate(664); // MAGIC_NUMBER
 		byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
 		byteBuffer.putInt(mDuration);
 		byteBuffer.put((byte) mApply.ordinal());
@@ -61,7 +61,7 @@ public class MultizoneSetExtendedColorZones extends RequestMessage {
 
 	@Override
 	protected final MessageType getMessageType() {
-		return MessageType.MULTIZONE_SET_COLOR_ZONES;
+		return MessageType.MULTIZONE_SET_EXTENDED_COLOR_ZONES;
 	}
 
 	@Override

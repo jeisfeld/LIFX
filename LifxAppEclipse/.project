@@ -69,9 +69,9 @@
 			<locationURI>PARENT-1-PROJECT_LOC/LifxJava/src</locationURI>
 		</link>
 		<link>
-			<name>genref/de/jeisfeld/lifx/app/R.java</name>
+			<name>libs-local/R.jar</name>
 			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/LifxTools/app/build/generated/not_namespaced_r_class_sources/debug/r/de/jeisfeld/lifx/app/R.java</locationURI>
+			<locationURI>PARENT-1-PROJECT_LOC/LifxTools/app/build/intermediates/compile_and_runtime_not_namespaced_r_class_jar/debug/R.jar</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

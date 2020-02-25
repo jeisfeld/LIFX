@@ -307,6 +307,8 @@ public class MultizoneViewModel extends LightViewModel {
 			if (model == null) {
 				return null;
 			}
+			// Ensure that firmware build time is available.
+			model.getLight().getFirmwareBuildTime();
 			List<Color> colors = model.getLight().getColors();
 			if (colors == null) {
 				return null;

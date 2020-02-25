@@ -30,6 +30,8 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.TileChain.AnimationDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
+import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo.Move;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 
 /**
@@ -116,10 +118,79 @@ public class LifxAnimationService extends Service {
 					MultizoneColors colors = MultizoneViewModel.fromColors(light.getColors());
 					if (colors == null) {
 						colors = new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE)
-								.withRelativeBrightness(0.3);
+								.withRelativeBrightness(0.3); // MAGIC_NUMBER
 					}
+					if (light.hasExtendedApi()) {
+						final MultizoneColors finalColors = colors;
+						light.new BaseAnimationThread() {
+							@Override
+							public void run() {
+								try {
+									light.setColors(0, true, finalColors);
+									light.setEffect(new Move(30000, false)); // MAGIC_NUMBER
+								}
+								catch (IOException e) {
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+								}
+								while (true) {
+									try {
+										Thread.sleep(60000); // MAGIC_NUMBER
+									}
+									catch (InterruptedException e) {
+										try {
+											light.setEffect(MultizoneEffectInfo.OFF);
+										}
+										catch (IOException ex) {
+											// ignore
+										}
+										updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									}
+								}
+							}
+						}.start();
+					}
+					else {
+						light.rollingAnimation(30000, colors) // MAGIC_NUMBER
+								.setAnimationCallback(new AnimationCallback() {
+									@Override
+									public void onException(final IOException e) {
+										updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									}
 
-					light.rollingAnimation(30000, colors) // MAGIC_NUMBER
+									@Override
+									public void onAnimationEnd(final boolean isInterrupted) {
+										updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									}
+								})
+								.start();
+					}
+				}
+				else if (tmpLight instanceof TileChain) {
+					final TileChain light = (TileChain) tmpLight;
+
+					final double xCenter = (light.getTotalWidth() - 1) / 2.0;
+					final double yCenter = (light.getTotalHeight() - 1) / 2.0;
+					TileChainColors colors = light.getColors();
+					final short brightness = colors == null ? -1 : (short) colors.getMaxBrightness(light);
+
+					light
+							.animation(new AnimationDefinition() {
+								@Override
+								public TileChainColors getColors(final int n) {
+									return new TileChainColors() {
+										@Override
+										public Color getColor(final int x, final int y, final int width, final int height) {
+											double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
+											return new Color((int) (1024 * (5 * distance - n)), -1, brightness, 4000); // MAGIC_NUMBER
+										}
+									};
+								}
+
+								@Override
+								public int getDuration(final int n) {
+									return 200; // MAGIC_NUMBER
+								}
+							})
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
@@ -132,32 +203,6 @@ public class LifxAnimationService extends Service {
 								}
 							})
 							.start();
-				}
-				else if (tmpLight instanceof TileChain) {
-					final TileChain light = (TileChain) tmpLight;
-
-					final double xCenter = (light.getTotalWidth() - 1) / 2.0;
-					final double yCenter = (light.getTotalHeight() - 1) / 2.0;
-					final short brightness = (short) light.getColors().getMaxBrightness(light);
-
-					light.animation(new AnimationDefinition() {
-						@Override
-						public TileChainColors getColors(final int n) {
-							return new TileChainColors() {
-								@Override
-								public Color getColor(final int x, final int y, final int width, final int height) {
-									double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
-									return new Color((int) (1024 * (5 * distance - n)), -1, brightness, 4000); // MAGIC_NUMBER
-								}
-							};
-						}
-
-						@Override
-						public int getDuration(final int n) {
-							return 200; // MAGIC_NUMBER
-						}
-					}).start();
-
 				}
 				else {
 					final Light light = tmpLight;

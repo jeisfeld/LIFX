@@ -320,7 +320,7 @@ public class TileChain extends Light {
 	 * @throws IOException Connection issues
 	 */
 	public final void setEffect(final TileEffectInfo effectInfo) throws IOException {
-		getConnection().requestWithResponse(new TileSetTileEffect(effectInfo, 0));
+		setEffect(effectInfo, 0);
 	}
 
 	@Override

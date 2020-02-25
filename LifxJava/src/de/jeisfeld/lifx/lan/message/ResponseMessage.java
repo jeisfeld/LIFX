@@ -18,7 +18,7 @@ public abstract class ResponseMessage {
 	/**
 	 * The bytes from the message.
 	 */
-	private byte[] mBytes = null;
+	private byte[] mBytes;
 	/**
 	 * The Internet address of this message.
 	 */
@@ -222,6 +222,8 @@ public abstract class ResponseMessage {
 			return new MultizoneStateZone(packet, true);
 		case MULTIZONE_STATE_EXTENDED_COLOR_ZONES:
 			return new MultizoneStateExtendedColorZones(packet);
+		case MULTIZONE_STATE_MULTIZONE_EFFECT:
+			return new MultizoneStateMultizoneEffect(packet);
 		case TILE_STATE_DEVICE_CHAIN:
 			return new TileStateDeviceChain(packet);
 		case TILE_STATE_TILE_STATE_64:

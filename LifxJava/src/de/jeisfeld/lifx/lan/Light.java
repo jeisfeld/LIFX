@@ -35,7 +35,7 @@ public class Light extends Device {
 	/**
 	 * The cycle thread.
 	 */
-	private AnimationThread mAnimationThread = null;
+	private BaseAnimationThread mAnimationThread = null;
 
 	/**
 	 * Constructor.
@@ -532,7 +532,7 @@ public class Light extends Device {
 	/**
 	 * A thread animating the colors.
 	 */
-	public class AnimationThread extends Thread { // SUPPRESS_CHECKSTYLE
+	public class AnimationThread extends BaseAnimationThread { // SUPPRESS_CHECKSTYLE
 		/**
 		 * The animation definiation.
 		 */
@@ -618,10 +618,10 @@ public class Light extends Device {
 						long startTime = System.currentTimeMillis();
 						int errorCount = 0;
 						boolean success = false;
-						Color color = mDefinition.getColor(count);
 						int duration = Math.max(mDefinition.getDuration(count), 0);
 						while (!success) {
 							try { // SUPPRESS_CHECKSTYLE
+								Color color = mDefinition.getColor(count);
 								Power power;
 								if (count == 0 && (power = getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
 									setColor(color.withRelativeBrightness(mRelativeBrightness));
@@ -670,6 +670,29 @@ public class Light extends Device {
 			}
 		}
 
+		/**
+		 * Get the relative brightness.
+		 *
+		 * @return The relative brightness.
+		 */
+		protected double getRelativeBrightness() {
+			return mRelativeBrightness;
+		}
+
+		/**
+		 * Get the exception callback.
+		 *
+		 * @return The exception callback.
+		 */
+		protected AnimationCallback getAnimationCallback() {
+			return mAnimationCallback;
+		}
+	}
+
+	/**
+	 * A base thread for animating the light.
+	 */
+	public class BaseAnimationThread extends Thread { // SUPPRESS_CHECKSTYLE
 		@Override
 		public final void start() {
 			synchronized (Light.this) {
@@ -696,24 +719,6 @@ public class Light extends Device {
 					// ignore
 				}
 			}
-		}
-
-		/**
-		 * Get the relative brightness.
-		 *
-		 * @return The relative brightness.
-		 */
-		protected double getRelativeBrightness() {
-			return mRelativeBrightness;
-		}
-
-		/**
-		 * Get the exception callback.
-		 *
-		 * @return The exception callback.
-		 */
-		protected AnimationCallback getAnimationCallback() {
-			return mAnimationCallback;
 		}
 	}
 

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -94,6 +95,11 @@ public class Device {
 	 * The wifi firmware version.
 	 */
 	private String mWifiFirmwareVersion = null;
+	/**
+	 * The firmware build time.
+	 */
+	private Date mFirmwareBuildTime = null;
+
 	/**
 	 * Additional parameters which may be stored in the device.
 	 */
@@ -238,6 +244,7 @@ public class Device {
 	private void retrieveHostFirmware() throws IOException {
 		StateHostFirmware stateHostFirmware = (StateHostFirmware) getConnection().requestWithResponse(new GetHostFirmware());
 		mHostFirmwareVersion = stateHostFirmware.getMajorVersion() + "." + stateHostFirmware.getMinorVersion();
+		mFirmwareBuildTime = stateHostFirmware.getBuildTime(); // MAGIC_NUMBER
 	}
 
 	/**
@@ -276,6 +283,7 @@ public class Device {
 		result.append(INDENT).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
 		result.append(INDENT).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
 		result.append(INDENT).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
+		result.append(INDENT).append("Firmware time: ").append(getFirmwareBuildTime().getTime() / 1000).append("\n"); // MAGIC_NUMBER
 		result.append(INDENT).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
 		result.append(INDENT).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
 		ConnectionInfo wifiInfo = getWifiInfo();
@@ -415,6 +423,32 @@ public class Device {
 			}
 		}
 		return mHostFirmwareVersion;
+	}
+
+	/**
+	 * Get the host firmware build time (in seconds).
+	 *
+	 * @return the host firmware build time.
+	 */
+	public final Date getFirmwareBuildTime() {
+		if (mFirmwareBuildTime == null) {
+			try {
+				retrieveHostFirmware();
+			}
+			catch (IOException e) {
+				Logger.error(e);
+			}
+		}
+		return mFirmwareBuildTime;
+	}
+
+	/**
+	 * Set the firmware build time.
+	 *
+	 * @param timestamp The firmware build timestamp.
+	 */
+	protected final void setFirmwareBuildTime(final long timestamp) {
+		mFirmwareBuildTime = new Date(timestamp);
 	}
 
 	/**
