@@ -1,4 +1,4 @@
-package de.jeisfeld.lifx.app.ui.manage;
+package de.jeisfeld.lifx.app.ui.storedcolors;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -10,25 +10,25 @@ import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
 
 /**
- * Fragment for management of devices.
+ * Fragment for management of stored colors.
  */
-public class ManageDevicesFragment extends Fragment {
+public class StoredColorsFragment extends Fragment {
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
-		View root = inflater.inflate(R.layout.fragment_manage_devices, container, false);
-		final RecyclerView recyclerView = root.findViewById(R.id.recyclerViewManageDevices);
+		View root = inflater.inflate(R.layout.fragment_stored_colors, container, false);
+		final RecyclerView recyclerView = root.findViewById(R.id.recyclerViewStoredColors);
 		populateRecyclerView(recyclerView);
 		return root;
 	}
 
 	/**
-	 * Populate the recycler view for the devices.
+	 * Populate the recycler view for the stored colors.
 	 *
 	 * @param recyclerView The recycler view.
 	 */
 	private void populateRecyclerView(final RecyclerView recyclerView) {
-		ManageDevicesViewAdapter adapter = new ManageDevicesViewAdapter(this, recyclerView);
-		ItemTouchHelper.Callback callback = new ManageDevicesItemMoveCallback(adapter);
+		StoredColorsViewAdapter adapter = new StoredColorsViewAdapter(this, recyclerView);
+		ItemTouchHelper.Callback callback = new StoredColorsItemMoveCallback(adapter);
 		ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
 		adapter.setStartDragListener(touchHelper::startDrag);
 		touchHelper.attachToRecyclerView(recyclerView);

@@ -2,14 +2,13 @@ package de.jeisfeld.lifx.app.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import androidx.preference.PreferenceManager;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * Utility class for handling the shared preferences.
@@ -199,16 +198,6 @@ public final class PreferenceUtil {
 	}
 
 	/**
-	 * Get a String set shared preference.
-	 *
-	 * @param preferenceId the id of the shared preference.
-	 * @return the corresponding preference value.
-	 */
-	public static Set<String> getSharedPreferenceStringSet(final int preferenceId) {
-		return PreferenceUtil.getSharedPreferences().getStringSet(Application.getAppContext().getString(preferenceId), new HashSet<String>());
-	}
-
-	/**
 	 * Retrieve a long from a shared preference string.
 	 *
 	 * @param preferenceId the id of the shared preference.
@@ -243,6 +232,27 @@ public final class PreferenceUtil {
 	 */
 	public static void setSharedPreferenceLongString(final int preferenceId, final long i) {
 		PreferenceUtil.setSharedPreferenceString(preferenceId, Long.toString(i));
+	}
+
+	/**
+	 * Retrieve a Color shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param defaultValue the default value of the shared preference.
+	 * @return the corresponding preference value.
+	 */
+	public static Color getSharedPreferenceColor(final int preferenceId, final Color defaultValue) {
+		return new Color(getSharedPreferenceLong(preferenceId, defaultValue.asLong()));
+	}
+
+	/**
+	 * Set a Color shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param c the target value of the preference.
+	 */
+	public static void setSharedPreferenceColor(final int preferenceId, final Color c) {
+		setSharedPreferenceLong(preferenceId, c.asLong());
 	}
 
 	/**
@@ -291,11 +301,11 @@ public final class PreferenceUtil {
 	 */
 	public static ArrayList<Integer> getSharedPreferenceIntList(final int preferenceId) {
 		List<String> stringList = PreferenceUtil.getSharedPreferenceStringList(preferenceId);
-		ArrayList<Integer> deviceIds = new ArrayList<>();
-		for (String idString : stringList) {
-			deviceIds.add(Integer.valueOf(idString));
+		ArrayList<Integer> intList = new ArrayList<>();
+		for (String intString : stringList) {
+			intList.add(Integer.valueOf(intString));
 		}
-		return deviceIds;
+		return intList;
 	}
 
 	/**
@@ -310,6 +320,64 @@ public final class PreferenceUtil {
 			stringList.add(Integer.toString(id));
 		}
 		PreferenceUtil.setSharedPreferenceStringList(preferenceId, stringList);
+	}
+
+	/**
+	 * Retrieve a Long List shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @return the corresponding preference value.
+	 */
+	public static ArrayList<Long> getSharedPreferenceLongList(final int preferenceId) {
+		List<String> stringList = PreferenceUtil.getSharedPreferenceStringList(preferenceId);
+		ArrayList<Long> longList = new ArrayList<>();
+		for (String longString : stringList) {
+			longList.add(Long.valueOf(longString));
+		}
+		return longList;
+	}
+
+	/**
+	 * Set a Long List shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param longList the target value of the preference.
+	 */
+	public static void setSharedPreferenceLongList(final int preferenceId, final List<Long> longList) {
+		List<String> stringList = new ArrayList<>();
+		for (long longValue : longList) {
+			stringList.add(Long.toString(longValue));
+		}
+		PreferenceUtil.setSharedPreferenceStringList(preferenceId, stringList);
+	}
+
+	/**
+	 * Retrieve a Color List shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @return the corresponding preference value.
+	 */
+	public static ArrayList<Color> getSharedPreferenceColorList(final int preferenceId) {
+		List<Long> longList = getSharedPreferenceLongList(preferenceId);
+		ArrayList<Color> colorList = new ArrayList<>();
+		for (Long longValue : longList) {
+			colorList.add(new Color(longValue));
+		}
+		return colorList;
+	}
+
+	/**
+	 * Set a Color List shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param colorList the target value of the preference.
+	 */
+	public static void setSharedPreferenceColorList(final int preferenceId, final List<Color> colorList) {
+		List<Long> longList = new ArrayList<>();
+		for (Color color : colorList) {
+			longList.add(color.asLong());
+		}
+		PreferenceUtil.setSharedPreferenceLongList(preferenceId, longList);
 	}
 
 	/**
@@ -431,6 +499,29 @@ public final class PreferenceUtil {
 		Editor editor = PreferenceUtil.getSharedPreferences().edit();
 		editor.putLong(PreferenceUtil.getIndexedPreferenceKey(preferenceId, index), i);
 		editor.apply();
+	}
+
+	/**
+	 * Retrieve an indexed Color shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param index The index
+	 * @param defaultValue the default value of the shared preference.
+	 * @return the corresponding preference value.
+	 */
+	public static Color getIndexedSharedPreferenceColor(final int preferenceId, final Object index, final Color defaultValue) {
+		return new Color(PreferenceUtil.getIndexedSharedPreferenceLong(preferenceId, index, defaultValue.asLong()));
+	}
+
+	/**
+	 * Set an indexed Color shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param index The index
+	 * @param c the target value of the preference.
+	 */
+	public static void setIndexedSharedPreferenceColor(final int preferenceId, final Object index, final Color c) {
+		PreferenceUtil.setIndexedSharedPreferenceLong(preferenceId, index, c.asLong());
 	}
 
 	/**

@@ -20,6 +20,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
@@ -27,9 +28,13 @@ import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
+import de.jeisfeld.lifx.app.util.ColorRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
+import de.jeisfeld.lifx.app.util.DialogUtil;
+import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -227,6 +232,7 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 
 			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), lightModel);
+			prepareSaveButton(view.findViewById(R.id.buttonSave), lightModel);
 			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
 
 			lightModel.checkColor();
@@ -484,12 +490,49 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the animation button.
 	 *
 	 * @param animationButton The animation button.
-	 * @param model The multizone device view model.
+	 * @param model The light view model.
 	 */
 	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
 
 		animationButton.setOnClickListener(v -> model.updateAnimation(((ToggleButton) v).isChecked()));
+	}
+
+	/**
+	 * Prepare the save button.
+	 *
+	 * @param saveButton The save button.
+	 * @param model The light view model.
+	 */
+	private void prepareSaveButton(final Button saveButton, final LightViewModel model) {
+		saveButton.setOnClickListener(v -> {
+			final Fragment fragment = mFragment.get();
+			final Color color = model.getColor().getValue();
+			final Light light = model.getLight();
+			if (fragment == null || color == null || light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
+				return;
+			}
+
+			DialogUtil.displayInputDialog(fragment.getActivity(), new RequestInputDialogListener() {
+				@Override
+				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
+					if (text != null && text.trim().length() > 0) {
+						String name = text.trim();
+						StoredColor storedColor = new StoredColor(color, (Integer) light.getParameter(DeviceRegistry.DEVICE_ID), name);
+						ColorRegistry.getInstance().addOrUpdate(storedColor);
+						DialogUtil.displayToast(fragment.getContext(), R.string.toast_saved_color, name);
+					}
+					else {
+						DialogUtil.displayToast(fragment.getContext(), R.string.toast_did_not_save_empty_name);
+					}
+				}
+
+				@Override
+				public void onDialogNegativeClick(final DialogFragment dialog) {
+					// do nothing
+				}
+			}, R.string.title_dialog_save_name, R.string.button_save, "", R.string.message_dialog_save_color_name);
+		});
 	}
 
 	/**

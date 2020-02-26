@@ -10,8 +10,8 @@
             android:title="@string/menu_home" />
         <item
             android:id="@+id/nav_temp"
-            android:icon="@drawable/ic_menu_temp"
-            android:title="@string/menu_temp" />
+            android:icon="@drawable/ic_button_save"
+            android:title="@string/menu_stored_colors" />
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage_devices"

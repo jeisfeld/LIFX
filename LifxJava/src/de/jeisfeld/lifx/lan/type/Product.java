@@ -20,7 +20,7 @@ public enum Product {
 	LIFX_BR30(28, "LIFX BR30", true, true, false, false, false, 2500, 9000, false, 0),
 	LIFX_PLUS__A19(29, "LIFX+ A19", true, true, true, false, false, 2500, 9000, false, 0),
 	LIFX_PLUS_BR30(30, "LIFX+ BR30", true, true, true, false, false, 2500, 9000, false, 0),
-	LIFX_Z(31, "LIFX Z", true, true, false, false, true, 2500, 9000, false, 0),
+	LIFX_Z(31, "LIFX Z", true, true, false, false, true, 2500, 9000, false, Long.MAX_VALUE),
 	LIFX_Z_2(32, "LIFX Z 2", true, true, false, false, true, 2500, 9000, false, 1532997580),
 	LIFX_DOWNLIGHT(36, "LIFX Downlight", true, true, false, false, false, 2500, 9000, false, 0),
 	LIFX_DOWNLIGHT_2(37, "LIFX Downlight", true, true, false, false, false, 2500, 9000, false, 0),

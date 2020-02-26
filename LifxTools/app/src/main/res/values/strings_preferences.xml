@@ -26,6 +26,12 @@
     <string name="key_device_build_timestamp" translatable="false">device_build_timestamp</string>
     <string name="key_device_show" translatable="false">device_show</string>
 
+    <!-- Keys for saved colors -->
+    <string name="key_color_ids" translatable="false">color_ids</string>
+    <string name="key_color_max_id" translatable="false">color_max_id</string>
+    <string name="key_color_device_id" translatable="false">color_device_id</string>
+    <string name="key_color_name" translatable="false">color_name</string>
+    <string name="key_color_color" translatable="false">color_color</string>
 
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>

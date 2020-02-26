@@ -2,6 +2,8 @@ package de.jeisfeld.lifx.app.util;
 
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -12,11 +14,10 @@ import android.os.Looper;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.Toast;
-
-import javax.annotation.Nonnull;
-
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import de.jeisfeld.lifx.app.Application;
@@ -266,6 +267,13 @@ public final class DialogUtil {
 			final EditText input = new EditText(getActivity());
 			input.setText(getArguments().getString(PARAM_TEXT_VALUE));
 
+			final FrameLayout container = new FrameLayout(getActivity());
+			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+			params.leftMargin = getResources().getDimensionPixelSize(R.dimen.activity_margin);
+			params.rightMargin = getResources().getDimensionPixelSize(R.dimen.activity_margin);
+			input.setLayoutParams(params);
+			container.addView(input);
+
 			// Listeners cannot retain functionality when automatically recreated.
 			// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
 			boolean preventRecreation = false;
@@ -280,7 +288,7 @@ public final class DialogUtil {
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(titleResource) //
 					.setMessage(message) //
-					.setView(input) //
+					.setView(container) //
 					.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 						// Send the positive button event back to the host activity
 						if (mListener != null) {

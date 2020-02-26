@@ -100,21 +100,21 @@ public final class DeviceRegistry {
 	/**
 	 * Create a device instance from stored data.
 	 *
-	 * @param type The device type.
-	 * @param mac The MAC.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param vendor The vendor.
-	 * @param product The product.
-	 * @param version The version.
-	 * @param label The label.
-	 * @param zoneCount The number of zones of Multizone device.
-	 * @param tileCount The number of tiles of TileChain.
+	 * @param type           The device type.
+	 * @param mac            The MAC.
+	 * @param inetAddress    The internet address.
+	 * @param port           The port.
+	 * @param vendor         The vendor.
+	 * @param product        The product.
+	 * @param version        The version.
+	 * @param label          The label.
+	 * @param zoneCount      The number of zones of Multizone device.
+	 * @param tileCount      The number of tiles of TileChain.
 	 * @param buildTimestamp The build timestamp of the firmware.
 	 */
 	private Device createDevice(final DeviceType type, final String mac, final InetAddress inetAddress, final int port, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
-			final byte tileCount, final long buildTimestamp) {
+								final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
+								final byte tileCount, final long buildTimestamp) {
 		if (type == DeviceType.DEVICE) {
 			return new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
 		}
@@ -144,6 +144,16 @@ public final class DeviceRegistry {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Get a known device by its storage id.
+	 *
+	 * @param id the storage id
+	 * @return The device
+	 */
+	public Device getDeviceById(final int id) {
+		return mDevices.get(id);
 	}
 
 	/**
@@ -228,6 +238,12 @@ public final class DeviceRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_count, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_build_timestamp, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_show, deviceId);
+
+		for (StoredColor storedColor : ColorRegistry.getInstance().getStoredColors()) {
+			if (storedColor.getDeviceId() == deviceId) {
+				ColorRegistry.getInstance().remove(storedColor);
+			}
+		}
 	}
 
 	/**
@@ -340,7 +356,7 @@ public final class DeviceRegistry {
 		 * Create a DeviceUpdateTask.
 		 *
 		 * @param deviceRegistry The calling deviceRegistry.
-		 * @param callback The callback to be called for found devices.
+		 * @param callback       The callback to be called for found devices.
 		 */
 		private DeviceUpdateTask(final DeviceRegistry deviceRegistry, final DeviceUpdateCallback callback) {
 			mDeviceRegistry = deviceRegistry;
@@ -419,8 +435,8 @@ public final class DeviceRegistry {
 		/**
 		 * Method called on device search results.
 		 *
-		 * @param device the device.
-		 * @param isNew true if the device is unknown.
+		 * @param device    the device.
+		 * @param isNew     true if the device is unknown.
 		 * @param isMissing true if the device is known but was not found.
 		 */
 		void onDeviceUpdated(Device device, boolean isNew, boolean isMissing);

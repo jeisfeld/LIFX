@@ -1,4 +1,4 @@
-package de.jeisfeld.lifx.app.ui.manage;
+package de.jeisfeld.lifx.app.ui.storedcolors;
 
 import javax.annotation.Nonnull;
 
@@ -6,9 +6,9 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 /**
- * Callback for handling drag of devices.
+ * Callback for handling drag of stored colors.
  */
-public class ItemMoveCallback extends ItemTouchHelper.Callback {
+public class StoredColorsItemMoveCallback extends ItemTouchHelper.Callback {
 	/**
 	 * The adapter.
 	 */
@@ -19,7 +19,7 @@ public class ItemMoveCallback extends ItemTouchHelper.Callback {
 	 *
 	 * @param adapter The adapter.
 	 */
-	public ItemMoveCallback(final ItemTouchHelperContract adapter) {
+	public StoredColorsItemMoveCallback(final ItemTouchHelperContract adapter) {
 		mAdapter = adapter;
 	}
 
@@ -46,7 +46,7 @@ public class ItemMoveCallback extends ItemTouchHelper.Callback {
 
 	@Override
 	public final boolean onMove(@Nonnull final RecyclerView recyclerView, final RecyclerView.ViewHolder viewHolder,
-								final RecyclerView.ViewHolder target) {
+			final RecyclerView.ViewHolder target) {
 		mAdapter.onRowMoved(viewHolder.getAdapterPosition(), target.getAdapterPosition());
 		return true;
 	}
@@ -54,8 +54,8 @@ public class ItemMoveCallback extends ItemTouchHelper.Callback {
 	@Override
 	public final void onSelectedChanged(final RecyclerView.ViewHolder viewHolder, final int actionState) {
 		if (actionState != ItemTouchHelper.ACTION_STATE_IDLE) {
-			if (viewHolder instanceof RecyclerViewAdapter.MyViewHolder) {
-				RecyclerViewAdapter.MyViewHolder myViewHolder = (RecyclerViewAdapter.MyViewHolder) viewHolder;
+			if (viewHolder instanceof StoredColorsViewAdapter.MyViewHolder) {
+				StoredColorsViewAdapter.MyViewHolder myViewHolder = (StoredColorsViewAdapter.MyViewHolder) viewHolder;
 				mAdapter.onRowSelected(myViewHolder);
 			}
 		}
@@ -65,8 +65,8 @@ public class ItemMoveCallback extends ItemTouchHelper.Callback {
 	@Override
 	public final void clearView(@Nonnull final RecyclerView recyclerView, @Nonnull final RecyclerView.ViewHolder viewHolder) {
 		super.clearView(recyclerView, viewHolder);
-		if (viewHolder instanceof RecyclerViewAdapter.MyViewHolder) {
-			RecyclerViewAdapter.MyViewHolder myViewHolder = (RecyclerViewAdapter.MyViewHolder) viewHolder;
+		if (viewHolder instanceof StoredColorsViewAdapter.MyViewHolder) {
+			StoredColorsViewAdapter.MyViewHolder myViewHolder = (StoredColorsViewAdapter.MyViewHolder) viewHolder;
 			mAdapter.onRowClear(myViewHolder);
 		}
 	}
@@ -79,7 +79,7 @@ public class ItemMoveCallback extends ItemTouchHelper.Callback {
 		 * Callback called when row is moved.
 		 *
 		 * @param fromPosition start position.
-		 * @param toPosition   end position.
+		 * @param toPosition end position.
 		 */
 		void onRowMoved(int fromPosition, int toPosition);
 
@@ -88,14 +88,14 @@ public class ItemMoveCallback extends ItemTouchHelper.Callback {
 		 *
 		 * @param myViewHolder The holder of the selected view.
 		 */
-		void onRowSelected(RecyclerViewAdapter.MyViewHolder myViewHolder);
+		void onRowSelected(StoredColorsViewAdapter.MyViewHolder myViewHolder);
 
 		/**
 		 * Callback called when a row is deselected.
 		 *
 		 * @param myViewHolder The holder of the selected view.
 		 */
-		void onRowClear(RecyclerViewAdapter.MyViewHolder myViewHolder);
+		void onRowClear(StoredColorsViewAdapter.MyViewHolder myViewHolder);
 	}
 
 }

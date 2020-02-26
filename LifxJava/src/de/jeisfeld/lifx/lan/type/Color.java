@@ -30,6 +30,10 @@ public class Color {
 	 * The color used to switch an animation finally off.
 	 */
 	public static final Color OFF = new Color(Color.WHITE_HUE_D, 0, 0, Color.WHITE_TEMPERATURE);
+	/**
+	 * Dummy color that may be used to store a non-color.
+	 */
+	public static final Color NONE = new Color((short) -1, (short) -1, (short) -1, (short) -1);
 
 	/**
 	 * Cycle through the colors, compensating the rather dark appearance of blue by darkening the other colors.
@@ -87,9 +91,9 @@ public class Color {
 	/**
 	 * Create color from HSBK.
 	 *
-	 * @param hue The hue.
-	 * @param saturation The saturation.
-	 * @param brightness The brightness.
+	 * @param hue              The hue.
+	 * @param saturation       The saturation.
+	 * @param brightness       The brightness.
 	 * @param colorTemperature The color temperature.
 	 */
 	public Color(final int hue, final int saturation, final int brightness, final int colorTemperature) {
@@ -102,13 +106,22 @@ public class Color {
 	/**
 	 * Create color from HSBK.
 	 *
-	 * @param hue The hue in range 0 - 360
-	 * @param saturation The saturation in range 0 - 1
-	 * @param brightness The brightness in range 0 - 1
+	 * @param hue              The hue in range 0 - 360
+	 * @param saturation       The saturation in range 0 - 1
+	 * @param brightness       The brightness in range 0 - 1
 	 * @param colorTemperature The color temperature.
 	 */
 	public Color(final double hue, final double saturation, final double brightness, final int colorTemperature) {
 		this(TypeUtil.toShort(hue / 360), TypeUtil.toShort(saturation), TypeUtil.toShort(brightness), (short) colorTemperature); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Retrieve a color from its long representation.
+	 *
+	 * @param longValue The long representation.
+	 */
+	public Color(final long longValue) {
+		this((short) (longValue >> 48), (short) (longValue >> 32), (short) (longValue >> 16), (short) longValue); // MAGIC_NUMBER
 	}
 
 	@Override
@@ -251,6 +264,18 @@ public class Color {
 		return mColorTemperature;
 	}
 
+	/**
+	 * Convert to long representation.
+	 *
+	 * @return The long representation.
+	 */
+	public final long asLong() {
+		return ((long) (getHue() & 0xFFFF) << 48) // SUPPRESS_CHECKSTYLE
+				+ ((long) (getSaturation() & 0xFFFF) << 32) // MAGIC_NUMBER
+				+ ((long) (getBrightness() & 0xFFFF) << 16) // MAGIC_NUMBER
+				+ (getColorTemperature() & 0xFFFF); // MAGIC_NUMBER
+	}
+
 	@Override
 	public final int hashCode() {
 		final int prime = 31;
@@ -307,8 +332,8 @@ public class Color {
 	/**
 	 * Check if two color parameters should be considered as the same.
 	 *
-	 * @param a one parameter
-	 * @param b the other parameter
+	 * @param a     one parameter
+	 * @param b     the other parameter
 	 * @param isHue indicator if this is hue
 	 * @return true if the parameters should be considered as different
 	 */
@@ -406,9 +431,9 @@ public class Color {
 		/**
 		 * Create the RGBK color.
 		 *
-		 * @param red the red part
-		 * @param green the green part
-		 * @param blue ghe blue part
+		 * @param red              the red part
+		 * @param green            the green part
+		 * @param blue             ghe blue part
 		 * @param colorTemperature the color temperature in Kelvin.
 		 */
 		public RGBK(final short red, final short green, final short blue, final short colorTemperature) {

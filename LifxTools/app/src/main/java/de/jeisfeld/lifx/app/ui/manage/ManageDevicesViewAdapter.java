@@ -25,7 +25,8 @@ import de.jeisfeld.lifx.lan.Device;
 /**
  * Adapter for the RecyclerView that allows to sort devices.
  */
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.MyViewHolder> implements ItemMoveCallback.ItemTouchHelperContract {
+public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevicesViewAdapter.MyViewHolder>
+		implements ManageDevicesItemMoveCallback.ItemTouchHelperContract {
 	/**
 	 * The list of devices as view data.
 	 */
@@ -53,7 +54,7 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
 	 * @param fragment the calling fragment.
 	 * @param recyclerView The recycler view.
 	 */
-	public RecyclerViewAdapter(final Fragment fragment, final RecyclerView recyclerView) {
+	public ManageDevicesViewAdapter(final Fragment fragment, final RecyclerView recyclerView) {
 		mDevices = DeviceRegistry.getInstance().getDevices(false);
 		mDeviceIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids);
 		mFragment = new WeakReference<>(fragment);

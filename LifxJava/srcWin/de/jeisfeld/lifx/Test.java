@@ -30,7 +30,7 @@ public final class Test {
 	private static final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(MAC_FARBLAMPE);
 	// private static final Light FARBLAMPE_PLUS = LifxLan.getInstance().getLightByMac(MAC_FARBLAMPE_PLUS);
 	private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(MAC_SWLAMPE);
-	// private static final MultiZoneLight Z1 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z1);
+	private static final MultiZoneLight Z1 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z1);
 	private static final MultiZoneLight Z2 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z2);
 	private static final TileChain TILE_4 = (TileChain) LifxLan.getInstance().getLightByMac(MAC_TILE_4);
 
@@ -41,7 +41,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test6();
+		new Test().test0();
 	}
 
 	void test0() throws Exception {
@@ -51,35 +51,35 @@ public final class Test {
 	}
 
 	void test1() throws Exception { // SUPPRESS_CHECKSTYLE
-		Color endColor = Test.FARBLAMPE.getColor();
-		Test.FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
-				.setCycleDuration(Test.FIVESECONDS)
-				.setStartTransitionTime(Test.ONESECOND)
-				.setEndColor(endColor, Test.ONESECOND)
+		Color endColor = FARBLAMPE.getColor();
+		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
+				.setCycleDuration(FIVESECONDS)
+				.setStartTransitionTime(ONESECOND)
+				.setEndColor(endColor, ONESECOND)
 				.setBrightness(1)
 				.setCycleCount(2)
 				.start();
 
-		Test.FARBLAMPE.waitForAnimationEnd();
+		FARBLAMPE.waitForAnimationEnd();
 	}
 
 	void test2() throws Exception { // SUPPRESS_CHECKSTYLE
-		Test.FARBLAMPE.wakeup(Test.HALFMINUTE, null);
-		Test.SWLAMPE.wakeup(Test.HALFMINUTE, null);
-		Test.Z2.wakeup(Test.HALFMINUTE, null);
+		FARBLAMPE.wakeup(HALFMINUTE, null);
+		SWLAMPE.wakeup(HALFMINUTE, null);
+		Z2.wakeup(HALFMINUTE, null);
 
-		Test.FARBLAMPE.waitForAnimationEnd();
-		Test.SWLAMPE.waitForAnimationEnd();
-		Test.Z2.waitForAnimationEnd();
+		FARBLAMPE.waitForAnimationEnd();
+		SWLAMPE.waitForAnimationEnd();
+		Z2.waitForAnimationEnd();
 	}
 
 	void test3() throws Exception { // SUPPRESS_CHECKSTYLE
 		Random random = new Random();
-		Test.FARBLAMPE.animation(new AnimationDefinition() {
+		FARBLAMPE.animation(new AnimationDefinition() {
 
 			@Override
 			public int getDuration(final int n) {
-				return random.nextInt(Test.FIVESECONDS);
+				return random.nextInt(FIVESECONDS);
 			}
 
 			@Override
@@ -87,26 +87,26 @@ public final class Test {
 				return new Color(random.nextInt(65536), random.nextInt(65536), random.nextInt(65536), 1500 + random.nextInt(7500)); // MAGIC_NUMBER
 			}
 		})
-				.setEndColor(Color.OFF, Test.TWOSECONDS)
+				.setEndColor(Color.OFF, TWOSECONDS)
 				.start();
 
-		Thread.sleep(Test.HALFMINUTE);
-		Test.FARBLAMPE.endAnimation(true);
+		Thread.sleep(HALFMINUTE);
+		FARBLAMPE.endAnimation(true);
 	}
 
 	void test4() throws Exception { // SUPPRESS_CHECKSTYLE
-		System.out.println(Test.Z2.getFullInformation());
-		Test.Z2.setColors(Test.FIVESECONDS, true, new MultizoneColors.Interpolated(false,
+		System.out.println(Z2.getFullInformation());
+		Z2.setColors(FIVESECONDS, true, new MultizoneColors.Interpolated(false,
 				Color.RED, Color.GREEN, Color.BLUE).withRelativeBrightness(0.2)); // MAGIC_NUMBER
 		Logger.setLogDetails(true);
-		Test.Z2.setPower(true);
+		Z2.setPower(true);
 		Logger.setLogDetails(false);
-		System.out.println(Test.Z2.getFullInformation());
+		System.out.println(Z2.getFullInformation());
 	}
 
 	void test5() throws Exception { // SUPPRESS_CHECKSTYLE
-		System.out.println(Test.Z2.getFullInformation());
-		Test.Z2
+		System.out.println(Z2.getFullInformation());
+		Z2
 				.rollingAnimation(10000, // MAGIC_NUMBER
 						new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
 				.setBrightness(0.3) // MAGIC_NUMBER
@@ -114,9 +114,9 @@ public final class Test {
 	}
 
 	void test6() throws Exception { // SUPPRESS_CHECKSTYLE
-		System.out.println(Test.Z2.getFullInformation());
-		// Test.Z2.setEffect(MultizoneEffectInfo.OFF);
-		Test.Z2.setEffect(new MultizoneEffectInfo.Move(ONESECOND, false));
+		System.out.println(Z2.getFullInformation());
+		// Z2.setEffect(MultizoneEffectInfo.OFF);
+		Z2.setEffect(new MultizoneEffectInfo.Move(ONESECOND, false));
 
 	}
 

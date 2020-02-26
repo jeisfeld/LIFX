@@ -10,7 +10,7 @@
     <string name="button_delete">Delete</string>
 
     <string name="menu_home">Home</string>
-    <string name="menu_temp">Temp</string>
+    <string name="menu_stored_colors">Stored colors</string>
     <string name="menu_manage_devices">Manage devices</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_share">Share</string>

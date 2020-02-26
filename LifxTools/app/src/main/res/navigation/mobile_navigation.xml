@@ -13,9 +13,9 @@
 
     <fragment
         android:id="@+id/nav_temp"
-        android:name="de.jeisfeld.lifx.app.ui.temp.TempFragment"
-        android:label="@string/menu_temp"
-        tools:layout="@layout/fragment_temp" />
+        android:name="de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsFragment"
+        android:label="@string/menu_stored_colors"
+        tools:layout="@layout/fragment_stored_colors" />
 
     <fragment
         android:id="@+id/nav_manage"
