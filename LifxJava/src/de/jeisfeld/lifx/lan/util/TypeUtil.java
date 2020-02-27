@@ -72,6 +72,7 @@ public final class TypeUtil {
 
 	/**
 	 * Convert an unsigned integer to unsigned short.
+	 *
 	 * @param i the unsigned integer
 	 * @return the unsigned short
 	 */
@@ -170,6 +171,37 @@ public final class TypeUtil {
 	 */
 	public static double toDouble(final short value) {
 		return TypeUtil.toUnsignedInt(value) / 65535.0; // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert an array of boolean flags to a long. The lower byte on the long is used to store the size of the array.
+	 *
+	 * @param flags The array of boolean flags.
+	 * @return The long.
+	 */
+	public static long toLong(final boolean[] flags) {
+		long n = 0;
+		for (boolean b : flags) {
+			n = (n << 1) | (b ? 1 : 0);
+		}
+		return n * 256 + flags.length; // MAGIC_NUMBER
+	}
+
+	/**
+	 * Convert a long into an array of boolean flags.
+	 *
+	 * @param flags The long representing boolean flags.
+	 * @return The array of flags.
+	 */
+	public static boolean[] toBooleanArray(final long flags) {
+		int size = (int) (flags % 256); // MAGIC_NUMBER
+		long n = flags / 256; // MAGIC_NUMBER
+		boolean[] result = new boolean[size];
+		for (int i = size - 1; i >= 0; i--) {
+			result[i] = (n & 1) == 1;
+			n = n / 2;
+		}
+		return result;
 	}
 
 	/**

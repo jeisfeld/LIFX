@@ -10,4 +10,5 @@
 
     <string name="toast_saved_color">Saved color %1$s.</string>
     <string name="toast_did_not_save_empty_name">Did not save - name was empty.</string>
+    <string name="toast_connection_failed">Connection to %1$s failed.</string>
 </resources>

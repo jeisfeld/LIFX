@@ -1,21 +1,20 @@
 package de.jeisfeld.lifx.app.ui.storedcolors;
 
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.List;
+
+import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -27,7 +26,9 @@ import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.util.StoredColor;
+import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.MultiZoneLight;
 
 /**
  * Adapter for the RecyclerView that allows to sort devices.
@@ -58,7 +59,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	/**
 	 * Constructor.
 	 *
-	 * @param fragment     the calling fragment.
+	 * @param fragment the calling fragment.
 	 * @param recyclerView The recycler view.
 	 */
 	public StoredColorsViewAdapter(final Fragment fragment, final RecyclerView recyclerView) {
@@ -129,7 +130,12 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			}
 		});
 
-		holder.mApplyColorButton.setOnClickListener(v -> new SetColorTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, storedColor));
+		holder.mApplyColorButton.setOnClickListener(v -> {
+			Fragment fragment = mFragment.get();
+			if (fragment != null) {
+				new SetColorTask(mFragment.get().getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, storedColor);
+			}
+		});
 	}
 
 	@Override
@@ -151,7 +157,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 				Collections.swap(mColorIds, i, i - 1);
 			}
 		}
-		PreferenceUtil.setSharedPreferenceIntList(R.string.key_device_ids, mColorIds);
+		PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, mColorIds);
 		notifyItemMoved(fromPosition, toPosition);
 	}
 
@@ -223,15 +229,41 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 * An async task for setting the color.
 	 */
 	private static final class SetColorTask extends AsyncTask<StoredColor, String, StoredColor> {
+		/**
+		 * The context.
+		 */
+		private final WeakReference<Context> mContext;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param context The context.
+		 */
+		private SetColorTask(final Context context) {
+			super();
+			mContext = new WeakReference<>(context);
+		}
+
 		@Override
 		protected StoredColor doInBackground(final StoredColor... storedColors) {
+			StoredColor storedColor = storedColors[0];
 			try {
-				StoredColor storedColor = storedColors[0];
-				storedColor.getLight().setColor(storedColor.getColor());
+				if (storedColor instanceof StoredMultizoneColors) {
+					((MultiZoneLight) storedColor.getLight()).setColors(0, false, ((StoredMultizoneColors) storedColor).getColors());
+				}
+				else {
+					storedColor.getLight().setColor(storedColor.getColor());
+				}
+				storedColor.getLight().setPower(true);
 				return storedColor;
 			}
 			catch (IOException e) {
 				Log.w(Application.TAG, e);
+				Light light = storedColor.getLight();
+				Context context = mContext.get();
+				if (context != null) {
+					DialogUtil.displayToast(context, R.string.toast_connection_failed, light == null ? "?" : light.getLabel());
+				}
 				return null;
 			}
 		}

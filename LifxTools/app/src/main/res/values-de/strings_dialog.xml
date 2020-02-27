@@ -10,4 +10,5 @@
 
     <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
     <string name="toast_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>
+    <string name="toast_connection_failed">Verbindung zu %1$s fehlgeschlagen.</string>
 </resources>

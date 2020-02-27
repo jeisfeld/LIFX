@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
@@ -35,6 +36,7 @@ import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.util.StoredColor;
+import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -509,16 +511,39 @@ public class DeviceAdapter extends BaseAdapter {
 			final Fragment fragment = mFragment.get();
 			final Color color = model.getColor().getValue();
 			final Light light = model.getLight();
-			if (fragment == null || color == null || light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
-				return;
+			final MultizoneColors multizoneColors;
+			if (model instanceof MultizoneViewModel) {
+				Double relativeBrightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
+				MultizoneColors multizoneColors0 = ((MultizoneViewModel) model).getColors().getValue();
+				multizoneColors = multizoneColors0 == null ? null
+						: multizoneColors0.withRelativeBrightness(relativeBrightness == null ? 1 : relativeBrightness);
+			}
+			else {
+				multizoneColors = null;
 			}
 
-			DialogUtil.displayInputDialog(fragment.getActivity(), new RequestInputDialogListener() {
+			if (fragment == null || (color == null && multizoneColors == null) // BOOLEAN_EXPRESSION_COMPLEXITY
+					|| light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
+				return;
+			}
+			final int deviceId = (int) light.getParameter(DeviceRegistry.DEVICE_ID);
+
+			FragmentActivity activity = fragment.getActivity();
+			if (activity == null) {
+				return;
+			}
+			DialogUtil.displayInputDialog(activity, new RequestInputDialogListener() {
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 					if (text != null && text.trim().length() > 0) {
 						String name = text.trim();
-						StoredColor storedColor = new StoredColor(color, (Integer) light.getParameter(DeviceRegistry.DEVICE_ID), name);
+						StoredColor storedColor;
+						if (multizoneColors != null) {
+							storedColor = new StoredMultizoneColors(multizoneColors, deviceId, name);
+						}
+						else {
+							storedColor = new StoredColor(color, deviceId, name);
+						}
 						ColorRegistry.getInstance().addOrUpdate(storedColor);
 						DialogUtil.displayToast(fragment.getContext(), R.string.toast_saved_color, name);
 					}

@@ -150,6 +150,15 @@ public abstract class MultizoneColors {
 			return new MultizoneColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
 		}
 
+		/**
+		 * Get the color.
+		 *
+		 * @return The color.
+		 */
+		public final Color getColor() {
+			return mColor;
+		}
+
 		@Override
 		public final String toString() {
 			return "MultizoneColors.Fixed[" + mColor + "]";
@@ -186,6 +195,15 @@ public abstract class MultizoneColors {
 				newColors.add(color.withRelativeBrightness(brightnessFactor));
 			}
 			return new MultizoneColors.Exact(newColors);
+		}
+
+		/**
+		 * Get the defining colors.
+		 *
+		 * @return The defining colors.
+		 */
+		public List<Color> getColors() {
+			return mColors;
 		}
 
 		@Override
@@ -264,7 +282,7 @@ public abstract class MultizoneColors {
 		/**
 		 * Redetect interpolated multizone colors from the device colors.
 		 *
-		 * @param count The number of colors to be interpolated. At least 1.
+		 * @param count  The number of colors to be interpolated. At least 1.
 		 * @param cyclic flag incidating if it should be cyclic.
 		 * @param colors The colors from the device.
 		 * @return The redetected interpolated colors.
@@ -303,6 +321,15 @@ public abstract class MultizoneColors {
 		 */
 		public List<Color> getColors() {
 			return mColors;
+		}
+
+		/**
+		 * Get information if this is cyclic.
+		 *
+		 * @return True if cyclic.
+		 */
+		public boolean isCyclic() {
+			return mCyclic;
 		}
 
 		@Override

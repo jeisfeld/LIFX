@@ -384,7 +384,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Multizone colors storing flags.
 	 */
-	protected static final class FlaggedMultizoneColors extends MultizoneColors {
+	public static final class FlaggedMultizoneColors extends MultizoneColors {
 		/**
 		 * A set of custom flags that may be set for custom storage.
 		 */
@@ -410,7 +410,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * @param multizoneColors The base multizone colors without flag.
 		 * @param flags The flags.
 		 */
-		private FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
+		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);
 			setFlags(flags);
 		}
@@ -440,8 +440,21 @@ public class MultizoneViewModel extends LightViewModel {
 		 *
 		 * @return The custom flags.
 		 */
-		protected boolean[] getFlags() {
+		public boolean[] getFlags() {
 			return mFlags;
+		}
+
+		/**
+		 * Get the base MultizoneColors without flags.
+		 *
+		 * @return The base MultizoneColors.
+		 */
+		public MultizoneColors getBaseColors() {
+			MultizoneColors colors = this;
+			while (colors instanceof FlaggedMultizoneColors) {
+				colors = ((FlaggedMultizoneColors) colors).mMultizoneColors;
+			}
+			return colors;
 		}
 
 		/**

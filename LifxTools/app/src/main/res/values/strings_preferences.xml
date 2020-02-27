@@ -32,6 +32,9 @@
     <string name="key_color_device_id" translatable="false">color_device_id</string>
     <string name="key_color_name" translatable="false">color_name</string>
     <string name="key_color_color" translatable="false">color_color</string>
+    <string name="key_color_colors" translatable="false">color_colors</string>
+    <string name="key_color_multizone_type" translatable="false">color_multizone_type</string>
+    <string name="key_color_multizone_flags" translatable="false">color_multizone_flags</string>
 
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>

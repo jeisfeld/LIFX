@@ -5,7 +5,6 @@ import java.util.List;
 
 import android.util.SparseArray;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * A registry holding information about stored colors.
@@ -26,13 +25,8 @@ public final class ColorRegistry {
 	private ColorRegistry() {
 		List<Integer> colorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
 		for (int colorId : colorIds) {
-			Color color = PreferenceUtil.getIndexedSharedPreferenceColor(R.string.key_color_color, colorId, Color.NONE);
-			String name = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_color_name, colorId);
-			int deviceId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_device_id, colorId, -1);
-			StoredColor storedColor = new StoredColor(colorId, color, deviceId, name);
-			mStoredColors.put(colorId, storedColor);
+			mStoredColors.put(colorId, StoredColor.fromId(colorId));
 		}
-
 	}
 
 	/**
@@ -42,8 +36,9 @@ public final class ColorRegistry {
 	 */
 	public List<StoredColor> getStoredColors() {
 		List<StoredColor> result = new ArrayList<>();
-		for (int i = 0; i < mStoredColors.size(); i++) {
-			result.add(mStoredColors.valueAt(i));
+		List<Integer> colorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
+		for (int colorId : colorIds) {
+			result.add(mStoredColors.get(colorId));
 		}
 		return result;
 	}
@@ -54,20 +49,8 @@ public final class ColorRegistry {
 	 * @param storedColor the stored color
 	 */
 	public void addOrUpdate(final StoredColor storedColor) {
-		StoredColor newStoredColor = storedColor;
-		if (storedColor.getId() < 0) {
-			int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_color_max_id, 0) + 1;
-			PreferenceUtil.setSharedPreferenceInt(R.string.key_color_max_id, newId);
-
-			List<Integer> colorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
-			colorIds.add(newId);
-			PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, colorIds);
-			newStoredColor = new StoredColor(newId, storedColor);
-			mStoredColors.put(newId, newStoredColor);
-		}
-		PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_color_color, newStoredColor.getId(), newStoredColor.getColor());
-		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_color_device_id, newStoredColor.getId(), newStoredColor.getDeviceId());
-		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_color_name, newStoredColor.getId(), newStoredColor.getName());
+		StoredColor newStoredColor = storedColor.store();
+		mStoredColors.put(newStoredColor.getId(), newStoredColor);
 	}
 
 	/**
@@ -86,6 +69,9 @@ public final class ColorRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_name, colorId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_device_id, colorId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_color, colorId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_colors, colorId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_multizone_type, colorId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_multizone_flags, colorId);
 	}
 
 	/**

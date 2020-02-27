@@ -1,5 +1,8 @@
 package de.jeisfeld.lifx.app.util;
 
+import java.util.List;
+
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 
@@ -61,6 +64,56 @@ public class StoredColor {
 	}
 
 	/**
+	 * Retrieve a stored color from storage via id.
+	 *
+	 * @param colorId The id.
+	 */
+	protected StoredColor(final int colorId) {
+		mId = colorId;
+		mName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_color_name, colorId);
+		mDeviceId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_device_id, colorId, -1);
+		mColor = PreferenceUtil.getIndexedSharedPreferenceColor(R.string.key_color_color, colorId, Color.NONE);
+	}
+
+	/**
+	 * Retrieve a stored color from storage via id.
+	 *
+	 * @param colorId The id.
+	 * @return The stored color.
+	 */
+	public static StoredColor fromId(final int colorId) {
+		boolean isMultiZone = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, -1) >= 0;
+		if (isMultiZone) {
+			return new StoredMultizoneColors(colorId);
+		}
+		else {
+			return new StoredColor(colorId);
+		}
+	}
+
+	/**
+	 * Store this color.
+	 *
+	 * @return the stored color.
+	 */
+	public StoredColor store() {
+		StoredColor storedColor = this;
+		if (getId() < 0) {
+			int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_color_max_id, 0) + 1;
+			PreferenceUtil.setSharedPreferenceInt(R.string.key_color_max_id, newId);
+
+			List<Integer> colorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
+			colorIds.add(newId);
+			PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, colorIds);
+			storedColor = new StoredColor(newId, this);
+		}
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_color_device_id, storedColor.getId(), storedColor.getDeviceId());
+		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_color_name, storedColor.getId(), storedColor.getName());
+		PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_color_color, storedColor.getId(), storedColor.getColor());
+		return storedColor;
+	}
+
+	/**
 	 * Get the color.
 	 *
 	 * @return The color.
@@ -105,8 +158,9 @@ public class StoredColor {
 		return mId;
 	}
 
+	// OVERRIDABLE
 	@Override
-	public final String toString() {
-		return getId() + ": " + getName() + " - " + getColor() + " - " + (getLight() == null ? getDeviceId() : getLight().getLabel());
+	public String toString() {
+		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColor());
 	}
 }
