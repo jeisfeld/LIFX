@@ -27,13 +27,15 @@ import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel.FlaggedMultizoneColors;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsDialogFragment;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.util.ColorRegistry;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
@@ -312,7 +314,7 @@ public class DeviceAdapter extends BaseAdapter {
 					if (fromUser) {
 						// Use alpha as color temperature
 						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-						model.updateColor(ColorPickerDialog.convertAndroidColorToColor(color, colorTemperature));
+						model.updateColor(ColorUtil.convertAndroidColorToColor(color, colorTemperature));
 					}
 				}).show());
 	}
@@ -408,7 +410,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
 			if (fromUser) {
-				model.updateFromMulticolorPicker(index, ColorPickerDialog.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE));
+				model.updateFromMulticolorPicker(index, ColorUtil.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE));
 			}
 		});
 
@@ -532,7 +534,7 @@ public class DeviceAdapter extends BaseAdapter {
 			if (activity == null) {
 				return;
 			}
-			DialogUtil.displayInputDialog(activity, new RequestInputDialogListener() {
+			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, new StoredColorsDialogListener() {
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 					if (text != null && text.trim().length() > 0) {
@@ -556,7 +558,7 @@ public class DeviceAdapter extends BaseAdapter {
 				public void onDialogNegativeClick(final DialogFragment dialog) {
 					// do nothing
 				}
-			}, R.string.title_dialog_save_name, R.string.button_save, "", R.string.message_dialog_save_color_name);
+			});
 		});
 	}
 

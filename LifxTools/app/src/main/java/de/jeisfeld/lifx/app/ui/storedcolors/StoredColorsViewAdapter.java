@@ -6,7 +6,8 @@ import java.util.Collections;
 import java.util.List;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.GradientDrawable.Orientation;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,7 +22,9 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.util.ColorRegistry;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -29,6 +32,7 @@ import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.type.MultizoneColors;
 
 /**
  * Adapter for the RecyclerView that allows to sort devices.
@@ -88,11 +92,9 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	public final void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
 		final StoredColor storedColor = mStoredColors.get(position);
 		Light light = storedColor.getLight();
-		if (light == null) {
-			holder.mTitle.setText(storedColor.getName());
-		}
-		else {
-			holder.mTitle.setText(storedColor.getName() + " (" + light.getLabel() + ")");
+		holder.mTitle.setText(storedColor.getName());
+		if (light != null) {
+			holder.mDeviceName.setText(light.getLabel());
 		}
 
 		holder.mDragHandle.setOnTouchListener((view, event) -> {
@@ -136,6 +138,47 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 				new SetColorTask(mFragment.get().getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, storedColor);
 			}
 		});
+
+		Fragment fragment = mFragment.get();
+		Context context = fragment == null ? null : fragment.getContext();
+		if (context != null) {
+			holder.mApplyColorButton.setImageDrawable(getButtonDrawable(context, storedColor));
+		}
+	}
+
+	/**
+	 * Get the drawable to be used for display of the stored color.
+	 *
+	 * @param context The context.
+	 * @param storedColor The stored color.
+	 * @return The drawable to be used.
+	 */
+	protected static GradientDrawable getButtonDrawable(final Context context, final StoredColor storedColor) {
+		GradientDrawable drawable = new GradientDrawable();
+		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
+		drawable.setShape(GradientDrawable.OVAL);
+		drawable.setColor(ColorUtil.toAndroidDisplayColor(storedColor.getColor()));
+
+		if (storedColor instanceof StoredMultizoneColors) {
+			MultizoneColors colors = ((StoredMultizoneColors) storedColor).getColors();
+			if (colors instanceof FlaggedMultizoneColors) {
+				colors = ((FlaggedMultizoneColors) colors).getBaseColors();
+			}
+			if (colors instanceof MultizoneColors.Fixed) {
+				drawable.setColor(ColorUtil.toAndroidDisplayColor(((MultizoneColors.Fixed) colors).getColor()));
+			}
+			else {
+				drawable.setShape(GradientDrawable.RECTANGLE);
+				drawable.setOrientation(Orientation.LEFT_RIGHT);
+				if (colors instanceof MultizoneColors.Interpolated) {
+					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Interpolated) colors).getColors()));
+				}
+				else if (colors instanceof MultizoneColors.Exact) {
+					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Exact) colors).getColors()));
+				}
+			}
+		}
+		return drawable;
 	}
 
 	@Override
@@ -163,13 +206,13 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 
 	@Override
 	public final void onRowSelected(final MyViewHolder myViewHolder) {
-		myViewHolder.mRowView.setBackgroundColor(Color.LTGRAY);
+		myViewHolder.mRowView.setBackgroundColor(android.graphics.Color.LTGRAY);
 
 	}
 
 	@Override
 	public final void onRowClear(final MyViewHolder myViewHolder) {
-		myViewHolder.mRowView.setBackgroundColor(Color.TRANSPARENT);
+		myViewHolder.mRowView.setBackgroundColor(android.graphics.Color.TRANSPARENT);
 
 	}
 
@@ -185,6 +228,10 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		 * The title.
 		 */
 		private final TextView mTitle;
+		/**
+		 * The device name.
+		 */
+		private final TextView mDeviceName;
 		/**
 		 * The button to apply the color.
 		 */
@@ -207,6 +254,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			super(itemView);
 			mRowView = itemView;
 			mTitle = itemView.findViewById(R.id.textViewColorName);
+			mDeviceName = itemView.findViewById(R.id.textViewDeviceName);
 			mDragHandle = itemView.findViewById(R.id.imageViewDragHandle);
 			mDeleteButton = itemView.findViewById(R.id.imageViewDelete);
 			mApplyColorButton = itemView.findViewById(R.id.imageViewApplyColor);
@@ -228,7 +276,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	/**
 	 * An async task for setting the color.
 	 */
-	private static final class SetColorTask extends AsyncTask<StoredColor, String, StoredColor> {
+	protected static final class SetColorTask extends AsyncTask<StoredColor, String, StoredColor> {
 		/**
 		 * The context.
 		 */
@@ -239,7 +287,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		 *
 		 * @param context The context.
 		 */
-		private SetColorTask(final Context context) {
+		protected SetColorTask(final Context context) {
 			super();
 			mContext = new WeakReference<>(context);
 		}

@@ -24,6 +24,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -131,7 +132,7 @@ public class HomeFragment extends ListFragment {
 					// Use alpha as color temperature
 					short colorTemperature =
 							DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-					Color newColor = ColorPickerDialog.convertAndroidColorToColor(color, colorTemperature);
+					Color newColor = ColorUtil.convertAndroidColorToColor(color, colorTemperature);
 
 					List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {

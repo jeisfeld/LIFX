@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_dialog_confirmation">Confirmation</string>
+    <string name="title_dialog_select_name">Select Color</string>
     <string name="title_dialog_save_name">Save Color</string>
     <string name="button_save">Save</string>
 

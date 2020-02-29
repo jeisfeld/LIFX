@@ -36,6 +36,7 @@ import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.DeviceAdapter;
 import de.jeisfeld.lifx.app.ui.home.LightViewModel;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -43,10 +44,6 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
  * Variation of original com.skydoves.colorpickerview.ColorPickerDialog.
  */
 public class ColorPickerDialog extends AlertDialog {
-	/**
-	 * Divisor for transform from short to byte.
-	 */
-	private static final int SHORT_TO_BYTE_FACTOR = 256;
 
 	/**
 	 * Constructor.
@@ -55,35 +52,6 @@ public class ColorPickerDialog extends AlertDialog {
 	 */
 	public ColorPickerDialog(final Context context) {
 		super(context);
-	}
-
-	/**
-	 * Convert a color to Android format.
-	 *
-	 * @param color The Android color.
-	 * @return The color as int.
-	 */
-	private static Integer getAndroidColor(final Color color) {
-		Color.RGBK rgbk = color.toRgbk();
-		return android.graphics.Color.rgb(
-				TypeUtil.toUnsignedInt(rgbk.getRed()) / SHORT_TO_BYTE_FACTOR,
-				TypeUtil.toUnsignedInt(rgbk.getGreen()) / SHORT_TO_BYTE_FACTOR,
-				TypeUtil.toUnsignedInt(rgbk.getBlue()) / SHORT_TO_BYTE_FACTOR);
-	}
-
-	/**
-	 * Convert Android color to custom color.
-	 *
-	 * @param color The Android color.
-	 * @param colorTemperature The color temperature.
-	 * @return The custom color.
-	 */
-	public static Color convertAndroidColorToColor(final int color, final short colorTemperature) {
-		float[] hsv = new float[3]; // MAGIC_NUMBER
-		android.graphics.Color.colorToHSV(color, hsv);
-		// Use alpha as color temperature
-		double brightness = hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
-		return new Color(hsv[0], hsv[1], brightness, colorTemperature);
 	}
 
 	/**
@@ -113,7 +81,7 @@ public class ColorPickerDialog extends AlertDialog {
 				pointX = (int) ((x + 1) * radius) - heightDifference;
 				pointY = (int) ((1 - y) * radius);
 			}
-			colorPickerView.moveSelectorPoint(pointX, pointY, getAndroidColor(color));
+			colorPickerView.moveSelectorPoint(pointX, pointY, ColorUtil.getAndroidColor(color));
 
 			BrightnessSlideBar brightnessSlideBar = colorPickerView.getBrightnessSlider();
 			double realWidth = (brightnessSlideBar.getMeasuredWidth() - brightnessSlideBar.getMeasuredHeight())
@@ -140,7 +108,7 @@ public class ColorPickerDialog extends AlertDialog {
 			double x = colorPickerView.getMeasuredWidth() * TypeUtil.toDouble(color.getBrightness());
 			double y = colorPickerView.getMeasuredHeight()
 					* (1 - DeviceAdapter.colorTemperatureToProgress(color.getColorTemperature()) / 120.0); // MAGIC_NUMBER
-			colorPickerView.moveSelectorPoint((int) x, (int) y, getAndroidColor(color));
+			colorPickerView.moveSelectorPoint((int) x, (int) y, ColorUtil.getAndroidColor(color));
 		}
 	}
 

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingStart="?attr/dialogPreferredPadding"
+    android:paddingTop="?attr/dialogPreferredPadding"
+    android:paddingEnd="?attr/dialogPreferredPadding">
+
+    <TextView
+        android:id="@+id/dialog_title_select"
+        style="@android:style/TextAppearance.Material.DialogWindowTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:text="@string/title_dialog_select_name"
+        android:textAlignment="viewStart"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <GridView
+        android:id="@+id/gridViewStoredColors"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:layout_marginBottom="?attr/dialogPreferredPadding"
+        android:numColumns="3"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/dialog_title_save"
+        app:layout_constraintTop_toBottomOf="@id/dialog_title_select" />
+
+    <TextView
+        android:id="@+id/dialog_title_save"
+        style="@android:style/TextAppearance.Material.DialogWindowTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/small_margin"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:text="@string/title_dialog_save_name"
+        android:textAlignment="viewStart"
+        app:layout_constraintBottom_toTopOf="@id/messageTextSaveName" />
+
+    <TextView
+        android:id="@+id/messageTextSaveName"
+        style="@android:style/TextAppearance.Material.Subhead"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:labelFor="@id/editTextSaveName"
+        android:text="@string/message_dialog_save_color_name"
+        app:layout_constraintBottom_toTopOf="@id/editTextSaveName" />
+
+    <EditText
+        android:id="@+id/editTextSaveName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

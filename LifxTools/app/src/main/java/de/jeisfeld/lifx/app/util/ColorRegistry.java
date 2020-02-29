@@ -2,6 +2,7 @@ package de.jeisfeld.lifx.app.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import android.util.SparseArray;
 import de.jeisfeld.lifx.app.R;
@@ -41,6 +42,16 @@ public final class ColorRegistry {
 			result.add(mStoredColors.get(colorId));
 		}
 		return result;
+	}
+
+	/**
+	 * Get the stored colors for a specific device.
+	 *
+	 * @param deviceId The device id.
+	 * @return The stored colors of this device.
+	 */
+	public List<StoredColor> getStoredColors(final int deviceId) {
+		return getStoredColors().stream().filter(storedColor -> storedColor.getDeviceId() == deviceId).collect(Collectors.toList());
 	}
 
 	/**
