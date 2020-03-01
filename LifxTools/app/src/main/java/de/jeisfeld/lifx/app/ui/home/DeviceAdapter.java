@@ -234,9 +234,12 @@ public class DeviceAdapter extends BaseAdapter {
 			if (buttonBrightnessColorTemp != null) {
 				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, lightModel);
 			}
+			Button saveButton = view.findViewById(R.id.buttonSave);
+			if (saveButton != null) {
+				prepareSaveButton(saveButton, lightModel);
+			}
 
 			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), lightModel);
-			prepareSaveButton(view.findViewById(R.id.buttonSave), lightModel);
 			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
 
 			lightModel.checkColor();
@@ -557,6 +560,11 @@ public class DeviceAdapter extends BaseAdapter {
 				@Override
 				public void onDialogNegativeClick(final DialogFragment dialog) {
 					// do nothing
+				}
+
+				@Override
+				public void onStoredColorClick(final StoredColor storedColor) {
+					model.postStoredColor(storedColor);
 				}
 			});
 		});

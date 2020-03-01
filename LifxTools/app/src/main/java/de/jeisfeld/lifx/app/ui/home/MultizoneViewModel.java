@@ -11,6 +11,8 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.util.StoredColor;
+import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
@@ -280,6 +282,14 @@ public class MultizoneViewModel extends LightViewModel {
 				mColorPickerFlags[i] = true;
 			}
 			mColorPickerFlags[CYCLIC_FLAG_INDEX] = false;
+		}
+	}
+
+	@Override
+	protected final void postStoredColor(final StoredColor storedColor) {
+		super.postStoredColor(storedColor);
+		if (storedColor instanceof StoredMultizoneColors) {
+			updateStoredColors(((StoredMultizoneColors) storedColor).getColors());
 		}
 	}
 

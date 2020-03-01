@@ -172,7 +172,8 @@ public class ColorPickerDialog extends AlertDialog {
 			Color color;
 			if (model instanceof MultizoneViewModel) {
 				Double brightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
-				color = Color.WHITE.withBrightness(brightness == null ? 1 : brightness);
+				Color baseColor = model.getColor().getValue();
+				color = (baseColor == null ? Color.WHITE : baseColor).withBrightness(brightness == null ? 1 : brightness);
 			}
 			else {
 				color = model.getColor().getValue();

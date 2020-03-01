@@ -84,7 +84,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		final LayoutInflater inflater = requireActivity().getLayoutInflater();
 		final View view = inflater.inflate(R.layout.dialog_stored_colors, null);
 		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
-		if (storedColors.size() > 0) {
+		if (storedColors.size() > 0 && getContext() != null) {
 			view.findViewById(R.id.gridViewStoredColors).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.dialog_title_select).setVisibility(View.VISIBLE);
 
@@ -103,7 +103,12 @@ public class StoredColorsDialogFragment extends DialogFragment {
 					((TextView) newView.findViewById(R.id.textViewColorName)).setText(storedColor.getName());
 					ImageView imageView = newView.findViewById(R.id.imageViewApplyColor);
 					imageView.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(getContext(), storedColor));
-					imageView.setOnClickListener(v -> new SetColorTask(getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, storedColor));
+					imageView.setOnClickListener(v -> {
+						new SetColorTask(getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, storedColor);
+						if (mListener != null) {
+							mListener.onStoredColorClick(storedColor);
+						}
+					});
 
 					return newView;
 				}
@@ -165,5 +170,12 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		 * @param dialog the confirmation dialog fragment.
 		 */
 		void onDialogNegativeClick(DialogFragment dialog);
+
+		/**
+		 * Callback method for click on a stored color.
+		 *
+		 * @param storedColor The stored color.
+		 */
+		void onStoredColorClick(StoredColor storedColor);
 	}
 }

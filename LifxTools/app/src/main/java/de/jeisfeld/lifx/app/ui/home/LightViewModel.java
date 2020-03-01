@@ -14,6 +14,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
+import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
@@ -127,7 +128,7 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param color the color to be set.
 	 */
-	public void updateColor(final Color color) {
+	protected void updateColor(final Color color) {
 		mColor.postValue(color);
 
 		synchronized (mRunningSetColorTasks) {
@@ -139,6 +140,14 @@ public class LightViewModel extends DeviceViewModel {
 				mRunningSetColorTasks.get(0).execute();
 			}
 		}
+	}
+
+	/**
+	 * Update from a stored color.
+	 * @param storedColor The stored color.
+	 */
+	protected void postStoredColor(final StoredColor storedColor) {
+		mColor.postValue(storedColor.getColor());
 	}
 
 	/**

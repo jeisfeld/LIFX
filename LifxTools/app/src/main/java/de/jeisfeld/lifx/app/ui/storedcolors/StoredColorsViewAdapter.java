@@ -5,6 +5,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
@@ -88,6 +89,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		return new MyViewHolder(itemView);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public final void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
 		final StoredColor storedColor = mStoredColors.get(position);
@@ -157,7 +159,9 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		GradientDrawable drawable = new GradientDrawable();
 		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
 		drawable.setShape(GradientDrawable.OVAL);
-		drawable.setColor(ColorUtil.toAndroidDisplayColor(storedColor.getColor()));
+		if (storedColor.getColor() != null) {
+			drawable.setColor(ColorUtil.toAndroidDisplayColor(storedColor.getColor()));
+		}
 
 		if (storedColor instanceof StoredMultizoneColors) {
 			MultizoneColors colors = ((StoredMultizoneColors) storedColor).getColors();
