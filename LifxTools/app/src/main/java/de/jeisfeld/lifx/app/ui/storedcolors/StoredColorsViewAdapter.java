@@ -118,10 +118,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 						ColorRegistry.getInstance().remove(storedColor);
 						mStoredColors.remove(position);
 						mColorIds.remove(position);
-						RecyclerView recyclerView = mRecyclerView.get();
-						if (recyclerView != null) {
-							recyclerView.removeViewAt(position);
-						}
 						notifyItemRemoved(position);
 						notifyItemRangeChanged(position, mStoredColors.size() - position);
 					}

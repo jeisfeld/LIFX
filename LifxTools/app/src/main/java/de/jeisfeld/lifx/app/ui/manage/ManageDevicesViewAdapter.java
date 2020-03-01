@@ -4,6 +4,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -76,6 +77,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 		return new MyViewHolder(itemView);
 	}
 
+	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public final void onBindViewHolder(final MyViewHolder holder, final int position) {
 		final Device device = mDevices.get(position);
@@ -106,10 +108,6 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 						DeviceRegistry.getInstance().remove(device);
 						mDevices.remove(position);
 						mDeviceIds.remove(position);
-						RecyclerView recyclerView = mRecyclerView.get();
-						if (recyclerView != null) {
-							recyclerView.removeViewAt(position);
-						}
 						notifyItemRemoved(position);
 						notifyItemRangeChanged(position, mDevices.size() - position);
 					}
