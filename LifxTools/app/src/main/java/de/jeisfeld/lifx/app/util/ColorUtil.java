@@ -74,7 +74,7 @@ public final class ColorUtil {
 		}
 		return convertAndroidColorToColor(
 				((int) (red * 255.0f + 0.5f) << 16) | ((int) (green * 255.0f + 0.5f) << 8) | (int) (blue * 255.0f + 0.5f), // MAGIC_NUMBER
-				(short) 4000).withBrightness(color.getBrightness()); // MAGIC_NUMBER
+				(short) 4000, true).withBrightness(color.getBrightness()); // MAGIC_NUMBER
 	}
 
 	/**
@@ -96,13 +96,14 @@ public final class ColorUtil {
 	 *
 	 * @param color The Android color.
 	 * @param colorTemperature The color temperature.
+	 * @param allowZeroBrightness Flag indicating if zero brightness is allowed.
 	 * @return The custom color.
 	 */
-	public static Color convertAndroidColorToColor(final int color, final short colorTemperature) {
+	public static Color convertAndroidColorToColor(final int color, final short colorTemperature, final boolean allowZeroBrightness) {
 		float[] hsv = new float[3]; // MAGIC_NUMBER
 		android.graphics.Color.colorToHSV(color, hsv);
 		// Use alpha as color temperature
-		double brightness = hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
+		double brightness = !allowZeroBrightness && hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
 		return new Color(hsv[0], hsv[1], brightness, colorTemperature);
 	}
 }

@@ -132,7 +132,7 @@ public class HomeFragment extends ListFragment {
 					// Use alpha as color temperature
 					short colorTemperature =
 							DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-					Color newColor = ColorUtil.convertAndroidColorToColor(color, colorTemperature);
+					Color newColor = ColorUtil.convertAndroidColorToColor(color, colorTemperature, false);
 
 					List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {

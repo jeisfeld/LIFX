@@ -91,9 +91,9 @@ public class Color {
 	/**
 	 * Create color from HSBK.
 	 *
-	 * @param hue              The hue.
-	 * @param saturation       The saturation.
-	 * @param brightness       The brightness.
+	 * @param hue The hue.
+	 * @param saturation The saturation.
+	 * @param brightness The brightness.
 	 * @param colorTemperature The color temperature.
 	 */
 	public Color(final int hue, final int saturation, final int brightness, final int colorTemperature) {
@@ -106,9 +106,9 @@ public class Color {
 	/**
 	 * Create color from HSBK.
 	 *
-	 * @param hue              The hue in range 0 - 360
-	 * @param saturation       The saturation in range 0 - 1
-	 * @param brightness       The brightness in range 0 - 1
+	 * @param hue The hue in range 0 - 360
+	 * @param saturation The saturation in range 0 - 1
+	 * @param brightness The brightness in range 0 - 1
 	 * @param colorTemperature The color temperature.
 	 */
 	public Color(final double hue, final double saturation, final double brightness, final int colorTemperature) {
@@ -174,7 +174,16 @@ public class Color {
 	 * @return The mixed color.
 	 */
 	public final Color add(final Color other, final double quota) {
-		return mix(other, Math.min(1, Math.max(0, quota)));
+		// In case of black, just reduce brightness.
+		if (getBrightness() == 0) {
+			return other.withRelativeBrightness(quota);
+		}
+		else if (other.getBrightness() == 0) {
+			return withRelativeBrightness(1 - quota);
+		}
+		else {
+			return mix(other, Math.min(1, Math.max(0, quota)));
+		}
 	}
 
 	/**
@@ -332,8 +341,8 @@ public class Color {
 	/**
 	 * Check if two color parameters should be considered as the same.
 	 *
-	 * @param a     one parameter
-	 * @param b     the other parameter
+	 * @param a one parameter
+	 * @param b the other parameter
 	 * @param isHue indicator if this is hue
 	 * @return true if the parameters should be considered as different
 	 */
@@ -431,9 +440,9 @@ public class Color {
 		/**
 		 * Create the RGBK color.
 		 *
-		 * @param red              the red part
-		 * @param green            the green part
-		 * @param blue             ghe blue part
+		 * @param red the red part
+		 * @param green the green part
+		 * @param blue ghe blue part
 		 * @param colorTemperature the color temperature in Kelvin.
 		 */
 		public RGBK(final short red, final short green, final short blue, final short colorTemperature) {

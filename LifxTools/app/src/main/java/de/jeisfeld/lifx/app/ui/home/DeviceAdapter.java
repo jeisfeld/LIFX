@@ -317,7 +317,7 @@ public class DeviceAdapter extends BaseAdapter {
 					if (fromUser) {
 						// Use alpha as color temperature
 						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-						model.updateColor(ColorUtil.convertAndroidColorToColor(color, colorTemperature));
+						model.updateColor(ColorUtil.convertAndroidColorToColor(color, colorTemperature, false));
 					}
 				}).show());
 	}
@@ -413,7 +413,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
 			if (fromUser) {
-				model.updateFromMulticolorPicker(index, ColorUtil.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE));
+				model.updateFromMulticolorPicker(index, ColorUtil.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE, true));
 			}
 		});
 
