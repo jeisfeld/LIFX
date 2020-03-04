@@ -98,7 +98,7 @@ public class Location {
 
 	@Override
 	public final boolean equals(final Object obj) {
-		return obj != null && obj instanceof Location && Arrays.equals(getLocationId(), ((Location) obj).getLocationId());
+		return obj instanceof Location && Arrays.equals(getLocationId(), ((Location) obj).getLocationId());
 	}
 
 	/**
@@ -137,6 +137,9 @@ public class Location {
 		 */
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * Constructor.
+		 */
 		public InvalidLocationIdException() {
 			super("Invalid location id - please use valid GUID of length 16");
 		}

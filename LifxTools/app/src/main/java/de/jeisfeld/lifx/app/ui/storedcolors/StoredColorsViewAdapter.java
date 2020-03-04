@@ -56,10 +56,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 * A reference to the fragment.
 	 */
 	private final WeakReference<Fragment> mFragment;
-	/**
-	 * A reference to the recycler view.
-	 */
-	private final WeakReference<RecyclerView> mRecyclerView;
 
 	/**
 	 * Constructor.
@@ -71,7 +67,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		mStoredColors = ColorRegistry.getInstance().getStoredColors();
 		mColorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
 		mFragment = new WeakReference<>(fragment);
-		mRecyclerView = new WeakReference<>(recyclerView);
 	}
 
 	/**

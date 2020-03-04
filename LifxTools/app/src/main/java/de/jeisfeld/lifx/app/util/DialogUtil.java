@@ -163,6 +163,11 @@ public final class DialogUtil {
 		 */
 		private ConfirmDialogListener mListener = null;
 
+		/**
+		 * Set the listener.
+		 *
+		 * @param listener the listener.
+		 */
 		public final void setListener(final ConfirmDialogListener listener) {
 			mListener = listener;
 		}
@@ -252,6 +257,11 @@ public final class DialogUtil {
 		 */
 		private RequestInputDialogListener mListener = null;
 
+		/**
+		 * Set the listener.
+		 *
+		 * @param listener The listener.
+		 */
 		public final void setListener(final RequestInputDialogListener listener) {
 			mListener = listener;
 		}

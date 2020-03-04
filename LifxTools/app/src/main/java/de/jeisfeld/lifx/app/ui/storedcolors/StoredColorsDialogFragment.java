@@ -60,6 +60,11 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 */
 	private StoredColorsDialogListener mListener = null;
 
+	/**
+	 * Set the listener.
+	 *
+	 * @param listener The listener.
+	 */
 	public final void setListener(final StoredColorsDialogListener listener) {
 		mListener = listener;
 	}

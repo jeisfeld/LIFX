@@ -29,29 +29,46 @@ import android.util.AttributeSet;
  * ColorTemperatureSlideBar extends AlphaSlideBar to support color temperature instead of alpha.
  */
 public class ColorTemperatureSlideBar extends AlphaSlideBar {
-
+	/**
+	 * Standard constructor to be implemented for all views.
+	 *
+	 * @param context The Context the view is running in, through which it can access the current theme, resources, etc.
+	 * @see android.view.View#View(Context, AttributeSet, int)
+	 */
 	public ColorTemperatureSlideBar(final Context context) {
 		super(context);
 	}
 
+	/**
+	 * Standard constructor to be implemented for all views.
+	 *
+	 * @param context The Context the view is running in, through which it can access the current theme, resources, etc.
+	 * @param attrs   The attributes of the XML tag that is inflating the view.
+	 * @see android.view.View#View(Context, AttributeSet, int)
+	 */
 	public ColorTemperatureSlideBar(final Context context, final AttributeSet attrs) {
 		super(context, attrs);
 	}
 
+	/**
+	 * Standard constructor to be implemented for all views.
+	 *
+	 * @param context      The Context the view is running in, through which it can access the current theme, resources, etc.
+	 * @param attrs        The attributes of the XML tag that is inflating the view.
+	 * @param defStyleAttr An attribute in the current theme that contains a reference to a style resource that supplies default
+	 *                     values for the view. Can be 0 to not look for defaults.
+	 * @see android.view.View#View(Context, AttributeSet, int)
+	 */
 	public ColorTemperatureSlideBar(final Context context, final AttributeSet attrs, final int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
-	}
-
-	public ColorTemperatureSlideBar(final Context context, final AttributeSet attrs, final int defStyleAttr, final int defStyleRes) {
-		super(context, attrs, defStyleAttr, defStyleRes);
 	}
 
 	@Override
 	public final void updatePaint(final Paint colorPaint) {
 		Shader shader = new LinearGradient(
 				0, 0, getWidth(), getHeight(),
-				new int[] {Color.rgb(255, 96, 0), Color.YELLOW, Color.WHITE, Color.rgb(128, 255, 255)}, // MAGIC_NUMBER
-				new float[] {0, (float) 0.3, (float) 0.6, 1}, // MAGIC_NUMBER
+				new int[]{Color.rgb(255, 96, 0), Color.YELLOW, Color.WHITE, Color.rgb(128, 255, 255)}, // MAGIC_NUMBER
+				new float[]{0, (float) 0.3, (float) 0.6, 1}, // MAGIC_NUMBER
 				Shader.TileMode.CLAMP);
 		colorPaint.setShader(shader);
 	}

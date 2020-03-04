@@ -98,7 +98,7 @@ public class Group {
 
 	@Override
 	public final boolean equals(final Object obj) {
-		return obj != null && obj instanceof Group && Arrays.equals(getGroupId(), ((Group) obj).getGroupId());
+		return obj instanceof Group && Arrays.equals(getGroupId(), ((Group) obj).getGroupId());
 	}
 
 	/**
@@ -137,6 +137,9 @@ public class Group {
 		 */
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * Constructor.
+		 */
 		public InvalidGroupIdException() {
 			super("Invalid group id - please use valid GUID of length 16");
 		}

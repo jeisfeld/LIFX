@@ -10,6 +10,10 @@ import com.skydoves.colorpickerview.listeners.ColorListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +28,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel.FlaggedMultizoneColors;
@@ -46,12 +51,17 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * An adapter for the list of devices in the home fragment.
  */
 public class DeviceAdapter extends BaseAdapter {
+	/**
+	 * Request code used for picking an image.
+	 */
+	protected static final int REQUESTCODE_PICK_IMAGE = 1;
 	/**
 	 * The number of multizone color pickers.
 	 */
@@ -87,6 +97,10 @@ public class DeviceAdapter extends BaseAdapter {
 	 * A store for the views.
 	 */
 	private final List<View> mViews = new ArrayList<>();
+	/**
+	 * The current tile view model - used as temporary storage for callback handling.
+	 */
+	private TileViewModel mCurrentTileModel = null;
 
 	/**
 	 * Constructor.
@@ -249,6 +263,13 @@ public class DeviceAdapter extends BaseAdapter {
 			Button buttonMultiColorPicker = view.findViewById(R.id.buttonMultiColorPicker);
 			if (buttonMultiColorPicker != null) {
 				prepareMultiColorPicker(buttonMultiColorPicker, lightModel);
+			}
+		}
+		if (model instanceof TileViewModel) {
+			TileViewModel lightModel = (TileViewModel) model;
+			Button imageButton = view.findViewById(R.id.buttonImage);
+			if (imageButton != null) {
+				prepareImageButton(imageButton, lightModel, position);
 			}
 		}
 
@@ -440,6 +461,51 @@ public class DeviceAdapter extends BaseAdapter {
 		if (!model.getColorPickerFlags()[index]) {
 			parentView.findViewById(R.id.buttonClose).performClick();
 		}
+	}
+
+	/**
+	 * Load a tile image via button.
+	 *
+	 * @param imageButton The imate button.
+	 * @param model The multizone view model.
+	 * @param position The position where the button was clicked.
+	 */
+	private void prepareImageButton(final Button imageButton, final TileViewModel model, final int position) {
+		imageButton.setVisibility(View.VISIBLE);
+
+		imageButton.setOnClickListener(v -> {
+			Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+			Fragment fragment = mFragment.get();
+			if (fragment == null) {
+				return;
+			}
+			mCurrentTileModel = model;
+			fragment.startActivityForResult(galleryIntent, REQUESTCODE_PICK_IMAGE);
+		});
+	}
+
+	/**
+	 * Handle the picked bitmap.
+	 *
+	 * @param bitmap The bitmap.
+	 */
+	protected void handleBitmap(final Bitmap bitmap) {
+		TileViewModel model = mCurrentTileModel;
+		mCurrentTileModel = null;
+
+		if (model.getLight().getTileInfo() == null) {
+			Log.w(Application.TAG, "Missing tile info");
+			return;
+		}
+		int height = model.getLight().getTotalHeight();
+		final Bitmap rescaledBitmap = Bitmap.createScaledBitmap(bitmap, model.getLight().getTotalWidth(), height, false);
+
+		model.updateColors(new TileChainColors() {
+			@Override
+			public Color getColor(final int x, final int y, final int width, final int height) {
+				return ColorUtil.convertAndroidColorToColor(rescaledBitmap.getPixel(x, height - 1 - y), Color.WHITE_TEMPERATURE, true);
+			}
+		});
 	}
 
 	/**

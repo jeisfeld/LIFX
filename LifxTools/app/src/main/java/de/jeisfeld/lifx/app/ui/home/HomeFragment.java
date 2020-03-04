@@ -1,5 +1,6 @@
 package de.jeisfeld.lifx.app.ui.home;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -9,15 +10,18 @@ import java.util.concurrent.TimeUnit;
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorListener;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -26,6 +30,7 @@ import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.type.Color;
 
@@ -41,6 +46,10 @@ public class HomeFragment extends ListFragment {
 	 * Broadcast receiver for receiving messages while the fragment is active.
 	 */
 	private BroadcastReceiver mReceiver;
+	/**
+	 * The adapter used.
+	 */
+	private DeviceAdapter mAdapter;
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
@@ -55,8 +64,8 @@ public class HomeFragment extends ListFragment {
 			getListView().setVisibility(View.GONE);
 			Objects.requireNonNull(getView()).findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}
-		final DeviceAdapter adapter = new DeviceAdapter(this, new NoDeviceCallback());
-		setListAdapter(adapter);
+		mAdapter = new DeviceAdapter(this, new NoDeviceCallback());
+		setListAdapter(mAdapter);
 
 		ConstraintLayout layoutColorPicker = Objects.requireNonNull(getView()).findViewById(R.id.layoutColorPicker);
 		ConstraintLayout layoutBrightnessColorTempPicker = Objects.requireNonNull(getView()).findViewById(R.id.layoutBrightnessColorTempPicker);
@@ -66,7 +75,7 @@ public class HomeFragment extends ListFragment {
 			@Override
 			public void onReceive(final Context context, final Intent intent) {
 				String mac = intent.getStringExtra(LifxAnimationService.EXTRA_ANIMATION_STOP_MAC);
-				DeviceViewModel viewModel = adapter.getViewModel(mac);
+				DeviceViewModel viewModel = mAdapter.getViewModel(mac);
 				if (viewModel instanceof LightViewModel) {
 					((LightViewModel) viewModel).mAnimationStatus.setValue(false);
 				}
@@ -83,7 +92,7 @@ public class HomeFragment extends ListFragment {
 
 		mExecutor = Executors.newScheduledThreadPool(1);
 		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0) {
-			mExecutor.scheduleAtFixedRate(() -> ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).refresh(), 0,
+			mExecutor.scheduleAtFixedRate(() -> mAdapter.refresh(), 0,
 					PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period),
 					TimeUnit.MILLISECONDS);
 		}
@@ -101,7 +110,7 @@ public class HomeFragment extends ListFragment {
 	/**
 	 * Prepare the color pickers shown in landscape view.
 	 *
-	 * @param layoutColorPicker The color picker layout.
+	 * @param layoutColorPicker               The color picker layout.
 	 * @param layoutBrightnessColorTempPicker The brightness/contrast picker layout.
 	 */
 	private void prepareColorPickers(final ConstraintLayout layoutColorPicker, final ConstraintLayout layoutBrightnessColorTempPicker) {
@@ -134,7 +143,7 @@ public class HomeFragment extends ListFragment {
 							DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
 					Color newColor = ColorUtil.convertAndroidColorToColor(color, colorTemperature, false);
 
-					List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
+					List<DeviceViewModel> checkedDevices = mAdapter.getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
 							((LightViewModel) model).updateColor(newColor);
@@ -153,7 +162,7 @@ public class HomeFragment extends ListFragment {
 				if (fromUser) {
 					Color newColor = DeviceAdapter.convertBrightnessColorTempPickerColor(color);
 
-					List<DeviceViewModel> checkedDevices = ((DeviceAdapter) Objects.requireNonNull(getListAdapter())).getCheckedDevices();
+					List<DeviceViewModel> checkedDevices = mAdapter.getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
 							((LightViewModel) model).updateColor(newColor);
@@ -165,6 +174,31 @@ public class HomeFragment extends ListFragment {
 					}
 				}
 			});
+		}
+	}
+
+	@Override
+	public final void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
+		super.onActivityResult(requestCode, resultCode, intent);
+		if (resultCode == Activity.RESULT_OK) {
+			switch (requestCode) {
+			case DeviceAdapter.REQUESTCODE_PICK_IMAGE:
+				try {
+					if (getActivity() == null) {
+						return;
+					}
+					Bitmap bitmap = ImageUtil.getBitmapFromUri(getActivity(), intent.getData());
+					if (bitmap != null) {
+						mAdapter.handleBitmap(bitmap);
+					}
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+				break;
+			default:
+				// nothing to do.
+			}
 		}
 	}
 
