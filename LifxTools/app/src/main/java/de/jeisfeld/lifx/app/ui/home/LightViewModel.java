@@ -128,7 +128,7 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param color the color to be set.
 	 */
-	protected void updateColor(final Color color) {
+	public void updateColor(final Color color) {
 		mColor.postValue(color);
 
 		synchronized (mRunningSetColorTasks) {

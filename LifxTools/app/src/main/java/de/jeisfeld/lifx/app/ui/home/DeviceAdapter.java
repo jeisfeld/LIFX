@@ -603,7 +603,7 @@ public class DeviceAdapter extends BaseAdapter {
 			if (activity == null) {
 				return;
 			}
-			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, new StoredColorsDialogListener() {
+			StoredColorsDialogFragment.displayStoredColorsDialog(activity, model, deviceId, new StoredColorsDialogListener() {
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 					if (text != null && text.trim().length() > 0) {
