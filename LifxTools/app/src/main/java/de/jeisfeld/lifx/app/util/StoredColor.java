@@ -83,8 +83,13 @@ public class StoredColor {
 	 */
 	public static StoredColor fromId(final int colorId) {
 		boolean isMultiZone = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, -1) >= 0;
+		boolean isTileChain = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_tilechain_type, colorId, -1) >= 0;
+
 		if (isMultiZone) {
 			return new StoredMultizoneColors(colorId);
+		}
+		else if (isTileChain) {
+			return new StoredTileColors(colorId);
 		}
 		else {
 			return new StoredColor(colorId);

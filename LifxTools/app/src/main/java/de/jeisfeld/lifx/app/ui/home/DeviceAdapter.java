@@ -44,6 +44,7 @@ import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.util.StoredTileColors;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -583,6 +584,7 @@ public class DeviceAdapter extends BaseAdapter {
 			final Color color = model.getColor().getValue();
 			final Light light = model.getLight();
 			final MultizoneColors multizoneColors;
+			final TileChainColors tileChainColors;
 			if (model instanceof MultizoneViewModel) {
 				Double relativeBrightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
 				MultizoneColors multizoneColors0 = ((MultizoneViewModel) model).getColors().getValue();
@@ -592,8 +594,17 @@ public class DeviceAdapter extends BaseAdapter {
 			else {
 				multizoneColors = null;
 			}
+			if (model instanceof TileViewModel) {
+				Double relativeBrightness = ((TileViewModel) model).getRelativeBrightness().getValue();
+				TileChainColors tileChainColors0 = ((TileViewModel) model).getColors().getValue();
+				tileChainColors = tileChainColors0 == null ? null
+						: tileChainColors0.withRelativeBrightness(relativeBrightness == null ? 1 : relativeBrightness);
+			}
+			else {
+				tileChainColors = null;
+			}
 
-			if (fragment == null || (color == null && multizoneColors == null) // BOOLEAN_EXPRESSION_COMPLEXITY
+			if (fragment == null || (color == null && multizoneColors == null && tileChainColors == null) // BOOLEAN_EXPRESSION_COMPLEXITY
 					|| light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
 				return;
 			}
@@ -611,6 +622,9 @@ public class DeviceAdapter extends BaseAdapter {
 						StoredColor storedColor;
 						if (multizoneColors != null) {
 							storedColor = new StoredMultizoneColors(multizoneColors, deviceId, name);
+						}
+						else if (tileChainColors != null) {
+							storedColor = new StoredTileColors(tileChainColors, deviceId, name);
 						}
 						else {
 							storedColor = new StoredColor(color, deviceId, name);

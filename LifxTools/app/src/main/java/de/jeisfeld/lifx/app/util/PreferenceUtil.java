@@ -566,6 +566,37 @@ public final class PreferenceUtil {
 	}
 
 	/**
+	 * Retrieve an Integer List indexed shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param index        The index
+	 * @return the corresponding preference value.
+	 */
+	public static ArrayList<Integer> getIndexedSharedPreferenceIntList(final int preferenceId, final Object index) {
+		List<String> stringList = PreferenceUtil.getIndexedSharedPreferenceStringList(preferenceId, index);
+		ArrayList<Integer> intList = new ArrayList<>();
+		for (String intString : stringList) {
+			intList.add(Integer.valueOf(intString));
+		}
+		return intList;
+	}
+
+	/**
+	 * Set an Integer List indexed shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param index        The index
+	 * @param intList     the target value of the preference.
+	 */
+	public static void setIndexedSharedPreferenceIntList(final int preferenceId, final Object index, final List<Integer> intList) {
+		List<String> stringList = new ArrayList<>();
+		for (int intValue : intList) {
+			stringList.add(Integer.toString(intValue));
+		}
+		PreferenceUtil.setIndexedSharedPreferenceStringList(preferenceId, index, stringList);
+	}
+
+	/**
 	 * Retrieve a Long List indexed shared preference.
 	 *
 	 * @param preferenceId the id of the shared preference.

@@ -21,7 +21,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -110,7 +109,7 @@ public class HomeFragment extends ListFragment {
 	/**
 	 * Prepare the color pickers shown in landscape view.
 	 *
-	 * @param layoutColorPicker               The color picker layout.
+	 * @param layoutColorPicker The color picker layout.
 	 * @param layoutBrightnessColorTempPicker The brightness/contrast picker layout.
 	 */
 	private void prepareColorPickers(final ConstraintLayout layoutColorPicker, final ConstraintLayout layoutBrightnessColorTempPicker) {
@@ -198,6 +197,7 @@ public class HomeFragment extends ListFragment {
 				break;
 			default:
 				// nothing to do.
+				break;
 			}
 		}
 	}

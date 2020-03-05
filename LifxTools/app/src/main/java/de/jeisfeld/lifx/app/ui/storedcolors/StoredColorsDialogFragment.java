@@ -22,9 +22,11 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.LightViewModel;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel;
+import de.jeisfeld.lifx.app.ui.home.TileViewModel;
 import de.jeisfeld.lifx.app.util.ColorRegistry;
 import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.util.StoredTileColors;
 
 /**
  * Dialog for selecting stored colors or storing the current color.
@@ -127,9 +129,15 @@ public class StoredColorsDialogFragment extends DialogFragment {
 					imageView.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(getContext(), storedColor));
 					imageView.setOnClickListener(v -> {
 						LightViewModel model = mModel.getValue();
+						if (model == null) {
+							return;
+						}
 						StoredColorsDialogListener listener = mListener == null ? null : mListener.getValue();
 						if (storedColor instanceof StoredMultizoneColors && model instanceof MultizoneViewModel) {
 							((MultizoneViewModel) model).updateColors(((StoredMultizoneColors) storedColor).getColors());
+						}
+						else if (storedColor instanceof StoredTileColors && model instanceof TileViewModel) {
+							((TileViewModel) model).updateColors(((StoredTileColors) storedColor).getColors());
 						}
 						else {
 							model.updateColor(storedColor.getColor());

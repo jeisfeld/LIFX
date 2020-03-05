@@ -1,5 +1,8 @@
 package de.jeisfeld.lifx.lan.type;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 import de.jeisfeld.lifx.lan.TileChain;
@@ -21,9 +24,9 @@ public abstract class TileChainColors {
 	/**
 	 * Get the color at a certain position.
 	 *
-	 * @param x The x coordinate
-	 * @param y The y coordinate
-	 * @param width The width
+	 * @param x      The x coordinate
+	 * @param y      The y coordinate
+	 * @param width  The width
 	 * @param height The height
 	 * @return The color at this position.
 	 */
@@ -65,7 +68,7 @@ public abstract class TileChainColors {
 	/**
 	 * Return the colors as String output.
 	 *
-	 * @param width The width
+	 * @param width  The width
 	 * @param height The height
 	 * @return The String output.
 	 */
@@ -101,9 +104,9 @@ public abstract class TileChainColors {
 	/**
 	 * Get the tile colors for a certain tile.
 	 *
-	 * @param minX The min x coordinate of the tile.
-	 * @param minY The min y coordinate of the tile.
-	 * @param totalWidth the total width of the tile chain.
+	 * @param minX        The min x coordinate of the tile.
+	 * @param minY        The min y coordinate of the tile.
+	 * @param totalWidth  the total width of the tile chain.
 	 * @param totalHeight the total height of the tile chain.
 	 * @return The tile colors of the tile.
 	 */
@@ -115,6 +118,29 @@ public abstract class TileChainColors {
 			}
 
 		};
+	}
+
+	/**
+	 * Get the colors of a certain tile as list.
+	 *
+	 * @param minX        The min x coordinate of the tile.
+	 * @param minY        The min y coordinate of the tile.
+	 * @param totalWidth  the total width of the tile chain.
+	 * @param totalHeight the total height of the tile chain.
+	 * @param tileWidth   The width of the tile.
+	 * @param tileHeight  The height of the tile.
+	 * @return The list of colors of that tile.
+	 */
+	public List<Color> getTileColors(final int minX, final int minY,
+									 final int totalWidth, final int totalHeight, final int tileWidth, final int tileHeight) {
+		List<Color> result = new ArrayList<>();
+		TileColors tileColors = getTileColors(minX, minY, totalWidth, totalHeight);
+		for (int y = tileHeight - 1; y >= 0; y--) {
+			for (int x = 0; x < tileWidth; x++) {
+				result.add(tileColors.getColor(x, y));
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -155,6 +181,15 @@ public abstract class TileChainColors {
 			return mColor;
 		}
 
+		/**
+		 * Get the fixed color.
+		 *
+		 * @return The fixed color.
+		 */
+		public final Color getColor() {
+			return mColor;
+		}
+
 		@Override
 		public final TileChainColors withRelativeBrightness(final double brightnessFactor) {
 			return new TileChainColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
@@ -183,7 +218,7 @@ public abstract class TileChainColors {
 		 * Define the colors from the existing tile colors.
 		 *
 		 * @param tileChain the tile chain
-		 * @param colors colors of the individual tiles.
+		 * @param colors    colors of the individual tiles.
 		 */
 		public PerTile(final TileChain tileChain, final TileColors[] colors) {
 			mTileChain = tileChain;
@@ -247,9 +282,9 @@ public abstract class TileChainColors {
 		/**
 		 * Create interpolated colors.
 		 *
-		 * @param colorTopLeft The color on top left
-		 * @param colorTopRight The color on top right
-		 * @param colorBottomLeft The color on bottom left
+		 * @param colorTopLeft     The color on top left
+		 * @param colorTopRight    The color on top right
+		 * @param colorBottomLeft  The color on bottom left
 		 * @param colorBottomRight The color on bottom right
 		 */
 		public InterpolatedCorners(final Color colorTopLeft, final Color colorTopRight, final Color colorBottomLeft, final Color colorBottomRight) {

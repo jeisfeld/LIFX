@@ -7,6 +7,11 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
 import android.os.AsyncTask;
@@ -26,14 +31,18 @@ import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.util.ColorRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
+import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.util.StoredTileColors;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 
 /**
  * Adapter for the RecyclerView that allows to sort devices.
@@ -146,7 +155,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 * @param storedColor The stored color.
 	 * @return The drawable to be used.
 	 */
-	protected static GradientDrawable getButtonDrawable(final Context context, final StoredColor storedColor) {
+	protected static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
 		GradientDrawable drawable = new GradientDrawable();
 		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
 		drawable.setShape(GradientDrawable.OVAL);
@@ -171,6 +180,29 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 				else if (colors instanceof MultizoneColors.Exact) {
 					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Exact) colors).getColors()));
 				}
+			}
+		}
+
+		else if (storedColor instanceof StoredTileColors) {
+			TileChainColors colors = ((StoredTileColors) storedColor).getColors();
+			if (colors instanceof TileChainColors.Fixed) {
+				drawable.setColor(ColorUtil.toAndroidDisplayColor(((TileChainColors.Fixed) colors).getColor()));
+			}
+			else if (colors instanceof TileChainColors.PerTile) {
+				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId());
+
+				Bitmap bitmap = Bitmap.createBitmap(tileChain.getTotalWidth(), tileChain.getTotalHeight(), Config.ARGB_8888);
+				for (int y = 0; y < tileChain.getTotalHeight(); y++) {
+					for (int x = 0; x < tileChain.getTotalWidth(); x++) {
+						bitmap.setPixel(x, tileChain.getTotalHeight() - 1 - y,
+								ColorUtil.toAndroidDisplayColor(colors.getColor(x, y, tileChain.getTotalWidth(), tileChain.getTotalHeight())));
+					}
+				}
+				return new BitmapDrawable(Application.getAppContext().getResources(), bitmap);
+			}
+			else {
+				drawable.setShape(GradientDrawable.RECTANGLE);
+				drawable.setColor(Color.BLACK);
 			}
 		}
 		return drawable;
@@ -293,6 +325,9 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			try {
 				if (storedColor instanceof StoredMultizoneColors) {
 					((MultiZoneLight) storedColor.getLight()).setColors(0, false, ((StoredMultizoneColors) storedColor).getColors());
+				}
+				else if (storedColor instanceof StoredTileColors) {
+					((TileChain) storedColor.getLight()).setColors(0, ((StoredTileColors) storedColor).getColors());
 				}
 				else {
 					storedColor.getLight().setColor(storedColor.getColor());

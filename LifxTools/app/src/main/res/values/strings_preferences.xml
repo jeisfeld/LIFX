@@ -35,6 +35,8 @@
     <string name="key_color_colors" translatable="false">color_colors</string>
     <string name="key_color_multizone_type" translatable="false">color_multizone_type</string>
     <string name="key_color_multizone_flags" translatable="false">color_multizone_flags</string>
+    <string name="key_color_tilechain_type" translatable="false">color_tilechain_type</string>
+    <string name="key_color_tilechain_sizes" translatable="false">color_tilechain_sizes</string>
 
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>

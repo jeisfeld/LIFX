@@ -23,7 +23,7 @@ public class StoredMultizoneColors extends StoredColor {
 	private final MultizoneColors mColors;
 
 	/**
-	 * Generate a stored color.
+	 * Generate stored colors.
 	 *
 	 * @param id The id for storage
 	 * @param colors The multizone colors
@@ -36,7 +36,7 @@ public class StoredMultizoneColors extends StoredColor {
 	}
 
 	/**
-	 * Generate a new stored color without id.
+	 * Generate new stored colors without id.
 	 *
 	 * @param colors The multizone colors
 	 * @param deviceId The device id
@@ -138,9 +138,9 @@ public class StoredMultizoneColors extends StoredColor {
 	}
 
 	/**
-	 * Get the color.
+	 * Get the colors.
 	 *
-	 * @return The color.
+	 * @return The colors.
 	 */
 	public MultizoneColors getColors() {
 		return mColors;

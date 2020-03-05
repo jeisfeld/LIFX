@@ -83,6 +83,8 @@ public final class ColorRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_colors, colorId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_multizone_type, colorId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_multizone_flags, colorId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_tilechain_type, colorId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_tilechain_sizes, colorId);
 	}
 
 	/**
