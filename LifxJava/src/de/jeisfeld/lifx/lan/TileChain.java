@@ -66,22 +66,25 @@ public class TileChain extends Light {
 	 * Constructor including version information.
 	 *
 	 * @param targetAddress The target address.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param sourceId The sourceId.
-	 * @param vendor The vendor.
-	 * @param product The product.
-	 * @param version The version.
-	 * @param label The label.
-	 * @param tileCount The number of tiles.
+	 * @param inetAddress   The internet address.
+	 * @param port          The port.
+	 * @param sourceId      The sourceId.
+	 * @param vendor        The vendor.
+	 * @param product       The product.
+	 * @param version       The version.
+	 * @param label         The label.
+	 * @param tileCount     The number of tiles.
+	 * @param totalWidth    The total width of the tile chain.
+	 * @param totalHeight   The total height of the tile chain.
 	 */
 	public TileChain(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label, final byte tileCount) { // SUPPRESS_CHECKSTYLE
+					 final Vendor vendor, final Product product, final int version, final String label, final byte tileCount, // SUPPRESS_CHECKSTYLE
+					 final int totalWidth, final int totalHeight) { // SUPPRESS_CHECKSTYLE
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 		mTileCount = tileCount;
+		mTotalWidth = totalWidth;
+		mTotalHeight = totalHeight;
 		mTileInfo = null; // not filled in this case.
-		mTotalWidth = 0;
-		mTotalHeight = 0;
 	}
 
 	/**
@@ -183,8 +186,8 @@ public class TileChain extends Light {
 	 * Set the user position of one tile.
 	 *
 	 * @param tileIndex The tile index.
-	 * @param userX The x position of the tile.
-	 * @param userY The y position of the tile.
+	 * @param userX     The x position of the tile.
+	 * @param userY     The y position of the tile.
 	 * @throws IOException Connection issues
 	 */
 	public final void setUserPosition(final byte tileIndex, final float userX, final float userY) throws IOException {
@@ -201,7 +204,7 @@ public class TileChain extends Light {
 		try {
 			return new TileColors.Exact(((TileStateTileState64) getConnection().requestWithResponse(
 					new TileGetTileState64((byte) (mStartIndex + tileIndex), (byte) 1, (byte) 0, (byte) 0, mTileInfo.get(tileIndex).getWidth())))
-							.getColors());
+					.getColors());
 		}
 		catch (IOException e) {
 			Logger.error(e);
@@ -220,7 +223,7 @@ public class TileChain extends Light {
 			for (byte tileIndex = 0; tileIndex < mTileCount; tileIndex++) {
 				colors[tileIndex] = new TileColors.Exact(((TileStateTileState64) getConnection().requestWithResponse(
 						new TileGetTileState64((byte) (mStartIndex + tileIndex), (byte) 1, (byte) 0, (byte) 0, mTileInfo.get(tileIndex).getWidth())))
-								.getColors());
+						.getColors());
 			}
 			return new TileChainColors.PerTile(this, colors);
 		}
@@ -249,8 +252,8 @@ public class TileChain extends Light {
 	 * Set the colors for one tile.
 	 *
 	 * @param tileIndex The tile index.
-	 * @param duration The duration of the color change.
-	 * @param colors the colors to be set.
+	 * @param duration  The duration of the color change.
+	 * @param colors    the colors to be set.
 	 * @throws IOException Connection issues
 	 */
 	private void setColors(final byte tileIndex, final int duration, final List<Color> colors) throws IOException {
@@ -262,8 +265,8 @@ public class TileChain extends Light {
 	 * Set the colors for one tile.
 	 *
 	 * @param tileIndex The tile index.
-	 * @param duration The duration of the color change.
-	 * @param colors the colors to be set.
+	 * @param duration  The duration of the color change.
+	 * @param colors    the colors to be set.
 	 * @throws IOException Connection issues
 	 */
 	public final void setColors(final byte tileIndex, final int duration, final TileColors colors) throws IOException {
@@ -274,7 +277,7 @@ public class TileChain extends Light {
 	 * Set the colors for all tiles.
 	 *
 	 * @param duration The duration of the color change.
-	 * @param colors the colors to be set.
+	 * @param colors   the colors to be set.
 	 * @throws IOException Connection issues
 	 */
 	public final void setColors(final int duration, final TileChainColors colors) throws IOException {
@@ -288,7 +291,7 @@ public class TileChain extends Light {
 	 * Set the colors for a subset of tiles.
 	 *
 	 * @param duration The duration of the color change.
-	 * @param colors the colors to be set. May have null entries.
+	 * @param colors   the colors to be set. May have null entries.
 	 * @throws IOException Connection issues
 	 */
 	public final void setColorsOptional(final int duration, final TileChainColors colors) throws IOException {
@@ -306,7 +309,7 @@ public class TileChain extends Light {
 	 * Set the tile effect.
 	 *
 	 * @param effectInfo The effect info.
-	 * @param duration the duration of the effect in milliseconds
+	 * @param duration   the duration of the effect in milliseconds
 	 * @throws IOException Connection issues
 	 */
 	public final void setEffect(final TileEffectInfo effectInfo, final long duration) throws IOException {
@@ -358,7 +361,7 @@ public class TileChain extends Light {
 		/**
 		 * Set the color that the lamp should get after finishing the cycle.
 		 *
-		 * @param endColors The end colors. List of length 0 turns power off. Null keeps the current color.
+		 * @param endColors         The end colors. List of length 0 turns power off. Null keeps the current color.
 		 * @param endTransitionTime The transition time to the end color.
 		 * @return The updated animation thread.
 		 */

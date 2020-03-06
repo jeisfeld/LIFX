@@ -1,4 +1,4 @@
-package de.jeisfeld.lifx.app.ui.manage;
+package de.jeisfeld.lifx.app.ui.managedevices;
 
 import javax.annotation.Nonnull;
 

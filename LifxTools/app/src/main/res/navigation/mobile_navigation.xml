@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/nav_manage"
-        android:name="de.jeisfeld.lifx.app.ui.manage.ManageDevicesFragment"
+        android:name="de.jeisfeld.lifx.app.ui.managedevices.ManageDevicesFragment"
         android:label="@string/menu_manage_devices"
         tools:layout="@layout/fragment_manage_devices" />
 

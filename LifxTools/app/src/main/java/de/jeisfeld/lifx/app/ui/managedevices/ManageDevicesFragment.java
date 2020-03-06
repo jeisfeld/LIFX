@@ -1,4 +1,4 @@
-package de.jeisfeld.lifx.app.ui.manage;
+package de.jeisfeld.lifx.app.ui.managedevices;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

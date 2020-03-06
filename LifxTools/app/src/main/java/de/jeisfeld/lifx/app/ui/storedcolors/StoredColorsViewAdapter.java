@@ -190,15 +190,20 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			}
 			else if (colors instanceof TileChainColors.PerTile) {
 				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId());
-
-				Bitmap bitmap = Bitmap.createBitmap(tileChain.getTotalWidth(), tileChain.getTotalHeight(), Config.ARGB_8888);
-				for (int y = 0; y < tileChain.getTotalHeight(); y++) {
-					for (int x = 0; x < tileChain.getTotalWidth(); x++) {
-						bitmap.setPixel(x, tileChain.getTotalHeight() - 1 - y,
-								ColorUtil.toAndroidDisplayColor(colors.getColor(x, y, tileChain.getTotalWidth(), tileChain.getTotalHeight())));
-					}
+				if (tileChain.getTotalWidth() == 0 || tileChain.getTotalHeight() == 0) {
+					drawable.setShape(GradientDrawable.RECTANGLE);
+					drawable.setColor(Color.GRAY);
 				}
-				return new BitmapDrawable(Application.getAppContext().getResources(), bitmap);
+				else {
+					Bitmap bitmap = Bitmap.createBitmap(tileChain.getTotalWidth(), tileChain.getTotalHeight(), Config.ARGB_8888);
+					for (int y = 0; y < tileChain.getTotalHeight(); y++) {
+						for (int x = 0; x < tileChain.getTotalWidth(); x++) {
+							bitmap.setPixel(x, tileChain.getTotalHeight() - 1 - y,
+									ColorUtil.toAndroidDisplayColor(colors.getColor(x, y, tileChain.getTotalWidth(), tileChain.getTotalHeight())));
+						}
+					}
+					return new BitmapDrawable(Application.getAppContext().getResources(), bitmap);
+				}
 			}
 			else {
 				drawable.setShape(GradientDrawable.RECTANGLE);

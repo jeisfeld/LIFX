@@ -1,6 +1,5 @@
 package de.jeisfeld.lifx.app.ui.home;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
@@ -17,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +24,7 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
@@ -191,7 +192,8 @@ public class HomeFragment extends ListFragment {
 						mAdapter.handleBitmap(bitmap);
 					}
 				}
-				catch (IOException e) {
+				catch (Exception e) {
+					Log.e(Application.TAG, "Exception while retrieving bitmap", e);
 					e.printStackTrace();
 				}
 				break;

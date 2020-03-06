@@ -89,47 +89,30 @@ public final class DeviceRegistry {
 			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
 			long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
 			byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
+			int totalWidth = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, -1);
+			int totalHeight = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, -1);
 
 			mMacToIdMap.put(mac, deviceId);
 
-			Device device = createDevice(type, mac, inetAddress, port, vendor, product, version, label, zoneCount, tileCount, buildTimestamp);
+			Device device;
+			if (type == DeviceType.DEVICE) {
+				device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+			}
+			else if (type == DeviceType.MULTIZONE) {
+				device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
+			}
+			else if (type == DeviceType.TILECHAIN) {
+				device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label, tileCount, totalWidth, totalHeight);
+			}
+			else {
+				device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+			}
+
 			device.setParameter(DEVICE_ID, deviceId);
 			device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
 			mDevices.put(deviceId, device);
 		}
 
-	}
-
-	/**
-	 * Create a device instance from stored data.
-	 *
-	 * @param type           The device type.
-	 * @param mac            The MAC.
-	 * @param inetAddress    The internet address.
-	 * @param port           The port.
-	 * @param vendor         The vendor.
-	 * @param product        The product.
-	 * @param version        The version.
-	 * @param label          The label.
-	 * @param zoneCount      The number of zones of Multizone device.
-	 * @param tileCount      The number of tiles of TileChain.
-	 * @param buildTimestamp The build timestamp of the firmware.
-	 */
-	private Device createDevice(final DeviceType type, final String mac, final InetAddress inetAddress, final int port, // SUPPRESS_CHECKSTYLE
-								final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
-								final byte tileCount, final long buildTimestamp) {
-		if (type == DeviceType.DEVICE) {
-			return new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-		}
-		else if (type == DeviceType.MULTIZONE) {
-			return new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
-		}
-		else if (type == DeviceType.TILECHAIN) {
-			return new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label, tileCount);
-		}
-		else {
-			return new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-		}
 	}
 
 	/**
@@ -209,6 +192,8 @@ public final class DeviceRegistry {
 		}
 		if (device instanceof TileChain) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, ((TileChain) device).getTileCount());
+			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, ((TileChain) device).getTotalWidth());
+			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, ((TileChain) device).getTotalHeight());
 		}
 	}
 
@@ -239,6 +224,8 @@ public final class DeviceRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_version, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_zone_count, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_count, deviceId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_totalwidth, deviceId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_totalheight, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_build_timestamp, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_show, deviceId);
 
