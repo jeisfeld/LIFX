@@ -13,9 +13,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
-import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Power;
-import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -248,27 +246,38 @@ public class DeviceViewModel extends ViewModel {
 			try {
 				if (model instanceof LightViewModel) {
 					boolean isMultizone = model instanceof MultizoneViewModel;
+					boolean isTileChain = model instanceof TileViewModel;
 					LightViewModel lightModel = (LightViewModel) model;
 					int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
 							R.string.key_pref_power_duration, R.string.pref_default_power_duration);
-					if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on) && !power.isOff()
-							&& !(model instanceof MultizoneViewModel)) {
-						short brightness = lightModel.getColor().getValue() == null ? 0 : lightModel.getColor().getValue().getBrightness();
-						Light light = lightModel.getLight();
+					if (powerDuration == 0) {
+						double brightness =
+								lightModel.getColor().getValue() == null ? 0 : TypeUtil.toDouble(lightModel.getColor().getValue().getBrightness());
+						if (isMultizone) {
+							Double multizoneBrightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
+							if (multizoneBrightness != null) {
+								brightness = multizoneBrightness;
+							}
+						}
+						else if (isTileChain) {
+							Double tileBrightness = ((TileViewModel) model).getRelativeBrightness().getValue();
+							if (tileBrightness != null) {
+								brightness = tileBrightness;
+							}
+						}
 						if (brightness == 0) {
-							light.setWaveform(false, null, null, model.mBrightnessAtSwitchOff, null, powerDuration, 1, 0, Waveform.PULSE,
-									isMultizone);
+							lightModel.updateBrightness(model.mBrightnessAtSwitchOff);
 						}
 						else {
-							model.mBrightnessAtSwitchOff = TypeUtil.toDouble(brightness);
-							light.setWaveform(false, null, null, 0.0, null, powerDuration, 1, 0, Waveform.PULSE, isMultizone);
+							model.mBrightnessAtSwitchOff = brightness;
+							lightModel.updateBrightness((short) 0);
 						}
 					}
 					else {
 						lightModel.getLight().setPower(!power.isOn(), powerDuration, isMultizone);
-					}
-					if (isMultizone && Double.valueOf(0).equals(((MultizoneViewModel) model).getRelativeBrightness().getValue())) {
-						model.refreshRemoteData();
+						if (isMultizone && Double.valueOf(0).equals(((MultizoneViewModel) model).getRelativeBrightness().getValue())) {
+							model.refreshRemoteData();
+						}
 					}
 				}
 				else {

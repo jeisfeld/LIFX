@@ -8,6 +8,7 @@ import java.util.List;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -17,7 +18,6 @@ import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.Power;
-import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Class holding data for the display view of a multizone light.
@@ -56,7 +56,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Constructor.
 	 *
-	 * @param context the context.
+	 * @param context        the context.
 	 * @param multiZoneLight The multiZone light.
 	 */
 	public MultizoneViewModel(final Context context, final MultiZoneLight multiZoneLight) {
@@ -124,20 +124,21 @@ public class MultizoneViewModel extends LightViewModel {
 
 	@Override
 	public final void updateColor(final Color color) {
-		updateStoredColors(new MultizoneColors.Fixed(color));
+		updateStoredColors(new MultizoneColors.Fixed(color), 1);
 		super.updateColor(color);
 	}
 
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors the colors to be set.
+	 * @param colors           the colors to be set.
+	 * @param brightnessFactor the brightness factor.
 	 */
-	public void updateColors(final MultizoneColors colors) {
-		updateStoredColors(colors);
+	public void updateColors(final MultizoneColors colors, final double brightnessFactor) {
+		updateStoredColors(colors, brightnessFactor);
 
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors));
+			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor)));
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -148,10 +149,10 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateBrightness(final short brightness) {
+	public final void updateBrightness(final double brightness) {
 		MultizoneColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors.withRelativeBrightness(TypeUtil.toDouble(brightness)));
+			updateColors(oldColors, brightness);
 		}
 	}
 
@@ -223,7 +224,7 @@ public class MultizoneViewModel extends LightViewModel {
 		}
 
 		updateColors(new FlaggedMultizoneColors(new MultizoneColors.Interpolated(
-				mColorPickerFlags[CYCLIC_FLAG_INDEX], colors.toArray(new Color[0])), mColorPickerFlags));
+				mColorPickerFlags[CYCLIC_FLAG_INDEX], colors.toArray(new Color[0])), mColorPickerFlags), 1);
 	}
 
 	/**
@@ -262,8 +263,9 @@ public class MultizoneViewModel extends LightViewModel {
 	 * Update the stored colors and brightness with the given colors.
 	 *
 	 * @param colors The given colors.
+	 * @param brightnessFactor the brightness factor.
 	 */
-	private void updateStoredColors(final MultizoneColors colors) {
+	private void updateStoredColors(final MultizoneColors colors, final double brightnessFactor) {
 		int maxBrightness = colors.getMaxBrightness(getLight().getZoneCount());
 		if (maxBrightness == 0) {
 			mRelativeBrightness.postValue(0.0);
@@ -271,7 +273,7 @@ public class MultizoneViewModel extends LightViewModel {
 		}
 		else {
 			double relativeBrightness = maxBrightness / 65535.0; // MAGIC_NUMBER
-			mRelativeBrightness.postValue(relativeBrightness);
+			mRelativeBrightness.postValue(Math.min(1, brightnessFactor * relativeBrightness));
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
 		if (colors instanceof FlaggedMultizoneColors) {
@@ -289,7 +291,7 @@ public class MultizoneViewModel extends LightViewModel {
 	protected final void postStoredColor(final StoredColor storedColor) {
 		super.postStoredColor(storedColor);
 		if (storedColor instanceof StoredMultizoneColors) {
-			updateStoredColors(((StoredMultizoneColors) storedColor).getColors());
+			updateStoredColors(((StoredMultizoneColors) storedColor).getColors(), 1);
 		}
 	}
 
@@ -324,7 +326,7 @@ public class MultizoneViewModel extends LightViewModel {
 				return null;
 			}
 
-			model.updateStoredColors(fromColors(colors));
+			model.updateStoredColors(fromColors(colors), 1);
 			return null;
 		}
 	}
@@ -345,7 +347,7 @@ public class MultizoneViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
+		 * @param model  The underlying model.
 		 * @param colors The colors.
 		 */
 		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors) {
@@ -382,7 +384,6 @@ public class MultizoneViewModel extends LightViewModel {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
 			}
-			model.updateStoredColors(mColors);
 		}
 
 		@Override
@@ -418,7 +419,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * Constructor.
 		 *
 		 * @param multizoneColors The base multizone colors without flag.
-		 * @param flags The flags.
+		 * @param flags           The flags.
 		 */
 		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);

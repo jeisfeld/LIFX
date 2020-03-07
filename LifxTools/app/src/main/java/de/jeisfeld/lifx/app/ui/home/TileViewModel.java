@@ -13,7 +13,6 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
-import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Class holding data for the display view of a tile chain.
@@ -71,7 +70,7 @@ public class TileViewModel extends LightViewModel {
 
 	@Override
 	public final void updateColor(final Color color) {
-		updateStoredColors(new TileChainColors.Fixed(color));
+		updateStoredColors(new TileChainColors.Fixed(color), 1);
 		super.updateColor(color);
 	}
 
@@ -79,12 +78,13 @@ public class TileViewModel extends LightViewModel {
 	 * Set the colors.
 	 *
 	 * @param colors the colors to be set.
+	 * @param brightnessFactor the brightness factor.
 	 */
-	public void updateColors(final TileChainColors colors) {
-		updateStoredColors(colors);
+	public void updateColors(final TileChainColors colors, final double brightnessFactor) {
+		updateStoredColors(colors, brightnessFactor);
 
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors));
+			mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors.withRelativeBrightness(brightnessFactor)));
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -95,10 +95,10 @@ public class TileViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateBrightness(final short brightness) {
+	public final void updateBrightness(final double brightness) {
 		TileChainColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors.withRelativeBrightness(TypeUtil.toDouble(brightness)));
+			updateColors(oldColors, brightness);
 		}
 	}
 
@@ -118,8 +118,9 @@ public class TileViewModel extends LightViewModel {
 	 * Update the stored colors and brightness with the given colors.
 	 *
 	 * @param colors The given colors.
+	 * @param brightnessFactor the brightness factor.
 	 */
-	private void updateStoredColors(final TileChainColors colors) {
+	private void updateStoredColors(final TileChainColors colors, final double brightnessFactor) {
 		int maxBrightness = colors.getMaxBrightness(getLight());
 		if (maxBrightness == 0) {
 			mRelativeBrightness.postValue(0.0);
@@ -127,7 +128,7 @@ public class TileViewModel extends LightViewModel {
 		}
 		else {
 			double relativeBrightness = maxBrightness / 65535.0; // MAGIC_NUMBER
-			mRelativeBrightness.postValue(relativeBrightness);
+			mRelativeBrightness.postValue(Math.min(1, brightnessFactor * relativeBrightness));
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
 	}
@@ -167,7 +168,7 @@ public class TileViewModel extends LightViewModel {
 				return null;
 			}
 
-			model.updateStoredColors(colors);
+			model.updateStoredColors(colors, 1);
 			return null;
 		}
 	}
@@ -225,7 +226,6 @@ public class TileViewModel extends LightViewModel {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
 			}
-			model.updateStoredColors(mColors);
 		}
 
 		@Override

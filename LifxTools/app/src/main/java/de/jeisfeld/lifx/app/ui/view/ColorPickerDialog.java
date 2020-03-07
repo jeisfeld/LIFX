@@ -27,7 +27,6 @@ import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -154,9 +153,7 @@ public class ColorPickerDialog extends AlertDialog {
 		 */
 		public Builder(final Context context, final int layoutResourceId) {
 			super(context);
-			LayoutInflater layoutInflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			assert layoutInflater != null;
-			mParentView = layoutInflater.inflate(layoutResourceId, null);
+			mParentView = View.inflate(getContext(), layoutResourceId, null);
 			mColorPickerView = mParentView.findViewById(R.id.ColorPickerView);
 			prepareColorPickerView(mParentView, mColorPickerView);
 			super.setView(mParentView);

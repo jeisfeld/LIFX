@@ -41,7 +41,6 @@ import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.util.StoredTileColors;
@@ -51,7 +50,6 @@ import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
-import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -285,17 +283,10 @@ public class DeviceAdapter extends BaseAdapter {
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
-			Color tempColor;
 			if (power == null) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
 			}
 			else if (power.isOff()) {
-				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
-			}
-			else if (model instanceof LightViewModel && !(model instanceof MultizoneViewModel) // BOOLEAN_EXPRESSION_COMPLEXITY
-					&& PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on)
-					&& (tempColor = ((LightViewModel) model).getColor().getValue()) != null // SUPPRESS_CHECKSTYLE
-					&& tempColor.getBrightness() == 0) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
 			}
 			else if (power.isOn()) {
@@ -303,23 +294,6 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 			// do not update power button if undefined
 		});
-
-		if (model instanceof LightViewModel && !(model instanceof MultizoneViewModel)) {
-			LightViewModel lightModel = (LightViewModel) model;
-			lightModel.getColor().observe(mLifeCycleOwner, color -> {
-				if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_quick_power_on) && Power.ON.equals(model.mPower.getValue())) {
-					if (color == null) {
-						powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
-					}
-					else if (color.getBrightness() == 0) {
-						powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
-					}
-					else {
-						powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
-					}
-				}
-			});
-		}
 
 		powerButton.setOnClickListener(v -> model.togglePower());
 	}
@@ -506,7 +480,7 @@ public class DeviceAdapter extends BaseAdapter {
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				return ColorUtil.convertAndroidColorToColor(rescaledBitmap.getPixel(x, height - 1 - y), Color.WHITE_TEMPERATURE, true);
 			}
-		});
+		}, 1);
 	}
 
 	/**
@@ -544,7 +518,7 @@ public class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
 				if (fromUser) {
-					model.updateBrightness((short) (progress + 1));
+					model.updateBrightness(TypeUtil.toDouble((short) (progress + 1)));
 				}
 			}
 
@@ -555,7 +529,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onStopTrackingTouch(final SeekBar seekBar) {
-				model.updateBrightness((short) (seekBar.getProgress() + 1));
+				model.updateBrightness(TypeUtil.toDouble((short) (seekBar.getProgress() + 1)));
 			}
 		});
 	}

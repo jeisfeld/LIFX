@@ -18,6 +18,7 @@ import de.jeisfeld.lifx.app.util.StoredColor;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Class holding data for the display view of a light.
@@ -119,8 +120,8 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param brightness The new brightness.
 	 */
-	public void updateBrightness(final short brightness) {
-		updateColor(null, null, brightness, null);
+	public void updateBrightness(final double brightness) {
+		updateColor(null, null, TypeUtil.toShort(brightness), null);
 	}
 
 	/**

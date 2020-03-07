@@ -22,9 +22,4 @@
         app:iconSpaceReserved="false"
         android:key="@string/key_pref_use_wakelock"
         android:title="@string/pref_title_use_wakelock" />
-    <CheckBoxPreference
-        android:defaultValue="false"
-        app:iconSpaceReserved="false"
-        android:key="@string/key_pref_quick_power_on"
-        android:title="@string/pref_title_quick_power_on" />
 </PreferenceScreen>

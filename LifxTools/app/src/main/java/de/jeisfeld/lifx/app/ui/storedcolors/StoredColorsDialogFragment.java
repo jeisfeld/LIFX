@@ -8,7 +8,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -16,6 +15,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -105,8 +105,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 			dismiss();
 		}
 
-		final LayoutInflater inflater = requireActivity().getLayoutInflater();
-		final View view = inflater.inflate(R.layout.dialog_stored_colors, null);
+		final View view = View.inflate(requireActivity(), R.layout.dialog_stored_colors, null);
 		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
 		if (storedColors.size() > 0 && getContext() != null) {
 			view.findViewById(R.id.gridViewStoredColors).setVisibility(View.VISIBLE);
@@ -114,10 +113,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 
 			ArrayAdapter<StoredColor> adapter = new ArrayAdapter<StoredColor>(getContext(), R.layout.grid_entry_select_color, storedColors) {
 				@Override
-				public View getView(final int position, final View view, final ViewGroup parent) {
+				public View getView(final int position, final View view, @NonNull final ViewGroup parent) {
 					final View newView;
 					if (view == null) {
-						newView = inflater.inflate(R.layout.grid_entry_select_color, null);
+						newView = View.inflate(requireActivity(), R.layout.grid_entry_select_color, null);
 					}
 					else {
 						newView = view;
@@ -134,10 +133,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 						}
 						StoredColorsDialogListener listener = mListener == null ? null : mListener.getValue();
 						if (storedColor instanceof StoredMultizoneColors && model instanceof MultizoneViewModel) {
-							((MultizoneViewModel) model).updateColors(((StoredMultizoneColors) storedColor).getColors());
+							((MultizoneViewModel) model).updateColors(((StoredMultizoneColors) storedColor).getColors(), 1);
 						}
 						else if (storedColor instanceof StoredTileColors && model instanceof TileViewModel) {
-							((TileViewModel) model).updateColors(((StoredTileColors) storedColor).getColors());
+							((TileViewModel) model).updateColors(((StoredTileColors) storedColor).getColors(), 1);
 						}
 						else {
 							model.updateColor(storedColor.getColor());
