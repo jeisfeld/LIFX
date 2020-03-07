@@ -173,7 +173,9 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			}
 			else {
 				drawable.setShape(GradientDrawable.RECTANGLE);
-				drawable.setOrientation(Orientation.LEFT_RIGHT);
+				MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
+						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, storedColor.getDeviceId(), 0));
+				drawable.setOrientation(multizoneOrientation.getGradientOrientation());
 				if (colors instanceof MultizoneColors.Interpolated) {
 					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Interpolated) colors).getColors()));
 				}
@@ -360,6 +362,82 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		 * Execute the task.
 		 */
 		void execute();
+	}
+
+	/**
+	 * Orientation of the multizone device.
+	 */
+	public enum MultizoneOrientation {
+		/**
+		 * Direction left to right.
+		 */
+		LEFT_TO_RIGHT(Orientation.LEFT_RIGHT, R.drawable.ic_button_arrow_right),
+		/**
+		 * Direction right to left.
+		 */
+		RIGHT_TO_LEFT(Orientation.RIGHT_LEFT, R.drawable.ic_button_arrow_left),
+		/**
+		 * Direction top to bottom.
+		 */
+		TOP_TO_BOTTOM(Orientation.TOP_BOTTOM, R.drawable.ic_button_arrow_downward),
+		/**
+		 * Direction bottom to top.
+		 */
+		BOTTOM_TO_TOP(Orientation.BOTTOM_TOP, R.drawable.ic_button_arrow_upward);
+
+		/**
+		 * The gradient orientation.
+		 */
+		private Orientation mGradientOrientation;
+		/**
+		 * The button resource used for displaying the orientation.
+		 */
+		private int mButtonResource;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param gradientOrientation The gradient orientation.
+		 * @param buttonResource The button resource.
+		 */
+		MultizoneOrientation(final Orientation gradientOrientation, final int buttonResource) {
+			mGradientOrientation = gradientOrientation;
+			mButtonResource = buttonResource;
+		}
+
+		/**
+		 * Get the corresponding gradient orientation.
+		 *
+		 * @return The gradient orientation.
+		 */
+		public Orientation getGradientOrientation() {
+			return mGradientOrientation;
+		}
+
+		/**
+		 * Get the corresponding button resource used for displaying the orientation.
+		 *
+		 * @return The button resource
+		 */
+		public int getButtonResource() {
+			return mButtonResource;
+		}
+
+		/**
+		 * Get the multizone orientation from its ordinal.
+		 *
+		 * @param ordinal The ordinal.
+		 * @return The multizone orientation.
+		 */
+		public static MultizoneOrientation fromOrdinal(final int ordinal) {
+			for (MultizoneOrientation multizoneOrientation : values()) {
+				if (multizoneOrientation.ordinal() == ordinal) {
+					return multizoneOrientation;
+				}
+			}
+			return LEFT_TO_RIGHT;
+		}
+
 	}
 
 }

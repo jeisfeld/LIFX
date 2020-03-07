@@ -13,6 +13,7 @@ import android.util.Log;
 import android.util.SparseArray;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
@@ -41,6 +42,10 @@ public final class DeviceRegistry {
 	 * Device parameter for "show" flag.
 	 */
 	public static final String DEVICE_PARAMETER_SHOW = "showDevice";
+	/**
+	 * Device parameter for multizone orientation.
+	 */
+	public static final String DEVICE_PARAMETER_MULTIZONE_ORIENTATION = "multizoneOrientation";
 
 	/**
 	 * The singleton instance of DeviceRegistry.
@@ -87,6 +92,8 @@ public final class DeviceRegistry {
 			Product product = Product.fromId(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0));
 			int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
 			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
+			MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
+					PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
 			long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
 			byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
 			int totalWidth = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, -1);
@@ -100,6 +107,7 @@ public final class DeviceRegistry {
 			}
 			else if (type == DeviceType.MULTIZONE) {
 				device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
+				device.setParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION, multizoneOrientation);
 			}
 			else if (type == DeviceType.TILECHAIN) {
 				device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label, tileCount, totalWidth, totalHeight);
@@ -189,6 +197,13 @@ public final class DeviceRegistry {
 		if (device instanceof MultiZoneLight) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, ((MultiZoneLight) device).getZoneCount());
 			PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, device.getFirmwareBuildTime().getTime());
+			MultizoneOrientation multizoneOrientation = (MultizoneOrientation) device.getParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION);
+			if (multizoneOrientation == null) {
+				multizoneOrientation = MultizoneOrientation.fromOrdinal(
+						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
+				device.setParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION, multizoneOrientation);
+			}
+			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, multizoneOrientation.ordinal());
 		}
 		if (device instanceof TileChain) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, ((TileChain) device).getTileCount());
@@ -223,6 +238,7 @@ public final class DeviceRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_product, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_version, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_zone_count, deviceId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_multizone_orientation, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_count, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_totalwidth, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_totalheight, deviceId);
@@ -346,7 +362,7 @@ public final class DeviceRegistry {
 		 * Create a DeviceUpdateTask.
 		 *
 		 * @param deviceRegistry The calling deviceRegistry.
-		 * @param callback       The callback to be called for found devices.
+		 * @param callback The callback to be called for found devices.
 		 */
 		private DeviceUpdateTask(final DeviceRegistry deviceRegistry, final DeviceUpdateCallback callback) {
 			mDeviceRegistry = deviceRegistry;
@@ -425,8 +441,8 @@ public final class DeviceRegistry {
 		/**
 		 * Method called on device search results.
 		 *
-		 * @param device    the device.
-		 * @param isNew     true if the device is unknown.
+		 * @param device the device.
+		 * @param isNew true if the device is unknown.
 		 * @param isMissing true if the device is known but was not found.
 		 */
 		void onDeviceUpdated(Device device, boolean isNew, boolean isMissing);

@@ -22,6 +22,7 @@
     <string name="key_device_product" translatable="false">device_product</string>
     <string name="key_device_version" translatable="false">device_version</string>
     <string name="key_device_zone_count" translatable="false">device_zone_count</string>
+    <string name="key_device_multizone_orientation" translatable="false">device_multizone_direction</string>
     <string name="key_device_tile_count" translatable="false">device_tile_count</string>
     <string name="key_device_tile_totalwidth" translatable="false">device_tile_totalwidth</string>
     <string name="key_device_tile_totalheight" translatable="false">device_tile_totalheight</string>

@@ -5,10 +5,12 @@ import java.util.Collections;
 import java.util.List;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -17,11 +19,13 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
+import de.jeisfeld.lifx.lan.MultiZoneLight;
 
 /**
  * Adapter for the RecyclerView that allows to sort devices.
@@ -76,6 +80,8 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 	@Override
 	public final void onBindViewHolder(final MyViewHolder holder, final int position) {
 		final Device device = mDevices.get(position);
+		Fragment fragment0 = mFragment.get();
+		final Context context = fragment0 == null ? null : fragment0.getContext();
 		holder.mTitle.setText(device.getLabel());
 		holder.mCheckbox.setChecked(!Boolean.FALSE.equals(device.getParameter(DeviceRegistry.DEVICE_PARAMETER_SHOW)));
 
@@ -114,6 +120,38 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 				}, null, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
 			}
 		});
+
+		if (device instanceof MultiZoneLight && context != null) {
+			holder.mMultizoneOrientationButton.setVisibility(View.VISIBLE);
+			MultizoneOrientation orientation0 = (MultizoneOrientation) device.getParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION);
+			holder.mMultizoneOrientationButton.setImageDrawable(context.getDrawable(orientation0.getButtonResource()));
+			holder.mMultizoneOrientationButton.setOnClickListener(v -> {
+				MultizoneOrientation orientation =
+						(MultizoneOrientation) device.getParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION);
+
+				MultizoneOrientation newOrientation;
+				switch (orientation) {
+				case LEFT_TO_RIGHT:
+					newOrientation = MultizoneOrientation.TOP_TO_BOTTOM;
+					break;
+				case TOP_TO_BOTTOM:
+					newOrientation = MultizoneOrientation.RIGHT_TO_LEFT;
+					break;
+				case RIGHT_TO_LEFT:
+					newOrientation = MultizoneOrientation.BOTTOM_TO_TOP;
+					break;
+				case BOTTOM_TO_TOP:
+				default:
+					newOrientation = MultizoneOrientation.LEFT_TO_RIGHT;
+					break;
+				}
+
+				device.setParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION, newOrientation);
+				holder.mMultizoneOrientationButton.setImageDrawable(context.getDrawable(newOrientation.getButtonResource()));
+				DeviceRegistry.getInstance().addOrUpdate(device);
+			});
+		}
+
 	}
 
 	@Override
@@ -172,6 +210,10 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 		 */
 		private final ImageView mDeleteButton;
 		/**
+		 * The arrow for multizone orientation.
+		 */
+		private final ImageView mMultizoneOrientationButton;
+		/**
 		 * The checkbox.
 		 */
 		private final CheckBox mCheckbox;
@@ -187,6 +229,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			mTitle = itemView.findViewById(R.id.textViewDeviceName);
 			mDragHandle = itemView.findViewById(R.id.imageViewDragHandle);
 			mDeleteButton = itemView.findViewById(R.id.imageViewDelete);
+			mMultizoneOrientationButton = itemView.findViewById(R.id.imageViewMultizoneOrientation);
 			mCheckbox = itemView.findViewById(R.id.checkboxSelectLight);
 		}
 	}
