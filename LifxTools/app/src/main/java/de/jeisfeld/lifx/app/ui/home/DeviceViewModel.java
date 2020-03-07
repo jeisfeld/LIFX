@@ -247,6 +247,7 @@ public class DeviceViewModel extends ViewModel {
 			}
 			try {
 				if (model instanceof LightViewModel) {
+					boolean isMultizone = model instanceof MultizoneViewModel;
 					LightViewModel lightModel = (LightViewModel) model;
 					int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
 							R.string.key_pref_power_duration, R.string.pref_default_power_duration);
@@ -255,15 +256,19 @@ public class DeviceViewModel extends ViewModel {
 						short brightness = lightModel.getColor().getValue() == null ? 0 : lightModel.getColor().getValue().getBrightness();
 						Light light = lightModel.getLight();
 						if (brightness == 0) {
-							light.setWaveform(false, null, null, model.mBrightnessAtSwitchOff, null, powerDuration, 1, 0, Waveform.PULSE, false);
+							light.setWaveform(false, null, null, model.mBrightnessAtSwitchOff, null, powerDuration, 1, 0, Waveform.PULSE,
+									isMultizone);
 						}
 						else {
 							model.mBrightnessAtSwitchOff = TypeUtil.toDouble(brightness);
-							light.setWaveform(false, null, null, 0.0, null, powerDuration, 1, 0, Waveform.PULSE, false);
+							light.setWaveform(false, null, null, 0.0, null, powerDuration, 1, 0, Waveform.PULSE, isMultizone);
 						}
 					}
 					else {
-						lightModel.getLight().setPower(!power.isOn(), powerDuration, false);
+						lightModel.getLight().setPower(!power.isOn(), powerDuration, isMultizone);
+					}
+					if (isMultizone && Double.valueOf(0).equals(((MultizoneViewModel) model).getRelativeBrightness().getValue())) {
+						model.refreshRemoteData();
 					}
 				}
 				else {
