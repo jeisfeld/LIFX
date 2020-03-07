@@ -8,30 +8,22 @@
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_menu_home"
             android:title="@string/menu_home" />
-        <item
-            android:id="@+id/nav_temp"
-            android:icon="@drawable/ic_button_save"
-            android:title="@string/menu_stored_colors" />
-        <item
-            android:id="@+id/nav_manage"
-            android:icon="@drawable/ic_menu_manage_devices"
-            android:title="@string/menu_manage_devices" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@drawable/ic_menu_settings"
-            android:title="@string/menu_settings" />
     </group>
 
-    <item android:title="@string/menu_communication">
+    <item android:title="@string/menu_settings">
         <menu>
             <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="@string/menu_share" />
+                android:id="@+id/nav_manage_devices"
+                android:icon="@drawable/ic_menu_manage_devices"
+                android:title="@string/menu_manage_devices" />
             <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="@string/menu_send" />
+                android:id="@+id/nav_stored_colors"
+                android:icon="@drawable/ic_menu_stored_colors"
+                android:title="@string/menu_stored_colors" />
+            <item
+                android:id="@+id/nav_settings"
+                android:icon="@drawable/ic_menu_settings"
+                android:title="@string/menu_general_settings" />
         </menu>
     </item>
 

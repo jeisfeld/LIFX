@@ -12,10 +12,8 @@
     <string name="menu_home">Start</string>
     <string name="menu_stored_colors">Gespeicherte Farben</string>
     <string name="menu_manage_devices">Geräte verwalten</string>
+    <string name="menu_general_settings">Allgemeine Einstellungen</string>
     <string name="menu_settings">Einstellungen</string>
-    <string name="menu_share">Teilen</string>
-    <string name="menu_send">Senden</string>
-    <string name="menu_communication">Kommunikation</string>
 
     <string name="message_searching_devices">Suche LIFX-Geräte&#8230;</string>
     <string name="message_no_devices_found">Keine Geräte gefunden.</string>

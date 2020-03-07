@@ -4,6 +4,7 @@ import com.google.android.material.navigation.NavigationView;
 
 import android.os.Bundle;
 import android.view.Menu;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -31,11 +32,9 @@ public class MainActivity extends AppCompatActivity {
 		NavigationView navigationView = findViewById(R.id.nav_view);
 		// Passing each menu ID as a set of Ids because each
 		// menu should be considered as top level destinations.
-		mAppBarConfiguration = new AppBarConfiguration.Builder(
-				R.id.nav_home, R.id.nav_temp, R.id.nav_manage,
-				R.id.nav_settings, R.id.nav_share, R.id.nav_send)
-						.setDrawerLayout(drawer)
-						.build();
+		mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_home, R.id.nav_manage_devices, R.id.nav_stored_colors, R.id.nav_settings)
+				.setDrawerLayout(drawer)
+				.build();
 		NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 		NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
 		NavigationUI.setupWithNavController(navigationView, navController);

@@ -12,13 +12,13 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_temp"
+        android:id="@+id/nav_stored_colors"
         android:name="de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsFragment"
         android:label="@string/menu_stored_colors"
         tools:layout="@layout/fragment_stored_colors" />
 
     <fragment
-        android:id="@+id/nav_manage"
+        android:id="@+id/nav_manage_devices"
         android:name="de.jeisfeld.lifx.app.ui.managedevices.ManageDevicesFragment"
         android:label="@string/menu_manage_devices"
         tools:layout="@layout/fragment_manage_devices" />
@@ -26,17 +26,6 @@
     <fragment
         android:id="@+id/nav_settings"
         android:name="de.jeisfeld.lifx.app.ui.settings.SettingsFragment"
-        android:label="@string/menu_settings" />
+        android:label="@string/menu_general_settings" />
 
-    <fragment
-        android:id="@+id/nav_share"
-        android:name="de.jeisfeld.lifx.app.ui.share.ShareFragment"
-        android:label="@string/menu_share"
-        tools:layout="@layout/fragment_share" />
-
-    <fragment
-        android:id="@+id/nav_send"
-        android:name="de.jeisfeld.lifx.app.ui.send.SendFragment"
-        android:label="@string/menu_send"
-        tools:layout="@layout/fragment_send" />
 </navigation>
