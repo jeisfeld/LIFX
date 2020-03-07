@@ -193,7 +193,7 @@ public abstract class TileChainColors {
 		for (TileInfo tileInfo : tileChain.getTileInfo()) {
 			maxBrightness = Math.max(maxBrightness,
 					getTileColors(tileInfo.getWidth(), tileInfo.getHeight(), tileInfo.getMinX(), tileInfo.getMinY(), tileInfo.getRotation(),
-							tileChain.getTotalWidth(), tileChain.getTotalHeight()).getMaxBrightness());
+							tileChain.getTotalWidth(), tileChain.getTotalHeight()).getMaxBrightness(tileInfo.getWidth(), tileInfo.getHeight()));
 		}
 		return maxBrightness;
 	}

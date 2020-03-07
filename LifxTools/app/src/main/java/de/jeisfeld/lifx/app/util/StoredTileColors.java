@@ -74,13 +74,14 @@ public class StoredTileColors extends StoredColor {
 			switch (storeType) {
 			case PERTILE_EXACT:
 				List<Integer> tileSizes = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_color_tilechain_sizes, colorId);
-				TileColors[] tileColors = new TileColors[tileSizes.size()];
+				TileColors[] tileColors = new TileColors[tileSizes.size() / 2];
 				int colorIndex = 0;
 				for (int tileIndex = 0; tileIndex < tileColors.length; tileIndex++) {
-					int count = tileSizes.get(tileIndex);
-					if (colors.size() >= colorIndex + count) {
-						tileColors[tileIndex] = new TileColors.Exact(colors.subList(colorIndex, colorIndex + count));
-						colorIndex += count;
+					int width = tileSizes.get(2 * tileIndex);
+					int height = tileSizes.get(2 * tileIndex + 1);
+					if (colors.size() >= colorIndex + width * height) {
+						tileColors[tileIndex] = new TileColors.Exact(colors.subList(colorIndex, colorIndex + width * height), width, height);
+						colorIndex += width * height;
 					}
 					else {
 						tileColors[tileIndex] = TileColors.OFF;
@@ -126,7 +127,8 @@ public class StoredTileColors extends StoredColor {
 			List<Integer> tileSizes = new ArrayList<>();
 			List<Color> tileChainColors = new ArrayList<>();
 			for (TileInfo tileInfo : tileInfoList) {
-				tileSizes.add(tileInfo.getWidth() * tileInfo.getHeight());
+				tileSizes.add((int) tileInfo.getWidth());
+				tileSizes.add((int) tileInfo.getHeight());
 				List<Color> tileColors = perTileColors.getTileColors(
 						tileInfo.getWidth(), tileInfo.getHeight(), tileInfo.getMinX(), tileInfo.getMinY(), tileInfo.getRotation(),
 						tileChain.getTotalWidth(), tileChain.getTotalHeight(), tileInfo.getWidth(), tileInfo.getHeight());
