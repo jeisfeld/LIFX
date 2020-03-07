@@ -283,7 +283,9 @@ public class TileChain extends Light {
 	public final void setColors(final int duration, final TileChainColors colors) throws IOException {
 		for (byte tileIndex = 0; tileIndex < mTileCount; tileIndex++) {
 			TileInfo tileInfo = mTileInfo.get(tileIndex);
-			setColors(tileIndex, duration, colors.getTileColors(tileInfo.getMinX(), tileInfo.getMinY(), mTotalWidth, mTotalHeight));
+			setColors(tileIndex, duration,
+					colors.getTileColors(tileInfo.getWidth(), tileInfo.getHeight(), tileInfo.getMinX(), tileInfo.getMinY(),
+							tileInfo.getRotation(), mTotalWidth, mTotalHeight));
 		}
 	}
 

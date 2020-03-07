@@ -127,7 +127,8 @@ public class StoredTileColors extends StoredColor {
 			List<Color> tileChainColors = new ArrayList<>();
 			for (TileInfo tileInfo : tileInfoList) {
 				tileSizes.add(tileInfo.getWidth() * tileInfo.getHeight());
-				List<Color> tileColors = perTileColors.getTileColors(tileInfo.getMinX(), tileInfo.getMinY(),
+				List<Color> tileColors = perTileColors.getTileColors(
+						tileInfo.getWidth(), tileInfo.getHeight(), tileInfo.getMinX(), tileInfo.getMinY(), tileInfo.getRotation(),
 						tileChain.getTotalWidth(), tileChain.getTotalHeight(), tileInfo.getWidth(), tileInfo.getHeight());
 				tileChainColors.addAll(tileColors);
 			}
