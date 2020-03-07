@@ -83,7 +83,7 @@
             android:layout_height="@dimen/small_button_size"
             android:layout_alignParentBottom="true"
             android:layout_margin="@dimen/small_margin"
-            android:background="@drawable/ic_button_cycle"
+            android:background="@drawable/ic_toggle_cycle"
             android:textOff=""
             android:textOn="" />
     </RelativeLayout>

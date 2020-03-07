@@ -36,6 +36,8 @@ import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
+import de.jeisfeld.lifx.app.ui.view.PickedImageDialogFragment;
+import de.jeisfeld.lifx.app.ui.view.PickedImageDialogFragment.PickedImageDialogListener;
 import de.jeisfeld.lifx.app.util.ColorRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
@@ -467,20 +469,33 @@ public class DeviceAdapter extends BaseAdapter {
 	protected void handleBitmap(final Bitmap bitmap) {
 		TileViewModel model = mCurrentTileModel;
 		mCurrentTileModel = null;
+		Fragment fragment = mFragment.get();
+		FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+		if (activity == null) {
+			return;
+		}
 
 		if (model.getLight().getTileInfo() == null) {
 			Log.w(Application.TAG, "Missing tile info");
 			return;
 		}
-		int height = model.getLight().getTotalHeight();
-		final Bitmap rescaledBitmap = Bitmap.createScaledBitmap(bitmap, model.getLight().getTotalWidth(), height, false);
 
-		model.updateColors(new TileChainColors() {
+		final TileChainColors oldColors = model.getColors().getValue();
+		final Double oldBrightness = model.getRelativeBrightness().getValue();
+
+		PickedImageDialogFragment.displayPickedImageDialog(activity, model, bitmap, new PickedImageDialogListener() {
 			@Override
-			public Color getColor(final int x, final int y, final int width, final int height) {
-				return ColorUtil.convertAndroidColorToColor(rescaledBitmap.getPixel(x, height - 1 - y), Color.WHITE_TEMPERATURE, true);
+			public void onDialogPositiveClick(final DialogFragment dialog) {
+				// do nothing - image is arleady updated.
 			}
-		}, 1);
+
+			@Override
+			public void onDialogNegativeClick(final DialogFragment dialog) {
+				if (oldColors != null) {
+					model.updateColors(oldColors, oldBrightness == null ? 1 : oldBrightness);
+				}
+			}
+		});
 	}
 
 	/**

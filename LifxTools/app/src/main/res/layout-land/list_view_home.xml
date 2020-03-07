@@ -35,7 +35,7 @@
             android:id="@+id/toggleButtonAnimation"
             android:layout_width="@dimen/medium_button_size"
             android:layout_height="@dimen/medium_button_size"
-            android:background="@drawable/ic_button_animation"
+            android:background="@drawable/ic_toggle_animation"
             android:textOff=""
             android:textOn="" />
         <Button

@@ -71,7 +71,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:palette="@drawable/ic_color_wheel"
+            app:palette="@drawable/color_wheel"
             app:selector="@drawable/wheel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -90,7 +90,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:palette="@drawable/ic_brightness_colortemp"
+            app:palette="@drawable/brightness_colortemp"
             app:selector="@drawable/wheel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

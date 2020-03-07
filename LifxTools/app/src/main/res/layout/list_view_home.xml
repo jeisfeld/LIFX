@@ -37,7 +37,7 @@
                 android:layout_height="@dimen/medium_button_size"
                 android:layout_gravity="center_vertical|center_horizontal"
                 android:layout_marginEnd="@dimen/list_horizontal_margin"
-                android:background="@drawable/ic_brightness_colortemp"
+                android:background="@drawable/brightness_colortemp"
                 android:visibility="gone" />
 
             <Button
@@ -46,7 +46,7 @@
                 android:layout_height="@dimen/medium_button_size"
                 android:layout_gravity="center_vertical|center_horizontal"
                 android:layout_marginEnd="@dimen/list_horizontal_margin"
-                android:background="@drawable/ic_color_wheel"
+                android:background="@drawable/color_wheel"
                 android:visibility="gone" />
 
             <Button
@@ -79,7 +79,7 @@
                 android:id="@+id/toggleButtonAnimation"
                 android:layout_width="@dimen/medium_button_size"
                 android:layout_height="@dimen/medium_button_size"
-                android:background="@drawable/ic_button_animation"
+                android:background="@drawable/ic_toggle_animation"
                 android:textOff=""
                 android:textOn="" />
         </LinearLayout>

@@ -46,7 +46,7 @@ public class TileViewModel extends LightViewModel {
 	 * @return The light.
 	 */
 	@Override
-	protected TileChain getLight() {
+	public TileChain getLight() {
 		return (TileChain) getDevice();
 	}
 

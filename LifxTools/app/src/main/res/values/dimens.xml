@@ -19,4 +19,7 @@
     <dimen name="small_button_size">24dp</dimen>
     <dimen name="mini_button_size">16dp</dimen>
     <dimen name="power_button_stroke_size">1dp</dimen>
+
+    <dimen name="image_preview_min_height">192dp</dimen>
+
 </resources>

@@ -14,7 +14,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:palette="@drawable/ic_color_wheel"
+        app:palette="@drawable/color_wheel"
         app:selector="@drawable/wheel" />
 
     <com.skydoves.colorpickerview.sliders.BrightnessSlideBar

@@ -15,7 +15,7 @@
         android:layout_height="0dp"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
-        app:palette="@drawable/ic_brightness_colortemp"
+        app:palette="@drawable/brightness_colortemp"
         app:selector="@drawable/wheel" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
