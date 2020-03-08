@@ -186,7 +186,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			if (colors instanceof TileChainColors.Fixed) {
 				drawable.setColor(ColorUtil.toAndroidDisplayColor(((TileChainColors.Fixed) colors).getColor()));
 			}
-			else if (colors instanceof TileChainColors.PerTile) {
+			else  {
 				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId());
 				if (tileChain.getTotalWidth() == 0 || tileChain.getTotalHeight() == 0) {
 					drawable.setShape(GradientDrawable.RECTANGLE);
@@ -202,10 +202,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 					}
 					return new BitmapDrawable(Application.getAppContext().getResources(), bitmap);
 				}
-			}
-			else {
-				drawable.setShape(GradientDrawable.RECTANGLE);
-				drawable.setColor(Color.BLACK);
 			}
 		}
 		return drawable;

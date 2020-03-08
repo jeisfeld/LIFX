@@ -9,8 +9,6 @@ import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
-import de.jeisfeld.lifx.lan.type.TileChainColors.Fixed;
-import de.jeisfeld.lifx.lan.type.TileChainColors.PerTile;
 import de.jeisfeld.lifx.lan.type.TileColors;
 import de.jeisfeld.lifx.lan.type.TileInfo;
 
@@ -69,7 +67,7 @@ public class StoredTileColors extends StoredColor {
 		TileChainColors tileChainColors;
 		if (storeType == StoreType.FIXED) {
 			Color color = PreferenceUtil.getIndexedSharedPreferenceColor(R.string.key_color_color, colorId, Color.NONE);
-			tileChainColors = new Fixed(color);
+			tileChainColors = new TileChainColors.Fixed(color);
 		}
 		else {
 			List<Color> colors = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_color_colors, colorId);
@@ -120,10 +118,9 @@ public class StoredTileColors extends StoredColor {
 		TileChainColors colors = storedColors.getColors();
 		if (colors instanceof TileChainColors.Fixed) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_color_tilechain_type, colorId, StoreType.FIXED.ordinal());
-			PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_color_color, colorId, ((Fixed) colors).getColor());
+			PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_color_color, colorId, ((TileChainColors.Fixed) colors).getColor());
 		}
-		else if (colors instanceof PerTile) {
-			PerTile perTileColors = (PerTile) colors;
+		else {
 			TileChain tileChain = storedColors.getLight();
 			List<TileInfo> tileInfoList = tileChain.getTileInfo();
 			List<Integer> tileSizes = new ArrayList<>();
@@ -131,7 +128,7 @@ public class StoredTileColors extends StoredColor {
 			for (TileInfo tileInfo : tileInfoList) {
 				tileSizes.add((int) tileInfo.getWidth());
 				tileSizes.add((int) tileInfo.getHeight());
-				List<Color> tileColors = perTileColors.getTileColors(
+				List<Color> tileColors = colors.getTileColors(
 						tileInfo.getWidth(), tileInfo.getHeight(), tileInfo.getMinX(), tileInfo.getMinY(), tileInfo.getRotation(),
 						tileChain.getTotalWidth(), tileChain.getTotalHeight(), tileInfo.getWidth(), tileInfo.getHeight());
 				tileChainColors.addAll(tileColors);
