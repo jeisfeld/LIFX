@@ -19,6 +19,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.Direction;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
@@ -55,6 +56,14 @@ public class LifxAnimationService extends Service {
 	 */
 	public static final String EXTRA_DEVICE_LABEL = "de.jeisfeld.lifx.DEVICE_LABEL";
 	/**
+	 * Key for the device Label within the intent.
+	 */
+	public static final String EXTRA_ANIMATION_DURATION = "de.jeisfeld.lifx.ANIMATION_DURATION";
+	/**
+	 * Key for the device Label within the intent.
+	 */
+	public static final String EXTRA_ANIMATION_DIRECTION = "de.jeisfeld.lifx.ANIMATION_DIRECTION";
+	/**
 	 * The intent of the broadcast for stopping an animation.
 	 */
 	public static final String EXTRA_ANIMATION_STOP_INTENT = "de.jeisfeld.lifx.ANIMATION_STOP_INTENT";
@@ -86,6 +95,8 @@ public class LifxAnimationService extends Service {
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
 		final String label = intent.getStringExtra(EXTRA_DEVICE_LABEL);
+		final int duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+		final Direction direction = (Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
 		assert mac != null;
 		assert label != null;
 		ANIMATED_LIGHT_LABELS.put(mac, label);
@@ -127,7 +138,7 @@ public class LifxAnimationService extends Service {
 							public void run() {
 								try {
 									light.setColors(0, true, finalColors);
-									light.setEffect(new Move(30000, false)); // MAGIC_NUMBER
+									light.setEffect(new Move(Math.abs(duration), direction == Direction.BACKWARD)); // MAGIC_NUMBER
 								}
 								catch (IOException e) {
 									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
@@ -150,7 +161,7 @@ public class LifxAnimationService extends Service {
 						}.start();
 					}
 					else {
-						light.rollingAnimation(30000, colors) // MAGIC_NUMBER
+						light.rollingAnimation(Math.abs(duration) * (direction == Direction.BACKWARD ? -1 : 1), colors) // MAGIC_NUMBER
 								.setAnimationCallback(new AnimationCallback() {
 									@Override
 									public void onException(final IOException e) {

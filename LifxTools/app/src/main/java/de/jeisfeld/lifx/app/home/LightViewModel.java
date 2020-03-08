@@ -9,11 +9,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
+import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.Direction;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -41,7 +43,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light The light.
+	 * @param light   The light.
 	 */
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
@@ -100,9 +102,9 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param hue the new hue. May be null to keep unchanged.
-	 * @param saturation the new saturation. May be null to keep unchanged.
-	 * @param brightness the new brightness. May be null to keep unchanged.
+	 * @param hue              the new hue. May be null to keep unchanged.
+	 * @param saturation       the new saturation. May be null to keep unchanged.
+	 * @param brightness       the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
 	 */
 	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
@@ -145,6 +147,7 @@ public class LightViewModel extends DeviceViewModel {
 
 	/**
 	 * Update from a stored color.
+	 *
 	 * @param storedColor The stored color.
 	 */
 	protected void postStoredColor(final StoredColor storedColor) {
@@ -152,26 +155,36 @@ public class LightViewModel extends DeviceViewModel {
 	}
 
 	/**
-	 * Switch the animation on or off.
+	 * Start the animation.
 	 *
-	 * @param status true to switch on, false to switch off.
+	 * @param duration The duration of the animation.
+	 * @param direction The direction of the animation.
 	 */
-	protected void updateAnimation(final boolean status) {
+	protected void startAnimation(final int duration, final Direction direction) {
 		Context context = getContext().get();
 		if (context == null) {
 			return;
 		}
-		mAnimationStatus.setValue(status);
-		if (status) {
-			Intent serviceIntent = new Intent(context, LifxAnimationService.class);
-			serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
-			serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, getLight().getLabel());
-			ContextCompat.startForegroundService(context, serviceIntent);
-			mPower.setValue(Power.ON);
+		mAnimationStatus.setValue(true);
+		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, getLight().getLabel());
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_ANIMATION_DURATION, duration);
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_ANIMATION_DIRECTION, direction);
+		ContextCompat.startForegroundService(context, serviceIntent);
+		mPower.setValue(Power.ON);
+	}
+
+	/**
+	 * Stop the animation.
+	 */
+	protected void stopAnimation() {
+		Context context = getContext().get();
+		if (context == null) {
+			return;
 		}
-		else {
-			LifxAnimationService.stopAnimationForMac(context, getLight().getTargetAddress());
-		}
+		mAnimationStatus.setValue(false);
+		LifxAnimationService.stopAnimationForMac(context, getLight().getTargetAddress());
 	}
 
 	/**

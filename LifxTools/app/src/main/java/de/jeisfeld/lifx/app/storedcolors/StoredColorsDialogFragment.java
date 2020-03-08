@@ -38,7 +38,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	private static final String PREVENT_RECREATION = "preventRecreation";
 
 	/**
-	 * Display a confirmation message asking for cancel or ok.
+	 * Display a dialog for storing a color or displaying a stored color.
 	 *
 	 * @param activity the current activity
 	 * @param model the light model.

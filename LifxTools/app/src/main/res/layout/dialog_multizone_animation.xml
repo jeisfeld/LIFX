@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="?attr/dialogPreferredPadding"
+    android:paddingEnd="?attr/dialogPreferredPadding"
+    android:stretchColumns="1">
+
+    <TableRow>
+
+        <TextView
+            android:text="@string/label_animation_duration"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:hint="@string/hint_animation_duration"
+            android:inputType="numberDecimal" />
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:text="@string/label_animation_direction"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/spinnerDiration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/values_animation_direction"
+            android:spinnerMode="dropdown" />
+    </TableRow>
+</TableLayout>

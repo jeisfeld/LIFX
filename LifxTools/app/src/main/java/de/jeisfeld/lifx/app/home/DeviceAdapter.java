@@ -30,22 +30,25 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment;
+import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.Direction;
+import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.MultizoneAnimationDialogListener;
 import de.jeisfeld.lifx.app.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
+import de.jeisfeld.lifx.app.util.ColorUtil;
+import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.view.PickedImageDialogFragment;
 import de.jeisfeld.lifx.app.view.PickedImageDialogFragment.PickedImageDialogListener;
-import de.jeisfeld.lifx.app.util.ColorUtil;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry.DeviceUpdateCallback;
-import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -565,10 +568,38 @@ public class DeviceAdapter extends BaseAdapter {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
 
 		if (model instanceof MultizoneViewModel) {
-			animationButton.setOnClickListener(v -> model.updateAnimation(((ToggleButton) v).isChecked()));
+			animationButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+				if (isChecked) {
+					Fragment fragment = mFragment.get();
+					if (fragment != null && fragment.getActivity() != null) {
+						MultizoneAnimationDialogFragment.displayMultizoneAnimationDialog(fragment.getActivity(),
+								new MultizoneAnimationDialogListener() {
+									@Override
+									public void onDialogPositiveClick(final DialogFragment dialog, final int duration, final Direction direction) {
+										model.startAnimation(duration, direction);
+									}
+
+									@Override
+									public void onDialogNegativeClick(final DialogFragment dialog) {
+										buttonView.setChecked(false);
+									}
+								});
+					}
+				}
+				else {
+					model.stopAnimation();
+				}
+			});
 		}
 		else if (model instanceof TileViewModel) {
-			animationButton.setOnClickListener(v -> model.updateAnimation(((ToggleButton) v).isChecked()));
+			animationButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
+				if (isChecked) {
+					model.startAnimation(0, Direction.FORWARD);
+				}
+				else {
+					model.stopAnimation();
+				}
+			});
 		}
 		else {
 			animationButton.setVisibility(View.GONE);

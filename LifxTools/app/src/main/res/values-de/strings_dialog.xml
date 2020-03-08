@@ -3,8 +3,20 @@
     <string name="title_dialog_confirmation">Bestätigung</string>
     <string name="title_dialog_select_name">Farbe wählen</string>
     <string name="title_dialog_save_name">Farbe speichern</string>
+    <string name="title_dialog_image">Bile anpassen</string>
+    <string name="title_dialog_animation">Animationseinstellungen</string>
+
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>
+    <string name="button_start">Starten</string>
+
+    <string name="label_animation_duration">Dauer</string>
+    <string name="hint_animation_duration">(Sekunden)</string>
+    <string name="label_animation_direction">Richtung</string>
+    <string-array name="values_animation_direction">
+        <item>vorwärts</item>
+        <item>rückwärts</item>
+    </string-array>
 
     <string name="message_confirm_delete_light">Wollen Sie die Lampe %1$s aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>

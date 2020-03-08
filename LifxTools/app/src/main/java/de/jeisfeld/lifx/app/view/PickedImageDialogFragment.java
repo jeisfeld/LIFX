@@ -51,7 +51,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 	private static final int PRESCALE_OVERHEAD_FACTOR = 4;
 
 	/**
-	 * Display a confirmation message asking for cancel or ok.
+	 * Display a dialog for handling a picked image for a tile chain.
 	 *
 	 * @param activity the current activity
 	 * @param model    the light model.
@@ -215,7 +215,8 @@ public class PickedImageDialogFragment extends DialogFragment {
 		});
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setView(view) //
+		builder.setTitle(R.string.title_dialog_image)
+				.setView(view) //
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 					// Send the positive button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {

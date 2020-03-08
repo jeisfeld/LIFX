@@ -3,8 +3,20 @@
     <string name="title_dialog_confirmation">Confirmation</string>
     <string name="title_dialog_select_name">Select Color</string>
     <string name="title_dialog_save_name">Save Color</string>
+    <string name="title_dialog_image">Adapt image</string>
+    <string name="title_dialog_animation">Animation Settings</string>
+
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
+    <string name="button_start">Start</string>
+
+    <string name="label_animation_duration">Duration</string>
+    <string name="hint_animation_duration">(seconds)</string>
+    <string name="label_animation_direction">Direction</string>
+    <string-array name="values_animation_direction">
+        <item>forward</item>
+        <item>backward</item>
+    </string-array>
 
     <string name="message_confirm_delete_light">Do you want to delete the device %1$s from the app? (Will be re-created if detected in the LAN.)</string>
     <string name="message_dialog_save_color_name">Please enter a name for the color.</string>
