@@ -52,7 +52,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:selector_BrightnessSlider="@drawable/wheel" />
 
-        <de.jeisfeld.lifx.app.ui.view.ColorTemperatureSlideBar
+        <de.jeisfeld.lifx.app.view.ColorTemperatureSlideBar
             android:id="@+id/ColorTemperatureSlideBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

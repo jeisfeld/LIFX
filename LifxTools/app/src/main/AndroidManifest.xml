@@ -26,9 +26,9 @@
             </intent-filter>
         </activity>
         <service
-            android:name="de.jeisfeld.lifx.app.service.LifxAnimationService"
+            android:name="de.jeisfeld.lifx.app.animation.LifxAnimationService"
             android:enabled="true"
-            android:exported="true">
+            android:exported="false">
         </service>
 
     </application>

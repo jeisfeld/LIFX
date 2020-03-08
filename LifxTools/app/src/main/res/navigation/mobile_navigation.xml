@@ -7,25 +7,25 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="de.jeisfeld.lifx.app.ui.home.HomeFragment"
+        android:name="de.jeisfeld.lifx.app.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/nav_stored_colors"
-        android:name="de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsFragment"
+        android:name="de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment"
         android:label="@string/menu_stored_colors"
         tools:layout="@layout/fragment_stored_colors" />
 
     <fragment
         android:id="@+id/nav_manage_devices"
-        android:name="de.jeisfeld.lifx.app.ui.managedevices.ManageDevicesFragment"
+        android:name="de.jeisfeld.lifx.app.managedevices.ManageDevicesFragment"
         android:label="@string/menu_manage_devices"
         tools:layout="@layout/fragment_manage_devices" />
 
     <fragment
         android:id="@+id/nav_settings"
-        android:name="de.jeisfeld.lifx.app.ui.settings.SettingsFragment"
+        android:name="de.jeisfeld.lifx.app.settings.SettingsFragment"
         android:label="@string/menu_general_settings" />
 
 </navigation>

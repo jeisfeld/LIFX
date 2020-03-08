@@ -4,6 +4,7 @@
     <string name="title_dialog_select_name">Farbe wählen</string>
     <string name="title_dialog_save_name">Farbe speichern</string>
     <string name="button_save">Speichern</string>
+    <string name="button_ok">OK</string>
 
     <string name="message_confirm_delete_light">Wollen Sie die Lampe %1$s aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>
