@@ -1,4 +1,4 @@
-package de.jeisfeld.lifx.app.util;
+package de.jeisfeld.lifx.app.ui.storedcolors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import android.util.SparseArray;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 
 /**
  * A registry holding information about stored colors.

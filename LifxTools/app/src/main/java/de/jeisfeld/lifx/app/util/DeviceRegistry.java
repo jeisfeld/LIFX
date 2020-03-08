@@ -13,6 +13,8 @@ import android.util.Log;
 import android.util.SparseArray;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.ui.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.ui.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;

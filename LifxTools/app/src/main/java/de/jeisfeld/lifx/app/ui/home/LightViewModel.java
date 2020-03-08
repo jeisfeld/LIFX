@@ -14,7 +14,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.service.LifxAnimationService;
-import de.jeisfeld.lifx.app.util.StoredColor;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColor;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;

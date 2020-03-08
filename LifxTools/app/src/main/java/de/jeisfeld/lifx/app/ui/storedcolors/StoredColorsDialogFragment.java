@@ -23,10 +23,6 @@ import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.ui.home.LightViewModel;
 import de.jeisfeld.lifx.app.ui.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.ui.home.TileViewModel;
-import de.jeisfeld.lifx.app.util.ColorRegistry;
-import de.jeisfeld.lifx.app.util.StoredColor;
-import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
-import de.jeisfeld.lifx.app.util.StoredTileColors;
 
 /**
  * Dialog for selecting stored colors or storing the current color.

@@ -24,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -38,14 +39,14 @@ import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.ui.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.ui.view.PickedImageDialogFragment;
 import de.jeisfeld.lifx.app.ui.view.PickedImageDialogFragment.PickedImageDialogListener;
-import de.jeisfeld.lifx.app.util.ColorRegistry;
+import de.jeisfeld.lifx.app.ui.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.StoredColor;
-import de.jeisfeld.lifx.app.util.StoredMultizoneColors;
-import de.jeisfeld.lifx.app.util.StoredTileColors;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.ui.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -281,7 +282,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the power button.
 	 *
 	 * @param powerButton The power button.
-	 * @param model The device view model.
+	 * @param model       The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
@@ -304,7 +305,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the color picker started via button.
 	 *
 	 * @param colorPickerButton The color picker button.
-	 * @param model The light view model.
+	 * @param model             The light view model.
 	 */
 	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
 		colorPickerButton.setVisibility(View.VISIBLE);
@@ -324,7 +325,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the picker for brightness and color temperature started via button.
 	 *
 	 * @param brightnessColorTempButton The brightness/colortemp picker button.
-	 * @param model The light view model.
+	 * @param model                     The light view model.
 	 */
 	private void prepareBrightnessColortempPicker(final Button brightnessColorTempButton, final LightViewModel model) {
 		brightnessColorTempButton.setVisibility(View.VISIBLE);
@@ -342,7 +343,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the multizone color picker started via button.
 	 *
 	 * @param multiColorPickerButton The multizone color picker button.
-	 * @param model The multizone view model.
+	 * @param model                  The multizone view model.
 	 */
 	private void prepareMultiColorPicker(final Button multiColorPickerButton, final MultizoneViewModel model) {
 		multiColorPickerButton.setVisibility(View.VISIBLE);
@@ -377,10 +378,10 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * Prepare a single color picker within the multicolor picker.
 	 *
-	 * @param dialogView The dialog view.
+	 * @param dialogView   The dialog view.
 	 * @param parentViewId The parent view of the single color picker.
-	 * @param model The multizone view model.
-	 * @param index the index of the color picker.
+	 * @param model        The multizone view model.
+	 * @param index        the index of the color picker.
 	 */
 	private void prepareMultiColorPickerView(final View dialogView, final int parentViewId, final MultizoneViewModel model, final int index) {
 		final View parentView = dialogView.findViewById(parentViewId);
@@ -444,8 +445,8 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Load a tile image via button.
 	 *
 	 * @param imageButton The imate button.
-	 * @param model The multizone view model.
-	 * @param position The position where the button was clicked.
+	 * @param model       The multizone view model.
+	 * @param position    The position where the button was clicked.
 	 */
 	private void prepareImageButton(final Button imageButton, final TileViewModel model, final int position) {
 		imageButton.setVisibility(View.VISIBLE);
@@ -485,8 +486,9 @@ public class DeviceAdapter extends BaseAdapter {
 
 		PickedImageDialogFragment.displayPickedImageDialog(activity, model, bitmap, new PickedImageDialogListener() {
 			@Override
-			public void onDialogPositiveClick(final DialogFragment dialog) {
-				// do nothing - image is arleady updated.
+			public void onDialogPositiveClick(final DialogFragment dialog, final TileChainColors colors) {
+				// Convert anonymous colors to PerTile, so that it is storable.
+				model.updateColors(new TileChainColors.PerTile(model.getLight(), colors), 1);
 			}
 
 			@Override
@@ -502,7 +504,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the brightness button and seekbar.
 	 *
 	 * @param seekBar The brightness seekbar.
-	 * @param model The light view model.
+	 * @param model   The light view model.
 	 */
 	private void prepareBrightnessSeekbar(final SeekBar seekBar, final LightViewModel model) {
 		seekBar.setVisibility(View.VISIBLE);
@@ -553,7 +555,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the animation button.
 	 *
 	 * @param animationButton The animation button.
-	 * @param model The light view model.
+	 * @param model           The light view model.
 	 */
 	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
@@ -565,7 +567,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the save button.
 	 *
 	 * @param saveButton The save button.
-	 * @param model The light view model.
+	 * @param model      The light view model.
 	 */
 	private void prepareSaveButton(final Button saveButton, final LightViewModel model) {
 		saveButton.setOnClickListener(v -> {

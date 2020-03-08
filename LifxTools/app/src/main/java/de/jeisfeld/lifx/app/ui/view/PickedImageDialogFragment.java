@@ -91,7 +91,10 @@ public class PickedImageDialogFragment extends DialogFragment {
 	 * The partial bitmaps.
 	 */
 	private final List<PartialBitmap> mPartialBitmaps = new ArrayList<>();
-
+	/**
+	 * The current colors.
+	 */
+	private TileChainColors mCurrentColors = null;
 	/**
 	 * The width of the tile chain.
 	 */
@@ -221,7 +224,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 				.setPositiveButton(R.string.button_save, (dialog, id) -> {
 					// Send the negative button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {
-						mListener.getValue().onDialogPositiveClick(PickedImageDialogFragment.this);
+						mListener.getValue().onDialogPositiveClick(PickedImageDialogFragment.this, mCurrentColors);
 					}
 				});
 		return builder.create();
@@ -316,12 +319,13 @@ public class PickedImageDialogFragment extends DialogFragment {
 
 				mImageView.setImageBitmap(rescaledBitmap);
 
-				model.updateColors(new TileChainColors() {
+				mCurrentColors = new TileChainColors() {
 					@Override
 					public Color getColor(final int x, final int y, final int width, final int height) {
 						return ColorUtil.convertAndroidColorToColor(rescaledBitmap.getPixel(x, height - 1 - y), Color.WHITE_TEMPERATURE, true);
 					}
-				}, 1);
+				};
+				model.updateColors(mCurrentColors, 1);
 			}
 		}
 	}
@@ -456,8 +460,9 @@ public class PickedImageDialogFragment extends DialogFragment {
 		 * Callback method for positive click from the confirmation dialog.
 		 *
 		 * @param dialog the confirmation dialog fragment.
+		 * @param colors the selected colors.
 		 */
-		void onDialogPositiveClick(DialogFragment dialog);
+		void onDialogPositiveClick(DialogFragment dialog, TileChainColors colors);
 
 		/**
 		 * Callback method for negative click from the confirmation dialog.

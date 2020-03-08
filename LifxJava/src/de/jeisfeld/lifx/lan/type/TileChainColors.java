@@ -265,6 +265,23 @@ public abstract class TileChainColors {
 			mColors = colors;
 		}
 
+		/**
+		 * Convert generic TineChainColors into PerTile colors.
+		 *
+		 * @param tileChain the tile chain
+		 * @param colors The colors.
+		 */
+		public PerTile(final TileChain tileChain, final TileChainColors colors) {
+			mTileChain = tileChain;
+			TileColors[] tileColors = new TileColors[tileChain.getTileCount()];
+			for (int tileIndex = 0; tileIndex < tileColors.length; tileIndex++) {
+				TileInfo tileInfo = tileChain.getTileInfo().get(tileIndex);
+				tileColors[tileIndex] = colors.getTileColors(tileInfo.getWidth(), tileInfo.getHeight(),
+						tileInfo.getMinX(), tileInfo.getMinY(), tileInfo.getRotation(), tileChain.getTotalWidth(), tileChain.getTotalHeight());
+			}
+			mColors = tileColors;
+		}
+
 		@Override
 		public final Color getColor(final int x, final int y, final int width, final int height) {
 			for (int i = 0; i < mTileChain.getTileCount(); i++) {

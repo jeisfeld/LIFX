@@ -59,5 +59,6 @@
         android:layout_height="wrap_content"
         android:importantForAutofill="no"
         android:inputType="text"
+        android:layout_marginBottom="?attr/dialogPreferredPadding"
         app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

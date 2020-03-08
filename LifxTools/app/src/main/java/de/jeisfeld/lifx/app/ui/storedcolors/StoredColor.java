@@ -1,8 +1,10 @@
-package de.jeisfeld.lifx.app.util;
+package de.jeisfeld.lifx.app.ui.storedcolors;
 
 import java.util.List;
 
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 

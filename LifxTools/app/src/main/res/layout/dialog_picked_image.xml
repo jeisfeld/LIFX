@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:paddingStart="?attr/dialogPreferredPadding"
     android:paddingTop="?attr/dialogPreferredPadding"
-    android:paddingEnd="?attr/dialogPreferredPadding">
+    android:paddingEnd="?attr/dialogPreferredPadding"
+    android:paddingBottom="@dimen/big_margin">
 
     <ImageView
         android:id="@+id/imageViewPickedImage"
