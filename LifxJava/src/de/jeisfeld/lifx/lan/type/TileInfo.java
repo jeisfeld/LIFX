@@ -1,12 +1,18 @@
 package de.jeisfeld.lifx.lan.type;
 
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
 /**
  * Information for a single tile.
  */
-public class TileInfo {
+public class TileInfo implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The x gravity.
 	 */

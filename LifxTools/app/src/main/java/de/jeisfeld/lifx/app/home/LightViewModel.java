@@ -9,17 +9,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
-import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.Direction;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
-import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -43,7 +41,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light   The light.
+	 * @param light The light.
 	 */
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
@@ -102,9 +100,9 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param hue              the new hue. May be null to keep unchanged.
-	 * @param saturation       the new saturation. May be null to keep unchanged.
-	 * @param brightness       the new brightness. May be null to keep unchanged.
+	 * @param hue the new hue. May be null to keep unchanged.
+	 * @param saturation the new saturation. May be null to keep unchanged.
+	 * @param brightness the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
 	 */
 	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
@@ -157,10 +155,9 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Start the animation.
 	 *
-	 * @param duration The duration of the animation.
-	 * @param direction The direction of the animation.
+	 * @param animationData Data for the animation.
 	 */
-	protected void startAnimation(final int duration, final Direction direction) {
+	protected void startAnimation(final AnimationData animationData) {
 		Context context = getContext().get();
 		if (context == null) {
 			return;
@@ -169,10 +166,8 @@ public class LightViewModel extends DeviceViewModel {
 		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
 		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
 		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, getLight().getLabel());
-		serviceIntent.putExtra(LifxAnimationService.EXTRA_ANIMATION_DURATION, duration);
-		serviceIntent.putExtra(LifxAnimationService.EXTRA_ANIMATION_DIRECTION, direction);
+		animationData.addToIntent(serviceIntent);
 		ContextCompat.startForegroundService(context, serviceIntent);
-		mPower.setValue(Power.ON);
 	}
 
 	/**

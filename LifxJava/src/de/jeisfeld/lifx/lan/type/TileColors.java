@@ -1,5 +1,6 @@
 package de.jeisfeld.lifx.lan.type;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -9,11 +10,21 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
 /**
  * Class to hold colors for one tile.
  */
-public abstract class TileColors {
+public abstract class TileColors implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The colors used for switching the tile off.
 	 */
 	public static final TileColors OFF = new TileColors() {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public Color getColor(final int zoneIndex, final int zoneCount) {
 			return Color.OFF;
@@ -39,6 +50,11 @@ public abstract class TileColors {
 	public TileColors shift(final int shiftX, final int shiftY) {
 		TileColors base = this;
 		return new TileColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int x, final int y) {
 				return base.getColor(x - shiftX, y - shiftY);
@@ -55,6 +71,11 @@ public abstract class TileColors {
 	public TileColors withRelativeBrightness(final double brightnessFactor) {
 		TileColors base = this;
 		return new TileColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int x, final int y) {
 				return base.getColor(x, y).withRelativeBrightness(brightnessFactor);
@@ -89,6 +110,11 @@ public abstract class TileColors {
 	public final TileColors add(final TileColors other, final double quota) {
 		TileColors base = this;
 		return new TileColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int x, final int y) {
 				return base.getColor(x, y).add(other.getColor(x, y), quota);
@@ -117,6 +143,11 @@ public abstract class TileColors {
 	 * Tile colors defined by a fixed color.
 	 */
 	public static class Fixed extends TileColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The color.
 		 */
@@ -151,6 +182,11 @@ public abstract class TileColors {
 	 * Tile colors defined by a list of colors.
 	 */
 	public static class Exact extends TileColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The colors.
 		 */

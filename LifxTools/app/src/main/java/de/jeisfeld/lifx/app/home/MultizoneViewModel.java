@@ -8,7 +8,6 @@ import java.util.List;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -56,7 +55,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Constructor.
 	 *
-	 * @param context        the context.
+	 * @param context the context.
 	 * @param multiZoneLight The multiZone light.
 	 */
 	public MultizoneViewModel(final Context context, final MultiZoneLight multiZoneLight) {
@@ -131,7 +130,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors           the colors to be set.
+	 * @param colors the colors to be set.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor) {
@@ -347,7 +346,7 @@ public class MultizoneViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model  The underlying model.
+		 * @param model The underlying model.
 		 * @param colors The colors.
 		 */
 		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors) {
@@ -397,6 +396,11 @@ public class MultizoneViewModel extends LightViewModel {
 	 */
 	public static final class FlaggedMultizoneColors extends MultizoneColors {
 		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
 		 * A set of custom flags that may be set for custom storage.
 		 */
 		private final boolean[] mFlags;
@@ -419,7 +423,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * Constructor.
 		 *
 		 * @param multizoneColors The base multizone colors without flag.
-		 * @param flags           The flags.
+		 * @param flags The flags.
 		 */
 		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);

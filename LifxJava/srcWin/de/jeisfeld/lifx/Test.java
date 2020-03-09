@@ -76,7 +76,6 @@ public final class Test {
 	void test3() throws Exception { // SUPPRESS_CHECKSTYLE
 		Random random = new Random();
 		FARBLAMPE.animation(new AnimationDefinition() {
-
 			@Override
 			public int getDuration(final int n) {
 				return random.nextInt(FIVESECONDS);
@@ -126,6 +125,11 @@ public final class Test {
 		for (int i = 0; i < Integer.MAX_VALUE; i++) {
 			final int j = i;
 			TILE_4.setColors(0, new TileChainColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public Color getColor(final int x, final int y, final int width, final int height) {
 					double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));

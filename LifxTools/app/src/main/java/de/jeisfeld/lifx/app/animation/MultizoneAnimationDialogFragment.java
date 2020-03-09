@@ -13,6 +13,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.home.MultizoneViewModel;
 
 /**
  * Dialog for setting up a multizone animation.
@@ -27,13 +28,15 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
+	 * @param model the multizone view model.
 	 * @param listener The listener waiting for the response
 	 */
-	public static void displayMultizoneAnimationDialog(final FragmentActivity activity,
+	public static void displayMultizoneAnimationDialog(final FragmentActivity activity, final MultizoneViewModel model,
 			final MultizoneAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
 		MultizoneAnimationDialogFragment fragment = new MultizoneAnimationDialogFragment();
 		fragment.setListener(listener);
+		fragment.setModel(model);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 	}
@@ -41,7 +44,11 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	/**
 	 * The listener called when the dialog is ended.
 	 */
-	private MutableLiveData<MultizoneAnimationDialogListener> mListener = null;
+	private MutableLiveData<MultizoneAnimationDialogListener> mListener = new MutableLiveData<>();
+	/**
+	 * The model.
+	 */
+	private MutableLiveData<MultizoneViewModel> mModel = new MutableLiveData<>();
 
 	/**
 	 * Set the listener.
@@ -50,6 +57,15 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	 */
 	public final void setListener(final MultizoneAnimationDialogListener listener) {
 		mListener = new MutableLiveData<>(listener);
+	}
+
+	/**
+	 * Set the model.
+	 *
+	 * @param model the model.
+	 */
+	public final void setModel(final MultizoneViewModel model) {
+		mModel = new MutableLiveData<>(model);
 	}
 
 	@Override
@@ -80,7 +96,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 				})
 				.setPositiveButton(R.string.button_start, (dialog, id) -> {
 					// Send the negative button event back to the host activity
-					if (mListener != null && mListener.getValue() != null) {
+					if (mListener != null && mListener.getValue() != null && mModel != null && mModel.getValue() != null) {
 						int duration;
 						try {
 							duration = (int) (Double.parseDouble(editTextDuration.getText().toString()) * 1000); // MAGIC_NUMBER
@@ -88,9 +104,11 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 						catch (Exception e) {
 							duration = 10000; // MAGIC_NUMBER
 						}
-						Direction direction = Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+						MultizoneMove.Direction direction =
+								MultizoneMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
-						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this, duration, direction);
+						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
+								new MultizoneMove(duration, direction, mModel.getValue().getColors().getValue()));
 					}
 				});
 		return builder.create();
@@ -115,35 +133,6 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	}
 
 	/**
-	 * The direction of the animation.
-	 */
-	public enum Direction {
-		/**
-		 * Forward movement.
-		 */
-		FORWARD,
-		/**
-		 * Backward movement.
-		 */
-		BACKWARD;
-
-		/**
-		 * Get Direction from its ordinal value.
-		 *
-		 * @param ordinal The ordinal value.
-		 * @return The direction.
-		 */
-		private static Direction fromOrdinal(final int ordinal) {
-			for (Direction direction : values()) {
-				if (ordinal == direction.ordinal()) {
-					return direction;
-				}
-			}
-			return FORWARD;
-		}
-	}
-
-	/**
 	 * A callback handler for the dialog.
 	 */
 	public interface MultizoneAnimationDialogListener {
@@ -151,10 +140,9 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 		 * Callback method for positive click from the confirmation dialog.
 		 *
 		 * @param dialog The confirmation dialog fragment.
-		 * @param duration The duration of the animation.
-		 * @param direction The direction of the animation.
+		 * @param animationData The animation data.
 		 */
-		void onDialogPositiveClick(DialogFragment dialog, int duration, Direction direction);
+		void onDialogPositiveClick(DialogFragment dialog, AnimationData animationData);
 
 		/**
 		 * Callback method for negative click from the confirmation dialog.

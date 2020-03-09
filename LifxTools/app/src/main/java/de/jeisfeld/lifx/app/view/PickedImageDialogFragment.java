@@ -18,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.ToggleButton;
-
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -54,14 +53,14 @@ public class PickedImageDialogFragment extends DialogFragment {
 	 * Display a dialog for handling a picked image for a tile chain.
 	 *
 	 * @param activity the current activity
-	 * @param model    the light model.
-	 * @param bitmap   the picked image.
+	 * @param model the light model.
+	 * @param bitmap the picked image.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayPickedImageDialog(final FragmentActivity activity,
-												final TileViewModel model,
-												final Bitmap bitmap,
-												final PickedImageDialogListener listener) {
+			final TileViewModel model,
+			final Bitmap bitmap,
+			final PickedImageDialogListener listener) {
 		Bundle bundle = new Bundle();
 		PickedImageDialogFragment fragment = new PickedImageDialogFragment();
 		fragment.setListener(listener);
@@ -250,6 +249,9 @@ public class PickedImageDialogFragment extends DialogFragment {
 		super.onSaveInstanceState(outState);
 	}
 
+	/**
+	 * The seekbar listener applied when changing brightness or contrast.
+	 */
 	private final class OnBrightnessContrastChangeListener implements OnSeekBarChangeListener {
 		/**
 		 * The brightness SeekBar.
@@ -272,12 +274,12 @@ public class PickedImageDialogFragment extends DialogFragment {
 		 * Constructor.
 		 *
 		 * @param seekBarBrightness The brightness seekbar.
-		 * @param seekBarContrast   The contrast seekbar.
+		 * @param seekBarContrast The contrast seekbar.
 		 * @param seekBarSaturation The saturation seekbar.
-		 * @param imageView         The image view.
+		 * @param imageView The image view.
 		 */
 		private OnBrightnessContrastChangeListener(final SeekBar seekBarBrightness, final SeekBar seekBarContrast, final SeekBar seekBarSaturation,
-												   final ImageView imageView) {
+				final ImageView imageView) {
 			mSeekBarBrightness = seekBarBrightness;
 			mSeekBarContrast = seekBarContrast;
 			mSeekBarSaturation = seekBarSaturation;
@@ -320,18 +322,41 @@ public class PickedImageDialogFragment extends DialogFragment {
 				final Bitmap rescaledBitmap = ImageUtil.createScaledBitmap(bitmap, mTileWidth, mTileHeight, mFilterButton.isChecked());
 
 				mImageView.setImageBitmap(rescaledBitmap);
+				mCurrentColors = new BitmapTileChainColors(rescaledBitmap);
 
-				mCurrentColors = new TileChainColors() {
-					@Override
-					public Color getColor(final int x, final int y, final int width, final int height) {
-						return ColorUtil.convertAndroidColorToColor(rescaledBitmap.getPixel(x, height - 1 - y), Color.WHITE_TEMPERATURE, true);
-					}
-				};
 				PickedImageDialogListener listener = mListener.getValue();
 				if (listener != null) {
 					listener.onImageUpdate(mCurrentColors);
 				}
 			}
+		}
+	}
+
+	/**
+	 * Tile chain colors from a bitmap.
+	 */
+	private static final class BitmapTileChainColors extends TileChainColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+		/**
+		 * The bitmap.
+		 */
+		private final transient Bitmap mBitmap;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param bitmap The bitmap.
+		 */
+		private BitmapTileChainColors(final Bitmap bitmap) {
+			mBitmap = bitmap;
+		}
+
+		@Override
+		public Color getColor(final int x, final int y, final int width, final int height) {
+			return ColorUtil.convertAndroidColorToColor(mBitmap.getPixel(x, height - 1 - y), Color.WHITE_TEMPERATURE, true);
 		}
 	}
 
@@ -368,10 +393,10 @@ public class PickedImageDialogFragment extends DialogFragment {
 		 * Constructor.
 		 *
 		 * @param fullBitmap The full bitmap.
-		 * @param minX       The min x coordinate of the partial bitmap in the full bitmap (0..1)
-		 * @param maxX       The max x coordinate of the partial bitmap in the full bitmap (0..1)
-		 * @param minY       The min y coordinate of the partial bitmap in the full bitmap (0..1)
-		 * @param maxY       The max y coordinate of the partial bitmap in the full bitmap (0..1)
+		 * @param minX The min x coordinate of the partial bitmap in the full bitmap (0..1)
+		 * @param maxX The max x coordinate of the partial bitmap in the full bitmap (0..1)
+		 * @param minY The min y coordinate of the partial bitmap in the full bitmap (0..1)
+		 * @param maxY The max y coordinate of the partial bitmap in the full bitmap (0..1)
 		 */
 		private PartialBitmap(final Bitmap fullBitmap, final float minX, final float maxX, final float minY, final float maxY) {
 			mFullBitmap = fullBitmap;
@@ -391,7 +416,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 		/**
 		 * Get a scaled bitmap from this partial bitmap.
 		 *
-		 * @param width  The target width.
+		 * @param width The target width.
 		 * @param height The target height.
 		 * @return The bitmap scaled to these dimensions.
 		 */

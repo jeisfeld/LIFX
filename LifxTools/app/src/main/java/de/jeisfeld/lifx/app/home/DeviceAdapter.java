@@ -30,9 +30,11 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment;
-import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.Direction;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.MultizoneAnimationDialogListener;
+import de.jeisfeld.lifx.app.animation.TileChainMove;
+import de.jeisfeld.lifx.app.animation.TileChainMove.Direction;
 import de.jeisfeld.lifx.app.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -570,13 +572,17 @@ public class DeviceAdapter extends BaseAdapter {
 		if (model instanceof MultizoneViewModel) {
 			animationButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
 				if (isChecked) {
+					if (model.getPower().getValue() == null || !model.getPower().getValue().isOn()) {
+						buttonView.setChecked(false);
+						return;
+					}
 					Fragment fragment = mFragment.get();
 					if (fragment != null && fragment.getActivity() != null) {
-						MultizoneAnimationDialogFragment.displayMultizoneAnimationDialog(fragment.getActivity(),
+						MultizoneAnimationDialogFragment.displayMultizoneAnimationDialog(fragment.getActivity(), (MultizoneViewModel) model,
 								new MultizoneAnimationDialogListener() {
 									@Override
-									public void onDialogPositiveClick(final DialogFragment dialog, final int duration, final Direction direction) {
-										model.startAnimation(duration, direction);
+									public void onDialogPositiveClick(final DialogFragment dialog, final AnimationData animationData) {
+										model.startAnimation(animationData);
 									}
 
 									@Override
@@ -594,7 +600,11 @@ public class DeviceAdapter extends BaseAdapter {
 		else if (model instanceof TileViewModel) {
 			animationButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
 				if (isChecked) {
-					model.startAnimation(0, Direction.FORWARD);
+					if (model.getPower().getValue() == null || !model.getPower().getValue().isOn()) {
+						buttonView.setChecked(false);
+						return;
+					}
+					model.startAnimation(new TileChainMove(30000, Direction.OUTWARD)); // MAGIC_NUMBER
 				}
 				else {
 					model.stopAnimation();

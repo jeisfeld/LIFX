@@ -1,11 +1,18 @@
 package de.jeisfeld.lifx.lan.type;
 
+import java.io.Serializable;
+
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * A light color.
  */
-public class Color {
+public class Color implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	// JAVADOC:OFF
 	public static final Color WHITE = new Color(Color.WHITE_HUE_D, 0, 1, Color.WHITE_TEMPERATURE);
 	public static final Color WARM_WHITE = new Color(Color.WHITE_HUE_D, 0, 1, 3000);

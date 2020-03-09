@@ -3,6 +3,7 @@ package de.jeisfeld.lifx.lan;
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 
 import de.jeisfeld.lifx.lan.message.LightGet;
@@ -27,7 +28,12 @@ import de.jeisfeld.lifx.os.Logger;
 /**
  * Class managing a LIFX light.
  */
-public class Light extends Device {
+public class Light extends Device implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The waiting times before retry after error (increasing delays for repeated errors).
 	 */
@@ -35,7 +41,7 @@ public class Light extends Device {
 	/**
 	 * The cycle thread.
 	 */
-	private BaseAnimationThread mAnimationThread = null;
+	private transient BaseAnimationThread mAnimationThread = null;
 
 	/**
 	 * Constructor.
@@ -334,7 +340,7 @@ public class Light extends Device {
 	 * @return The cycle.
 	 */
 	public CycleThread cycle(final Color... colors) {
-		return new CycleThread(colors);
+		return new CycleThread(this, colors);
 	}
 
 	/**
@@ -344,7 +350,7 @@ public class Light extends Device {
 	 * @return The cycle.
 	 */
 	public AnimationThread animation(final AnimationDefinition definition) {
-		return new AnimationThread(definition);
+		return new AnimationThread(this, definition);
 	}
 
 	/**
@@ -407,7 +413,7 @@ public class Light extends Device {
 	/**
 	 * A thread running a cycle of colors.
 	 */
-	public final class CycleThread extends AnimationThread {
+	public static final class CycleThread extends AnimationThread {
 		/**
 		 * The duration of a cycle step in millis.
 		 */
@@ -432,10 +438,11 @@ public class Light extends Device {
 		/**
 		 * Create a cycle thread.
 		 *
+		 * @param light the light.
 		 * @param colors The colors of the cycle.
 		 */
-		private CycleThread(final Color... colors) {
-			super(null);
+		private CycleThread(final Light light, final Color... colors) {
+			super(light, null);
 			setDefinition(new AnimationDefinition() {
 				@Override
 				public int getDuration(final int n) {
@@ -532,7 +539,7 @@ public class Light extends Device {
 	/**
 	 * A thread animating the colors.
 	 */
-	public class AnimationThread extends BaseAnimationThread { // SUPPRESS_CHECKSTYLE
+	public static class AnimationThread extends BaseAnimationThread {
 		/**
 		 * The animation definiation.
 		 */
@@ -557,9 +564,11 @@ public class Light extends Device {
 		/**
 		 * Create an animation thread.
 		 *
+		 * @param light the light.
 		 * @param definition The rules for the animation.
 		 */
-		protected AnimationThread(final AnimationDefinition definition) {
+		protected AnimationThread(final Light light, final AnimationDefinition definition) {
+			super(light);
 			setDefinition(definition);
 		}
 
@@ -623,12 +632,12 @@ public class Light extends Device {
 							try { // SUPPRESS_CHECKSTYLE
 								Color color = mDefinition.getColor(count);
 								Power power;
-								if (count == 0 && (power = getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
-									setColor(color.withRelativeBrightness(mRelativeBrightness));
-									setPower(true, duration, false);
+								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
+									getLight().setColor(color.withRelativeBrightness(mRelativeBrightness));
+									getLight().setPower(true, duration, false);
 								}
 								else {
-									setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
+									getLight().setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
 								}
 								success = true;
 							}
@@ -650,13 +659,13 @@ public class Light extends Device {
 
 				if (mEndColor == null) {
 					// stop the previous color transition by sending setWaveform command with no change.
-					setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
 				}
 				else if (mEndColor.getBrightness() == 0) {
-					setPower(false, mEndTransitionTime, true);
+					getLight().setPower(false, mEndTransitionTime, true);
 				}
 				else {
-					setColor(mEndColor, mEndTransitionTime, true);
+					getLight().setColor(mEndColor, mEndTransitionTime, true);
 				}
 				if (mAnimationCallback != null) {
 					mAnimationCallback.onAnimationEnd(isInterrupted);
@@ -692,14 +701,37 @@ public class Light extends Device {
 	/**
 	 * A base thread for animating the light.
 	 */
-	public class BaseAnimationThread extends Thread { // SUPPRESS_CHECKSTYLE
+	public static class BaseAnimationThread extends Thread {
+		/**
+		 * The light.
+		 */
+		private final Light mLight;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param light The light.
+		 */
+		public BaseAnimationThread(final Light light) {
+			mLight = light;
+		}
+
+		/**
+		 * Get the light.
+		 *
+		 * @return The light.
+		 */
+		protected Light getLight() {
+			return mLight;
+		}
+
 		@Override
 		public final void start() {
-			synchronized (Light.this) {
-				if (mAnimationThread != null) {
-					mAnimationThread.end(false);
+			synchronized (mLight) {
+				if (mLight.mAnimationThread != null) {
+					mLight.mAnimationThread.end(false);
 				}
-				mAnimationThread = this;
+				mLight.mAnimationThread = this;
 			}
 			super.start();
 		}

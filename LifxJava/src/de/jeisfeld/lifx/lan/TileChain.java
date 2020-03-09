@@ -3,6 +3,7 @@ package de.jeisfeld.lifx.lan;
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.List;
 
@@ -30,7 +31,12 @@ import de.jeisfeld.lifx.os.Logger;
 /**
  * Class managing a LIFX Tile Chain.
  */
-public class TileChain extends Light {
+public class TileChain extends Light implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The number of tiles.
 	 */
@@ -302,6 +308,11 @@ public class TileChain extends Light {
 		final TileChainColors oldColors = getColors();
 		if (oldColors != null) {
 			setColors(duration, new TileChainColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public Color getColor(final int x, final int y, final int width, final int height) {
 					Color newColor = colors.getColor(x, y, mTotalWidth, mTotalHeight);
@@ -334,13 +345,13 @@ public class TileChain extends Light {
 
 	@Override
 	public final TileChain.AnimationThread animation(final Light.AnimationDefinition definition) {
-		return new TileChain.AnimationThread((TileChain.AnimationDefinition) definition);
+		return new TileChain.AnimationThread(this, (TileChain.AnimationDefinition) definition);
 	}
 
 	/**
 	 * A thread animating the colors.
 	 */
-	public class AnimationThread extends Light.AnimationThread { // SUPPRESS_CHECKSTYLE
+	public static class AnimationThread extends Light.AnimationThread { // SUPPRESS_CHECKSTYLE
 		/**
 		 * The animation definition.
 		 */
@@ -357,11 +368,17 @@ public class TileChain extends Light {
 		/**
 		 * Create an animation thread.
 		 *
+		 * @param light the tile chain light.
 		 * @param definition The rules for the animation.
 		 */
-		private AnimationThread(final TileChain.AnimationDefinition definition) {
-			super(definition);
+		private AnimationThread(final TileChain light, final TileChain.AnimationDefinition definition) {
+			super(light, definition);
 			mDefinition = definition;
+		}
+
+		@Override
+		protected TileChain getLight() {
+			return (TileChain) super.getLight();
 		}
 
 		/**
@@ -392,12 +409,12 @@ public class TileChain extends Light {
 							try { // SUPPRESS_CHECKSTYLE
 								TileChainColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
 								Power power;
-								if (count == 0 && (power = getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
-									setColors(0, colors);
-									setPower(true, duration, false);
+								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
+									getLight().setColors(0, colors);
+									getLight().setPower(true, duration, false);
 								}
 								else {
-									setColors(duration, colors);
+									getLight().setColors(duration, colors);
 								}
 								success = true;
 							}
@@ -419,13 +436,13 @@ public class TileChain extends Light {
 
 				if (mEndColors == null) {
 					// stop the previous color transition by sending setWaveform command with no change.
-					setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
 				}
 				else if (mEndColors == TileChainColors.OFF) {
-					setPower(false, mEndTransitionTime, true);
+					getLight().setPower(false, mEndTransitionTime, true);
 				}
 				else {
-					setColors(mEndTransitionTime, mEndColors);
+					getLight().setColors(mEndTransitionTime, mEndColors);
 				}
 				if (getAnimationCallback() != null) {
 					getAnimationCallback().onAnimationEnd(isInterrupted);

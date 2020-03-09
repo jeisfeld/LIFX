@@ -179,8 +179,6 @@ public class StoredTileColors extends StoredColor {
 		 */
 		PERTILE_EXACT;
 
-		// TODO: add more types
-
 		/**
 		 * Get a storeType from its ordinal value.
 		 *

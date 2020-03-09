@@ -32,6 +32,11 @@ import de.jeisfeld.lifx.os.Logger;
  */
 public class MultiZoneLight extends Light {
 	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * The size of a bulk of colors.
 	 */
 	private static final int BULK_SIZE = 8;
@@ -273,7 +278,7 @@ public class MultiZoneLight extends Light {
 
 	@Override
 	public final AnimationThread animation(final Light.AnimationDefinition definition) {
-		return new AnimationThread((MultiZoneLight.AnimationDefinition) definition);
+		return new AnimationThread(this, (MultiZoneLight.AnimationDefinition) definition);
 	}
 
 	/**
@@ -306,7 +311,7 @@ public class MultiZoneLight extends Light {
 	/**
 	 * A thread animating the colors.
 	 */
-	public class AnimationThread extends Light.AnimationThread { // SUPPRESS_CHECKSTYLE
+	public static class AnimationThread extends Light.AnimationThread { // SUPPRESS_CHECKSTYLE
 		/**
 		 * The animation definition.
 		 */
@@ -323,11 +328,17 @@ public class MultiZoneLight extends Light {
 		/**
 		 * Create an animation thread.
 		 *
+		 * @param light the multizone light.
 		 * @param definition The rules for the animation.
 		 */
-		private AnimationThread(final AnimationDefinition definition) {
-			super(definition);
+		private AnimationThread(final MultiZoneLight light, final AnimationDefinition definition) {
+			super(light, definition);
 			mDefinition = definition;
+		}
+
+		@Override
+		protected MultiZoneLight getLight() {
+			return (MultiZoneLight) super.getLight();
 		}
 
 		/**
@@ -358,12 +369,12 @@ public class MultiZoneLight extends Light {
 							try { // SUPPRESS_CHECKSTYLE
 								MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
 								Power power;
-								if (count == 0 && (power = getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
-									setColors(0, false, colors);
-									setPower(true, duration, false);
+								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
+									getLight().setColors(0, false, colors);
+									getLight().setPower(true, duration, false);
 								}
 								else {
-									setColors(duration, false, colors);
+									getLight().setColors(duration, false, colors);
 								}
 								success = true;
 							}
@@ -385,13 +396,13 @@ public class MultiZoneLight extends Light {
 
 				if (mEndColors == null) {
 					// stop the previous color transition by sending setWaveform command with no change.
-					setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
 				}
 				else if (mEndColors == MultizoneColors.OFF) {
-					setPower(false, mEndTransitionTime, true);
+					getLight().setPower(false, mEndTransitionTime, true);
 				}
 				else {
-					setColors(mEndTransitionTime, true, mEndColors);
+					getLight().setColors(mEndTransitionTime, true, mEndColors);
 				}
 				if (getAnimationCallback() != null) {
 					getAnimationCallback().onAnimationEnd(isInterrupted);

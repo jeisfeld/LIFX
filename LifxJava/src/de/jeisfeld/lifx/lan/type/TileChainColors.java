@@ -2,6 +2,7 @@ package de.jeisfeld.lifx.lan.type;
 
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,11 +12,21 @@ import de.jeisfeld.lifx.lan.type.TileInfo.Rotation;
 /**
  * Class to hold tile chain colors.
  */
-public abstract class TileChainColors {
+public abstract class TileChainColors implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The colors used for switching the tile chain off.
 	 */
 	public static final TileChainColors OFF = new TileChainColors() {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public Color getColor(final int x, final int y, final int width, final int height) {
 			return Color.OFF;
@@ -43,6 +54,11 @@ public abstract class TileChainColors {
 	public TileChainColors shift(final int shiftX, final int shiftY) {
 		TileChainColors base = this;
 		return new TileChainColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				return base.getColor(x - shiftX, y - shiftY, width, height);
@@ -59,6 +75,11 @@ public abstract class TileChainColors {
 	public TileChainColors withRelativeBrightness(final double brightnessFactor) {
 		TileChainColors base = this;
 		return new TileChainColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				return base.getColor(x, y, width, height).withRelativeBrightness(brightnessFactor);
@@ -95,6 +116,11 @@ public abstract class TileChainColors {
 	public TileChainColors add(final TileChainColors other, final double quota) {
 		TileChainColors base = this;
 		return new TileChainColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				return base.getColor(x, y, width, height).add(other.getColor(x, y, width, height), quota);
@@ -119,6 +145,11 @@ public abstract class TileChainColors {
 		switch (rotation) {
 		case ROTATE_RIGHT:
 			return new TileColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public Color getColor(final int x, final int y) {
 					return TileChainColors.this.getColor(minX + y, minY + width - x, totalWidth, totalHeight);
@@ -127,6 +158,11 @@ public abstract class TileChainColors {
 			};
 		case ROTATE_LEFT:
 			return new TileColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public Color getColor(final int x, final int y) {
 					return TileChainColors.this.getColor(minX + height - y, minY + x, totalWidth, totalHeight);
@@ -135,6 +171,11 @@ public abstract class TileChainColors {
 			};
 		case UPSIDE_DOWN:
 			return new TileColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public Color getColor(final int x, final int y) {
 					return TileChainColors.this.getColor(minX + width - 1 - x, minY + height - 1 - y, totalWidth, totalHeight);
@@ -146,6 +187,11 @@ public abstract class TileChainColors {
 		case FACE_DOWN:
 		default:
 			return new TileColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				public Color getColor(final int x, final int y) {
 					return TileChainColors.this.getColor(minX + x, minY + y, totalWidth, totalHeight);
@@ -203,6 +249,11 @@ public abstract class TileChainColors {
 	 */
 	public static class Fixed extends TileChainColors {
 		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
 		 * The color.
 		 */
 		private final Color mColor;
@@ -245,6 +296,11 @@ public abstract class TileChainColors {
 	 * Tile chain colors defined by the exact colors of a list of tiles.
 	 */
 	public static class PerTile extends TileChainColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The tile chain.
 		 */
@@ -319,6 +375,11 @@ public abstract class TileChainColors {
 	 * Tile colors defined by colors in the corners that are linearly interpolated.
 	 */
 	public static class InterpolatedCorners extends TileChainColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The color on top left.
 		 */

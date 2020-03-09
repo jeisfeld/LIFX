@@ -19,21 +19,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.Direction;
-import de.jeisfeld.lifx.app.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
-import de.jeisfeld.lifx.lan.MultiZoneLight;
-import de.jeisfeld.lifx.lan.TileChain;
-import de.jeisfeld.lifx.lan.TileChain.AnimationDefinition;
-import de.jeisfeld.lifx.lan.type.Color;
-import de.jeisfeld.lifx.lan.type.MultizoneColors;
-import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
-import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo.Move;
-import de.jeisfeld.lifx.lan.type.TileChainColors;
+import de.jeisfeld.lifx.lan.Light.BaseAnimationThread;
 
 /**
  * A service handling LIFX animations in the background.
@@ -44,10 +35,6 @@ public class LifxAnimationService extends Service {
 	 */
 	public static final String CHANNEL_ID = "LifxAnimationChannel";
 	/**
-	 * Key for the notification text within the intent.
-	 */
-	public static final String EXTRA_NOTIFICATION_TEXT = "de.jeisfeld.lifx.NOTIFICATION_TEXT";
-	/**
 	 * Key for the device MAC within the intent.
 	 */
 	public static final String EXTRA_DEVICE_MAC = "de.jeisfeld.lifx.DEVICE_MAC";
@@ -55,14 +42,6 @@ public class LifxAnimationService extends Service {
 	 * Key for the device Label within the intent.
 	 */
 	public static final String EXTRA_DEVICE_LABEL = "de.jeisfeld.lifx.DEVICE_LABEL";
-	/**
-	 * Key for the device Label within the intent.
-	 */
-	public static final String EXTRA_ANIMATION_DURATION = "de.jeisfeld.lifx.ANIMATION_DURATION";
-	/**
-	 * Key for the device Label within the intent.
-	 */
-	public static final String EXTRA_ANIMATION_DIRECTION = "de.jeisfeld.lifx.ANIMATION_DIRECTION";
 	/**
 	 * The intent of the broadcast for stopping an animation.
 	 */
@@ -95,8 +74,9 @@ public class LifxAnimationService extends Service {
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
 		final String label = intent.getStringExtra(EXTRA_DEVICE_LABEL);
-		final int duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
-		final Direction direction = (Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
+		final AnimationData animationData = AnimationData.fromIntent(intent);
+
+		assert animationData != null;
 		assert mac != null;
 		assert label != null;
 		ANIMATED_LIGHT_LABELS.put(mac, label);
@@ -106,8 +86,11 @@ public class LifxAnimationService extends Service {
 		new Thread() {
 			@Override
 			public void run() {
-				Light tmpLight;
-				tmpLight = ANIMATED_LIGHTS.get(mac);
+				if (!animationData.isValid()) {
+					updateOnEndAnimation(mac, null);
+					return;
+				}
+				Light tmpLight = ANIMATED_LIGHTS.get(mac);
 				if (tmpLight == null) {
 					tmpLight = LifxLan.getInstance().getLightByMac(mac);
 					if (tmpLight == null || tmpLight.getTargetAddress() == null || !mac.equals(tmpLight.getTargetAddress())) {
@@ -121,87 +104,38 @@ public class LifxAnimationService extends Service {
 				else {
 					tmpLight.endAnimation(false);
 				}
+				final Light light = tmpLight;
+				final WakeLock wakeLock = acquireWakelock(light);
 
-				final WakeLock wakeLock = acquireWakelock(tmpLight);
-				if (tmpLight instanceof MultiZoneLight) {
-					final MultiZoneLight light = (MultiZoneLight) tmpLight;
-
-					MultizoneColors colors = MultizoneViewModel.fromColors(light.getColors());
-					if (colors == null) {
-						colors = new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE)
-								.withRelativeBrightness(0.3); // MAGIC_NUMBER
-					}
-					if (light.hasExtendedApi()) {
-						final MultizoneColors finalColors = colors;
-						light.new BaseAnimationThread() {
-							@Override
-							public void run() {
+				if (animationData.hasNativeImplementation(light)) {
+					new BaseAnimationThread(light) {
+						@Override
+						public void run() {
+							try {
+								animationData.getNativeAnimationDefinition(light).startAnimation();
+							}
+							catch (IOException e) {
+								updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+							}
+							while (true) {
 								try {
-									light.setColors(0, true, finalColors);
-									light.setEffect(new Move(Math.abs(duration), direction == Direction.BACKWARD)); // MAGIC_NUMBER
+									Thread.sleep(60000); // MAGIC_NUMBER
 								}
-								catch (IOException e) {
+								catch (InterruptedException e) {
+									try {
+										animationData.getNativeAnimationDefinition(light).stopAnimation();
+									}
+									catch (IOException ex) {
+										// ignore
+									}
 									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 								}
-								while (true) {
-									try {
-										Thread.sleep(60000); // MAGIC_NUMBER
-									}
-									catch (InterruptedException e) {
-										try {
-											light.setEffect(MultizoneEffectInfo.OFF);
-										}
-										catch (IOException ex) {
-											// ignore
-										}
-										updateOnEndAnimation(light.getTargetAddress(), wakeLock);
-									}
-								}
 							}
-						}.start();
-					}
-					else {
-						light.rollingAnimation(Math.abs(duration) * (direction == Direction.BACKWARD ? -1 : 1), colors) // MAGIC_NUMBER
-								.setAnimationCallback(new AnimationCallback() {
-									@Override
-									public void onException(final IOException e) {
-										updateOnEndAnimation(light.getTargetAddress(), wakeLock);
-									}
-
-									@Override
-									public void onAnimationEnd(final boolean isInterrupted) {
-										updateOnEndAnimation(light.getTargetAddress(), wakeLock);
-									}
-								})
-								.start();
-					}
+						}
+					}.start();
 				}
-				else if (tmpLight instanceof TileChain) {
-					final TileChain light = (TileChain) tmpLight;
-
-					final double xCenter = (light.getTotalWidth() - 1) / 2.0;
-					final double yCenter = (light.getTotalHeight() - 1) / 2.0;
-					TileChainColors colors = light.getColors();
-					final short brightness = colors == null ? -1 : (short) colors.getMaxBrightness(light);
-
-					light
-							.animation(new AnimationDefinition() {
-								@Override
-								public TileChainColors getColors(final int n) {
-									return new TileChainColors() {
-										@Override
-										public Color getColor(final int x, final int y, final int width, final int height) {
-											double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
-											return new Color((int) (1024 * (5 * distance - n)), -1, brightness, 4000); // MAGIC_NUMBER
-										}
-									};
-								}
-
-								@Override
-								public int getDuration(final int n) {
-									return 200; // MAGIC_NUMBER
-								}
-							})
+				else {
+					light.animation(animationData.getAnimationDefinition(light))
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
@@ -214,20 +148,6 @@ public class LifxAnimationService extends Service {
 								}
 							})
 							.start();
-				}
-				else {
-					final Light light = tmpLight;
-					light.wakeup(10000, new AnimationCallback() { // MAGIC_NUMBER
-						@Override
-						public void onException(final IOException e) {
-							updateOnEndAnimation(light.getTargetAddress(), wakeLock);
-						}
-
-						@Override
-						public void onAnimationEnd(final boolean isInterrupted) {
-							updateOnEndAnimation(light.getTargetAddress(), wakeLock);
-						}
-					});
 				}
 			}
 		}.start();

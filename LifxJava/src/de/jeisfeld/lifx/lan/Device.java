@@ -3,6 +3,7 @@ package de.jeisfeld.lifx.lan;
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.time.Duration;
@@ -46,7 +47,12 @@ import de.jeisfeld.lifx.os.Logger;
 /**
  * Class managing a LIFX device.
  */
-public class Device {
+public class Device implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Source ID. 32 bits. Unique ID sent by client. If zero, broadcast reply requested. If non-zero, unicast reply requested.
 	 */

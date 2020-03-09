@@ -2,6 +2,7 @@ package de.jeisfeld.lifx.lan.type;
 
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -11,11 +12,21 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
 /**
  * Class to hold multizone colors.
  */
-public abstract class MultizoneColors {
+public abstract class MultizoneColors implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The colors used for switching the multizone device off.
 	 */
 	public static final MultizoneColors OFF = new MultizoneColors() {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public Color getColor(final int zoneIndex, final int zoneCount) {
 			return Color.OFF;
@@ -54,6 +65,11 @@ public abstract class MultizoneColors {
 	public MultizoneColors shift(final int shiftCount) {
 		MultizoneColors base = this;
 		return new MultizoneColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor(zoneIndex - shiftCount, zoneCount);
@@ -70,6 +86,11 @@ public abstract class MultizoneColors {
 	public MultizoneColors withRelativeBrightness(final double brightnessFactor) {
 		MultizoneColors base = this;
 		return new MultizoneColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor(zoneIndex, zoneCount).withRelativeBrightness(brightnessFactor);
@@ -101,6 +122,11 @@ public abstract class MultizoneColors {
 	public MultizoneColors add(final MultizoneColors other, final double quota) {
 		MultizoneColors base = this;
 		return new MultizoneColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
 			@Override
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor(zoneIndex, zoneCount).add(other.getColor(zoneIndex, zoneCount), quota);
@@ -126,6 +152,11 @@ public abstract class MultizoneColors {
 	 * Multizone colors defined by a fixed color.
 	 */
 	public static class Fixed extends MultizoneColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The color.
 		 */
@@ -169,6 +200,11 @@ public abstract class MultizoneColors {
 	 * Multizone colors defined by a list of colors.
 	 */
 	public static class Exact extends MultizoneColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The color list.
 		 */
@@ -216,6 +252,11 @@ public abstract class MultizoneColors {
 	 * Multizone colors defined by a base list of colors that are linearly interpolated.
 	 */
 	public static class Interpolated extends MultizoneColors {
+		/**
+		 * The default serializable version id.
+		 */
+		private static final long serialVersionUID = 1L;
+
 		/**
 		 * The colors used for interpolation.
 		 */
@@ -282,7 +323,7 @@ public abstract class MultizoneColors {
 		/**
 		 * Redetect interpolated multizone colors from the device colors.
 		 *
-		 * @param count  The number of colors to be interpolated. At least 1.
+		 * @param count The number of colors to be interpolated. At least 1.
 		 * @param cyclic flag incidating if it should be cyclic.
 		 * @param colors The colors from the device.
 		 * @return The redetected interpolated colors.

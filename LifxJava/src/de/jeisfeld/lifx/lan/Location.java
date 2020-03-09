@@ -1,6 +1,7 @@
 package de.jeisfeld.lifx.lan;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -10,7 +11,12 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
 /**
  * A location of devices.
  */
-public class Location {
+public class Location implements Serializable {
+	/**
+	 * The default serializable version id.
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * The location GUID.
 	 */
