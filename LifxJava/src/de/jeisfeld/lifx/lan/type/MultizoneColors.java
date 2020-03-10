@@ -135,6 +135,28 @@ public abstract class MultizoneColors implements Serializable {
 	}
 
 	/**
+	 * Join two colors at a certain split point.
+	 *
+	 * @param other The other colors.
+	 * @param splitPoint the split point between the colors (between 0 and 1)
+	 * @return The combined colors.
+	 */
+	public MultizoneColors combine(final MultizoneColors other, final double splitPoint) {
+		MultizoneColors base = this;
+		return new MultizoneColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Color getColor(final int zoneIndex, final int zoneCount) {
+				return zoneIndex < (zoneCount - 1) * splitPoint ? base.getColor(zoneIndex, zoneCount) : other.getColor(zoneIndex, zoneCount);
+			}
+		};
+	}
+
+	/**
 	 * Return the max brightness.
 	 *
 	 * @param zoneCount The number of zones.

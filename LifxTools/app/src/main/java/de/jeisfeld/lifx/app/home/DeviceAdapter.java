@@ -631,19 +631,13 @@ public class DeviceAdapter extends BaseAdapter {
 			final MultizoneColors multizoneColors;
 			final TileChainColors tileChainColors;
 			if (model instanceof MultizoneViewModel) {
-				Double relativeBrightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
-				MultizoneColors multizoneColors0 = ((MultizoneViewModel) model).getColors().getValue();
-				multizoneColors = multizoneColors0 == null ? null
-						: multizoneColors0.withRelativeBrightness(relativeBrightness == null ? 1 : relativeBrightness);
+				multizoneColors = ((MultizoneViewModel) model).getColorsWithBrightness();
 			}
 			else {
 				multizoneColors = null;
 			}
 			if (model instanceof TileViewModel) {
-				Double relativeBrightness = ((TileViewModel) model).getRelativeBrightness().getValue();
-				TileChainColors tileChainColors0 = ((TileViewModel) model).getColors().getValue();
-				tileChainColors = tileChainColors0 == null ? null
-						: tileChainColors0.withRelativeBrightness(relativeBrightness == null ? 1 : relativeBrightness);
+				tileChainColors = ((TileViewModel) model).getColorsWithBrightness();
 			}
 			else {
 				tileChainColors = null;

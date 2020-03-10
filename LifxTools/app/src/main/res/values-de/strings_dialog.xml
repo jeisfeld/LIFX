@@ -16,6 +16,8 @@
     <string-array name="values_animation_direction">
         <item>vorwärts</item>
         <item>rückwärts</item>
+        <item>auswärts</item>
+        <item>einwärts</item>
     </string-array>
 
     <string name="message_confirm_delete_light">Wollen Sie die Lampe %1$s aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>

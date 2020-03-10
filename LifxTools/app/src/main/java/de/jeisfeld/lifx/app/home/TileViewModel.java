@@ -68,6 +68,22 @@ public class TileViewModel extends LightViewModel {
 		return mRelativeBrightness;
 	}
 
+	/**
+	 * Get the effective colors with brightness.
+	 *
+	 * @return The colors
+	 */
+	public TileChainColors getColorsWithBrightness() {
+		TileChainColors colors = mColors.getValue();
+		Double relativeBrightness = mRelativeBrightness.getValue();
+		if (colors != null && relativeBrightness != null) {
+			return colors.withRelativeBrightness(relativeBrightness);
+		}
+		else {
+			return colors;
+		}
+	}
+
 	@Override
 	public final void updateColor(final Color color) {
 		updateStoredColors(new TileChainColors.Fixed(color), 1);

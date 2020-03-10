@@ -27,6 +27,7 @@ import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
  * Dialog for handling a picked image for a tile chain.
@@ -335,6 +336,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 	/**
 	 * Tile chain colors from a bitmap.
 	 */
+	@SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
 	private static final class BitmapTileChainColors extends TileChainColors {
 		/**
 		 * The default serializable version id.

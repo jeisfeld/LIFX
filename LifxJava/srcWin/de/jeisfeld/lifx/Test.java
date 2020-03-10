@@ -24,12 +24,14 @@ public final class Test {
 	private static final String MAC_SWLAMPE = "D0:73:D5:56:40:78";
 	private static final String MAC_Z1 = "D0:73:D5:14:88:FC";
 	private static final String MAC_Z2 = "D0:73:D5:41:46:4B";
+	@SuppressWarnings("unused")
 	private static final String MAC_FARBLAMPE_PLUS = "D0:73:D5:2F:51:94";
 	private static final String MAC_TILE_4 = "D0:73:D5:55:1B:DF";
 
 	private static final Light FARBLAMPE = LifxLan.getInstance().getLightByMac(MAC_FARBLAMPE);
 	// private static final Light FARBLAMPE_PLUS = LifxLan.getInstance().getLightByMac(MAC_FARBLAMPE_PLUS);
 	private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(MAC_SWLAMPE);
+	@SuppressWarnings("unused")
 	private static final MultiZoneLight Z1 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z1);
 	private static final MultiZoneLight Z2 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z2);
 	private static final TileChain TILE_4 = (TileChain) LifxLan.getInstance().getLightByMac(MAC_TILE_4);
@@ -41,7 +43,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test0();
+		new Test().test4();
 	}
 
 	void test0() throws Exception {
@@ -95,8 +97,8 @@ public final class Test {
 
 	void test4() throws Exception { // SUPPRESS_CHECKSTYLE
 		System.out.println(Z2.getFullInformation());
-		Z2.setColors(FIVESECONDS, true, new MultizoneColors.Interpolated(false,
-				Color.RED, Color.GREEN, Color.BLUE).withRelativeBrightness(0.2)); // MAGIC_NUMBER
+		Z2.setColors(FIVESECONDS, true, new MultizoneColors.Fixed(Color.RED).combine(new MultizoneColors.Fixed(Color.GREEN), 0.5) // MAGIC_NUMBER
+				.combine(new MultizoneColors.Fixed(Color.BLUE), 0.75)); // MAGIC_NUMBER
 		Logger.setLogDetails(true);
 		Z2.setPower(true);
 		Logger.setLogDetails(false);
@@ -141,7 +143,8 @@ public final class Test {
 	}
 
 	void test8() throws Exception { // SUPPRESS_CHECKSTYLE
-		TILE_4.setColors(0, new TileChainColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.GREEN, Color.RED).withRelativeBrightness(0.01));
+		TILE_4.setColors(0, new TileChainColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.GREEN, Color.RED)
+				.withRelativeBrightness(0.01)); // MAGIC_NUMBER
 
 		// TILE_4.setEffect(new TileEffectInfo.Morph(10000, Color.RED, Color.WHITE));
 	}

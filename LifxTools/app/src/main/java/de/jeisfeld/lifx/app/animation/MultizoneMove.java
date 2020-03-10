@@ -79,18 +79,37 @@ public class MultizoneMove extends AnimationData {
 	@Override
 	protected final AnimationDefinition getAnimationDefinition(final Light light) {
 		final MultiZoneLight mMultiZoneLight = (MultiZoneLight) light;
-		final int mSignum = getDirection() == Direction.BACKWARD ? -1 : 1;
-		return new MultiZoneLight.AnimationDefinition() {
-			@Override
-			public int getDuration(final int n) {
-				return Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
-			}
+		switch (getDirection()) {
+		case INWARD:
+		case OUTWARD:
+			final int sgn1 = getDirection() == Direction.OUTWARD ? -1 : 1;
+			return new MultiZoneLight.AnimationDefinition() {
+				@Override
+				public int getDuration(final int n) {
+					return 2 * Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
+				}
 
-			@Override
-			public MultizoneColors getColors(final int n) {
-				return mColors.shift(mSignum * n);
-			}
-		};
+				@Override
+				public MultizoneColors getColors(final int n) {
+					return mColors.shift(sgn1 * n).combine(mColors.shift(-sgn1 * n), 0.5); // MAGIC_NUMBER
+				}
+			};
+		case FORWARD:
+		case BACKWARD:
+		default:
+			final int sgn2 = getDirection() == Direction.BACKWARD ? -1 : 1;
+			return new MultiZoneLight.AnimationDefinition() {
+				@Override
+				public int getDuration(final int n) {
+					return Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
+				}
+
+				@Override
+				public MultizoneColors getColors(final int n) {
+					return mColors.shift(sgn2 * n);
+				}
+			};
+		}
 	}
 
 	@Override
@@ -131,7 +150,15 @@ public class MultizoneMove extends AnimationData {
 		/**
 		 * Backward movement.
 		 */
-		BACKWARD;
+		BACKWARD,
+		/**
+		 * Outward movement.
+		 */
+		OUTWARD,
+		/**
+		 * Inward movement.
+		 */
+		INWARD;
 
 		/**
 		 * Get Direction from its ordinal value.

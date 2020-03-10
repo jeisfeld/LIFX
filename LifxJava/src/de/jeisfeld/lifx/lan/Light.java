@@ -39,7 +39,7 @@ public class Light extends Device implements Serializable {
 	 */
 	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[] {1000, 2000, 5000, 10000, 10000, 10000};
 	/**
-	 * The cycle thread.
+	 * The animation thread.
 	 */
 	private transient BaseAnimationThread mAnimationThread = null;
 

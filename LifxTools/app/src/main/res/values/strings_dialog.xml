@@ -16,6 +16,8 @@
     <string-array name="values_animation_direction">
         <item>forward</item>
         <item>backward</item>
+        <item>outward</item>
+        <item>inward</item>
     </string-array>
 
     <string name="message_confirm_delete_light">Do you want to delete the device %1$s from the app? (Will be re-created if detected in the LAN.)</string>
