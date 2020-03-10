@@ -13,12 +13,13 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.home.MultizoneViewModel;
+import de.jeisfeld.lifx.app.home.TileViewModel;
+import de.jeisfeld.lifx.lan.TileChain;
 
 /**
  * Dialog for setting up a multizone animation.
  */
-public class MultizoneAnimationDialogFragment extends DialogFragment {
+public class TileChainAnimationDialogFragment extends DialogFragment {
 	/**
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
@@ -28,13 +29,13 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
-	 * @param model the multizone view model.
+	 * @param model the tile view model.
 	 * @param listener The listener waiting for the response
 	 */
-	public static void displayMultizoneAnimationDialog(final FragmentActivity activity, final MultizoneViewModel model,
-			final MultizoneAnimationDialogListener listener) {
+	public static void displayTileChainAnimationDialog(final FragmentActivity activity, final TileViewModel model,
+			final TileChainAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
-		MultizoneAnimationDialogFragment fragment = new MultizoneAnimationDialogFragment();
+		TileChainAnimationDialogFragment fragment = new TileChainAnimationDialogFragment();
 		fragment.setListener(listener);
 		fragment.setModel(model);
 		fragment.setArguments(bundle);
@@ -44,18 +45,18 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	/**
 	 * The listener called when the dialog is ended.
 	 */
-	private MutableLiveData<MultizoneAnimationDialogListener> mListener = new MutableLiveData<>();
+	private MutableLiveData<TileChainAnimationDialogListener> mListener = new MutableLiveData<>();
 	/**
 	 * The model.
 	 */
-	private MutableLiveData<MultizoneViewModel> mModel = new MutableLiveData<>();
+	private MutableLiveData<TileViewModel> mModel = new MutableLiveData<>();
 
 	/**
 	 * Set the listener.
 	 *
 	 * @param listener The listener.
 	 */
-	public final void setListener(final MultizoneAnimationDialogListener listener) {
+	public final void setListener(final TileChainAnimationDialogListener listener) {
 		mListener = new MutableLiveData<>(listener);
 	}
 
@@ -64,7 +65,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	 *
 	 * @param model the model.
 	 */
-	public final void setModel(final MultizoneViewModel model) {
+	public final void setModel(final TileViewModel model) {
 		mModel = new MutableLiveData<>(model);
 	}
 
@@ -81,8 +82,9 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 			dismiss();
 		}
 
-		final View view = View.inflate(requireActivity(), R.layout.dialog_multizone_animation, null);
+		final View view = View.inflate(requireActivity(), R.layout.dialog_tilechain_animation, null);
 		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
+		final EditText editTextRadius = view.findViewById(R.id.editTextRadius);
 		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -91,12 +93,17 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 					// Send the positive button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {
-						mListener.getValue().onDialogNegativeClick(MultizoneAnimationDialogFragment.this);
+						mListener.getValue().onDialogNegativeClick(TileChainAnimationDialogFragment.this);
 					}
 				})
 				.setPositiveButton(R.string.button_start, (dialog, id) -> {
 					// Send the negative button event back to the host activity
-					if (mListener != null && mListener.getValue() != null && mModel != null && mModel.getValue() != null) {
+					if (mListener != null && mListener.getValue() != null && mModel != null // BOOLEAN_EXPRESSION_COMPLEXITY
+							&& mModel.getValue() != null && mModel.getValue().getLight() != null) {
+						TileChain light = mModel.getValue().getLight();
+						double lightRadius =
+								Math.sqrt(light.getTotalHeight() * light.getTotalHeight() + light.getTotalWidth() * light.getTotalWidth()) / 2;
+
 						int duration;
 						try {
 							duration = (int) (Double.parseDouble(editTextDuration.getText().toString()) * 1000); // MAGIC_NUMBER
@@ -104,11 +111,20 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 						catch (Exception e) {
 							duration = 10000; // MAGIC_NUMBER
 						}
-						MultizoneMove.Direction direction =
-								MultizoneMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
-						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
-								new MultizoneMove(duration, direction, mModel.getValue().getColors().getValue()));
+						double radius;
+						try {
+							radius = Double.parseDouble(editTextRadius.getText().toString()) * lightRadius;
+						}
+						catch (Exception e) {
+							radius = lightRadius;
+						}
+
+						TileChainMove.Direction direction =
+								TileChainMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+
+						mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+								new TileChainMove(duration, radius, direction));
 					}
 				});
 		return builder.create();
@@ -117,7 +133,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	@Override
 	public final void onCancel(@Nonnull final DialogInterface dialogInterface) {
 		if (mListener != null && mListener.getValue() != null) {
-			mListener.getValue().onDialogNegativeClick(MultizoneAnimationDialogFragment.this);
+			mListener.getValue().onDialogNegativeClick(TileChainAnimationDialogFragment.this);
 		}
 		super.onCancel(dialogInterface);
 	}
@@ -135,7 +151,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	/**
 	 * A callback handler for the dialog.
 	 */
-	public interface MultizoneAnimationDialogListener {
+	public interface TileChainAnimationDialogListener {
 		/**
 		 * Callback method for positive click from the confirmation dialog.
 		 *

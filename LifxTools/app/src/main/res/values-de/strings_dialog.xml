@@ -12,10 +12,15 @@
 
     <string name="label_animation_duration">Dauer</string>
     <string name="hint_animation_duration">(Sekunden)</string>
+    <string name="label_animation_radius">Radius</string>
     <string name="label_animation_direction">Richtung</string>
-    <string-array name="values_animation_direction">
+    <string-array name="values_multizone_animation_direction">
         <item>vorwärts</item>
         <item>rückwärts</item>
+        <item>auswärts</item>
+        <item>einwärts</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_direction">
         <item>auswärts</item>
         <item>einwärts</item>
     </string-array>

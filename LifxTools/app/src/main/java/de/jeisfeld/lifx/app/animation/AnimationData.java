@@ -1,9 +1,10 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Intent;
+
 import java.io.IOException;
 import java.io.Serializable;
 
-import android.content.Intent;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -28,6 +29,10 @@ public abstract class AnimationData implements Serializable {
 	 * Key for the device Label within the intent.
 	 */
 	protected static final String EXTRA_ANIMATION_DURATION = "de.jeisfeld.lifx.ANIMATION_DURATION";
+	/**
+	 * Key for the device Label within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_RADIUS = "de.jeisfeld.lifx.ANIMATION_RADIUS";
 	/**
 	 * Key for the device Label within the intent.
 	 */
@@ -141,8 +146,9 @@ public abstract class AnimationData implements Serializable {
 			return new MultizoneMove(duration, multizoneDirection, colors);
 		case TILECHAIN_MOVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
 			final TileChainMove.Direction tilechainDirection = (TileChainMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
-			return new TileChainMove(duration, tilechainDirection);
+			return new TileChainMove(duration, radius, tilechainDirection);
 		default:
 			return null;
 		}

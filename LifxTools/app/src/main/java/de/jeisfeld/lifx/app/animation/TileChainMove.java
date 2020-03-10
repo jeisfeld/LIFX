@@ -16,11 +16,19 @@ public class TileChainMove extends AnimationData {
 	 * The default serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
+	/**
+	 * The min difference between two calls. Set to 250 ms, meaning that there are at most 20 calls per second in case of 5 tiles.
+	 */
+	private static final int MIN_DURATION = 250;
 
 	/**
 	 * The duration of the move.
 	 */
 	private final int mDuration;
+	/**
+	 * The radius of the move.
+	 */
+	private final double mRadius;
 	/**
 	 * The direction of the move.
 	 */
@@ -30,10 +38,12 @@ public class TileChainMove extends AnimationData {
 	 * Constructor.
 	 *
 	 * @param duration the duration of the move.
+	 * @param radius the radius of the move.
 	 * @param direction the direction of the move.
 	 */
-	public TileChainMove(final int duration, final Direction direction) {
+	public TileChainMove(final int duration, final double radius, final Direction direction) {
 		mDuration = duration;
+		mRadius = radius;
 		mDirection = direction;
 	}
 
@@ -59,6 +69,7 @@ public class TileChainMove extends AnimationData {
 	public final void addToIntent(final Intent serviceIntent) {
 		super.addToIntent(serviceIntent);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mDuration);
+		serviceIntent.putExtra(EXTRA_ANIMATION_RADIUS, mRadius);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DIRECTION, mDirection);
 	}
 
@@ -75,14 +86,17 @@ public class TileChainMove extends AnimationData {
 		final double yCenter = (tileChainLight.getTotalHeight() - 1) / 2.0;
 
 		return new TileChain.AnimationDefinition() {
+			private final int mStepDuration = Math.max(MIN_DURATION, (int) (mDuration / (2 * mRadius)));
+			private final double mRadiusFactor = mStepDuration * mRadius / mDuration * (mDirection == Direction.INWARD ? 1 : -1);
+
 			@Override
 			public TileChainColors getColors(final int n) {
-				return new TileChainMoveColors(xCenter, yCenter, getSelectedBrightness(light), n);
+				return new TileChainMoveColors(xCenter, yCenter, mRadius, mRadiusFactor * n, getSelectedBrightness(light));
 			}
 
 			@Override
 			public int getDuration(final int n) {
-				return 200; // MAGIC_NUMBER
+				return n == 0 ? 0 : mStepDuration;
 			}
 		};
 	}
@@ -104,22 +118,29 @@ public class TileChainMove extends AnimationData {
 		 */
 		private final short mBrightness;
 		/**
+		 * The radius.
+		 */
+		private final double mRadius;
+		/**
 		 * The offset.
 		 */
-		private final int mOffset;
+		private final double mOffset;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param xCenter The x center.
 		 * @param yCenter The y center.
+		 * @param radius The radius.
+		 * @param offset The offset.
 		 * @param brightness The brightness.
-		 * @param offset the offset.
 		 */
-		private TileChainMoveColors(final double xCenter, final double yCenter, final double brightness, final int offset) {
+		private TileChainMoveColors(final double xCenter, final double yCenter, final double radius,
+				final double offset, final double brightness) {
 			mXCenter = xCenter;
 			mYCenter = yCenter;
 			mBrightness = TypeUtil.toShort(brightness);
+			mRadius = radius;
 			mOffset = offset;
 		}
 
@@ -131,7 +152,7 @@ public class TileChainMove extends AnimationData {
 		@Override
 		public Color getColor(final int x, final int y, final int width, final int height) {
 			double distance = Math.sqrt((x - mXCenter) * (x - mXCenter) + (y - mYCenter) * (y - mYCenter));
-			return new Color((int) (1024 * (5 * distance - mOffset)), -1, mBrightness, 4000); // MAGIC_NUMBER
+			return new Color((int) (65536 * (distance + mOffset) / mRadius), -1, mBrightness, 4000); // MAGIC_NUMBER
 		}
 	}
 
