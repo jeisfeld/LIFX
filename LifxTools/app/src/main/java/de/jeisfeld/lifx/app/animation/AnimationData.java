@@ -1,15 +1,16 @@
 package de.jeisfeld.lifx.app.animation;
 
-import android.content.Intent;
-
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 
+import android.content.Intent;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 
 /**
@@ -38,9 +39,13 @@ public abstract class AnimationData implements Serializable {
 	 */
 	protected static final String EXTRA_ANIMATION_DIRECTION = "de.jeisfeld.lifx.ANIMATION_DIRECTION";
 	/**
-	 * Key for the device Label within the intent.
+	 * Key for the multizone colors within the intent.
 	 */
 	protected static final String EXTRA_MULTIZONE_COLORS = "de.jeisfeld.lifx.MULTIZONE_COLORS";
+	/**
+	 * Key for a list of colors within the intent.
+	 */
+	protected static final String EXTRA_COLOR_LIST = "de.jeisfeld.lifx.MULTIZONE_COLOR_LIST";
 
 	/**
 	 * Get the animation type.
@@ -148,7 +153,9 @@ public abstract class AnimationData implements Serializable {
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
 			final TileChainMove.Direction tilechainDirection = (TileChainMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
-			return new TileChainMove(duration, radius, tilechainDirection);
+			@SuppressWarnings("unchecked")
+			final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			return new TileChainMove(duration, radius, tilechainDirection, tileColors);
 		default:
 			return null;
 		}

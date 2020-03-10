@@ -86,7 +86,7 @@ public class MultizoneMove extends AnimationData {
 			return new MultiZoneLight.AnimationDefinition() {
 				@Override
 				public int getDuration(final int n) {
-					return 2 * Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
+					return Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
 				}
 
 				@Override

@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.app.animation;
 
+import java.util.ArrayList;
+
 import javax.annotation.Nonnull;
 
 import android.app.AlertDialog;
@@ -15,6 +17,7 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.TileViewModel;
 import de.jeisfeld.lifx.lan.TileChain;
+import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * Dialog for setting up a multizone animation.
@@ -120,11 +123,16 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							radius = lightRadius;
 						}
 
-						TileChainMove.Direction direction =
+						final TileChainMove.Direction direction =
 								TileChainMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
+						ArrayList<Color> colors = new ArrayList<>();
+						colors.add(Color.RED);
+						colors.add(Color.GREEN);
+						colors.add(Color.BLUE);
+
 						mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-								new TileChainMove(duration, radius, direction));
+								new TileChainMove(duration, radius, direction, colors));
 					}
 				});
 		return builder.create();

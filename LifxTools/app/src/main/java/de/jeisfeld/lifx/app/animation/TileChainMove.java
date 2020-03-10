@@ -1,12 +1,13 @@
 package de.jeisfeld.lifx.app.animation;
 
+import java.util.ArrayList;
+
 import android.content.Intent;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
-import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Animation data for moving colors on a multizone device.
@@ -33,6 +34,10 @@ public class TileChainMove extends AnimationData {
 	 * The direction of the move.
 	 */
 	private final Direction mDirection;
+	/**
+	 * The colors to be used (interpolated cyclically).
+	 */
+	private final ArrayList<Color> mColors;
 
 	/**
 	 * Constructor.
@@ -40,11 +45,13 @@ public class TileChainMove extends AnimationData {
 	 * @param duration the duration of the move.
 	 * @param radius the radius of the move.
 	 * @param direction the direction of the move.
+	 * @param colors The colors to be used (interpolated cyclically).
 	 */
-	public TileChainMove(final int duration, final double radius, final Direction direction) {
+	public TileChainMove(final int duration, final double radius, final Direction direction, final ArrayList<Color> colors) {
 		mDuration = duration;
 		mRadius = radius;
 		mDirection = direction;
+		mColors = colors;
 	}
 
 	/**
@@ -71,6 +78,7 @@ public class TileChainMove extends AnimationData {
 		serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mDuration);
 		serviceIntent.putExtra(EXTRA_ANIMATION_RADIUS, mRadius);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DIRECTION, mDirection);
+		serviceIntent.putExtra(EXTRA_COLOR_LIST, mColors);
 	}
 
 	@Override
@@ -91,7 +99,7 @@ public class TileChainMove extends AnimationData {
 
 			@Override
 			public TileChainColors getColors(final int n) {
-				return new TileChainMoveColors(xCenter, yCenter, mRadius, mRadiusFactor * n, getSelectedBrightness(light));
+				return new TileChainMoveColors(xCenter, yCenter, mRadius, mRadiusFactor * n, mColors, getSelectedBrightness(light));
 			}
 
 			@Override
@@ -116,7 +124,7 @@ public class TileChainMove extends AnimationData {
 		/**
 		 * The brightness.
 		 */
-		private final short mBrightness;
+		private final double mBrightness;
 		/**
 		 * The radius.
 		 */
@@ -125,6 +133,10 @@ public class TileChainMove extends AnimationData {
 		 * The offset.
 		 */
 		private final double mOffset;
+		/**
+		 * The colors to be used (interpolated cyclically).
+		 */
+		private final ArrayList<Color> mColors;
 
 		/**
 		 * Constructor.
@@ -133,15 +145,17 @@ public class TileChainMove extends AnimationData {
 		 * @param yCenter The y center.
 		 * @param radius The radius.
 		 * @param offset The offset.
+		 * @param colors The colors used for the animation.
 		 * @param brightness The brightness.
 		 */
 		private TileChainMoveColors(final double xCenter, final double yCenter, final double radius,
-				final double offset, final double brightness) {
+				final double offset, final ArrayList<Color> colors, final double brightness) {
 			mXCenter = xCenter;
 			mYCenter = yCenter;
-			mBrightness = TypeUtil.toShort(brightness);
 			mRadius = radius;
 			mOffset = offset;
+			mColors = colors;
+			mBrightness = brightness;
 		}
 
 		/**
@@ -152,7 +166,11 @@ public class TileChainMove extends AnimationData {
 		@Override
 		public Color getColor(final int x, final int y, final int width, final int height) {
 			double distance = Math.sqrt((x - mXCenter) * (x - mXCenter) + (y - mYCenter) * (y - mYCenter));
-			return new Color((int) (65536 * (distance + mOffset) / mRadius), -1, mBrightness, 4000); // MAGIC_NUMBER
+			double index = (((distance + mOffset) / mRadius * mColors.size()) % mColors.size() + mColors.size()) % mColors.size();
+			Color colorBefore = mColors.get((int) Math.floor(index));
+			Color colorAfter = mColors.get(((int) Math.ceil(index)) % mColors.size());
+			double percentage = index % 1;
+			return colorBefore.add(colorAfter, percentage).withRelativeBrightness(mBrightness);
 		}
 	}
 
