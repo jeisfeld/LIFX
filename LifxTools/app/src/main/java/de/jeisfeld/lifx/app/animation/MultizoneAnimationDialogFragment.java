@@ -108,7 +108,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 								MultizoneMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
 						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
-								new MultizoneMove(duration, direction, mModel.getValue().getColorsWithBrightness()));
+								new MultizoneMove(duration, direction, mModel.getValue().getColors().getValue()));
 					}
 				});
 		return builder.create();

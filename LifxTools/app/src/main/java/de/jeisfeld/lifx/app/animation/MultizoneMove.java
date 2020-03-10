@@ -91,7 +91,8 @@ public class MultizoneMove extends AnimationData {
 
 				@Override
 				public MultizoneColors getColors(final int n) {
-					return mColors.shift(sgn1 * n).combine(mColors.shift(-sgn1 * n), 0.5); // MAGIC_NUMBER
+					return mColors.shift(sgn1 * n).combine(mColors.shift(-sgn1 * n), 0.5) // MAGIC_NUMBER
+							.withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
 				}
 			};
 		case FORWARD:
@@ -106,7 +107,7 @@ public class MultizoneMove extends AnimationData {
 
 				@Override
 				public MultizoneColors getColors(final int n) {
-					return mColors.shift(sgn2 * n);
+					return mColors.shift(sgn2 * n).withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
 				}
 			};
 		}
@@ -123,7 +124,7 @@ public class MultizoneMove extends AnimationData {
 		return new NativeAnimationDefinition() {
 			@Override
 			public void startAnimation() throws IOException {
-				multiZoneLight.setColors(0, true, mColors);
+				multiZoneLight.setColors(0, true, mColors.withRelativeBrightness(getSelectedBrightness(light)));
 				multiZoneLight.setEffect(new Move(Math.abs(getDuration()), getDirection() == Direction.BACKWARD));
 			}
 

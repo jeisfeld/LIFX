@@ -13,9 +13,12 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
@@ -120,8 +123,32 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param brightness The new brightness.
 	 */
-	public void updateBrightness(final double brightness) {
+	public final void updateBrightness(final double brightness) {
+		updateSelectedBrightness(brightness);
+		if (!Boolean.TRUE.equals(mAnimationStatus.getValue())) {
+			doUpdateBrightness(brightness);
+		}
+	}
+
+	/**
+	 * Update the brightness on the light.
+	 *
+	 * @param brightness The new brightness.
+	 */
+	protected void doUpdateBrightness(final double brightness) {
 		updateColor(null, null, TypeUtil.toShort(brightness), null);
+	}
+
+	/**
+	 * Update the stored selected brightness.
+	 *
+	 * @param brightness The brightness.
+	 */
+	protected void updateSelectedBrightness(final double brightness) {
+		Integer deviceId = (Integer) getLight().getParameter(DeviceRegistry.DEVICE_ID);
+		if (deviceId != null) {
+			PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_device_selected_brightness, deviceId, brightness);
+		}
 	}
 
 	/**

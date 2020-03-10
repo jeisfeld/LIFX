@@ -257,6 +257,27 @@ public final class PreferenceUtil {
 	}
 
 	/**
+	 * Retrieve a double shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param defaultValue the default value of the shared preference.
+	 * @return the corresponding preference value.
+	 */
+	public static double getSharedPreferenceDouble(final int preferenceId, final double defaultValue) {
+		return Double.longBitsToDouble(getSharedPreferenceLong(preferenceId, Double.doubleToLongBits(defaultValue)));
+	}
+
+	/**
+	 * Set a double shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param d            the target value of the preference.
+	 */
+	public static void setSharedPreferenceDouble(final int preferenceId, final double d) {
+		setSharedPreferenceLong(preferenceId, Double.doubleToLongBits(d));
+	}
+
+	/**
 	 * Retrieve a String List shared preference.
 	 *
 	 * @param preferenceId the id of the shared preference.
@@ -526,6 +547,29 @@ public final class PreferenceUtil {
 	}
 
 	/**
+	 * Retrieve an indexed double shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param index        The index
+	 * @param defaultValue the default value of the shared preference.
+	 * @return the corresponding preference value.
+	 */
+	public static double getIndexedSharedPreferenceDouble(final int preferenceId, final Object index, final double defaultValue) {
+		return Double.longBitsToDouble(PreferenceUtil.getIndexedSharedPreferenceLong(preferenceId, index, Double.doubleToLongBits(defaultValue)));
+	}
+
+	/**
+	 * Set an indexed double shared preference.
+	 *
+	 * @param preferenceId the id of the shared preference.
+	 * @param index        The index
+	 * @param d            the target value of the preference.
+	 */
+	public static void setIndexedSharedPreferenceDouble(final int preferenceId, final Object index, final double d) {
+		PreferenceUtil.setIndexedSharedPreferenceLong(preferenceId, index, Double.doubleToLongBits(d));
+	}
+
+	/**
 	 * Retrieve a String List indexed shared preference.
 	 *
 	 * @param preferenceId the id of the shared preference.
@@ -586,7 +630,7 @@ public final class PreferenceUtil {
 	 *
 	 * @param preferenceId the id of the shared preference.
 	 * @param index        The index
-	 * @param intList     the target value of the preference.
+	 * @param intList      the target value of the preference.
 	 */
 	public static void setIndexedSharedPreferenceIntList(final int preferenceId, final Object index, final List<Integer> intList) {
 		List<String> stringList = new ArrayList<>();

@@ -27,6 +27,7 @@
     <string name="key_device_tile_totalheight" translatable="false">device_tile_totalheight</string>
     <string name="key_device_build_timestamp" translatable="false">device_build_timestamp</string>
     <string name="key_device_show" translatable="false">device_show</string>
+    <string name="key_device_selected_brightness" translatable="false">device_selected_brightness</string>
 
     <!-- Keys for saved colors -->
     <string name="key_color_ids" translatable="false">color_ids</string>

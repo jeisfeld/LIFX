@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import android.content.Intent;
-
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
@@ -71,7 +73,6 @@ public abstract class AnimationData implements Serializable {
 		return true;
 	}
 
-
 	/**
 	 * Get the definition of the native implementation of this animation.
 	 *
@@ -91,6 +92,22 @@ public abstract class AnimationData implements Serializable {
 				// do nothing
 			}
 		};
+	}
+
+	/**
+	 * Get the selected brightness for a light.
+	 *
+	 * @param light The light.
+	 * @return the selected brightness.
+	 */
+	protected static double getSelectedBrightness(final Light light) {
+		Integer deviceId = (Integer) light.getParameter(DeviceRegistry.DEVICE_ID);
+		if (deviceId != null) {
+			return PreferenceUtil.getIndexedSharedPreferenceDouble(R.string.key_device_selected_brightness, deviceId, 1);
+		}
+		else {
+			return 1;
+		}
 	}
 
 	/**

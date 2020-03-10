@@ -11,6 +11,7 @@ import java.util.Map;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.SparseArray;
+
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
@@ -151,6 +152,28 @@ public final class DeviceRegistry {
 	 */
 	public Device getDeviceById(final int id) {
 		return mDevices.get(id);
+	}
+
+	/**
+	 * Get a known device by its mac.
+	 *
+	 * @param mac The mac.
+	 * @return The device.
+	 */
+	public Device getDeviceByMac(final String mac) {
+		Integer deviceId = mMacToIdMap.get(mac);
+		return deviceId == null ? null : getDeviceById(deviceId);
+	}
+
+	/**
+	 * Get a known light by its mac.
+	 *
+	 * @param mac The mac.
+	 * @return The light.
+	 */
+	public Light getLightByMac(final String mac) {
+		Device device = getDeviceByMac(mac);
+		return device instanceof Light ? (Light) device : null;
 	}
 
 	/**
@@ -368,7 +391,7 @@ public final class DeviceRegistry {
 		 * Create a DeviceUpdateTask.
 		 *
 		 * @param deviceRegistry The calling deviceRegistry.
-		 * @param callback The callback to be called for found devices.
+		 * @param callback       The callback to be called for found devices.
 		 */
 		private DeviceUpdateTask(final DeviceRegistry deviceRegistry, final DeviceUpdateCallback callback) {
 			mDeviceRegistry = deviceRegistry;
@@ -431,7 +454,7 @@ public final class DeviceRegistry {
 			}
 			for (String mac : mDeviceRegistry.mMacToIdMap.keySet()) {
 				if (!foundMacs.contains(mac)) {
-					mCallback.onDeviceUpdated(mDeviceRegistry.mDevices.get(mDeviceRegistry.mMacToIdMap.get(mac)), false, true);
+					mCallback.onDeviceUpdated(mDeviceRegistry.getDeviceByMac(mac), false, true);
 				}
 			}
 			if (devices.size() == 0) {
@@ -447,8 +470,8 @@ public final class DeviceRegistry {
 		/**
 		 * Method called on device search results.
 		 *
-		 * @param device the device.
-		 * @param isNew true if the device is unknown.
+		 * @param device    the device.
+		 * @param isNew     true if the device is unknown.
 		 * @param isMissing true if the device is known but was not found.
 		 */
 		void onDeviceUpdated(Device device, boolean isNew, boolean isMissing);

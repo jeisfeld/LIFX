@@ -111,7 +111,7 @@ public class TileViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateBrightness(final double brightness) {
+	protected final void doUpdateBrightness(final double brightness) {
 		TileChainColors oldColors = mColors.getValue();
 		if (oldColors != null) {
 			updateColors(oldColors, brightness);

@@ -15,10 +15,12 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
@@ -92,7 +94,10 @@ public class LifxAnimationService extends Service {
 				}
 				Light tmpLight = ANIMATED_LIGHTS.get(mac);
 				if (tmpLight == null) {
-					tmpLight = LifxLan.getInstance().getLightByMac(mac);
+					tmpLight = DeviceRegistry.getInstance().getLightByMac(mac);
+					if (tmpLight == null) {
+						tmpLight = LifxLan.getInstance().getLightByMac(mac);
+					}
 					if (tmpLight == null || tmpLight.getTargetAddress() == null || !mac.equals(tmpLight.getTargetAddress())) {
 						updateOnEndAnimation(mac, null);
 						return;
@@ -228,7 +233,7 @@ public class LifxAnimationService extends Service {
 	 * Stop the animation from UI for a given MAC.
 	 *
 	 * @param context the context.
-	 * @param mac The MAC
+	 * @param mac     The MAC
 	 */
 	public static void stopAnimationForMac(final Context context, final String mac) {
 		Light light = ANIMATED_LIGHTS.get(mac);
@@ -240,7 +245,7 @@ public class LifxAnimationService extends Service {
 	/**
 	 * Update the service after the animation has ended.
 	 *
-	 * @param mac the MAC.
+	 * @param mac      the MAC.
 	 * @param wakeLock The wakelock on that light.
 	 */
 	private void updateOnEndAnimation(final String mac, final WakeLock wakeLock) {

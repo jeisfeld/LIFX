@@ -24,6 +24,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -128,7 +129,7 @@ public class DeviceAdapter extends BaseAdapter {
 		DeviceRegistry.getInstance().update(new DeviceUpdateCallback() {
 			@Override
 			public void onDeviceUpdated(final Device device, final boolean isNew, final boolean isMissing) {
-				if (isNew) {
+				if (device != null && isNew) {
 					if (mDevices.size() == 0) {
 						mNoDeviceCallback.onChange(true);
 					}
@@ -286,7 +287,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the power button.
 	 *
 	 * @param powerButton The power button.
-	 * @param model The device view model.
+	 * @param model       The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
@@ -309,7 +310,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the color picker started via button.
 	 *
 	 * @param colorPickerButton The color picker button.
-	 * @param model The light view model.
+	 * @param model             The light view model.
 	 */
 	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
 		colorPickerButton.setVisibility(View.VISIBLE);
@@ -329,7 +330,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the picker for brightness and color temperature started via button.
 	 *
 	 * @param brightnessColorTempButton The brightness/colortemp picker button.
-	 * @param model The light view model.
+	 * @param model                     The light view model.
 	 */
 	private void prepareBrightnessColortempPicker(final Button brightnessColorTempButton, final LightViewModel model) {
 		brightnessColorTempButton.setVisibility(View.VISIBLE);
@@ -347,7 +348,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the multizone color picker started via button.
 	 *
 	 * @param multiColorPickerButton The multizone color picker button.
-	 * @param model The multizone view model.
+	 * @param model                  The multizone view model.
 	 */
 	private void prepareMultiColorPicker(final Button multiColorPickerButton, final MultizoneViewModel model) {
 		multiColorPickerButton.setVisibility(View.VISIBLE);
@@ -382,10 +383,10 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * Prepare a single color picker within the multicolor picker.
 	 *
-	 * @param dialogView The dialog view.
+	 * @param dialogView   The dialog view.
 	 * @param parentViewId The parent view of the single color picker.
-	 * @param model The multizone view model.
-	 * @param index the index of the color picker.
+	 * @param model        The multizone view model.
+	 * @param index        the index of the color picker.
 	 */
 	private void prepareMultiColorPickerView(final View dialogView, final int parentViewId, final MultizoneViewModel model, final int index) {
 		final View parentView = dialogView.findViewById(parentViewId);
@@ -449,8 +450,8 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Load a tile image via button.
 	 *
 	 * @param imageButton The imate button.
-	 * @param model The multizone view model.
-	 * @param position The position where the button was clicked.
+	 * @param model       The multizone view model.
+	 * @param position    The position where the button was clicked.
 	 */
 	private void prepareImageButton(final Button imageButton, final TileViewModel model, final int position) {
 		imageButton.setVisibility(View.VISIBLE);
@@ -513,7 +514,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the brightness button and seekbar.
 	 *
 	 * @param seekBar The brightness seekbar.
-	 * @param model The light view model.
+	 * @param model   The light view model.
 	 */
 	private void prepareBrightnessSeekbar(final SeekBar seekBar, final LightViewModel model) {
 		seekBar.setVisibility(View.VISIBLE);
@@ -543,8 +544,12 @@ public class DeviceAdapter extends BaseAdapter {
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(final SeekBar seekBar, final int progress, final boolean fromUser) {
+				double brightness = TypeUtil.toDouble((short) (progress + 1));
 				if (fromUser) {
-					model.updateBrightness(TypeUtil.toDouble((short) (progress + 1)));
+					model.updateBrightness(brightness);
+				}
+				else {
+					model.updateSelectedBrightness(brightness);
 				}
 			}
 
@@ -564,7 +569,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the animation button.
 	 *
 	 * @param animationButton The animation button.
-	 * @param model The light view model.
+	 * @param model           The light view model.
 	 */
 	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
@@ -621,7 +626,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the save button.
 	 *
 	 * @param saveButton The save button.
-	 * @param model The light view model.
+	 * @param model      The light view model.
 	 */
 	private void prepareSaveButton(final Button saveButton, final LightViewModel model) {
 		saveButton.setOnClickListener(v -> {

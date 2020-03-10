@@ -6,6 +6,7 @@ import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Animation data for moving colors on a multizone device.
@@ -72,13 +73,11 @@ public class TileChainMove extends AnimationData {
 
 		final double xCenter = (tileChainLight.getTotalWidth() - 1) / 2.0;
 		final double yCenter = (tileChainLight.getTotalHeight() - 1) / 2.0;
-		TileChainColors colors = tileChainLight.getColors();
-		final short brightness = colors == null ? -1 : (short) colors.getMaxBrightness(tileChainLight);
 
 		return new TileChain.AnimationDefinition() {
 			@Override
 			public TileChainColors getColors(final int n) {
-				return new TileChainMoveColors(xCenter, yCenter, brightness, n);
+				return new TileChainMoveColors(xCenter, yCenter, getSelectedBrightness(light), n);
 			}
 
 			@Override
@@ -117,10 +116,10 @@ public class TileChainMove extends AnimationData {
 		 * @param brightness The brightness.
 		 * @param offset the offset.
 		 */
-		private TileChainMoveColors(final double xCenter, final double yCenter, final short brightness, final int offset) {
+		private TileChainMoveColors(final double xCenter, final double yCenter, final double brightness, final int offset) {
 			mXCenter = xCenter;
 			mYCenter = yCenter;
-			mBrightness = brightness;
+			mBrightness = TypeUtil.toShort(brightness);
 			mOffset = offset;
 		}
 

@@ -165,7 +165,7 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateBrightness(final double brightness) {
+	protected final void doUpdateBrightness(final double brightness) {
 		MultizoneColors oldColors = mColors.getValue();
 		if (oldColors != null) {
 			updateColors(oldColors, brightness);
