@@ -1,7 +1,6 @@
 package de.jeisfeld.lifx.app.view;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -164,8 +163,8 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	 *
 	 * @return The corrently selected colors.
 	 */
-	private List<Color> getSelectedColors() {
-		List<Color> result = new ArrayList<>();
+	private ArrayList<Color> getSelectedColors() {
+		ArrayList<Color> result = new ArrayList<>();
 		for (int i = 0; i < MULTIZONE_PICKER_COUNT; i++) {
 			if (mFlags[i]) {
 				result.add(mColors[i]);
@@ -263,7 +262,7 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 		 * @param isCyclic flag indicating if colors should be considered as cyclic.
 		 * @param flags flags indicating selection of color pickers.
 		 */
-		void onColorUpdate(List<Color> colors, boolean isCyclic, boolean[] flags);
+		void onColorUpdate(ArrayList<Color> colors, boolean isCyclic, boolean[] flags);
 
 		/**
 		 * Callback method for positive click from the confirmation dialog.
@@ -273,7 +272,7 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 		 * @param isCyclic flag indicating if colors should be considered as cyclic.
 		 * @param flags flags indicating selection of color pickers.
 		 */
-		void onDialogPositiveClick(DialogFragment dialog, List<Color> colors, boolean isCyclic, boolean[] flags);
+		void onDialogPositiveClick(DialogFragment dialog, ArrayList<Color> colors, boolean isCyclic, boolean[] flags);
 
 		/**
 		 * Callback method for negative click from the confirmation dialog.

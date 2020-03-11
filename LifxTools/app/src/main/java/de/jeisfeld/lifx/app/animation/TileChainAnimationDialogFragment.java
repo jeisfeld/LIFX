@@ -10,12 +10,17 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.TileViewModel;
+import de.jeisfeld.lifx.app.util.ColorUtil;
+import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
+import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment.MultiColorPickerDialogListener;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 
@@ -27,16 +32,20 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
 	private static final String PREVENT_RECREATION = "preventRecreation";
+	/**
+	 * The selected colors.
+	 */
+	private ArrayList<Color> mColors = new ArrayList<>();
 
 	/**
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
-	 * @param model the tile view model.
+	 * @param model    the tile view model.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayTileChainAnimationDialog(final FragmentActivity activity, final TileViewModel model,
-			final TileChainAnimationDialogListener listener) {
+													   final TileChainAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
 		TileChainAnimationDialogFragment fragment = new TileChainAnimationDialogFragment();
 		fragment.setListener(listener);
@@ -89,6 +98,36 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
 		final EditText editTextRadius = view.findViewById(R.id.editTextRadius);
 		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
+		final ImageView imageViewColors = view.findViewById(R.id.imageViewColors);
+
+		mColors.add(Color.RED);
+		mColors.add(Color.GREEN);
+		mColors.add(Color.BLUE);
+		imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
+
+		imageViewColors.setOnClickListener(v -> {
+			if (getActivity() == null) {
+				return;
+			}
+			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(getActivity(), mColors, true, new MultiColorPickerDialogListener() {
+				@Override
+				public void onColorUpdate(final ArrayList<Color> colors, final boolean isCyclic, final boolean[] flags) {
+					// do nothing
+				}
+
+				@Override
+				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
+												  final boolean[] flags) {
+					mColors = colors;
+					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
+				}
+
+				@Override
+				public void onDialogNegativeClick(final DialogFragment dialog) {
+					// do nothing
+				}
+			});
+		});
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.title_dialog_animation)
@@ -126,13 +165,8 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 						final TileChainMove.Direction direction =
 								TileChainMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
-						ArrayList<Color> colors = new ArrayList<>();
-						colors.add(Color.RED);
-						colors.add(Color.GREEN);
-						colors.add(Color.BLUE);
-
 						mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-								new TileChainMove(duration, radius, direction, colors));
+								new TileChainMove(duration, radius, direction, mColors));
 					}
 				});
 		return builder.create();
@@ -163,7 +197,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Callback method for positive click from the confirmation dialog.
 		 *
-		 * @param dialog The confirmation dialog fragment.
+		 * @param dialog        The confirmation dialog fragment.
 		 * @param animationData The animation data.
 		 */
 		void onDialogPositiveClick(DialogFragment dialog, AnimationData animationData);

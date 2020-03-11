@@ -169,15 +169,15 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			}
 			else {
 				drawable.setShape(GradientDrawable.RECTANGLE);
-				MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
-						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, storedColor.getDeviceId(), 0));
-				drawable.setOrientation(multizoneOrientation.getGradientOrientation());
 				if (colors instanceof MultizoneColors.Interpolated) {
-					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Interpolated) colors).getColors()));
+					drawable = ColorUtil.getButtonDrawable(context, ((MultizoneColors.Interpolated) colors).getColors());
 				}
 				else if (colors instanceof MultizoneColors.Exact) {
 					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Exact) colors).getColors()));
 				}
+				MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
+						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, storedColor.getDeviceId(), 0));
+				drawable.setOrientation(multizoneOrientation.getGradientOrientation());
 			}
 		}
 

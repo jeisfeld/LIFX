@@ -394,12 +394,12 @@ public class DeviceAdapter extends BaseAdapter {
 
 			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(activity, initialColors, isCyclic, new MultiColorPickerDialogListener() {
 				@Override
-				public void onColorUpdate(final List<Color> colors, final boolean isCyclic, final boolean[] flags) {
+				public void onColorUpdate(final ArrayList<Color> colors, final boolean isCyclic, final boolean[] flags) {
 					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1);
 				}
 
 				@Override
-				public void onDialogPositiveClick(final DialogFragment dialog, final List<Color> colors, final boolean isCyclic,
+				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
 						final boolean[] flags) {
 					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1);
 				}

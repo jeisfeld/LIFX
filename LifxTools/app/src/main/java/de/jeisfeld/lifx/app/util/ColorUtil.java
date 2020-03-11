@@ -1,7 +1,13 @@
 package de.jeisfeld.lifx.app.util;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.GradientDrawable.Orientation;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -108,5 +114,34 @@ public final class ColorUtil {
 		// Use alpha as color temperature
 		double brightness = !allowZeroBrightness && hsv[2] == 0 ? 1 / 65535.0 : hsv[2]; // MAGIC_NUMBER
 		return new Color(hsv[0], hsv[1], brightness, colorTemperature);
+	}
+
+	/**
+	 * Get a drawable representing a list of colors.
+	 *
+	 * @param context The context.
+	 * @param colors The list of colors.
+	 * @return The drawable.
+	 */
+	public static GradientDrawable getButtonDrawable(final Context context, final List<Color> colors) {
+		List<Color> enhancedColors = new ArrayList<>();
+		Iterator<Color> colorIterator = colors.iterator();
+		Color color = colorIterator.next();
+		enhancedColors.add(color);
+		while (colorIterator.hasNext()) {
+			Color newColor = colorIterator.next();
+			enhancedColors.add(color.add(newColor, 0.25)); // MAGIC_NUMBER
+			enhancedColors.add(color.add(newColor, 0.5)); // MAGIC_NUMBER
+			enhancedColors.add(color.add(newColor, 0.75)); // MAGIC_NUMBER
+			enhancedColors.add(newColor);
+			color = newColor;
+		}
+
+		GradientDrawable drawable = new GradientDrawable();
+		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
+		drawable.setShape(GradientDrawable.RECTANGLE);
+		drawable.setOrientation(Orientation.LEFT_RIGHT);
+		drawable.setColors(toAndroidDisplayColors(enhancedColors));
+		return drawable;
 	}
 }

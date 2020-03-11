@@ -14,6 +14,7 @@
     <string name="hint_animation_duration">(Sekunden)</string>
     <string name="label_animation_radius">Radius</string>
     <string name="label_animation_direction">Richtung</string>
+    <string name="label_animation_colors">Farben</string>
     <string-array name="values_multizone_animation_direction">
         <item>vorwärts</item>
         <item>rückwärts</item>

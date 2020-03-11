@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="?attr/dialogPreferredPadding"
@@ -18,7 +19,9 @@
             android:layout_height="wrap_content"
             android:autofillHints=""
             android:hint="@string/hint_animation_duration"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal"
+            android:text="10"
+            tools:ignore="HardcodedText" />
     </TableRow>
 
     <TableRow>
@@ -33,7 +36,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:autofillHints=""
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal"
+            android:text="1"
+            tools:ignore="HardcodedText" />
     </TableRow>
 
     <TableRow>
@@ -47,6 +52,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:entries="@array/values_tilechain_animation_direction"
+            android:minHeight="@dimen/medium_button_size"
             android:spinnerMode="dropdown" />
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
+            android:text="@string/label_animation_colors"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <ImageView
+            android:id="@+id/imageViewColors"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            tools:ignore="ContentDescription" />
     </TableRow>
 </TableLayout>
