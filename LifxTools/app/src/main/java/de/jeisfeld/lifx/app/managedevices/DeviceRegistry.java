@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,8 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 import de.jeisfeld.lifx.lan.message.StateService;
 import de.jeisfeld.lifx.lan.type.Product;
+import de.jeisfeld.lifx.lan.type.TileInfo;
+import de.jeisfeld.lifx.lan.type.TileInfo.Rotation;
 import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.os.OsTools;
 
@@ -95,14 +98,6 @@ public final class DeviceRegistry {
 			Vendor vendor = Vendor.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_vendor, deviceId, 0));
 			Product product = Product.fromId(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0));
 			int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
-			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
-			MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
-					PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
-			long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
-			byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
-			int totalWidth = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, -1);
-			int totalHeight = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, -1);
-
 			mMacToIdMap.put(mac, deviceId);
 
 			Device device;
@@ -110,11 +105,33 @@ public final class DeviceRegistry {
 				device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
 			}
 			else if (type == DeviceType.MULTIZONE) {
+				byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
+				MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
+						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
+				long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
 				device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
 				device.setParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION, multizoneOrientation);
 			}
 			else if (type == DeviceType.TILECHAIN) {
-				device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label, tileCount, totalWidth, totalHeight);
+				byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
+				int totalWidth = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, -1);
+				int totalHeight = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, -1);
+
+				List<Integer> tileParameters =
+						PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_device_tile_tileinfo_parameters, deviceId);
+				List<TileInfo> tileInfoList = null;
+				if (tileParameters.size() == 5 * tileCount) { // MAGIC_NUMBER
+					tileInfoList = new ArrayList<>();
+					Iterator<Integer> paramIterator = tileParameters.iterator();
+					for (int i = 0; i < tileCount; i++) {
+						tileInfoList.add(new TileInfo(paramIterator.next().byteValue(), paramIterator.next().byteValue(),
+								paramIterator.next(), paramIterator.next(), Rotation.fromOrdinal(paramIterator.next())));
+
+					}
+				}
+
+				device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label,
+						tileCount, totalWidth, totalHeight, tileInfoList);
 			}
 			else {
 				device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
@@ -238,6 +255,18 @@ public final class DeviceRegistry {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, ((TileChain) device).getTileCount());
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, ((TileChain) device).getTotalWidth());
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, ((TileChain) device).getTotalHeight());
+			List<TileInfo> tileInfos = ((TileChain) device).getTileInfo();
+			if (tileInfos != null && tileInfos.size() == ((TileChain) device).getTileCount()) {
+				List<Integer> tileParameters = new ArrayList<>();
+				for (TileInfo tileInfo : tileInfos) {
+					tileParameters.add((int) tileInfo.getWidth());
+					tileParameters.add((int) tileInfo.getHeight());
+					tileParameters.add(tileInfo.getMinX());
+					tileParameters.add(tileInfo.getMinY());
+					tileParameters.add(tileInfo.getRotation().ordinal());
+				}
+				PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_device_tile_tileinfo_parameters, deviceId, tileParameters);
+			}
 		}
 	}
 
@@ -271,6 +300,7 @@ public final class DeviceRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_count, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_totalwidth, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_totalheight, deviceId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_tile_tileinfo_parameters, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_build_timestamp, deviceId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_show, deviceId);
 

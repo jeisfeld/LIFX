@@ -6,6 +6,7 @@ import java.lang.ref.WeakReference;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -31,7 +32,7 @@ public class TileViewModel extends LightViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light The light.
+	 * @param light   The light.
 	 */
 	public TileViewModel(final Context context, final TileChain light) {
 		super(context, light);
@@ -93,7 +94,7 @@ public class TileViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors the colors to be set.
+	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	public void updateColors(final TileChainColors colors, final double brightnessFactor) {
@@ -133,7 +134,7 @@ public class TileViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors The given colors.
+	 * @param colors           The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	private void updateStoredColors(final TileChainColors colors, final double brightnessFactor) {
@@ -173,7 +174,8 @@ public class TileViewModel extends LightViewModel {
 			if (model == null) {
 				return null;
 			}
-			if (model.getLight().getTileInfo() == null) {
+			if (model.getLight().getTileInfo() == null || model.getLight().getTileInfo().size() == 0
+					|| model.getLight().getTileInfo().get(0).getAccelerationX() == 0) {
 				model.getLight().refreshTileInfo();
 				if (model.getLight().getTileInfo() == null) {
 					return null;
@@ -205,7 +207,7 @@ public class TileViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
+		 * @param model  The underlying model.
 		 * @param colors The colors.
 		 */
 		private SetTileChainColorsTask(final TileViewModel model, final TileChainColors colors) {

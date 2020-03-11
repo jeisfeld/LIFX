@@ -107,6 +107,29 @@ public class TileInfo implements Serializable {
 		return tileInfo;
 	}
 
+	/**
+	 * Default constructor.
+	 */
+	private TileInfo() {
+	}
+
+	/**
+	 * Minimal constructor to define most important tile info parameters.
+	 *
+	 * @param width the width
+	 * @param height the height
+	 * @param minX the min x coordinate
+	 * @param minY the min y coordinate
+	 * @param rotation the rotation.
+	 */
+	public TileInfo(final byte width, final byte height, final int minX, final int minY, final Rotation rotation) {
+		mWidth = width;
+		mHeight = height;
+		mMinX = minX;
+		mMinY = minY;
+		mRotation = rotation;
+	}
+
 	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -347,7 +370,22 @@ public class TileInfo implements Serializable {
 		/**
 		 * Face down position.
 		 */
-		FACE_DOWN
+		FACE_DOWN;
+
+		/**
+		 * Get Rotation from its ordinal value.
+		 *
+		 * @param ordinal The ordinal value.
+		 * @return The rotation.
+		 */
+		public static Rotation fromOrdinal(final int ordinal) {
+			for (Rotation direction : values()) {
+				if (ordinal == direction.ordinal()) {
+					return direction;
+				}
+			}
+			return UPRIGHT;
+		}
 	}
 
 }

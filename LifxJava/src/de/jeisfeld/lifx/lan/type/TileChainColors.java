@@ -82,7 +82,8 @@ public abstract class TileChainColors implements Serializable {
 
 			@Override
 			public Color getColor(final int x, final int y, final int width, final int height) {
-				return base.getColor(x, y, width, height).withRelativeBrightness(brightnessFactor);
+				Color baseColor = base.getColor(x, y, width, height);
+				return baseColor == null ? null : baseColor.withRelativeBrightness(brightnessFactor);
 			}
 		};
 	}
@@ -123,7 +124,9 @@ public abstract class TileChainColors implements Serializable {
 
 			@Override
 			public Color getColor(final int x, final int y, final int width, final int height) {
-				return base.getColor(x, y, width, height).add(other.getColor(x, y, width, height), quota);
+				Color baseColor = base.getColor(x, y, width, height);
+				Color otherColor = other.getColor(x, y, width, height);
+				return baseColor == null ? otherColor : baseColor.add(otherColor, quota);
 			}
 		};
 	}
@@ -217,7 +220,8 @@ public abstract class TileChainColors implements Serializable {
 	 * @return The list of colors of that tile.
 	 */
 	public List<Color> getTileColors(final int width, final int height, final int minX, final int minY, // SUPPRESS_CHECKSTYLE
-			final Rotation rotation, final int totalWidth, final int totalHeight, final int tileWidth, final int tileHeight) {
+			final Rotation rotation, final int totalWidth, final int totalHeight,
+			final int tileWidth, final int tileHeight) {
 		List<Color> result = new ArrayList<>();
 		TileColors tileColors = getTileColors(width, height, minX, minY, rotation, totalWidth, totalHeight);
 		for (int y = tileHeight - 1; y >= 0; y--) {
@@ -340,6 +344,9 @@ public abstract class TileChainColors implements Serializable {
 
 		@Override
 		public final Color getColor(final int x, final int y, final int width, final int height) {
+			if (mTileChain.getTileInfo() == null) {
+				return Color.OFF;
+			}
 			for (int i = 0; i < mTileChain.getTileCount(); i++) {
 				TileInfo tileInfo = mTileChain.getTileInfo().get(i);
 				if (x >= tileInfo.getMinX() && x < tileInfo.getMinX() + tileInfo.getWidth()
@@ -348,7 +355,7 @@ public abstract class TileChainColors implements Serializable {
 				}
 			}
 
-			return Color.OFF;
+			return null;
 		}
 
 		@Override

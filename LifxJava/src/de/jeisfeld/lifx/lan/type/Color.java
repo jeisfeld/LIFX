@@ -181,6 +181,9 @@ public class Color implements Serializable {
 	 * @return The mixed color.
 	 */
 	public final Color add(final Color other, final double quota) {
+		if (other == null) {
+			return this;
+		}
 		// In case of black, just reduce brightness.
 		if (getBrightness() == 0) {
 			return other.withRelativeBrightness(quota);

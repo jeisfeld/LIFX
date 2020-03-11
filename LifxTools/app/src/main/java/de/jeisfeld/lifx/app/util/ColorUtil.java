@@ -28,6 +28,9 @@ public final class ColorUtil {
 	 * @return The color to be displayed.
 	 */
 	public static int toAndroidDisplayColor(final Color color) {
+		if (color == null) {
+			return android.graphics.Color.TRANSPARENT;
+		}
 		Color displayColor = color;
 		if (color.getSaturation() != -1) {
 			Color temperatureColor = convertColorTemperature(color);
