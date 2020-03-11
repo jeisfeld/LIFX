@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorListener;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -49,6 +48,8 @@ import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.view.ColorPickerDialog.Builder;
+import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
+import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment.MultiColorPickerDialogListener;
 import de.jeisfeld.lifx.app.view.PickedImageDialogFragment;
 import de.jeisfeld.lifx.app.view.PickedImageDialogFragment.PickedImageDialogListener;
 import de.jeisfeld.lifx.lan.Device;
@@ -57,6 +58,7 @@ import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.MultizoneColors.Interpolated;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -68,10 +70,6 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Request code used for picking an image.
 	 */
 	protected static final int REQUESTCODE_PICK_IMAGE = 1;
-	/**
-	 * The number of multizone color pickers.
-	 */
-	protected static final int MULTIZONE_PICKER_COUNT = 6;
 
 	/**
 	 * The list of devices.
@@ -357,92 +355,61 @@ public class DeviceAdapter extends BaseAdapter {
 			if (zoneCount == 0) {
 				return;
 			}
-
-			Builder colorPickerDialogBuilder = new Builder(mContext, R.layout.dialog_multi_colorpicker);
-			View dialogView = colorPickerDialogBuilder.getParentView();
-
-			prepareMultiColorPickerView(dialogView, R.id.colorPicker1, model, 0);
-			prepareMultiColorPickerView(dialogView, R.id.colorPicker2, model, 1);
-			prepareMultiColorPickerView(dialogView, R.id.colorPicker3, model, 2);
-			prepareMultiColorPickerView(dialogView, R.id.colorPicker4, model, 3); // MAGIC_NUMBER
-			prepareMultiColorPickerView(dialogView, R.id.colorPicker5, model, 4); // MAGIC_NUMBER
-			prepareMultiColorPickerView(dialogView, R.id.colorPicker6, model, 5); // MAGIC_NUMBER
-
-			ToggleButton toggleButtonCyclic = dialogView.findViewById(R.id.toggleButtonCyclic);
-			toggleButtonCyclic.setChecked(model.getColorPickerFlags()[MultizoneViewModel.CYCLIC_FLAG_INDEX]);
-
-			toggleButtonCyclic.setOnCheckedChangeListener((buttonView, isChecked) -> {
-				model.getColorPickerFlags()[MultizoneViewModel.CYCLIC_FLAG_INDEX] = isChecked;
-				model.updateFromMulticolorPicker(MultizoneViewModel.CYCLIC_FLAG_INDEX, null);
-			});
-			colorPickerDialogBuilder.show();
-		});
-	}
-
-	/**
-	 * Prepare a single color picker within the multicolor picker.
-	 *
-	 * @param dialogView The dialog view.
-	 * @param parentViewId The parent view of the single color picker.
-	 * @param model The multizone view model.
-	 * @param index the index of the color picker.
-	 */
-	private void prepareMultiColorPickerView(final View dialogView, final int parentViewId, final MultizoneViewModel model, final int index) {
-		final View parentView = dialogView.findViewById(parentViewId);
-		final ColorPickerView colorPickerView = parentView.findViewById(R.id.ColorPickerView);
-		ColorPickerDialog.prepareColorPickerView(parentView, colorPickerView);
-
-		final int zoneCount = model.getLight().getZoneCount();
-		final int zone = (int) Math.round(index * (zoneCount - 1) / (MULTIZONE_PICKER_COUNT - 1.0));
-		final MultizoneColors colors = model.getColors().getValue();
-		final double relativeBrightness = model.getRelativeBrightness().getValue() == null ? 1 : model.getRelativeBrightness().getValue();
-		if (colors != null) {
-			if (colors instanceof FlaggedMultizoneColors && ((FlaggedMultizoneColors) colors).getInterpolationColors() != null) {
-				Color interpolationColor;
-				if (((FlaggedMultizoneColors) colors).getFlags()[index]
-						&& (interpolationColor = ((FlaggedMultizoneColors) colors).getInterpolationColor(index)) != null) { // SUPPRESS_CHECKSTYLE
-					colorPickerView.getViewTreeObserver()
-							.addOnGlobalLayoutListener(() -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView,
-									interpolationColor.withRelativeBrightness(relativeBrightness)));
-				}
-			}
-			else {
-				colorPickerView.getViewTreeObserver()
-						.addOnGlobalLayoutListener(
-								() -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView, colors.getColor(zone, zoneCount)
-										.withRelativeBrightness(relativeBrightness)));
-			}
-		}
-
-		colorPickerView.setColorListener((ColorListener) (color, fromUser) -> {
-			if (fromUser) {
-				model.updateFromMulticolorPicker(index, ColorUtil.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE, true));
-			}
-		});
-
-		parentView.findViewById(R.id.buttonClose).setOnClickListener(v -> {
-			if (model.getNumberOfColorPickers() < 2) {
+			Fragment fragment = mFragment.get();
+			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+			if (activity == null) {
 				return;
 			}
-			parentView.findViewById(R.id.ColorPickerView).setVisibility(View.INVISIBLE);
-			parentView.findViewById(R.id.BrightnessSlideBar).setVisibility(View.INVISIBLE);
-			parentView.findViewById(R.id.buttonClose).setVisibility(View.INVISIBLE);
-			parentView.findViewById(R.id.buttonOpen).setVisibility(View.VISIBLE);
-			model.getColorPickerFlags()[index] = false;
-			model.updateFromMulticolorPicker(index, null);
-		});
+			ArrayList<Color> initialColors = new ArrayList<>();
 
-		parentView.findViewById(R.id.buttonOpen).setOnClickListener(v -> {
-			parentView.findViewById(R.id.ColorPickerView).setVisibility(View.VISIBLE);
-			parentView.findViewById(R.id.BrightnessSlideBar).setVisibility(View.VISIBLE);
-			parentView.findViewById(R.id.buttonClose).setVisibility(View.VISIBLE);
-			parentView.findViewById(R.id.buttonOpen).setVisibility(View.INVISIBLE);
-			model.getColorPickerFlags()[index] = true;
-		});
+			final MultizoneColors colors = model.getColors().getValue();
+			final double relativeBrightness = model.getRelativeBrightness().getValue() == null ? 1 : model.getRelativeBrightness().getValue();
+			if (colors != null) {
+				for (int index = 0; index < MultiColorPickerDialogFragment.MULTIZONE_PICKER_COUNT; index++) {
+					final int zone = (int) Math.round(index * (zoneCount - 1) / (MultiColorPickerDialogFragment.MULTIZONE_PICKER_COUNT - 1.0));
+					if (colors instanceof FlaggedMultizoneColors && ((FlaggedMultizoneColors) colors).getInterpolationColors() != null) {
+						if (((FlaggedMultizoneColors) colors).getFlags()[index]) {
+							Color interpolationColor = ((FlaggedMultizoneColors) colors).getInterpolationColor(index);
+							if (interpolationColor != null) {
+								initialColors.add(interpolationColor.withRelativeBrightness(relativeBrightness));
+							}
+						}
+						else {
+							initialColors.add(null);
+						}
+					}
+					else {
+						initialColors.add(colors.getColor(zone, zoneCount).withRelativeBrightness(relativeBrightness));
+					}
+				}
+			}
 
-		if (!model.getColorPickerFlags()[index]) {
-			parentView.findViewById(R.id.buttonClose).performClick();
-		}
+			boolean isCyclic = false;
+			if (colors instanceof FlaggedMultizoneColors) {
+				boolean[] flags = ((FlaggedMultizoneColors) colors).getFlags();
+				if (flags.length > MultiColorPickerDialogFragment.CYCLIC_FLAG_INDEX) {
+					isCyclic = flags[MultiColorPickerDialogFragment.CYCLIC_FLAG_INDEX];
+				}
+			}
+
+			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(activity, initialColors, isCyclic, new MultiColorPickerDialogListener() {
+				@Override
+				public void onColorUpdate(final List<Color> colors, final boolean isCyclic, final boolean[] flags) {
+					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1);
+				}
+
+				@Override
+				public void onDialogPositiveClick(final DialogFragment dialog, final List<Color> colors, final boolean isCyclic,
+						final boolean[] flags) {
+					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1);
+				}
+
+				@Override
+				public void onDialogNegativeClick(final DialogFragment dialog) {
+
+				}
+			});
+		});
 	}
 
 	/**
