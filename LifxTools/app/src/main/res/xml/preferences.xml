@@ -10,6 +10,14 @@
         android:key="@string/key_pref_power_duration"
         android:title="@string/pref_title_power_duration" />
     <ListPreference
+        android:defaultValue="@string/pref_default_color_duration"
+        android:entries="@array/color_duration_names"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false"
+        android:entryValues="@array/color_duration_values"
+        android:key="@string/key_pref_color_duration"
+        android:title="@string/pref_title_color_duration" />
+    <ListPreference
         android:defaultValue="@string/pref_default_refresh_period"
         android:entries="@array/refresh_period_names"
         app:useSimpleSummaryProvider="true"

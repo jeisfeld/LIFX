@@ -146,7 +146,7 @@ public class HomeFragment extends ListFragment {
 					List<DeviceViewModel> checkedDevices = mAdapter.getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
-							((LightViewModel) model).updateColor(newColor);
+							((LightViewModel) model).updateColor(newColor, true);
 						}
 					}
 
@@ -165,7 +165,7 @@ public class HomeFragment extends ListFragment {
 					List<DeviceViewModel> checkedDevices = mAdapter.getCheckedDevices();
 					for (DeviceViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
-							((LightViewModel) model).updateColor(newColor);
+							((LightViewModel) model).updateColor(newColor, true);
 						}
 					}
 

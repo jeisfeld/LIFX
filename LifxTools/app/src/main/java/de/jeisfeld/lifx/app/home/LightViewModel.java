@@ -115,7 +115,7 @@ public class LightViewModel extends DeviceViewModel {
 		}
 		Color newColor = new Color(hue == null ? color.getHue() : hue, saturation == null ? color.getSaturation() : saturation,
 				brightness == null ? color.getBrightness() : brightness, colorTemperature == null ? color.getColorTemperature() : colorTemperature);
-		updateColor(newColor);
+		updateColor(newColor, true);
 	}
 
 	/**
@@ -155,12 +155,13 @@ public class LightViewModel extends DeviceViewModel {
 	 * Set the color.
 	 *
 	 * @param color the color to be set.
+	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
-	public void updateColor(final Color color) {
+	public void updateColor(final Color color, final boolean isImmediate) {
 		mColor.postValue(color);
 
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetColorTask(this, color));
+			mRunningSetColorTasks.add(new SetColorTask(this, color, isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -258,16 +259,22 @@ public class LightViewModel extends DeviceViewModel {
 		 * The color to be set.
 		 */
 		private final Color mColor;
+		/**
+		 * Flag indicating if the change should be immediate.
+		 */
+		private final boolean mIsImmediate;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param model The underlying model.
 		 * @param color The color.
+		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
-		private SetColorTask(final LightViewModel model, final Color color) {
+		private SetColorTask(final LightViewModel model, final Color color, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColor = color;
+			mIsImmediate = isImmediate;
 		}
 
 		@Override
@@ -278,7 +285,9 @@ public class LightViewModel extends DeviceViewModel {
 			}
 
 			try {
-				model.getLight().setColor(mColor);
+				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
+						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				model.getLight().setColor(mColor, colorDuration, false);
 				return mColor;
 			}
 			catch (IOException e) {

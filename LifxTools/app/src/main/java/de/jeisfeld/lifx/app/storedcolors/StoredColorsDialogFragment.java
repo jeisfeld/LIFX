@@ -129,13 +129,13 @@ public class StoredColorsDialogFragment extends DialogFragment {
 						}
 						StoredColorsDialogListener listener = mListener == null ? null : mListener.getValue();
 						if (storedColor instanceof StoredMultizoneColors && model instanceof MultizoneViewModel) {
-							((MultizoneViewModel) model).updateColors(((StoredMultizoneColors) storedColor).getColors(), 1);
+							((MultizoneViewModel) model).updateColors(((StoredMultizoneColors) storedColor).getColors(), 1, false);
 						}
 						else if (storedColor instanceof StoredTileColors && model instanceof TileViewModel) {
-							((TileViewModel) model).updateColors(((StoredTileColors) storedColor).getColors(), 1);
+							((TileViewModel) model).updateColors(((StoredTileColors) storedColor).getColors(), 1, false);
 						}
 						else {
-							model.updateColor(storedColor.getColor());
+							model.updateColor(storedColor.getColor(), false);
 						}
 						if (listener != null) {
 							listener.onStoredColorClick(storedColor);

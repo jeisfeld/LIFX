@@ -10,6 +10,8 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
@@ -86,9 +88,9 @@ public class TileViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateColor(final Color color) {
+	public final void updateColor(final Color color, final boolean isImmediate) {
 		updateStoredColors(new TileChainColors.Fixed(color), 1);
-		super.updateColor(color);
+		super.updateColor(color, isImmediate);
 	}
 
 	/**
@@ -96,12 +98,13 @@ public class TileViewModel extends LightViewModel {
 	 *
 	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
+	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
-	public void updateColors(final TileChainColors colors, final double brightnessFactor) {
+	public void updateColors(final TileChainColors colors, final double brightnessFactor, final boolean isImmediate) {
 		updateStoredColors(colors, brightnessFactor);
 
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors.withRelativeBrightness(brightnessFactor)));
+			mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -115,7 +118,7 @@ public class TileViewModel extends LightViewModel {
 	protected final void doUpdateBrightness(final double brightness) {
 		TileChainColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors, brightness);
+			updateColors(oldColors, brightness, true);
 		}
 	}
 
@@ -203,16 +206,22 @@ public class TileViewModel extends LightViewModel {
 		 * The colors to be set.
 		 */
 		private final TileChainColors mColors;
+		/**
+		 * Flag indicating if the change should be immediate.
+		 */
+		private final boolean mIsImmediate;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param model  The underlying model.
 		 * @param colors The colors.
+		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
-		private SetTileChainColorsTask(final TileViewModel model, final TileChainColors colors) {
+		private SetTileChainColorsTask(final TileViewModel model, final TileChainColors colors, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColors = colors;
+			mIsImmediate = isImmediate;
 		}
 
 		@Override
@@ -223,7 +232,9 @@ public class TileViewModel extends LightViewModel {
 			}
 
 			try {
-				model.getLight().setColors(0, mColors);
+				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
+						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				model.getLight().setColors(colorDuration, mColors);
 				return mColors;
 			}
 			catch (IOException e) {

@@ -10,8 +10,10 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -102,9 +104,9 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateColor(final Color color) {
+	public final void updateColor(final Color color, final boolean isImmediate) {
 		updateStoredColors(new MultizoneColors.Fixed(color), 1);
-		super.updateColor(color);
+		super.updateColor(color, isImmediate);
 	}
 
 	/**
@@ -112,12 +114,13 @@ public class MultizoneViewModel extends LightViewModel {
 	 *
 	 * @param colors the colors to be set.
 	 * @param brightnessFactor the brightness factor.
+	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
-	public void updateColors(final MultizoneColors colors, final double brightnessFactor) {
+	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate) {
 		updateStoredColors(colors, brightnessFactor);
 
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor)));
+			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -131,7 +134,7 @@ public class MultizoneViewModel extends LightViewModel {
 	protected final void doUpdateBrightness(final double brightness) {
 		MultizoneColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors, brightness);
+			updateColors(oldColors, brightness, true);
 		}
 	}
 
@@ -260,16 +263,22 @@ public class MultizoneViewModel extends LightViewModel {
 		 * The colors to be set.
 		 */
 		private final MultizoneColors mColors;
+		/**
+		 * Flag indicating if the change should be immediate.
+		 */
+		private final boolean mIsImmediate;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param model The underlying model.
 		 * @param colors The colors.
+		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
-		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors) {
+		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColors = colors;
+			mIsImmediate = isImmediate;
 		}
 
 		@Override
@@ -280,7 +289,9 @@ public class MultizoneViewModel extends LightViewModel {
 			}
 
 			try {
-				model.getLight().setColors(0, false, mColors);
+				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
+						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				model.getLight().setColors(colorDuration, false, mColors);
 				return mColors;
 			}
 			catch (IOException e) {

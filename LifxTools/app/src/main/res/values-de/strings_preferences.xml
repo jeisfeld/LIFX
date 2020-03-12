@@ -2,6 +2,7 @@
 <resources>
     <!-- Titles and defaults of preferences -->
     <string name="pref_title_power_duration">Schaltdauer</string>
+    <string name="pref_title_color_duration">Farbwechseldauer</string>
     <string name="pref_title_refresh_period">Aktualisierungszeitraum</string>
     <string name="pref_title_use_wakelock">Gerät bei Animation wach halten</string>
 
@@ -14,7 +15,17 @@
         <item>2 Sekunden</item>
         <item>5 Sekunden</item>
     </string-array>
-    <string-array name="refresh_period_names">
+    <string-array name="color_duration_names">
+        <item>Sofort</item>
+        <item>&#188; Sekunde</item>
+        <item>&#189; Sekunde</item>
+        <item>1 Sekunde</item>
+        <item>2 Sekunden</item>
+        <item>5 Sekunden</item>
+        <item>15 Sekunden</item>
+        <item>30 Sekunden</item>
+        <item>1 Minute</item>
+    </string-array>    <string-array name="refresh_period_names">
         <item>Nur bei Start</item>
         <item>&#188; Sekunde</item>
         <item>&#189; Sekunde</item>
