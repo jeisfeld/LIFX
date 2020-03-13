@@ -28,6 +28,10 @@ public class MultizoneMove extends AnimationData {
 	 */
 	private final Direction mDirection;
 	/**
+	 * The stretch factor.
+	 */
+	private final double mStretch;
+	/**
 	 * The initial colors.
 	 */
 	private final MultizoneColors mColors;
@@ -36,11 +40,13 @@ public class MultizoneMove extends AnimationData {
 	 * Constructor.
 	 *
 	 * @param duration the duration of the move.
+	 * @param stretch the stretch factor.
 	 * @param direction the direction of the move.
 	 * @param colors the initial colors.
 	 */
-	public MultizoneMove(final int duration, final Direction direction, final MultizoneColors colors) {
+	public MultizoneMove(final int duration, final double stretch, final Direction direction, final MultizoneColors colors) {
 		mDuration = duration;
+		mStretch = stretch;
 		mDirection = direction;
 		mColors = colors;
 	}
@@ -67,6 +73,7 @@ public class MultizoneMove extends AnimationData {
 	public final void addToIntent(final Intent serviceIntent) {
 		super.addToIntent(serviceIntent);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mDuration);
+		serviceIntent.putExtra(EXTRA_ANIMATION_STRETCH, mStretch);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DIRECTION, mDirection);
 		serviceIntent.putExtra(EXTRA_MULTIZONE_COLORS, mColors);
 	}
@@ -79,20 +86,20 @@ public class MultizoneMove extends AnimationData {
 	@Override
 	protected final AnimationDefinition getAnimationDefinition(final Light light) {
 		final MultiZoneLight mMultiZoneLight = (MultiZoneLight) light;
+		final MultizoneColors stretchColors = mColors.stretch(mStretch);
 		switch (getDirection()) {
 		case INWARD:
 		case OUTWARD:
-			final int sgn1 = getDirection() == Direction.OUTWARD ? -1 : 1;
+			final int sgn1 = getDirection() == Direction.INWARD ? -1 : 1;
 			return new MultiZoneLight.AnimationDefinition() {
 				@Override
 				public int getDuration(final int n) {
-					return Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
+					return Math.abs(mDuration) / mMultiZoneLight.getZoneCount() * 2;
 				}
 
 				@Override
 				public MultizoneColors getColors(final int n) {
-					return mColors.shift(sgn1 * n).combine(mColors.shift(-sgn1 * n), 0.5) // MAGIC_NUMBER
-							.withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
+					return stretchColors.shift(sgn1 * n).mirror().withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
 				}
 			};
 		case FORWARD:
@@ -107,7 +114,7 @@ public class MultizoneMove extends AnimationData {
 
 				@Override
 				public MultizoneColors getColors(final int n) {
-					return mColors.shift(sgn2 * n).withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
+					return stretchColors.shift(sgn2 * n).withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
 				}
 			};
 		}
@@ -115,7 +122,8 @@ public class MultizoneMove extends AnimationData {
 
 	@Override
 	protected final boolean hasNativeImplementation(final Light light) {
-		return ((MultiZoneLight) light).hasExtendedApi() && (getDirection() == Direction.FORWARD || getDirection() == Direction.BACKWARD);
+		return ((MultiZoneLight) light).hasExtendedApi() && mStretch == 1
+				&& (getDirection() == Direction.FORWARD || getDirection() == Direction.BACKWARD);
 	}
 
 	@Override

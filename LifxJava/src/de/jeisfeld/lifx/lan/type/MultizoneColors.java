@@ -78,6 +78,27 @@ public abstract class MultizoneColors implements Serializable {
 	}
 
 	/**
+	 * Stretch the colors by a certain factor.
+	 *
+	 * @param stretchFactor The stretch factor.
+	 * @return The stretched colors.
+	 */
+	public MultizoneColors stretch(final double stretchFactor) {
+		MultizoneColors base = this;
+		return new MultizoneColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Color getColor(final int zoneIndex, final int zoneCount) {
+				return base.getColor((int) Math.round(zoneIndex / stretchFactor), zoneCount);
+			}
+		};
+	}
+
+	/**
 	 * Multiply the colors by a certain brightness factor.
 	 *
 	 * @param brightnessFactor The brightness factor (1 meaning unchanged).
@@ -157,6 +178,26 @@ public abstract class MultizoneColors implements Serializable {
 	}
 
 	/**
+	 * Symmetrically mirror the colors.
+	 *
+	 * @return The mirrored colors.
+	 */
+	public MultizoneColors mirror() {
+		MultizoneColors base = this;
+		return new MultizoneColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Color getColor(final int zoneIndex, final int zoneCount) {
+				return base.getColor(zoneIndex < zoneCount / 2 ? zoneCount / 2 - 1 - zoneIndex : zoneIndex - zoneCount / 2, zoneCount / 2);
+			}
+		};
+	}
+
+	/**
 	 * Return the max brightness.
 	 *
 	 * @param zoneCount The number of zones.
@@ -168,6 +209,35 @@ public abstract class MultizoneColors implements Serializable {
 			maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(getColor(i, zoneCount).getBrightness()));
 		}
 		return maxBrightness;
+	}
+
+	/**
+	 * Convert positive double into fraction, and return the denominator.
+	 *
+	 * @param x The double.
+	 * @param precision The precision.
+	 * @return The denominator.
+	 */
+	private static int getDenominator(final double x, final double precision) {
+		List<Integer> parts = new ArrayList<>();
+		double currentDouble = x;
+		int denom = 0;
+		double diff = 1;
+		while (currentDouble > 0 && diff > precision) { // MAGIC_NUMBER
+			int nextInt = (int) Math.floor(currentDouble);
+			parts.add(nextInt);
+			double remainder = currentDouble - nextInt;
+			currentDouble = remainder < 0.00001 ? 0 : 1 / remainder; // MAGIC_NUMBER
+			denom = 0;
+			int num = 1;
+			for (int i = parts.size() - 1; i >= 0; i--) {
+				int newNum = num * parts.get(i) + denom;
+				denom = num;
+				num = newNum;
+			}
+			diff = Math.abs(x - (double) num / denom);
+		}
+		return denom;
 	}
 
 	/**
@@ -340,6 +410,26 @@ public abstract class MultizoneColors implements Serializable {
 				newColors.add(color.withRelativeBrightness(brightnessFactor));
 			}
 			return new MultizoneColors.Interpolated(mCyclic, newColors);
+		}
+
+		@Override
+		public final MultizoneColors stretch(final double stretchFactor) {
+			MultizoneColors base = this;
+
+			int denominator = MultizoneColors.getDenominator(stretchFactor, 0.01); // MAGIC_NUMBER
+			int numerator = (int) Math.round(stretchFactor * denominator);
+
+			return new MultizoneColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public Color getColor(final int zoneIndex, final int zoneCount) {
+					return base.getColor(zoneIndex * denominator, zoneCount * numerator);
+				}
+			};
 		}
 
 		/**

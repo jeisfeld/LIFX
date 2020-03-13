@@ -23,19 +23,23 @@ public abstract class AnimationData implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Key for the device Label within the intent.
+	 * Key for the animation type within the intent.
 	 */
 	private static final String EXTRA_ANIMATION_TYPE = "de.jeisfeld.lifx.ANIMATION_TYPE";
 	/**
-	 * Key for the device Label within the intent.
+	 * Key for the animation duration within the intent.
 	 */
 	protected static final String EXTRA_ANIMATION_DURATION = "de.jeisfeld.lifx.ANIMATION_DURATION";
 	/**
-	 * Key for the device Label within the intent.
+	 * Key for the animation radius within the intent.
 	 */
 	protected static final String EXTRA_ANIMATION_RADIUS = "de.jeisfeld.lifx.ANIMATION_RADIUS";
 	/**
-	 * Key for the device Label within the intent.
+	 * Key for the animation stretch within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_STRETCH = "de.jeisfeld.lifx.ANIMATION_STRETCH";
+	/**
+	 * Key for the animation direction within the intent.
 	 */
 	protected static final String EXTRA_ANIMATION_DIRECTION = "de.jeisfeld.lifx.ANIMATION_DIRECTION";
 	/**
@@ -146,9 +150,10 @@ public abstract class AnimationData implements Serializable {
 		switch (animationType) {
 		case MULTIZONE_MOVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+			double stretch = intent.getDoubleExtra(EXTRA_ANIMATION_STRETCH, 1);
 			final MultizoneMove.Direction multizoneDirection = (MultizoneMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
 			final MultizoneColors colors = (MultizoneColors) intent.getSerializableExtra(EXTRA_MULTIZONE_COLORS);
-			return new MultizoneMove(duration, multizoneDirection, colors);
+			return new MultizoneMove(duration, stretch, multizoneDirection, colors);
 		case TILECHAIN_MOVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER

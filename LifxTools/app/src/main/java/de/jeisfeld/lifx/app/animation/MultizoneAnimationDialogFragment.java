@@ -83,6 +83,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 
 		final View view = View.inflate(requireActivity(), R.layout.dialog_multizone_animation, null);
 		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
+		final EditText editTextStretch = view.findViewById(R.id.editTextStretch);
 		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -104,11 +105,19 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 						catch (Exception e) {
 							duration = 10000; // MAGIC_NUMBER
 						}
+						double stretch;
+						try {
+							stretch = Math.max(0.1, Double.parseDouble(editTextStretch.getText().toString())); // MAGIC_NUMBER
+						}
+						catch (Exception e) {
+							stretch = 1;
+						}
+
 						MultizoneMove.Direction direction =
 								MultizoneMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
 						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
-								new MultizoneMove(duration, direction, mModel.getValue().getColors().getValue()));
+								new MultizoneMove(duration, stretch, direction, mModel.getValue().getColors().getValue()));
 					}
 				});
 		return builder.create();

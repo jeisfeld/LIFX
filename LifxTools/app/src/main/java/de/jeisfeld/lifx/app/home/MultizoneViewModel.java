@@ -371,7 +371,7 @@ public class MultizoneViewModel extends LightViewModel {
 						? COLORTEMP_FLAG2_MULTIPICKER_CYCLIC
 						: COLORTEMP_FLAG2_MULTIPICKER;
 			}
-			else if (zoneIndex < MultiColorPickerDialogFragment.MULTIZONE_PICKER_COUNT + 2) {
+			else if (zoneIndex >= 0 && zoneIndex < MultiColorPickerDialogFragment.MULTIZONE_PICKER_COUNT + 2) {
 				colorTemperature = mFlags[zoneIndex - 2] ? COLORTEMP_FLAG1 : Color.WHITE_TEMPERATURE;
 			}
 			else {
@@ -442,6 +442,11 @@ public class MultizoneViewModel extends LightViewModel {
 		@Override
 		public MultizoneColors shift(final int shiftCount) {
 			return new FlaggedMultizoneColors(mMultizoneColors.shift(shiftCount), mFlags);
+		}
+
+		@Override
+		public MultizoneColors stretch(final double stretchFactor) {
+			return new FlaggedMultizoneColors(mMultizoneColors.stretch(stretchFactor), mFlags);
 		}
 
 		@Override

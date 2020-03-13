@@ -156,7 +156,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 						double radius;
 						try {
-							radius = Double.parseDouble(editTextRadius.getText().toString()) * lightRadius;
+							radius = Math.max(1, Double.parseDouble(editTextRadius.getText().toString()) * lightRadius);
 						}
 						catch (Exception e) {
 							radius = lightRadius;
