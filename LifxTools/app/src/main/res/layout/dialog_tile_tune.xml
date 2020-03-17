@@ -10,39 +10,6 @@
     android:paddingBottom="@dimen/big_margin">
 
     <ImageView
-        android:id="@+id/imageViewPickedImage"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/big_margin"
-        android:minWidth="@dimen/image_preview_min_height"
-        android:minHeight="@dimen/image_preview_min_height"
-        app:layout_constraintBottom_toTopOf="@id/seekBarBrightness"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
-
-    <Button
-        android:id="@+id/buttonBack"
-        android:layout_width="@dimen/medium_button_size"
-        android:layout_height="@dimen/medium_button_size"
-        android:background="@drawable/ic_button_arrow_left"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/imageViewPickedImage"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <ToggleButton
-        android:id="@+id/toggleButtonFilter"
-        android:layout_width="@dimen/medium_button_size"
-        android:layout_height="@dimen/medium_button_size"
-        android:background="@drawable/ic_toggle_filter"
-        android:checked="false"
-        android:textOff=""
-        android:textOn=""
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/imageViewPickedImage" />
-
-    <ImageView
         android:id="@+id/labelSeekBarBrightness"
         android:layout_width="@dimen/small_button_size"
         android:layout_height="@dimen/small_button_size"
@@ -58,7 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/big_margin"
         android:max="100"
-        android:progress="100"
+        android:progress="50"
         android:thumb="@drawable/ic_button_brightness"
         app:layout_constraintBottom_toTopOf="@id/seekBarContrast"
         app:layout_constraintEnd_toEndOf="parent"
@@ -100,10 +67,54 @@
         android:id="@+id/seekBarSaturation"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/big_margin"
         android:max="100"
         android:progress="50"
         android:thumb="@drawable/ic_button_saturation"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/seekBarHue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/labelSeekBarSaturation" />
+
+    <ImageView
+        android:id="@+id/labelSeekBarHue"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:src="@drawable/ic_button_hue"
+        app:layout_constraintBottom_toBottomOf="@id/seekBarHue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/seekBarHue"
+        tools:ignore="ContentDescription" />
+
+    <SeekBar
+        android:id="@+id/seekBarHue"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginBottom="@dimen/big_margin"
+        android:max="256"
+        android:progress="128"
+        android:thumb="@drawable/ic_button_hue_resized"
+        app:layout_constraintBottom_toTopOf="@id/seekBarColorTemperature"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/labelSeekBarHue" />
+
+    <ImageView
+        android:id="@+id/labelSeekBarColorTemperature"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:src="@drawable/ic_button_color_temperature"
+        app:layout_constraintBottom_toBottomOf="@id/seekBarColorTemperature"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/seekBarColorTemperature"
+        tools:ignore="ContentDescription" />
+
+    <SeekBar
+        android:id="@+id/seekBarColorTemperature"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/small_button_size"
+        android:max="120"
+        android:progress="80"
+        android:thumb="@drawable/ic_button_color_temperature"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/labelSeekBarColorTemperature" />
 </androidx.constraintlayout.widget.ConstraintLayout>

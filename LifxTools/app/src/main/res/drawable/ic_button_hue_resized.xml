@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:width="@dimen/small_button_size"
+        android:height="@dimen/small_button_size">
+        <bitmap
+            android:gravity="fill"
+            android:src="@drawable/ic_button_hue" />
+    </item>
+</layer-list>

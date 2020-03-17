@@ -52,6 +52,8 @@ import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment.MultiColorPickerDialogListener;
 import de.jeisfeld.lifx.app.view.PickedImageDialogFragment;
 import de.jeisfeld.lifx.app.view.PickedImageDialogFragment.PickedImageDialogListener;
+import de.jeisfeld.lifx.app.view.TuneTilesDialogFragment;
+import de.jeisfeld.lifx.app.view.TuneTilesDialogFragment.TuneTilesDialogListener;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -275,6 +277,10 @@ public class DeviceAdapter extends BaseAdapter {
 			if (imageButton != null) {
 				prepareImageButton(imageButton, lightModel, position);
 			}
+			Button tuneButton = view.findViewById(R.id.buttonTune);
+			if (tuneButton != null) {
+				prepareTuneButton(tuneButton, lightModel, position);
+			}
 		}
 
 		return view;
@@ -415,8 +421,8 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * Load a tile image via button.
 	 *
-	 * @param imageButton The imate button.
-	 * @param model The multizone view model.
+	 * @param imageButton The image button.
+	 * @param model The tile view model.
 	 * @param position The position where the button was clicked.
 	 */
 	private void prepareImageButton(final Button imageButton, final TileViewModel model, final int position) {
@@ -472,6 +478,41 @@ public class DeviceAdapter extends BaseAdapter {
 				if (oldColors != null) {
 					model.updateColors(oldColors, oldBrightness == null ? 1 : oldBrightness, true);
 				}
+			}
+		});
+	}
+
+	/**
+	 * Tune brightness, contrast, saturation, hue.
+	 *
+	 * @param tuneButton The tune button.
+	 * @param model The tile view model.
+	 * @param position The position where the button was clicked.
+	 */
+	private void prepareTuneButton(final Button tuneButton, final TileViewModel model, final int position) {
+		tuneButton.setVisibility(View.VISIBLE);
+
+		tuneButton.setOnClickListener(v -> {
+			Fragment fragment = mFragment.get();
+			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+			if (activity != null) {
+				TuneTilesDialogFragment.displayPickedImageDialog(activity, model, new TuneTilesDialogListener() {
+					@Override
+					public void onImageUpdate(final TileChainColors colors) {
+						model.updateColors(colors, 1, true);
+					}
+
+					@Override
+					public void onDialogPositiveClick(final DialogFragment dialog, final TileChainColors colors) {
+						// Convert anonymous colors to PerTile, so that it is storable.
+						model.updateColors(new TileChainColors.PerTile(model.getLight(), colors), 1, true);
+					}
+
+					@Override
+					public void onDialogNegativeClick(final DialogFragment dialog, final TileChainColors initialColors) {
+						model.updateColors(initialColors, 1, true);
+					}
+				});
 			}
 		});
 	}
@@ -721,7 +762,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param progress The seekbar value
 	 * @return The color temperature
 	 */
-	protected static short progressBarToColorTemperature(final int progress) {
+	public static short progressBarToColorTemperature(final int progress) {
 		int colorTemp;
 		if (progress <= 72) { // MAGIC_NUMBER
 			colorTemp = (1000 * progress / 36) + 1500; // MAGIC_NUMBER

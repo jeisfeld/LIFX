@@ -67,7 +67,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 		fragment.setListener(listener);
 		fragment.setModel(model);
 
-		bundle.putParcelable(PARAM_BITMAP, bitmap); // MAGIC_NUMBER
+		bundle.putParcelable(PARAM_BITMAP, bitmap);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 	}

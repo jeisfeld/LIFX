@@ -68,6 +68,15 @@
                 android:visibility="gone"/>
 
             <Button
+                android:id="@+id/buttonTune"
+                android:layout_width="@dimen/medium_button_size"
+                android:layout_height="@dimen/medium_button_size"
+                android:layout_gravity="center_vertical|center_horizontal"
+                android:layout_marginEnd="@dimen/list_horizontal_margin"
+                android:background="@drawable/ic_button_tune"
+                android:visibility="gone"/>
+
+            <Button
                 android:id="@+id/buttonSave"
                 android:layout_width="@dimen/medium_button_size"
                 android:layout_height="@dimen/medium_button_size"
