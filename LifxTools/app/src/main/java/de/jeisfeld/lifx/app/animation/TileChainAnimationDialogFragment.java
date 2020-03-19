@@ -9,10 +9,12 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -41,11 +43,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
-	 * @param model    the tile view model.
+	 * @param model the tile view model.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayTileChainAnimationDialog(final FragmentActivity activity, final TileViewModel model,
-													   final TileChainAnimationDialogListener listener) {
+			final TileChainAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
 		TileChainAnimationDialogFragment fragment = new TileChainAnimationDialogFragment();
 		fragment.setListener(listener);
@@ -94,11 +96,43 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 			dismiss();
 		}
 
-		final View view = View.inflate(requireActivity(), R.layout.dialog_tilechain_animation, null);
-		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
-		final EditText editTextRadius = view.findViewById(R.id.editTextRadius);
-		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
-		final ImageView imageViewColors = view.findViewById(R.id.imageViewColors);
+		final View parentView = View.inflate(requireActivity(), R.layout.dialog_tilechain_animation, null);
+		final Spinner spinnerAnimationType = parentView.findViewById(R.id.spinnerAnimationType);
+		final EditText editTextDuration = parentView.findViewById(R.id.editTextDuration);
+		final EditText editTextRadius = parentView.findViewById(R.id.editTextRadius);
+		final Spinner spinnerDirection = parentView.findViewById(R.id.spinnerDirection);
+		final EditText editTextColorRegex = parentView.findViewById(R.id.editTextColorRegex);
+		final CheckBox checkBoxAdjustBrightness = parentView.findViewById(R.id.checkboxAdjustBrightness);
+		final ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
+
+		spinnerAnimationType.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position, final long id) {
+				TileChainAnimationType animationType = TileChainAnimationType.fromOrdinal(position);
+				switch (animationType) {
+				case IMAGE_TRANSITION:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.VISIBLE);
+					break;
+				case MOVE:
+				default:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+					break;
+				}
+			}
+
+			@Override
+			public void onNothingSelected(final AdapterView<?> parent) {
+				// do nothing
+			}
+		});
 
 		mColors.add(Color.RED);
 		mColors.add(Color.GREEN);
@@ -117,7 +151,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
-												  final boolean[] flags) {
+						final boolean[] flags) {
 					mColors = colors;
 					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
 				}
@@ -131,7 +165,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.title_dialog_animation)
-				.setView(view)
+				.setView(parentView)
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 					// Send the positive button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {
@@ -143,8 +177,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					if (mListener != null && mListener.getValue() != null && mModel != null // BOOLEAN_EXPRESSION_COMPLEXITY
 							&& mModel.getValue() != null && mModel.getValue().getLight() != null) {
 						TileChain light = mModel.getValue().getLight();
-						double lightRadius =
-								Math.sqrt(light.getTotalHeight() * light.getTotalHeight() + light.getTotalWidth() * light.getTotalWidth()) / 2;
+						TileChainAnimationType animationType = TileChainAnimationType.fromOrdinal(spinnerAnimationType.getSelectedItemPosition());
 
 						int duration;
 						try {
@@ -154,19 +187,34 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							duration = 10000; // MAGIC_NUMBER
 						}
 
-						double radius;
-						try {
-							radius = Math.max(1, Double.parseDouble(editTextRadius.getText().toString()) * lightRadius);
-						}
-						catch (Exception e) {
-							radius = lightRadius;
-						}
+						switch (animationType) {
+						case IMAGE_TRANSITION:
+							String colorRegex = editTextColorRegex.getText().toString();
+							boolean adjustBrightness = checkBoxAdjustBrightness.isChecked();
 
-						final TileChainMove.Direction direction =
-								TileChainMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+									new TileChainImageTransition(duration, colorRegex, adjustBrightness));
+							break;
+						case MOVE:
+						default:
+							double lightRadius =
+									Math.sqrt(light.getTotalHeight() * light.getTotalHeight() + light.getTotalWidth() * light.getTotalWidth()) / 2;
 
-						mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-								new TileChainMove(duration, radius, direction, mColors));
+							double radius;
+							try {
+								radius = Math.max(1, Double.parseDouble(editTextRadius.getText().toString()) * lightRadius);
+							}
+							catch (Exception e) {
+								radius = lightRadius;
+							}
+
+							final TileChainMove.Direction direction =
+									TileChainMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+
+							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+									new TileChainMove(duration, radius, direction, mColors));
+							break;
+						}
 					}
 				});
 		return builder.create();
@@ -191,13 +239,42 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	}
 
 	/**
+	 * The direction of the animation.
+	 */
+	public enum TileChainAnimationType {
+		/**
+		 * Outward movement.
+		 */
+		MOVE,
+		/**
+		 * Inward movement.
+		 */
+		IMAGE_TRANSITION;
+
+		/**
+		 * Get TileChainAnimationType from its ordinal value.
+		 *
+		 * @param ordinal The ordinal value.
+		 * @return The TileChainAnimationType.
+		 */
+		protected static TileChainAnimationType fromOrdinal(final int ordinal) {
+			for (TileChainAnimationType animationType : values()) {
+				if (ordinal == animationType.ordinal()) {
+					return animationType;
+				}
+			}
+			return MOVE;
+		}
+	}
+
+	/**
 	 * A callback handler for the dialog.
 	 */
 	public interface TileChainAnimationDialogListener {
 		/**
 		 * Callback method for positive click from the confirmation dialog.
 		 *
-		 * @param dialog        The confirmation dialog fragment.
+		 * @param dialog The confirmation dialog fragment.
 		 * @param animationData The animation data.
 		 */
 		void onDialogPositiveClick(DialogFragment dialog, AnimationData animationData);

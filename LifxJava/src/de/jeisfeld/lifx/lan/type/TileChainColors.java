@@ -8,6 +8,7 @@ import java.util.List;
 
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.TileInfo.Rotation;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Class to hold tile chain colors.
@@ -84,6 +85,31 @@ public abstract class TileChainColors implements Serializable {
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				Color baseColor = base.getColor(x, y, width, height);
 				return baseColor == null ? null : baseColor.withRelativeBrightness(brightnessFactor);
+			}
+		};
+	}
+
+	/**
+	 * Ensure that colors have certain minimum brightness.
+	 *
+	 * @param minBrightness the minimum brightness.
+	 * @return The changed colors.
+	 */
+	public TileChainColors withMinBrightness(final short minBrightness) {
+		TileChainColors base = this;
+		final double minBrightnessDouble = TypeUtil.toDouble(minBrightness);
+		final int minBrightnessInt = TypeUtil.toUnsignedInt(minBrightness);
+		return new TileChainColors() {
+			/**
+			 * The default serializable version id.
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Color getColor(final int x, final int y, final int width, final int height) {
+				Color baseColor = base.getColor(x, y, width, height);
+				int baseBrightness = TypeUtil.toUnsignedInt(baseColor.getBrightness());
+				return baseBrightness < minBrightnessInt ? baseColor.withBrightness(minBrightnessDouble) : baseColor;
 			}
 		};
 	}

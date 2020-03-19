@@ -7,7 +7,22 @@
     android:paddingEnd="?attr/dialogPreferredPadding"
     android:stretchColumns="1">
 
-    <TableRow>
+    <TableRow android:id="@+id/tableRowAnimationType">
+
+        <TextView
+            android:text="@string/label_animation_type"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/spinnerAnimationType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/values_tilechain_animation_type"
+            android:minHeight="@dimen/medium_button_size"
+            android:spinnerMode="dropdown" />
+    </TableRow>
+
+    <TableRow android:id="@+id/tableRowDuration">
 
         <TextView
             android:text="@string/label_animation_duration"
@@ -24,7 +39,7 @@
             tools:ignore="HardcodedText" />
     </TableRow>
 
-    <TableRow>
+    <TableRow android:id="@+id/tableRowRadius">
 
         <TextView
             android:labelFor="@id/editTextRadius"
@@ -41,7 +56,7 @@
             tools:ignore="HardcodedText" />
     </TableRow>
 
-    <TableRow>
+    <TableRow android:id="@+id/tableRowDirection">
 
         <TextView
             android:text="@string/label_animation_direction"
@@ -56,7 +71,7 @@
             android:spinnerMode="dropdown" />
     </TableRow>
 
-    <TableRow>
+    <TableRow android:id="@+id/tableRowColors">
 
         <TextView
             android:text="@string/label_animation_colors"
@@ -67,5 +82,40 @@
             android:layout_width="@dimen/medium_button_size"
             android:layout_height="@dimen/medium_button_size"
             tools:ignore="ContentDescription" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowColorRegex"
+        android:visibility="gone">
+
+        <TextView
+            android:labelFor="@id/editTextColorRegex"
+            android:text="@string/label_animation_color_regex"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextColorRegex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:inputType="text"
+            android:text=".*"
+            tools:ignore="HardcodedText" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowAdjustBrightness"
+        android:visibility="gone">
+
+        <TextView
+            android:labelFor="@id/checkboxAdjustBrightness"
+            android:text="@string/label_animation_adjust_brightness"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <CheckBox
+            android:id="@+id/checkboxAdjustBrightness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true" />
     </TableRow>
 </TableLayout>

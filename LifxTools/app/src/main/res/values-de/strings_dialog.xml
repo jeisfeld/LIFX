@@ -10,17 +10,24 @@
     <string name="button_ok">OK</string>
     <string name="button_start">Starten</string>
 
+    <string name="label_animation_type">Typ</string>
     <string name="label_animation_duration">Dauer</string>
     <string name="hint_animation_duration">(Sekunden)</string>
     <string name="label_animation_radius">Radius</string>
     <string name="label_animation_stretch">Streckung</string>
     <string name="label_animation_direction">Richtung</string>
     <string name="label_animation_colors">Farben</string>
+    <string name="label_animation_color_regex">Farben (RegEx)</string>
+    <string name="label_animation_adjust_brightness">Helligkeit anpassen</string>
     <string-array name="values_multizone_animation_direction">
         <item>vorwärts</item>
         <item>rückwärts</item>
         <item>auswärts</item>
         <item>einwärts</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_type">
+        <item>Bewegung</item>
+        <item>Bildübergang</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>auswärts</item>

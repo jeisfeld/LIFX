@@ -43,6 +43,14 @@ public abstract class AnimationData implements Serializable {
 	 */
 	protected static final String EXTRA_ANIMATION_DIRECTION = "de.jeisfeld.lifx.ANIMATION_DIRECTION";
 	/**
+	 * Key for the animation color regex within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_COLOR_REGEX = "de.jeisfeld.lifx.ANIMATION_COLOR_REGEX";
+	/**
+	 * Key for the animation color regex within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_ADJUST_BRIGHTNESS = "de.jeisfeld.lifx.ANIMATION_ADJUST_BRIGHTNESS";
+	/**
 	 * Key for the multizone colors within the intent.
 	 */
 	protected static final String EXTRA_MULTIZONE_COLORS = "de.jeisfeld.lifx.MULTIZONE_COLORS";
@@ -161,6 +169,11 @@ public abstract class AnimationData implements Serializable {
 			@SuppressWarnings("unchecked")
 			final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainMove(duration, radius, tilechainDirection, tileColors);
+		case TILECHAIN_IMAGE_TRANSITION:
+			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+			String colorRegex = intent.getStringExtra(EXTRA_ANIMATION_COLOR_REGEX);
+			boolean adjustBrightness = intent.getBooleanExtra(EXTRA_ANIMATION_ADJUST_BRIGHTNESS, true);
+			return new TileChainImageTransition(duration, colorRegex, adjustBrightness);
 		default:
 			return null;
 		}
@@ -181,7 +194,11 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain move.
 		 */
-		TILECHAIN_MOVE;
+		TILECHAIN_MOVE,
+		/**
+		 * Tilechain image transition.
+		 */
+		TILECHAIN_IMAGE_TRANSITION;
 
 		/**
 		 * Get Direction from its ordinal value.
