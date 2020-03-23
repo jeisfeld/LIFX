@@ -16,7 +16,6 @@
 	<classpathentry kind="lib" path="libs-local/core-1.1.0-rc03.jar"/>
 	<classpathentry kind="lib" path="libs-local/appcompat-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/constraintlayout-1.1.3.jar"/>
-	<classpathentry kind="lib" path="libs-local/fragment-1.2.1.jar"/>
 	<classpathentry kind="lib" path="libs-local/lifecycle-extensions-2.2.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/navigation-fragment-2.2.1.jar"/>
 	<classpathentry kind="lib" path="libs-local/navigation-ui-2.2.1.jar"/>
@@ -29,11 +28,12 @@
 	<classpathentry kind="lib" path="libs-local/lifecycle-livedata-core-2.2.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/lifecycle-common-2.2.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/activity-1.1.0.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="libs-local/localbroadcastmanager-1.0.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/preference-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/colorpickerview-2.1.6.jar"/>
 	<classpathentry kind="lib" path="libs-local/recyclerview-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/R.jar"/>
+	<classpathentry kind="lib" path="libs-local/fragment-1.2.3.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
