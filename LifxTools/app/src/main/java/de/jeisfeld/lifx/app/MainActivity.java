@@ -2,6 +2,7 @@ package de.jeisfeld.lifx.app;
 
 import com.google.android.material.navigation.NavigationView;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
 
@@ -52,5 +53,10 @@ public class MainActivity extends AppCompatActivity {
 		NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 		return NavigationUI.navigateUp(navController, mAppBarConfiguration)
 				|| super.onSupportNavigateUp();
+	}
+
+	@Override
+	protected final void attachBaseContext(final Context newBase) {
+		super.attachBaseContext(Application.createContextWrapperForLocale(newBase));
 	}
 }

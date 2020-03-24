@@ -2,27 +2,35 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ListPreference
-        android:defaultValue="@string/pref_default_power_duration"
-        android:entries="@array/power_duration_names"
+        android:defaultValue="@string/pref_default_language"
+        android:entries="@array/pref_list_titles_language"
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false"
-        android:entryValues="@array/power_duration_values"
+        android:entryValues="@array/pref_list_values_language"
+        android:key="@string/key_pref_language"
+        android:title="@string/pref_title_language" />
+    <ListPreference
+        android:defaultValue="@string/pref_default_power_duration"
+        android:entries="@array/pref_list_titles_power_duration"
+        app:useSimpleSummaryProvider="true"
+        app:iconSpaceReserved="false"
+        android:entryValues="@array/pref_list_values_power_duration"
         android:key="@string/key_pref_power_duration"
         android:title="@string/pref_title_power_duration" />
     <ListPreference
         android:defaultValue="@string/pref_default_color_duration"
-        android:entries="@array/color_duration_names"
+        android:entries="@array/pref_list_titles_color_duration"
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false"
-        android:entryValues="@array/color_duration_values"
+        android:entryValues="@array/pref_list_values_color_duration"
         android:key="@string/key_pref_color_duration"
         android:title="@string/pref_title_color_duration" />
     <ListPreference
         android:defaultValue="@string/pref_default_refresh_period"
-        android:entries="@array/refresh_period_names"
+        android:entries="@array/pref_list_titles_refresh_period"
         app:useSimpleSummaryProvider="true"
         app:iconSpaceReserved="false"
-        android:entryValues="@array/refresh_period_values"
+        android:entryValues="@array/pref_list_values_refresh_period"
         android:key="@string/key_pref_refresh_period"
         android:title="@string/pref_title_refresh_period" />
     <CheckBoxPreference

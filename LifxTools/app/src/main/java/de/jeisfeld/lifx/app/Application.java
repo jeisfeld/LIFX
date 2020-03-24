@@ -1,8 +1,8 @@
 package de.jeisfeld.lifx.app;
 
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -11,8 +11,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.LocaleList;
 import android.util.Log;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -27,6 +25,7 @@ public class Application extends android.app.Application {
 	/**
 	 * A utility field to store a context statically.
 	 */
+	@SuppressLint("StaticFieldLeak")
 	private static Context mContext;
 	/**
 	 * The default tag for logging.
@@ -35,6 +34,7 @@ public class Application extends android.app.Application {
 	/**
 	 * The default locale.
 	 */
+	@SuppressLint("ConstantLocale")
 	private static final Locale DEFAULT_LOCALE = Locale.getDefault();
 
 	@Override
@@ -44,8 +44,6 @@ public class Application extends android.app.Application {
 		super.onCreate();
 		Application.mContext = getApplicationContext();
 		Application.mContext = Application.createContextWrapperForLocale(getApplicationContext());
-
-		setExceptionHandler();
 
 		// Set statistics
 		int initialVersion = PreferenceUtil.getSharedPreferenceInt(R.string.key_statistics_initialversion, -1);
@@ -59,21 +57,6 @@ public class Application extends android.app.Application {
 		}
 
 		PreferenceUtil.incrementCounter(R.string.key_statistics_countstarts);
-	}
-
-	/**
-	 * Define custom ExceptionHandler which ensures that notification alarms are not lost in case of error.
-	 */
-	private void setExceptionHandler() {
-		final UncaughtExceptionHandler defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-
-		UncaughtExceptionHandler customExceptionHandler =
-				(thread, ex) -> {
-					// re-throw critical exception further to the os
-					defaultExceptionHandler.uncaughtException(thread, ex);
-				};
-
-		Thread.setDefaultUncaughtExceptionHandler(customExceptionHandler);
 	}
 
 	/**
@@ -101,7 +84,6 @@ public class Application extends android.app.Application {
 	 *
 	 * @return the app version.
 	 */
-	@SuppressWarnings("deprecation")
 	public static int getVersion() {
 		PackageInfo pInfo;
 		try {
@@ -159,38 +141,22 @@ public class Application extends android.app.Application {
 	}
 
 	/**
-	 * Create a ContextWrapper, wrappint the context with a specific locale.
+	 * Create a ContextWrapper, wrapping the context with a specific locale.
 	 *
 	 * @param context The original context.
 	 * @return The context wrapper.
 	 */
-	@SuppressWarnings("deprecation")
 	public static ContextWrapper createContextWrapperForLocale(final Context context) {
 		Resources res = context.getResources();
 		Configuration configuration = res.getConfiguration();
 		Locale newLocale = Application.getApplicationLocale();
-		Context newContext = context;
+		configuration.setLocale(newLocale);
 
-		if (VERSION.SDK_INT >= VERSION_CODES.N) {
-			configuration.setLocale(newLocale);
+		LocaleList localeList = new LocaleList(newLocale);
+		LocaleList.setDefault(localeList);
+		configuration.setLocales(localeList);
 
-			LocaleList localeList = new LocaleList(newLocale);
-			LocaleList.setDefault(localeList);
-			configuration.setLocales(localeList);
-
-			newContext = context.createConfigurationContext(configuration);
-
-		}
-		else if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN_MR1) {
-			configuration.setLocale(newLocale);
-			newContext = context.createConfigurationContext(configuration);
-
-		}
-		else {
-			configuration.locale = newLocale;
-			res.updateConfiguration(configuration, res.getDisplayMetrics());
-		}
-		return new ContextWrapper(newContext);
+		return new ContextWrapper(context.createConfigurationContext(configuration));
 	}
 
 	/**
