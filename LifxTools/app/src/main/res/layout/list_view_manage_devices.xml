@@ -39,6 +39,17 @@
         android:src="@drawable/ic_button_arrow_right"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/imageViewStoredColors"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageViewStoredColors"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="@dimen/list_horizontal_margin"
+        android:src="@drawable/ic_menu_stored_colors"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/imageViewDelete"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />

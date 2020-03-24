@@ -7,6 +7,7 @@ import java.util.List;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,8 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
@@ -100,8 +105,9 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 
 		holder.mDeleteButton.setOnClickListener(v -> {
 			Fragment fragment = mFragment.get();
-			if (fragment != null && fragment.getActivity() != null) {
-				DialogUtil.displayConfirmationMessage(fragment.getActivity(), new ConfirmDialogListener() {
+			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+			if (activity != null) {
+				DialogUtil.displayConfirmationMessage(activity, new ConfirmDialogListener() {
 					@Override
 					public void onDialogPositiveClick(final DialogFragment dialog) {
 						DeviceRegistry.getInstance().remove(device);
@@ -116,6 +122,20 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 						// do nothing
 					}
 				}, null, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
+			}
+		});
+
+		holder.mStoredColorsButton.setOnClickListener(v -> {
+			Fragment fragment = mFragment.get();
+			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+			if (activity != null) {
+				NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
+				Bundle bundle = new Bundle();
+				Integer deviceId = (Integer) device.getParameter(DeviceRegistry.DEVICE_ID);
+				if (deviceId != null) {
+					bundle.putInt(StoredColorsFragment.PARAM_DEVICE_ID, deviceId);
+				}
+				navController.navigate(R.id.nav_stored_colors, bundle);
 			}
 		});
 
@@ -208,6 +228,10 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 		 */
 		private final ImageView mDeleteButton;
 		/**
+		 * The stored colors button.
+		 */
+		private final ImageView mStoredColorsButton;
+		/**
 		 * The arrow for multizone orientation.
 		 */
 		private final ImageView mMultizoneOrientationButton;
@@ -227,6 +251,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			mTitle = itemView.findViewById(R.id.textViewDeviceName);
 			mDragHandle = itemView.findViewById(R.id.imageViewDragHandle);
 			mDeleteButton = itemView.findViewById(R.id.imageViewDelete);
+			mStoredColorsButton = itemView.findViewById(R.id.imageViewStoredColors);
 			mMultizoneOrientationButton = itemView.findViewById(R.id.imageViewMultizoneOrientation);
 			mCheckbox = itemView.findViewById(R.id.checkboxSelectLight);
 		}

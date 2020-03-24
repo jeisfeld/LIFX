@@ -29,8 +29,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
-import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -67,9 +67,15 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 *
 	 * @param fragment the calling fragment.
 	 * @param recyclerView The recycler view.
+	 * @param deviceId The device id.
 	 */
-	public StoredColorsViewAdapter(final Fragment fragment, final RecyclerView recyclerView) {
-		mStoredColors = ColorRegistry.getInstance().getStoredColors();
+	public StoredColorsViewAdapter(final Fragment fragment, final RecyclerView recyclerView, final Integer deviceId) {
+		if (deviceId == null) {
+			mStoredColors = ColorRegistry.getInstance().getStoredColors();
+		}
+		else {
+			mStoredColors = ColorRegistry.getInstance().getStoredColors(deviceId);
+		}
 		mColorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
 		mFragment = new WeakReference<>(fragment);
 	}
@@ -186,7 +192,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			if (colors instanceof TileChainColors.Fixed) {
 				drawable.setColor(ColorUtil.toAndroidDisplayColor(((TileChainColors.Fixed) colors).getColor()));
 			}
-			else  {
+			else {
 				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId());
 				if (tileChain.getTotalWidth() == 0 || tileChain.getTotalHeight() == 0) {
 					drawable.setShape(GradientDrawable.RECTANGLE);

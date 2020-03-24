@@ -2,7 +2,6 @@ package de.jeisfeld.lifx.app.storedcolors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import android.util.SparseArray;
 import de.jeisfeld.lifx.app.R;
@@ -37,11 +36,30 @@ public final class ColorRegistry {
 	 * @return The list of stored colors.
 	 */
 	public List<StoredColor> getStoredColors() {
-		List<StoredColor> result = new ArrayList<>();
 		List<Integer> colorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
+		List<Integer> deviceIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids);
+		List<StoredColor> allStoredColors = new ArrayList<>();
 		for (int colorId : colorIds) {
-			result.add(mStoredColors.get(colorId));
+			allStoredColors.add(mStoredColors.get(colorId));
 		}
+		List<StoredColor> colorsWithoutDeviceId = new ArrayList<>(allStoredColors);
+		List<StoredColor> result = new ArrayList<>();
+		List<Integer> newColorIds = new ArrayList<>();
+		for (int deviceId : deviceIds) {
+			for (StoredColor storedColor : allStoredColors) {
+				if (deviceId == storedColor.getDeviceId()) {
+					result.add(storedColor);
+					newColorIds.add(storedColor.getId());
+					colorsWithoutDeviceId.remove(storedColor);
+				}
+			}
+		}
+		for (StoredColor colorWithoutDeviceId : colorsWithoutDeviceId) {
+			result.add(colorWithoutDeviceId);
+			newColorIds.add(colorWithoutDeviceId.getId());
+		}
+		PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, newColorIds);
+
 		return result;
 	}
 
@@ -52,7 +70,25 @@ public final class ColorRegistry {
 	 * @return The stored colors of this device.
 	 */
 	public List<StoredColor> getStoredColors(final int deviceId) {
-		return getStoredColors().stream().filter(storedColor -> storedColor.getDeviceId() == deviceId).collect(Collectors.toList());
+		List<Integer> colorIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_color_ids);
+		List<StoredColor> colorsOfDevice = new ArrayList<>();
+		List<Integer> colorIdsOfDevice = new ArrayList<>();
+		List<Integer> colorIdsOfOtherDevices = new ArrayList<>();
+		for (int colorId : colorIds) {
+			StoredColor storedColor = mStoredColors.get(colorId);
+			if (storedColor.getDeviceId() == deviceId) {
+				colorsOfDevice.add(storedColor);
+				colorIdsOfDevice.add(colorId);
+			}
+			else {
+				colorIdsOfOtherDevices.add(colorId);
+			}
+		}
+		List<Integer> newColorIds = new ArrayList<>(colorIdsOfDevice);
+		newColorIds.addAll(colorIdsOfOtherDevices);
+		PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, newColorIds);
+
+		return colorsOfDevice;
 	}
 
 	/**
