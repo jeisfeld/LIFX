@@ -1,14 +1,5 @@
 package de.jeisfeld.lifx.app.home;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorListener;
-
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,17 +12,26 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorListener;
+
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
-import de.jeisfeld.lifx.app.view.ColorPickerDialog;
-import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.app.view.ColorPickerDialog;
 import de.jeisfeld.lifx.lan.type.Color;
 
 /**
@@ -62,13 +62,13 @@ public class HomeFragment extends ListFragment {
 
 		if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
 			getListView().setVisibility(View.GONE);
-			Objects.requireNonNull(getView()).findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
+			requireView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}
 		mAdapter = new DeviceAdapter(this, new NoDeviceCallback());
 		setListAdapter(mAdapter);
 
-		ConstraintLayout layoutColorPicker = Objects.requireNonNull(getView()).findViewById(R.id.layoutColorPicker);
-		ConstraintLayout layoutBrightnessColorTempPicker = Objects.requireNonNull(getView()).findViewById(R.id.layoutBrightnessColorTempPicker);
+		ConstraintLayout layoutColorPicker = requireView().findViewById(R.id.layoutColorPicker);
+		ConstraintLayout layoutBrightnessColorTempPicker = requireView().findViewById(R.id.layoutBrightnessColorTempPicker);
 		prepareColorPickers(layoutColorPicker, layoutBrightnessColorTempPicker);
 
 		mReceiver = new BroadcastReceiver() {
@@ -87,7 +87,7 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
-		LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).registerReceiver(mReceiver,
+		LocalBroadcastManager.getInstance(requireContext()).registerReceiver(mReceiver,
 				new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
 
 		mExecutor = Executors.newScheduledThreadPool(1);
@@ -104,7 +104,7 @@ public class HomeFragment extends ListFragment {
 		mExecutor.shutdown();
 		mExecutor = null;
 
-		LocalBroadcastManager.getInstance(Objects.requireNonNull(getContext())).unregisterReceiver(mReceiver);
+		LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mReceiver);
 	}
 
 	/**

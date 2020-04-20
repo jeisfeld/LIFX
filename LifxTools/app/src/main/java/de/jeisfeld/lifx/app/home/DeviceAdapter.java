@@ -1,12 +1,5 @@
 package de.jeisfeld.lifx.app.home;
 
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import com.skydoves.colorpickerview.ColorPickerView;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +16,13 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import com.skydoves.colorpickerview.ColorPickerView;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -214,12 +214,12 @@ public class DeviceAdapter extends BaseAdapter {
 				model.mIsSelected.setValue(((CheckBox) v).isChecked());
 				Fragment fragment = mFragment.get();
 				if (fragment != null && model instanceof LightViewModel && ((CheckBox) v).isChecked()) {
-					ColorPickerView colorPickerView = Objects.requireNonNull(fragment.getView()).findViewById(R.id.colorPickerMain);
+					ColorPickerView colorPickerView = fragment.requireView().findViewById(R.id.colorPickerMain);
 					if (colorPickerView != null) {
 						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, ((LightViewModel) model).getColor().getValue());
 					}
 					ColorPickerView brightnessColorTempPickerView =
-							Objects.requireNonNull(fragment.getView()).findViewById(R.id.colorPickerBrightnessColorTemp);
+							fragment.requireView().findViewById(R.id.colorPickerBrightnessColorTemp);
 					if (brightnessColorTempPickerView != null) {
 						ColorPickerDialog.updateBrightnessColorTempFromLight(brightnessColorTempPickerView,
 								((LightViewModel) model).getColor().getValue());
