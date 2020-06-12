@@ -37,6 +37,7 @@
     <string name="message_confirm_delete_light">Wollen Sie die Lampe %1$s aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>
     <string name="message_confirm_delete_color">Wollen Sie die Farbe %1$s aus der App entfernen?</string>
+    <string name="message_confirm_delete_alarm">Wollen Sie den Alarm %1$s aus der App entfernen?</string>
 
     <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
     <string name="toast_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>

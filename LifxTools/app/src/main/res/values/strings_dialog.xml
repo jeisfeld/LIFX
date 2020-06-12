@@ -37,6 +37,7 @@
     <string name="message_confirm_delete_light">Do you want to delete the device %1$s from the app? (Will be re-created if detected in the LAN.)</string>
     <string name="message_dialog_save_color_name">Please enter a name for the color.</string>
     <string name="message_confirm_delete_color">Do you want to delete the color %1$s from the app?</string>
+    <string name="message_confirm_delete_alarm">Do you want to delete the alarm %1$s from the app?</string>
 
     <string name="toast_saved_color">Saved color %1$s.</string>
     <string name="toast_did_not_save_empty_name">Did not save - name was empty.</string>

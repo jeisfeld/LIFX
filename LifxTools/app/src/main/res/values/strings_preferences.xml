@@ -43,6 +43,19 @@
     <string name="key_color_tilechain_type" translatable="false">color_tilechain_type</string>
     <string name="key_color_tilechain_sizes" translatable="false">color_tilechain_sizes</string>
 
+    <!-- Keys for alarms -->
+    <string name="key_alarm_ids" translatable="false">alarm_ids</string>
+    <string name="key_alarm_max_id" translatable="false">alarm_max_id</string>
+    <string name="key_alarm_step_max_id" translatable="false">alarm_step_max_id</string>
+    <string name="key_alarm_start_time" translatable="false">alarm_start_time</string>
+    <string name="key_alarm_frequency" translatable="false">alarm_frequency</string>
+    <string name="key_alarm_name" translatable="false">alarm_name</string>
+    <string name="key_alarm_step_ids" translatable="false">alarm_step_ids</string>
+    <string name="key_alarm_step_delay" translatable="false">alarm_step_delay</string>
+    <string name="key_alarm_step_device_id" translatable="false">alarm_step_device_id</string>
+    <string name="key_alarm_step_color" translatable="false">alarm_step_color</string>
+    <string name="key_alarm_step_duration" translatable="false">alarm_step_duration</string>
+
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>
     <string name="key_statistics_firststarttime" translatable="false">statistics_firststarttime</string>

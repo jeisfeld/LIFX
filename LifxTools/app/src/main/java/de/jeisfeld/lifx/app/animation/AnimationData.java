@@ -201,15 +201,15 @@ public abstract class AnimationData implements Serializable {
 		TILECHAIN_IMAGE_TRANSITION;
 
 		/**
-		 * Get Direction from its ordinal value.
+		 * Get Animation Type from its ordinal value.
 		 *
 		 * @param ordinal The ordinal value.
-		 * @return The direction.
+		 * @return The animationType.
 		 */
 		protected static AnimationType fromOrdinal(final int ordinal) {
-			for (AnimationType direction : values()) {
-				if (ordinal == direction.ordinal()) {
-					return direction;
+			for (AnimationType animationType : values()) {
+				if (ordinal == animationType.ordinal()) {
+					return animationType;
 				}
 			}
 			return AnimationType.NONE;

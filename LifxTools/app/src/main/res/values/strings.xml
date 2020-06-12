@@ -8,10 +8,12 @@
     <string name="action_refresh">Refresh</string>
     <string name="button_cancel">Cancel</string>
     <string name="button_delete">Delete</string>
+    <string name="button_add_alarm">Add alarm</string>
 
     <string name="menu_home">Home</string>
     <string name="menu_stored_colors">Stored colors</string>
     <string name="menu_manage_devices">Manage devices</string>
+    <string name="menu_alarms">Alarms</string>
     <string name="menu_general_settings">General Settings</string>
     <string name="menu_settings">Settings</string>
 
