@@ -5,7 +5,7 @@
     <string name="nav_header_title">LIFX Tools</string>
     <string name="nav_header_subtitle">lifxtools@jeisfeld.de</string>
     <string name="nav_header_desc">Navigationstitel</string>
-    <string name="action_settings">Einstellungen</string>
+    <string name="action_refresh">Aktualisieren</string>
     <string name="button_cancel">Abbrechen</string>
     <string name="button_delete">Löschen</string>
 
