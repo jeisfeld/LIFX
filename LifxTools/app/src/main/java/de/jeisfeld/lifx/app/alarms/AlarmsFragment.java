@@ -19,6 +19,9 @@ public class AlarmsFragment extends Fragment {
 		View root = inflater.inflate(R.layout.fragment_alarms, container, false);
 		final RecyclerView recyclerView = root.findViewById(R.id.recyclerViewAlarms);
 		populateRecyclerView(recyclerView);
+
+		root.findViewById(R.id.buttonAddAlarm).setOnClickListener(v -> AlarmConfigurationFragment.navigate(this, null));
+
 		return root;
 	}
 

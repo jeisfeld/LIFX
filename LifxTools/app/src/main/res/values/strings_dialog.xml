@@ -5,10 +5,31 @@
     <string name="title_dialog_save_name">Save Color</string>
     <string name="title_dialog_image">Adapt image</string>
     <string name="title_dialog_animation">Animation Settings</string>
+    <string name="title_dialog_alarm_time">Set Alarm Time</string>
+    <string name="title_dialog_rename_or_copy">Rename or Copy</string>
 
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Start</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="button_delete">Delete</string>
+    <string name="button_rename">Rename</string>
+    <string name="button_copy">Create copy</string>
+    <string name="button_add_alarm">Add alarm</string>
+    <string name="button_add_alarm_step">Add step</string>
+
+    <string name="label_alarm_active">Active</string>
+    <string name="label_alarm_time">Time</string>
+    <string name="label_alarm_week_days">Repeat</string>
+    <string name="hint_alarm_name">Enter a name for the alarm</string>
+    <string name="hint_alarm_start_time">Select alarm time</string>
+    <string name="text_monday">Mo</string>
+    <string name="text_tuesday">Tu</string>
+    <string name="text_wednesday">We</string>
+    <string name="text_thursday">Th</string>
+    <string name="text_friday">Fr</string>
+    <string name="text_saturday">Sa</string>
+    <string name="text_sunday">Su</string>
 
     <string name="label_animation_type">Type</string>
     <string name="label_animation_duration">Duration</string>
@@ -38,6 +59,7 @@
     <string name="message_dialog_save_color_name">Please enter a name for the color.</string>
     <string name="message_confirm_delete_color">Do you want to delete the color %1$s from the app?</string>
     <string name="message_confirm_delete_alarm">Do you want to delete the alarm %1$s from the app?</string>
+    <string name="message_confirm_rename_or_copy">Do you want to rename alarm %1$s to %2$s or do you want to create a copy?</string>
 
     <string name="toast_saved_color">Saved color %1$s.</string>
     <string name="toast_did_not_save_empty_name">Did not save - name was empty.</string>

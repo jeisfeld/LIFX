@@ -5,10 +5,31 @@
     <string name="title_dialog_save_name">Farbe speichern</string>
     <string name="title_dialog_image">Bild anpassen</string>
     <string name="title_dialog_animation">Animationseinstellungen</string>
+    <string name="title_dialog_alarm_time">Alarmzeit festlegen</string>
+    <string name="title_dialog_rename_or_copy">Umbenennen oder Kopieren</string>
 
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Starten</string>
+    <string name="button_cancel">Abbrechen</string>
+    <string name="button_delete">Löschen</string>
+    <string name="button_rename">Umbenennen</string>
+    <string name="button_copy">Kopie erstellen</string>
+    <string name="button_add_alarm">Alarm hinzufügen</string>
+    <string name="button_add_alarm_step">Schritt hinzufügen</string>
+
+    <string name="label_alarm_active">Aktiv</string>
+    <string name="label_alarm_time">Zeit</string>
+    <string name="label_alarm_week_days">Wiederholung</string>
+    <string name="hint_alarm_name">Alarmnamen festlegen</string>
+    <string name="hint_alarm_start_time">Alarmzeit wählen</string>
+    <string name="text_monday">Mo</string>
+    <string name="text_tuesday">Di</string>
+    <string name="text_wednesday">Mi</string>
+    <string name="text_thursday">Do</string>
+    <string name="text_friday">Fr</string>
+    <string name="text_saturday">Sa</string>
+    <string name="text_sunday">So</string>
 
     <string name="label_animation_type">Typ</string>
     <string name="label_animation_duration">Dauer</string>
@@ -38,6 +59,7 @@
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>
     <string name="message_confirm_delete_color">Wollen Sie die Farbe %1$s aus der App entfernen?</string>
     <string name="message_confirm_delete_alarm">Wollen Sie den Alarm %1$s aus der App entfernen?</string>
+    <string name="message_confirm_rename_or_copy">Wolle Sie den Alarm %1$s in %2$s umbenennen oder eine Kopie erstellen?</string>
 
     <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
     <string name="toast_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>

@@ -6,14 +6,12 @@
     <string name="nav_header_subtitle">lifxtools@jeisfeld.de</string>
     <string name="nav_header_desc">Navigationstitel</string>
     <string name="action_refresh">Aktualisieren</string>
-    <string name="button_cancel">Abbrechen</string>
-    <string name="button_delete">Löschen</string>
-    <string name="button_add_alarm">Alarm hinzufügen</string>
 
     <string name="menu_home">Start</string>
     <string name="menu_stored_colors">Gespeicherte Farben</string>
     <string name="menu_manage_devices">Geräte verwalten</string>
     <string name="menu_alarms">Alarme</string>
+    <string name="menu_alarm_configuration">Alarmkonfiguration</string>
     <string name="menu_general_settings">Allgemeine Einstellungen</string>
     <string name="menu_settings">Einstellungen</string>
 

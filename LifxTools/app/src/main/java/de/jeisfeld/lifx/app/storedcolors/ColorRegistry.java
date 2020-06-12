@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.util.SparseArray;
+
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 
@@ -61,6 +62,16 @@ public final class ColorRegistry {
 		PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, newColorIds);
 
 		return result;
+	}
+
+	/**
+	 * Get a stored color by its id.
+	 *
+	 * @param storedColorId The stored color id.
+	 * @return The stored color.
+	 */
+	public StoredColor getStoredColor(final int storedColorId) {
+		return mStoredColors.get(storedColorId);
 	}
 
 	/**

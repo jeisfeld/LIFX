@@ -1,13 +1,8 @@
 package de.jeisfeld.lifx.app.managedevices;
 
-import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,11 +10,14 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.List;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
@@ -55,7 +53,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 	/**
 	 * Constructor.
 	 *
-	 * @param fragment the calling fragment.
+	 * @param fragment     the calling fragment.
 	 * @param recyclerView The recycler view.
 	 */
 	public ManageDevicesViewAdapter(final Fragment fragment, final RecyclerView recyclerView) {
@@ -121,23 +119,12 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 					public void onDialogNegativeClick(final DialogFragment dialog) {
 						// do nothing
 					}
-				}, null, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
+				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
 			}
 		});
 
-		holder.mStoredColorsButton.setOnClickListener(v -> {
-			Fragment fragment = mFragment.get();
-			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
-			if (activity != null) {
-				NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
-				Bundle bundle = new Bundle();
-				Integer deviceId = (Integer) device.getParameter(DeviceRegistry.DEVICE_ID);
-				if (deviceId != null) {
-					bundle.putInt(StoredColorsFragment.PARAM_DEVICE_ID, deviceId);
-				}
-				navController.navigate(R.id.nav_stored_colors, bundle);
-			}
-		});
+		holder.mStoredColorsButton.setOnClickListener(v ->
+				StoredColorsFragment.navigate(mFragment.get(), (Integer) device.getParameter(DeviceRegistry.DEVICE_ID)));
 
 		if (device instanceof MultiZoneLight && context != null) {
 			holder.mMultizoneOrientationButton.setVisibility(View.VISIBLE);

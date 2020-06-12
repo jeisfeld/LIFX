@@ -47,13 +47,13 @@
     <string name="key_alarm_ids" translatable="false">alarm_ids</string>
     <string name="key_alarm_max_id" translatable="false">alarm_max_id</string>
     <string name="key_alarm_step_max_id" translatable="false">alarm_step_max_id</string>
+    <string name="key_alarm_active" translatable="false">alarm_active</string>
     <string name="key_alarm_start_time" translatable="false">alarm_start_time</string>
-    <string name="key_alarm_frequency" translatable="false">alarm_frequency</string>
+    <string name="key_alarm_week_days" translatable="false">alarm_week_days</string>
     <string name="key_alarm_name" translatable="false">alarm_name</string>
     <string name="key_alarm_step_ids" translatable="false">alarm_step_ids</string>
     <string name="key_alarm_step_delay" translatable="false">alarm_step_delay</string>
-    <string name="key_alarm_step_device_id" translatable="false">alarm_step_device_id</string>
-    <string name="key_alarm_step_color" translatable="false">alarm_step_color</string>
+    <string name="key_alarm_step_stored_color_id" translatable="false">alarm_step_stored_color_id</string>
     <string name="key_alarm_step_duration" translatable="false">alarm_step_duration</string>
 
     <!-- Keys for statistics -->

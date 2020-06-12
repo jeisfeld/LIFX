@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_margin"
+    android:paddingTop="@dimen/activity_margin"
+    android:paddingRight="@dimen/activity_margin"
+    android:paddingBottom="@dimen/activity_margin">
+
+    <EditText
+        android:id="@+id/editTextAlarmName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/hint_alarm_name"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/labelAlarmActive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:text="@string/label_alarm_active"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/editTextAlarmName" />
+
+    <Switch
+        android:id="@+id/switchAlarmActive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        app:layout_constraintBottom_toBottomOf="@id/labelAlarmActive"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelAlarmActive" />
+
+    <TextView
+        android:id="@+id/labelStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:text="@string/label_alarm_time"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelAlarmActive" />
+
+    <TextView
+        android:id="@+id/textViewStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <TextView
+        android:id="@+id/labelWeekDays"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:text="@string/label_alarm_week_days"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonMonday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_monday"
+        android:textOn="@string/text_monday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonTuesday"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonTuesday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_tuesday"
+        android:textOn="@string/text_tuesday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonWednesday"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonWednesday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+
+        android:textOff="@string/text_wednesday"
+        android:textOn="@string/text_wednesday"
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonThursday"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonThursday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_thursday"
+        android:textOn="@string/text_thursday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonFriday"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonFriday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_friday"
+        android:textOn="@string/text_friday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonSaturday"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonSaturday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_saturday"
+        android:textOn="@string/text_saturday"
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonSunday"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonSunday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_sunday"
+        android:textOn="@string/text_sunday"
+        app:layout_constraintBottom_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
+
+    <ListView
+        android:id="@+id/listViewAlarmSteps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/buttonAddAlarmStep"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelWeekDays"
+        app:layout_constraintVertical_bias="0" />
+
+    <Button
+        android:id="@+id/buttonAddAlarmStep"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/button_add_alarm_step"
+        app:layout_constraintBottom_toTopOf="@id/buttonSave" />
+
+    <Button
+        android:id="@+id/buttonCancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_cancel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintWidth_percent="0.5" />
+
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintWidth_percent="0.5" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

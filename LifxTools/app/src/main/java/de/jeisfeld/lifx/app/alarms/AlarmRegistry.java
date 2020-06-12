@@ -74,8 +74,9 @@ public final class AlarmRegistry {
 		for (Step step : alarm.getSteps()) {
 			remove(step);
 		}
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_active, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_start_time, alarmId);
-		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_frequency, alarmId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_week_days, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_name, alarmId);
 	}
 
@@ -92,8 +93,7 @@ public final class AlarmRegistry {
 		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, step.getAlarmId(), stepIds);
 
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
-		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_device_id, stepId);
-		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_color, stepId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_stored_color_id, stepId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
 	}
 

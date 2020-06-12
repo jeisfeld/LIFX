@@ -9,24 +9,32 @@
     android:paddingTop="@dimen/list_vertical_margin"
     android:paddingBottom="@dimen/list_vertical_margin">
 
-    <TextView
-        android:id="@+id/textViewAlarmName"
+    <CheckBox
+        android:id="@+id/checkBoxActive"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginStart="@dimen/list_horizontal_margin"
-        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/imageViewEdit"
-        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/imageViewEdit"
+    <TextView
+        android:id="@+id/textViewAlarmName"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/list_horizontal_margin"
+        android:layout_marginEnd="@dimen/list_horizontal_margin"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/textViewStartTime"
+        app:layout_constraintStart_toEndOf="@id/checkBoxActive"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewStartTime"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginEnd="@dimen/list_horizontal_margin"
-        android:src="@drawable/ic_menu_stored_colors"
+        android:textAppearance="?android:attr/textAppearanceMedium"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/imageViewDelete"
         app:layout_constraintTop_toTopOf="parent"

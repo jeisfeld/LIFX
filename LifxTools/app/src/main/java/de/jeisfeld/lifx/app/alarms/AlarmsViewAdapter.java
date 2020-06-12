@@ -1,18 +1,21 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import java.lang.ref.WeakReference;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
 import android.annotation.SuppressLint;
-import android.content.Context;
+import android.app.TimePickerDialog;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.List;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -48,7 +51,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 	/**
 	 * Constructor.
 	 *
-	 * @param fragment the calling fragment.
+	 * @param fragment     the calling fragment.
 	 * @param recyclerView The recycler view.
 	 */
 	public AlarmsViewAdapter(final Fragment fragment, final RecyclerView recyclerView) {
@@ -76,9 +79,9 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 	@Override
 	public final void onBindViewHolder(final MyViewHolder holder, final int position) {
 		final Alarm alarm = mAlarms.get(position);
-		Fragment fragment0 = mFragment.get();
-		final Context context = fragment0 == null ? null : fragment0.getContext();
-		holder.mName.setText(alarm.getName());
+		holder.mCheckBoxActive.setChecked(alarm.isActive());
+		holder.mTextViewAlarmName.setText(alarm.getName());
+		holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%1$tH:%1$tM", alarm.getStartTime()));
 
 		holder.mDragHandle.setOnTouchListener((view, event) -> {
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -88,6 +91,39 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 				view.performClick();
 			}
 			return false;
+		});
+
+		holder.mCheckBoxActive.setOnClickListener(v -> {
+			Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(),
+					alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
+			AlarmRegistry.getInstance().addOrUpdate(newAlarm);
+		});
+
+		holder.mTextViewAlarmName.setOnClickListener(v -> AlarmConfigurationFragment.navigate(mFragment.get(), alarm.getId()));
+
+		holder.mTextViewStartTime.setOnClickListener(v -> {
+			Fragment fragment = mFragment.get();
+			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+			if (activity != null) {
+				final Calendar calendar = Calendar.getInstance();
+				calendar.setTime(alarm.getStartTime());
+				TimePickerDialog mTimePicker = new TimePickerDialog(activity,
+						(timePicker, selectedHour, selectedMinute) -> {
+							holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
+							Calendar calendar2 = Calendar.getInstance();
+							calendar2.set(Calendar.HOUR_OF_DAY, selectedHour);
+							calendar2.set(Calendar.MINUTE, selectedMinute);
+							if (calendar2.before(Calendar.getInstance())) {
+								calendar2.add(Calendar.DATE, 1);
+							}
+							Alarm newAlarm = new Alarm(alarm.getId(), alarm.isActive(), calendar2.getTime(),
+									alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
+							AlarmRegistry.getInstance().addOrUpdate(newAlarm);
+						},
+						calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+				mTimePicker.setTitle(R.string.title_dialog_alarm_time);
+				mTimePicker.show();
+			}
 		});
 
 		holder.mDeleteButton.setOnClickListener(v -> {
@@ -108,12 +144,8 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 					public void onDialogNegativeClick(final DialogFragment dialog) {
 						// do nothing
 					}
-				}, null, R.string.button_delete, R.string.message_confirm_delete_alarm, alarm.getName());
+				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm, alarm.getName());
 			}
-		});
-
-		holder.mEditButton.setOnClickListener(v -> {
-			// TODO: Enable editing of alarm
 		});
 	}
 
@@ -161,9 +193,17 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 		 */
 		private final View mRowView;
 		/**
-		 * The title.
+		 * The active flag.
 		 */
-		private final TextView mName;
+		private final CheckBox mCheckBoxActive;
+		/**
+		 * The alarm name.
+		 */
+		private final TextView mTextViewAlarmName;
+		/**
+		 * The start time.
+		 */
+		private final TextView mTextViewStartTime;
 		/**
 		 * The image view.
 		 */
@@ -172,10 +212,6 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 		 * The delete button.
 		 */
 		private final ImageView mDeleteButton;
-		/**
-		 * The stored colors button.
-		 */
-		private final ImageView mEditButton;
 
 		/**
 		 * Constructor.
@@ -185,8 +221,9 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 		public MyViewHolder(final View itemView) {
 			super(itemView);
 			mRowView = itemView;
-			mName = itemView.findViewById(R.id.textViewAlarmName);
-			mEditButton = itemView.findViewById(R.id.imageViewEdit);
+			mCheckBoxActive = itemView.findViewById(R.id.checkBoxActive);
+			mTextViewAlarmName = itemView.findViewById(R.id.textViewAlarmName);
+			mTextViewStartTime = itemView.findViewById(R.id.textViewStartTime);
 			mDragHandle = itemView.findViewById(R.id.imageViewDragHandle);
 			mDeleteButton = itemView.findViewById(R.id.imageViewDelete);
 		}

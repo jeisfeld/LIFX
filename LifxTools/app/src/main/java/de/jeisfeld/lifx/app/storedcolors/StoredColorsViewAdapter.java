@@ -132,7 +132,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 					public void onDialogNegativeClick(final DialogFragment dialog) {
 						// do nothing
 					}
-				}, null, R.string.button_delete, R.string.message_confirm_delete_color, storedColor.getName());
+				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_color, storedColor.getName());
 			}
 		});
 

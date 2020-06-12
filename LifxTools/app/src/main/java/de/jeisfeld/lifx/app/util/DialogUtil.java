@@ -40,7 +40,11 @@ public final class DialogUtil {
 	/**
 	 * Parameter to pass the text resource for the confirmation button to the ConfirmDialogFragment.
 	 */
-	private static final String PARAM_BUTTON_RESOURCE = "buttonResource";
+	private static final String PARAM_CONFIRM_BUTTON_RESOURCE = "confirmButtonResource";
+	/**
+	 * Parameter to pass the text resource for the cancellation button to the ConfirmDialogFragment.
+	 */
+	private static final String PARAM_CANCEL_BUTTON_RESOURCE = "cancelButtonResource";
 	/**
 	 * Parameter to pass the text value of the input field.
 	 */
@@ -85,17 +89,19 @@ public final class DialogUtil {
 	 * @param activity the current activity
 	 * @param listener The listener waiting for the response
 	 * @param titleResource the title of the confirmation dialog
-	 * @param buttonResource the display on the positive button
+	 * @param cancelButtonResource the display on the negative button
+	 * @param confirmButtonResource the display on the positive button
 	 * @param messageResource the confirmation message
 	 * @param args arguments for the confirmation message
 	 */
 	public static void displayConfirmationMessage(final FragmentActivity activity, final ConfirmDialogListener listener,
-			final Integer titleResource, final int buttonResource,
+			final Integer titleResource, final int cancelButtonResource, final int confirmButtonResource,
 			final int messageResource, final Object... args) {
 		String message = capitalizeFirst(activity.getString(messageResource, args));
 		Bundle bundle = new Bundle();
 		bundle.putCharSequence(PARAM_MESSAGE, message);
-		bundle.putInt(PARAM_BUTTON_RESOURCE, buttonResource);
+		bundle.putInt(PARAM_CANCEL_BUTTON_RESOURCE, cancelButtonResource);
+		bundle.putInt(PARAM_CONFIRM_BUTTON_RESOURCE, confirmButtonResource);
 		bundle.putInt(PARAM_TITLE_RESOURCE, titleResource == null ? R.string.title_dialog_confirmation : titleResource);
 		ConfirmDialogFragment fragment = new ConfirmDialogFragment();
 		fragment.setListener(listener);
@@ -121,7 +127,7 @@ public final class DialogUtil {
 		Bundle bundle = new Bundle();
 		bundle.putCharSequence(PARAM_MESSAGE, message);
 		bundle.putInt(PARAM_TITLE_RESOURCE, titleResource);
-		bundle.putInt(PARAM_BUTTON_RESOURCE, buttonResource);
+		bundle.putInt(PARAM_CONFIRM_BUTTON_RESOURCE, buttonResource);
 		bundle.putString(PARAM_TEXT_VALUE, textValue);
 		RequestInputDialogFragment fragment = new RequestInputDialogFragment();
 		fragment.setListener(listener);
@@ -177,7 +183,8 @@ public final class DialogUtil {
 		public final Dialog onCreateDialog(final Bundle savedInstanceState) {
 			assert getArguments() != null;
 			final CharSequence message = getArguments().getCharSequence(PARAM_MESSAGE);
-			final int confirmButtonResource = getArguments().getInt(PARAM_BUTTON_RESOURCE);
+			final int cancelButtonResource = getArguments().getInt(PARAM_CANCEL_BUTTON_RESOURCE);
+			final int confirmButtonResource = getArguments().getInt(PARAM_CONFIRM_BUTTON_RESOURCE);
 			final int titleResource = getArguments().getInt(PARAM_TITLE_RESOURCE);
 
 			// Listeners cannot retain functionality when automatically recreated.
@@ -195,7 +202,7 @@ public final class DialogUtil {
 			builder.setTitle(titleResource) //
 					.setIcon(R.drawable.ic_warning) //
 					.setMessage(message) //
-					.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
+					.setNegativeButton(cancelButtonResource, (dialog, id) -> {
 						// Send the positive button event back to the host activity
 						if (mListener != null) {
 							mListener.onDialogNegativeClick(ConfirmDialogFragment.this);
@@ -271,7 +278,7 @@ public final class DialogUtil {
 		public final Dialog onCreateDialog(final Bundle savedInstanceState) {
 			assert getArguments() != null;
 			final CharSequence message = getArguments().getCharSequence(PARAM_MESSAGE);
-			final int confirmButtonResource = getArguments().getInt(PARAM_BUTTON_RESOURCE);
+			final int confirmButtonResource = getArguments().getInt(PARAM_CONFIRM_BUTTON_RESOURCE);
 			final int titleResource = getArguments().getInt(PARAM_TITLE_RESOURCE);
 
 			final EditText input = new EditText(getActivity());

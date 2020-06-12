@@ -2,14 +2,15 @@ package de.jeisfeld.lifx.app.alarms;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import androidx.annotation.NonNull;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
-import de.jeisfeld.lifx.lan.Light;
-import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * Class holding information about an alarm.
@@ -24,9 +25,13 @@ public class Alarm {
 	 */
 	private final Date mStartTime;
 	/**
-	 * The alarm frequency.
+	 * The flag indicating if the alarm is active.
 	 */
-	private final Frequency mFrequency;
+	private final boolean mIsActive;
+	/**
+	 * The week days on which the alarm is active.
+	 */
+	private final Set<Integer> mWeekDays;
 	/**
 	 * The alarm name.
 	 */
@@ -40,15 +45,17 @@ public class Alarm {
 	 * Generate an alarm.
 	 *
 	 * @param id        The id for storage
+	 * @param isActive  The active flag
 	 * @param startTime The alarm start time
-	 * @param frequency The alarm frequency
+	 * @param weekDays  The week days
 	 * @param name      The name
 	 * @param steps     The steps
 	 */
-	public Alarm(final int id, final Date startTime, final Frequency frequency, final String name, final List<Step> steps) {
+	public Alarm(final int id, final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
 		mId = id;
+		mIsActive = isActive;
 		mStartTime = startTime;
-		mFrequency = frequency;
+		mWeekDays = weekDays;
 		mName = name;
 		mSteps = steps;
 	}
@@ -56,13 +63,14 @@ public class Alarm {
 	/**
 	 * Generate a new alarm without id.
 	 *
+	 * @param isActive  The active flag
 	 * @param startTime The alarm start time
-	 * @param frequency The alarm frequency
+	 * @param weekDays  The week days
 	 * @param name      The name
 	 * @param steps     The steps
 	 */
-	public Alarm(final Date startTime, final Frequency frequency, final String name, final List<Step> steps) {
-		this(-1, startTime, frequency, name, steps);
+	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
+		this(-1, isActive, startTime, weekDays, name, steps);
 	}
 
 	/**
@@ -72,7 +80,7 @@ public class Alarm {
 	 * @param alarm the base alarm.
 	 */
 	public Alarm(final int id, final Alarm alarm) {
-		this(id, alarm.getStartTime(), alarm.getFrequency(), alarm.getName(), alarm.getSteps());
+		this(id, alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
 	}
 
 	/**
@@ -82,8 +90,9 @@ public class Alarm {
 	 */
 	protected Alarm(final int alarmId) {
 		mId = alarmId;
+		mIsActive = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_alarm_active, alarmId, false);
 		mStartTime = new Date(PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_start_time, alarmId, 0));
-		mFrequency = Frequency.fromOrdinal(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_frequency, alarmId, 0));
+		mWeekDays = new HashSet<>(PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarmId));
 		mName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_alarm_name, alarmId);
 
 		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId);
@@ -111,8 +120,9 @@ public class Alarm {
 			PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
 			alarm = new Alarm(newId, this);
 		}
+		PreferenceUtil.setIndexedSharedPreferenceBoolean(R.string.key_alarm_active, alarm.getId(), alarm.isActive());
 		PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_start_time, alarm.getId(), alarm.getStartTime().getTime());
-		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_frequency, alarm.getId(), alarm.getFrequency().ordinal());
+		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarm.getId(), new ArrayList<>(alarm.getWeekDays()));
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_name, alarm.getId(), alarm.getName());
 		List<Step> newSteps = new ArrayList<>();
 		for (Step step : alarm.getSteps()) {
@@ -121,6 +131,15 @@ public class Alarm {
 		alarm.getSteps().clear();
 		alarm.getSteps().addAll(newSteps);
 		return alarm;
+	}
+
+	/**
+	 * Get the active flag.
+	 *
+	 * @return True if the alarm is active.
+	 */
+	public boolean isActive() {
+		return mIsActive;
 	}
 
 	/**
@@ -133,12 +152,12 @@ public class Alarm {
 	}
 
 	/**
-	 * Get the alarm frequency.
+	 * Get the week days.
 	 *
-	 * @return The alarm frequency.
+	 * @return The week days.
 	 */
-	public Frequency getFrequency() {
-		return mFrequency;
+	public Set<Integer> getWeekDays() {
+		return mWeekDays;
 	}
 
 	/**
@@ -171,7 +190,7 @@ public class Alarm {
 	@NonNull
 	@Override
 	public final String toString() {
-		return "[" + getId() + "](" + getName() + ")(" + getStartTime() + ")(" + getFrequency() + ")(" + getSteps() + ")";
+		return "[" + getId() + "](" + getName() + ")(" + getStartTime() + ")";
 	}
 
 	/**
@@ -187,13 +206,9 @@ public class Alarm {
 		 */
 		private final long mDelay;
 		/**
-		 * The deviceId.
+		 * The stored color.
 		 */
-		private final int mDeviceId;
-		/**
-		 * The color.
-		 */
-		private final Color mColor;
+		private final int mStoredColorId;
 		/**
 		 * The alarm steps.
 		 */
@@ -206,19 +221,17 @@ public class Alarm {
 		/**
 		 * Generate an alarm step.
 		 *
-		 * @param id       The id for storage
-		 * @param alarmId  The corresponding alarm id.
-		 * @param delay    the delay
-		 * @param deviceId the deviceId
-		 * @param color    the color
-		 * @param duration the duration
+		 * @param id            The id for storage
+		 * @param alarmId       The corresponding alarm id.
+		 * @param delay         the delay
+		 * @param storedColorId The stored color id.
+		 * @param duration      the duration
 		 */
-		public Step(final int id, final int alarmId, final long delay, final int deviceId, final Color color, final long duration) {
+		public Step(final int id, final int alarmId, final long delay, final int storedColorId, final long duration) {
 			mId = id;
 			mAlarmId = alarmId;
 			mDelay = delay;
-			mDeviceId = deviceId;
-			mColor = color;
+			mStoredColorId = storedColorId;
 			mDuration = duration;
 		}
 
@@ -227,12 +240,11 @@ public class Alarm {
 		 *
 		 * @param alarmId  The corresponding alarm id.
 		 * @param delay    the delay
-		 * @param deviceId the deviceId
-		 * @param color    the color
+		 * @param storedColorId The stored color id.
 		 * @param duration the duration
 		 */
-		public Step(final int alarmId, final long delay, final int deviceId, final Color color, final long duration) {
-			this(-1, alarmId, delay, deviceId, color, duration);
+		public Step(final int alarmId, final long delay, final int storedColorId, final long duration) {
+			this(-1, alarmId, delay, storedColorId, duration);
 		}
 
 		/**
@@ -242,7 +254,7 @@ public class Alarm {
 		 * @param step the base step.
 		 */
 		public Step(final int id, final Step step) {
-			this(id, step.getAlarmId(), step.getDelay(), step.getDeviceId(), step.getColor(), step.getDuration());
+			this(id, step.getAlarmId(), step.getDelay(), step.getStoredColorId(), step.getDuration());
 		}
 
 		/**
@@ -255,8 +267,7 @@ public class Alarm {
 			mId = stepId;
 			mAlarmId = alarmId;
 			mDelay = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_step_delay, stepId, 0);
-			mDeviceId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_step_device_id, stepId, -1);
-			mColor = PreferenceUtil.getIndexedSharedPreferenceColor(R.string.key_alarm_step_color, stepId, Color.OFF);
+			mStoredColorId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_step_stored_color_id, stepId, -1);
 			mDuration = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_step_duration, stepId, 0);
 		}
 
@@ -278,8 +289,7 @@ public class Alarm {
 				step = new Step(newId, this);
 			}
 			PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_step_delay, step.getId(), step.getDelay());
-			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_step_device_id, step.getId(), step.getDeviceId());
-			PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_alarm_step_color, step.getId(), step.getColor());
+			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_step_stored_color_id, step.getId(), step.getStoredColorId());
 			PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_step_duration, step.getId(), step.getDuration());
 			return step;
 		}
@@ -303,30 +313,21 @@ public class Alarm {
 		}
 
 		/**
-		 * Get the device id.
+		 * Get the stored color id.
 		 *
-		 * @return The device id.
+		 * @return The stored color id.
 		 */
-		public int getDeviceId() {
-			return mDeviceId;
+		public int getStoredColorId() {
+			return mStoredColorId;
 		}
 
 		/**
-		 * Get the light for the alarm step.
+		 * Get the stored color for the alarm step.
 		 *
-		 * @return The light for the alarm step.
+		 * @return The stored color for the alarm step.
 		 */
-		public Light getLight() {
-			return (Light) DeviceRegistry.getInstance().getDeviceById(getDeviceId());
-		}
-
-		/**
-		 * Get the color.
-		 *
-		 * @return The color.
-		 */
-		public Color getColor() {
-			return mColor;
+		public StoredColor getStoredColor() {
+			return ColorRegistry.getInstance().getStoredColor(getStoredColorId());
 		}
 
 		/**
@@ -350,45 +351,7 @@ public class Alarm {
 		@NonNull
 		@Override
 		public final String toString() {
-			return "[" + getId() + "](" + getName() + ")(" + getStartTime() + ")(" + getFrequency() + ")(" + getSteps() + ")";
+			return "[" + getId() + "](" + getDelay() + ")(" + getStoredColor() + ")(" + getDuration() + ")";
 		}
 	}
-
-	/**
-	 * Alarm frequencies.
-	 */
-	public enum Frequency {
-		/**
-		 * Alarm is off.
-		 */
-		OFF,
-		/**
-		 * One time alarm.
-		 */
-		ONE_TIME,
-		/**
-		 * Weekly alarm.
-		 */
-		WEEKLY,
-		/**
-		 * Daily alarm.
-		 */
-		DAILY;
-
-		/**
-		 * Get alarm frequency from its ordinal value.
-		 *
-		 * @param ordinal The ordinal value.
-		 * @return The direction.
-		 */
-		protected static Frequency fromOrdinal(final int ordinal) {
-			for (Frequency frequency : values()) {
-				if (ordinal == frequency.ordinal()) {
-					return frequency;
-				}
-			}
-			return Frequency.OFF;
-		}
-	}
-
 }
