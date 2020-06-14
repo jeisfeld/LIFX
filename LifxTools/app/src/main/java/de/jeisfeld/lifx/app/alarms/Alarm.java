@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -99,7 +100,7 @@ public class Alarm {
 		mSteps = new ArrayList<>();
 		for (Integer stepId : stepIds) {
 			if (stepId != null) {
-				mSteps.add(new Step(alarmId, stepId));
+				mSteps.add(new Step(stepId));
 			}
 		}
 	}
@@ -124,9 +125,10 @@ public class Alarm {
 		PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_start_time, alarm.getId(), alarm.getStartTime().getTime());
 		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarm.getId(), new ArrayList<>(alarm.getWeekDays()));
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_name, alarm.getId(), alarm.getName());
+
 		List<Step> newSteps = new ArrayList<>();
 		for (Step step : alarm.getSteps()) {
-			newSteps.add(step.store());
+			newSteps.add(step.store(alarm.getId()));
 		}
 		alarm.getSteps().clear();
 		alarm.getSteps().addAll(newSteps);
@@ -179,6 +181,31 @@ public class Alarm {
 	}
 
 	/**
+	 * Remove a step from the alarm.
+	 *
+	 * @param step The step to be removed.
+	 */
+	public void removeStep(final Step step) {
+		getSteps().remove(step);
+	}
+
+	/**
+	 * Put a step to the alarm.
+	 *
+	 * @param step The step to be put.
+	 */
+	public void putStep(final Step step) {
+		List<Step> stepsToRemove = new ArrayList<>();
+		for (Step oldStep : getSteps()) {
+			if (step.getId() == oldStep.getId()) {
+				stepsToRemove.add(oldStep);
+			}
+		}
+		getSteps().removeAll(stepsToRemove);
+		getSteps().add(step);
+	}
+
+	/**
 	 * Get the id for storage.
 	 *
 	 * @return The id for storage.
@@ -190,13 +217,13 @@ public class Alarm {
 	@NonNull
 	@Override
 	public final String toString() {
-		return "[" + getId() + "](" + getName() + ")(" + getStartTime() + ")";
+		return "[" + getId() + "](" + getName() + ")(" + String.format(Locale.getDefault(), "%1$tH:%1$tM", getStartTime()) + ")" + getSteps();
 	}
 
 	/**
 	 * An alarm step.
 	 */
-	public class Step {
+	public static class Step {
 		/**
 		 * The id for storage.
 		 */
@@ -213,23 +240,17 @@ public class Alarm {
 		 * The alarm steps.
 		 */
 		private final long mDuration;
-		/**
-		 * A reference to the alarm.
-		 */
-		private final int mAlarmId;
 
 		/**
 		 * Generate an alarm step.
 		 *
 		 * @param id            The id for storage
-		 * @param alarmId       The corresponding alarm id.
 		 * @param delay         the delay
 		 * @param storedColorId The stored color id.
 		 * @param duration      the duration
 		 */
-		public Step(final int id, final int alarmId, final long delay, final int storedColorId, final long duration) {
+		public Step(final int id, final long delay, final int storedColorId, final long duration) {
 			mId = id;
-			mAlarmId = alarmId;
 			mDelay = delay;
 			mStoredColorId = storedColorId;
 			mDuration = duration;
@@ -238,13 +259,12 @@ public class Alarm {
 		/**
 		 * Generate a new alarm step without id.
 		 *
-		 * @param alarmId  The corresponding alarm id.
-		 * @param delay    the delay
+		 * @param delay         the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration the duration
+		 * @param duration      the duration
 		 */
-		public Step(final int alarmId, final long delay, final int storedColorId, final long duration) {
-			this(-1, alarmId, delay, storedColorId, duration);
+		public Step(final long delay, final int storedColorId, final long duration) {
+			this(-1, delay, storedColorId, duration);
 		}
 
 		/**
@@ -254,18 +274,16 @@ public class Alarm {
 		 * @param step the base step.
 		 */
 		public Step(final int id, final Step step) {
-			this(id, step.getAlarmId(), step.getDelay(), step.getStoredColorId(), step.getDuration());
+			this(id, step.getDelay(), step.getStoredColorId(), step.getDuration());
 		}
 
 		/**
 		 * Retrieve an alarm step from storage via id.
 		 *
-		 * @param alarmId The id of the alarm.
-		 * @param stepId  The id of the alarm step.
+		 * @param stepId The id of the alarm step.
 		 */
-		protected Step(final int alarmId, final int stepId) {
+		protected Step(final int stepId) {
 			mId = stepId;
-			mAlarmId = alarmId;
 			mDelay = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_step_delay, stepId, 0);
 			mStoredColorId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_step_stored_color_id, stepId, -1);
 			mDuration = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_step_duration, stepId, 0);
@@ -274,33 +292,28 @@ public class Alarm {
 		/**
 		 * Store this alarm step.
 		 *
+		 * @param alarmId the alarmId where to store the step.
 		 * @return the stored alarm step.
 		 */
-		public Step store() {
+		public Step store(final int alarmId) {
 			Step step = this;
 
 			if (getId() < 0) {
 				int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_alarm_step_max_id, 0) + 1;
 				PreferenceUtil.setSharedPreferenceInt(R.string.key_alarm_step_max_id, newId);
-
-				List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, getAlarmId());
-				stepIds.add(newId);
-				PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_ids, getAlarmId(), stepIds);
 				step = new Step(newId, this);
 			}
+
+			List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId);
+			if (!stepIds.contains(step.getId())) {
+				stepIds.add(step.getId());
+				PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId, stepIds);
+			}
+
 			PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_step_delay, step.getId(), step.getDelay());
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_step_stored_color_id, step.getId(), step.getStoredColorId());
 			PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_step_duration, step.getId(), step.getDuration());
 			return step;
-		}
-
-		/**
-		 * Get the alarm id.
-		 *
-		 * @return The alarm id.
-		 */
-		public int getAlarmId() {
-			return mAlarmId;
 		}
 
 		/**

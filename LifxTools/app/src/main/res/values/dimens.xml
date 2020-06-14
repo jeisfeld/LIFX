@@ -20,6 +20,8 @@
     <dimen name="mini_button_size">16dp</dimen>
     <dimen name="power_button_stroke_size">1dp</dimen>
 
+    <dimen name="alarm_step_duration_width">48dp</dimen>
+
     <dimen name="image_preview_min_height">192dp</dimen>
 
 </resources>

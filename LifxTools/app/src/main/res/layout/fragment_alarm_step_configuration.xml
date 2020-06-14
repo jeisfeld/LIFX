@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_margin"
+    android:paddingTop="@dimen/activity_margin"
+    android:paddingRight="@dimen/activity_margin"
+    android:paddingBottom="@dimen/activity_margin">
+
+    <ImageView
+        android:id="@+id/imageViewStoredColor"
+        android:layout_width="@dimen/medium_button_size"
+        android:layout_height="@dimen/medium_button_size"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:layout_marginEnd="@dimen/list_horizontal_margin"
+        android:contentDescription="stored color"
+        android:src="@drawable/powerbutton_off"
+        app:layout_constraintBottom_toBottomOf="@id/textViewDeviceName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/textViewColorName" />
+
+    <TextView
+        android:id="@+id/textViewColorName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/list_horizontal_margin"
+        android:text="@string/hint_select_stored_color"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toEndOf="@id/imageViewStoredColor"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textViewDeviceName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/list_horizontal_margin"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageViewStoredColor"
+        app:layout_constraintTop_toBottomOf="@id/textViewColorName" />
+
+    <TextView
+        android:id="@+id/labelAlarmStepStart"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:text="@string/label_alarm_step_start"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewDeviceName" />
+
+    <SeekBar
+        android:id="@+id/seekBarAlarmStepStart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/list_horizontal_margin"
+        app:layout_constraintBottom_toBottomOf="@id/labelAlarmStepStart"
+        app:layout_constraintEnd_toStartOf="@id/textViewAlarmStepStart"
+        app:layout_constraintStart_toEndOf="@id/labelAlarmStepStart"
+        app:layout_constraintTop_toTopOf="@id/labelAlarmStepStart" />
+
+    <TextView
+        android:id="@+id/textViewAlarmStepStart"
+        android:layout_width="@dimen/alarm_step_duration_width"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintBottom_toBottomOf="@id/labelAlarmStepStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelAlarmStepStart" />
+
+    <TextView
+        android:id="@+id/labelAlarmStepEnd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:text="@string/label_alarm_step_end"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelAlarmStepStart" />
+
+    <SeekBar
+        android:id="@+id/seekBarAlarmStepEnd"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@id/labelAlarmStepEnd"
+        app:layout_constraintEnd_toEndOf="@id/seekBarAlarmStepStart"
+        app:layout_constraintStart_toStartOf="@id/seekBarAlarmStepStart"
+        app:layout_constraintTop_toTopOf="@id/labelAlarmStepEnd" />
+
+    <TextView
+        android:id="@+id/textViewAlarmStepEnd"
+        android:layout_width="@dimen/alarm_step_duration_width"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelAlarmStepEnd" />
+
+    <Button
+        android:id="@+id/buttonCancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_cancel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintWidth_percent="0.5" />
+
+    <Button
+        android:id="@+id/buttonSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/button_save"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintWidth_percent="0.5" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

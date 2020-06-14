@@ -1,9 +1,5 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -15,14 +11,16 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.home.LightViewModel;
-import de.jeisfeld.lifx.app.home.MultizoneViewModel;
-import de.jeisfeld.lifx.app.home.TileViewModel;
 
 /**
  * Dialog for selecting stored colors or storing the current color.
@@ -33,6 +31,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 */
 	private static final String PARAM_DEVICE_ID = "deviceId";
 	/**
+	 * Parameter to pass information if only selection is supported.
+	 */
+	private static final String PARAM_ONLY_SELECT = "onlySelect";
+	/**
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
 	private static final String PREVENT_RECREATION = "preventRecreation";
@@ -40,20 +42,20 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	/**
 	 * Display a dialog for storing a color or displaying a stored color.
 	 *
-	 * @param activity the current activity
-	 * @param model the light model.
-	 * @param deviceId the device id.
-	 * @param listener The listener waiting for the response
+	 * @param activity   the current activity
+	 * @param deviceId   the device id.
+	 * @param onlySelect the flag indicating if only select is possible.
+	 * @param listener   The listener waiting for the response
 	 */
 	public static void displayStoredColorsDialog(final FragmentActivity activity,
-			final LightViewModel model,
-			final int deviceId,
-			final StoredColorsDialogListener listener) {
+												 final int deviceId,
+												 final boolean onlySelect,
+												 final StoredColorsDialogListener listener) {
 		Bundle bundle = new Bundle();
 		StoredColorsDialogFragment fragment = new StoredColorsDialogFragment();
 		fragment.setListener(listener);
-		fragment.setModel(model);
 		bundle.putInt(PARAM_DEVICE_ID, deviceId);
+		bundle.putBoolean(PARAM_ONLY_SELECT, onlySelect);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 	}
@@ -62,19 +64,6 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 * The listener called when the dialog is ended.
 	 */
 	private MutableLiveData<StoredColorsDialogListener> mListener = null;
-	/**
-	 * The light view model.
-	 */
-	private MutableLiveData<LightViewModel> mModel = null;
-
-	/**
-	 * Set the model.
-	 *
-	 * @param model The model.
-	 */
-	public final void setModel(final LightViewModel model) {
-		mModel = new MutableLiveData<>(model);
-	}
 
 	/**
 	 * Set the listener.
@@ -90,6 +79,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
 		assert getArguments() != null;
 		final int deviceId = getArguments().getInt(PARAM_DEVICE_ID);
+		final boolean onlySelect = getArguments().getBoolean(PARAM_ONLY_SELECT);
 
 		// Listeners cannot retain functionality when automatically recreated.
 		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
@@ -102,6 +92,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		}
 
 		final View view = View.inflate(requireActivity(), R.layout.dialog_stored_colors, null);
+		view.findViewById(R.id.dialog_title_save).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
+		view.findViewById(R.id.messageTextSaveName).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
+		view.findViewById(R.id.editTextSaveName).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
+
 		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
 		if (storedColors.size() > 0 && getContext() != null) {
 			view.findViewById(R.id.gridViewStoredColors).setVisibility(View.VISIBLE);
@@ -123,22 +117,12 @@ public class StoredColorsDialogFragment extends DialogFragment {
 					ImageView imageView = newView.findViewById(R.id.imageViewApplyColor);
 					imageView.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(getContext(), storedColor));
 					imageView.setOnClickListener(v -> {
-						LightViewModel model = mModel.getValue();
-						if (model == null) {
-							return;
-						}
 						StoredColorsDialogListener listener = mListener == null ? null : mListener.getValue();
-						if (storedColor instanceof StoredMultizoneColors && model instanceof MultizoneViewModel) {
-							((MultizoneViewModel) model).updateColors(((StoredMultizoneColors) storedColor).getColors(), 1, false);
-						}
-						else if (storedColor instanceof StoredTileColors && model instanceof TileViewModel) {
-							((TileViewModel) model).updateColors(((StoredTileColors) storedColor).getColors(), 1, false);
-						}
-						else {
-							model.updateColor(storedColor.getColor(), false);
-						}
 						if (listener != null) {
 							listener.onStoredColorClick(storedColor);
+							if (onlySelect) {
+								dismiss();
+							}
 						}
 					});
 
@@ -148,21 +132,23 @@ public class StoredColorsDialogFragment extends DialogFragment {
 			((GridView) view.findViewById(R.id.gridViewStoredColors)).setAdapter(adapter);
 		}
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		builder.setView(view) //
-				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
-					// Send the positive button event back to the host activity
-					if (mListener != null && mListener.getValue() != null) {
-						mListener.getValue().onDialogNegativeClick(StoredColorsDialogFragment.this);
-					}
-				}) //
-				.setPositiveButton(R.string.button_save, (dialog, id) -> {
-					// Send the negative button event back to the host activity
-					if (mListener != null && mListener.getValue() != null) {
-						mListener.getValue().onDialogPositiveClick(StoredColorsDialogFragment.this,
-								((EditText) view.findViewById(R.id.editTextSaveName)).getText().toString());
-					}
-				});
+		AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+		builder.setView(view);
+		if (!onlySelect) {
+			builder.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
+				// Send the positive button event back to the host activity
+				if (mListener != null && mListener.getValue() != null) {
+					mListener.getValue().onDialogNegativeClick(StoredColorsDialogFragment.this);
+				}
+			});
+			builder.setPositiveButton(R.string.button_save, (dialog, id) -> {
+				// Send the negative button event back to the host activity
+				if (mListener != null && mListener.getValue() != null) {
+					mListener.getValue().onDialogPositiveClick(StoredColorsDialogFragment.this,
+							((EditText) view.findViewById(R.id.editTextSaveName)).getText().toString());
+				}
+			});
+		}
 		return builder.create();
 	}
 
@@ -192,7 +178,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		 * Callback method for positive click from the confirmation dialog.
 		 *
 		 * @param dialog the confirmation dialog fragment.
-		 * @param text the text returned from the input.
+		 * @param text   the text returned from the input.
 		 */
 		void onDialogPositiveClick(DialogFragment dialog, String text);
 

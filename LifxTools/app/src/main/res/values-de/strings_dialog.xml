@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_dialog_confirmation">Bestätigung</string>
-    <string name="title_dialog_select_name">Farbe wählen</string>
-    <string name="title_dialog_save_name">Farbe speichern</string>
+    <string name="title_dialog_select_light">Licht wählen</string>
+    <string name="title_dialog_select_color">Farbe wählen</string>
+    <string name="title_dialog_save_color">Farbe speichern</string>
     <string name="title_dialog_image">Bild anpassen</string>
     <string name="title_dialog_animation">Animationseinstellungen</string>
     <string name="title_dialog_alarm_time">Alarmzeit festlegen</string>
@@ -30,6 +31,9 @@
     <string name="text_friday">Fr</string>
     <string name="text_saturday">Sa</string>
     <string name="text_sunday">So</string>
+    <string name="label_alarm_step_start">Start</string>
+    <string name="label_alarm_step_end">Ende</string>
+    <string name="hint_select_stored_color">(Gespeicherte Farbe wählen)</string>
 
     <string name="label_animation_type">Typ</string>
     <string name="label_animation_duration">Dauer</string>
@@ -59,9 +63,11 @@
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>
     <string name="message_confirm_delete_color">Wollen Sie die Farbe %1$s aus der App entfernen?</string>
     <string name="message_confirm_delete_alarm">Wollen Sie den Alarm %1$s aus der App entfernen?</string>
+    <string name="message_confirm_delete_alarm_step">Wollen Sie den Alarmschritt entfernen?</string>
     <string name="message_confirm_rename_or_copy">Wolle Sie den Alarm %1$s in %2$s umbenennen oder eine Kopie erstellen?</string>
 
     <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
     <string name="toast_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>
+    <string name="toast_did_not_save_no_color">Keine Speicherung - es wurde keine Farbe gewählt.</string>
     <string name="toast_connection_failed">Verbindung zu %1$s fehlgeschlagen.</string>
 </resources>

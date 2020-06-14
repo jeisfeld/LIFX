@@ -12,6 +12,7 @@
     <string name="menu_manage_devices">Manage devices</string>
     <string name="menu_alarms">Alarms</string>
     <string name="menu_alarm_configuration">Alarm Configuration</string>
+    <string name="menu_alarm_step_configuration">Alarm Step Configuration</string>
     <string name="menu_general_settings">General Settings</string>
     <string name="menu_settings">Settings</string>
 

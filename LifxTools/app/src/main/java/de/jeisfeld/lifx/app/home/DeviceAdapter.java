@@ -679,7 +679,7 @@ public class DeviceAdapter extends BaseAdapter {
 			if (activity == null) {
 				return;
 			}
-			StoredColorsDialogFragment.displayStoredColorsDialog(activity, model, deviceId, new StoredColorsDialogListener() {
+			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, false, new StoredColorsDialogListener() {
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 					if (text != null && text.trim().length() > 0) {
@@ -709,7 +709,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 				@Override
 				public void onStoredColorClick(final StoredColor storedColor) {
-					model.postStoredColor(storedColor);
+					model.updateStoredColor(storedColor);
 				}
 			});
 		});

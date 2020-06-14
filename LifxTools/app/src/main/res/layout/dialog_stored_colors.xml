@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:singleLine="true"
-        android:text="@string/title_dialog_select_name"
+        android:text="@string/title_dialog_select_color"
         android:textAlignment="viewStart"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent" />
@@ -23,7 +23,7 @@
         android:id="@+id/gridViewStoredColors"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/small_margin"
+        android:layout_marginTop="@dimen/medium_margin"
         android:layout_marginBottom="?attr/dialogPreferredPadding"
         android:numColumns="3"
         android:visibility="gone"
@@ -40,7 +40,7 @@
         android:layout_marginBottom="@dimen/small_margin"
         android:ellipsize="end"
         android:singleLine="true"
-        android:text="@string/title_dialog_save_name"
+        android:text="@string/title_dialog_save_color"
         android:textAlignment="viewStart"
         app:layout_constraintBottom_toTopOf="@id/messageTextSaveName" />
 

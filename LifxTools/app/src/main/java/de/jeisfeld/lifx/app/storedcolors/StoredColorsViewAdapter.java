@@ -157,7 +157,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 * @param storedColor The stored color.
 	 * @return The drawable to be used.
 	 */
-	protected static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
+	public static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
 		GradientDrawable drawable = new GradientDrawable();
 		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
 		drawable.setShape(GradientDrawable.OVAL);

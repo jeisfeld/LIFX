@@ -1,16 +1,18 @@
 package de.jeisfeld.lifx.app.home;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -150,6 +152,16 @@ public class TileViewModel extends LightViewModel {
 			double relativeBrightness = maxBrightness / 65535.0; // MAGIC_NUMBER
 			mRelativeBrightness.postValue(Math.min(1, brightnessFactor * relativeBrightness));
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
+		}
+	}
+
+	@Override
+	protected final void updateStoredColor(final StoredColor storedColor) {
+		if (storedColor instanceof StoredTileColors) {
+			updateColors(((StoredTileColors) storedColor).getColors(), 1, false);
+		}
+		else {
+			super.updateStoredColor(storedColor);
 		}
 	}
 

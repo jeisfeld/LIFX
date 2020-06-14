@@ -208,10 +208,12 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
-	protected final void postStoredColor(final StoredColor storedColor) {
-		super.postStoredColor(storedColor);
+	protected final void updateStoredColor(final StoredColor storedColor) {
 		if (storedColor instanceof StoredMultizoneColors) {
-			updateStoredColors(((StoredMultizoneColors) storedColor).getColors(), 1);
+			updateColors(((StoredMultizoneColors) storedColor).getColors(), 1, false);
+		}
+		else {
+			super.updateStoredColor(storedColor);
 		}
 	}
 

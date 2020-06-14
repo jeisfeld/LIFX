@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="title_dialog_confirmation">Confirmation</string>
-    <string name="title_dialog_select_name">Select Color</string>
-    <string name="title_dialog_save_name">Save Color</string>
+    <string name="title_dialog_select_light">Select Light</string>
+    <string name="title_dialog_select_color">Select Color</string>
+    <string name="title_dialog_save_color">Save Color</string>
     <string name="title_dialog_image">Adapt image</string>
     <string name="title_dialog_animation">Animation Settings</string>
     <string name="title_dialog_alarm_time">Set Alarm Time</string>
@@ -30,6 +31,9 @@
     <string name="text_friday">Fr</string>
     <string name="text_saturday">Sa</string>
     <string name="text_sunday">Su</string>
+    <string name="label_alarm_step_start">Start</string>
+    <string name="label_alarm_step_end">End</string>
+    <string name="hint_select_stored_color">(Select stored color)</string>
 
     <string name="label_animation_type">Type</string>
     <string name="label_animation_duration">Duration</string>
@@ -40,6 +44,7 @@
     <string name="label_animation_colors">Colors</string>
     <string name="label_animation_color_regex">Colors (regex)</string>
     <string name="label_animation_adjust_brightness">Adjust brightness</string>
+
     <string-array name="values_multizone_animation_direction">
         <item>forward</item>
         <item>backward</item>
@@ -59,9 +64,11 @@
     <string name="message_dialog_save_color_name">Please enter a name for the color.</string>
     <string name="message_confirm_delete_color">Do you want to delete the color %1$s from the app?</string>
     <string name="message_confirm_delete_alarm">Do you want to delete the alarm %1$s from the app?</string>
+    <string name="message_confirm_delete_alarm_step">Do you want to delete the alarm step?</string>
     <string name="message_confirm_rename_or_copy">Do you want to rename alarm %1$s to %2$s or do you want to create a copy?</string>
 
     <string name="toast_saved_color">Saved color %1$s.</string>
     <string name="toast_did_not_save_empty_name">Did not save - name was empty.</string>
+    <string name="toast_did_not_save_no_color">Did not save - no color selected.</string>
     <string name="toast_connection_failed">Connection to %1$s failed.</string>
 </resources>

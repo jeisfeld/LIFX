@@ -176,8 +176,8 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param storedColor The stored color.
 	 */
-	protected void postStoredColor(final StoredColor storedColor) {
-		mColor.postValue(storedColor.getColor());
+	protected void updateStoredColor(final StoredColor storedColor) {
+		updateColor(storedColor.getColor(), false);
 	}
 
 	/**

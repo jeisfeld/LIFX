@@ -53,7 +53,7 @@ public final class AlarmRegistry {
 	 *
 	 * @param alarm the stored alarm.
 	 */
-	public void addOrUpdate(final Alarm alarm) {
+	protected void addOrUpdate(final Alarm alarm) {
 		Alarm newAlarm = alarm.store();
 		mAlarms.put(newAlarm.getId(), newAlarm);
 	}
@@ -63,7 +63,7 @@ public final class AlarmRegistry {
 	 *
 	 * @param alarm The alarm to be deleted.
 	 */
-	public void remove(final Alarm alarm) {
+	protected void remove(final Alarm alarm) {
 		int alarmId = alarm.getId();
 		mAlarms.remove(alarmId);
 
@@ -72,7 +72,7 @@ public final class AlarmRegistry {
 		PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
 
 		for (Step step : alarm.getSteps()) {
-			remove(step);
+			remove(step, alarmId);
 		}
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_active, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_start_time, alarmId);
@@ -81,17 +81,40 @@ public final class AlarmRegistry {
 	}
 
 	/**
+	 * Remove all temporary steps.
+	 */
+	protected void removeTemporarySteps() {
+		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, -1);
+		for (Integer stepId : stepIds) {
+			if (stepId != null) {
+				removePreferencesForStepId(stepId);
+			}
+		}
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_ids, -1);
+	}
+
+	/**
 	 * Remove an alarm step from local store.
 	 *
-	 * @param step The alarm step to be deleted.
+	 * @param step    The alarm step to be deleted.
+	 * @param alarmId The alarmId from which to remove the step.
 	 */
-	public void remove(final Step step) {
+	protected void remove(final Step step, final int alarmId) {
 		int stepId = step.getId();
 
-		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, step.getAlarmId());
+		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId);
 		stepIds.remove((Integer) stepId);
-		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, step.getAlarmId(), stepIds);
+		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId, stepIds);
 
+		removePreferencesForStepId(stepId);
+	}
+
+	/**
+	 * Remove the preferences for a certain stepId.
+	 *
+	 * @param stepId The stepId.
+	 */
+	private void removePreferencesForStepId(final int stepId) {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_stored_color_id, stepId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
