@@ -18,6 +18,7 @@
     <string name="button_copy">Create copy</string>
     <string name="button_add_alarm">Add alarm</string>
     <string name="button_add_alarm_step">Add step</string>
+    <string name="button_test_alarm">Test alarm configuration</string>
 
     <string name="label_alarm_active">Active</string>
     <string name="label_alarm_time">Time</string>

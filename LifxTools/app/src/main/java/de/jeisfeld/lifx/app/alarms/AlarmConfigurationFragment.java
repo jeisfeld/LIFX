@@ -16,6 +16,8 @@ import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -105,6 +107,8 @@ public class AlarmConfigurationFragment extends Fragment {
 
 		root.findViewById(R.id.buttonAddAlarmStep).setOnClickListener(v ->
 				AlarmStepConfigurationFragment.navigate(this, alarmId, null));
+
+		root.findViewById(R.id.buttonTestAlarm).setOnClickListener(v -> alarm.startService(requireContext(), new Date()));
 
 		root.findViewById(R.id.buttonCancel).setOnClickListener(v -> {
 			NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
@@ -301,19 +305,7 @@ public class AlarmConfigurationFragment extends Fragment {
 			}
 		}
 
-		mAlarmSteps.sort((o1, o2) -> {
-			if (o1.getDelay() == o2.getDelay()) {
-				if (o1.getDuration() == o2.getDuration()) {
-					return o1.getStoredColor().getLight().getLabel().compareTo(o2.getStoredColor().getLight().getLabel());
-				}
-				else {
-					return Long.compare(o1.getDuration(), o2.getDuration());
-				}
-			}
-			else {
-				return Long.compare(o1.getDelay(), o2.getDelay());
-			}
-		});
+		Collections.sort(mAlarmSteps);
 
 		return alarm;
 	}

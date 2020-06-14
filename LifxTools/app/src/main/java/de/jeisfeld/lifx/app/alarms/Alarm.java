@@ -1,5 +1,8 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import android.content.Context;
+import android.content.Intent;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -8,7 +11,9 @@ import java.util.Locale;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -89,7 +94,7 @@ public class Alarm {
 	 *
 	 * @param alarmId The id.
 	 */
-	protected Alarm(final int alarmId) {
+	public Alarm(final int alarmId) {
 		mId = alarmId;
 		mIsActive = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_alarm_active, alarmId, false);
 		mStartTime = new Date(PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_start_time, alarmId, 0));
@@ -214,6 +219,19 @@ public class Alarm {
 		return mId;
 	}
 
+	/**
+	 * Start the alarm service.
+	 *
+	 * @param context the context.
+	 * @param alarmDate the alarm date.
+	 */
+	public void startService(final Context context, final Date alarmDate) {
+		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_ALARM_ID, getId());
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_ALARM_TIME, alarmDate);
+		ContextCompat.startForegroundService(context, serviceIntent);
+	}
+
 	@NonNull
 	@Override
 	public final String toString() {
@@ -223,7 +241,7 @@ public class Alarm {
 	/**
 	 * An alarm step.
 	 */
-	public static class Step {
+	public static class Step implements Comparable<Step> {
 		/**
 		 * The id for storage.
 		 */
@@ -365,6 +383,21 @@ public class Alarm {
 		@Override
 		public final String toString() {
 			return "[" + getId() + "](" + getDelay() + ")(" + getStoredColor() + ")(" + getDuration() + ")";
+		}
+
+		@Override
+		public final int compareTo(final Step other) {
+			if (getDelay() == other.getDelay()) {
+				if (getDuration() == other.getDuration()) {
+					return getStoredColor().getLight().getLabel().compareTo(other.getStoredColor().getLight().getLabel());
+				}
+				else {
+					return Long.compare(getDuration(), other.getDuration());
+				}
+			}
+			else {
+				return Long.compare(getDelay(), other.getDelay());
+			}
 		}
 	}
 }

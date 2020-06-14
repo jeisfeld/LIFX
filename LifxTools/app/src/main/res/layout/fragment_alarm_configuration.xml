@@ -171,6 +171,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/button_add_alarm_step"
+        app:layout_constraintBottom_toTopOf="@id/buttonTestAlarm" />
+
+    <Button
+        android:id="@+id/buttonTestAlarm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/button_test_alarm"
         app:layout_constraintBottom_toTopOf="@id/buttonSave" />
 
     <Button
