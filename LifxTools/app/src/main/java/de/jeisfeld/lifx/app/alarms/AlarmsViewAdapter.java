@@ -1,11 +1,5 @@
 package de.jeisfeld.lifx.app.alarms;
 
-import java.lang.ref.WeakReference;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-
 import android.annotation.SuppressLint;
 import android.app.TimePickerDialog;
 import android.graphics.Color;
@@ -16,6 +10,12 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.lang.ref.WeakReference;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -110,13 +110,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 				TimePickerDialog mTimePicker = new TimePickerDialog(activity,
 						(timePicker, selectedHour, selectedMinute) -> {
 							holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
-							Calendar calendar2 = Calendar.getInstance();
-							calendar2.set(Calendar.HOUR_OF_DAY, selectedHour);
-							calendar2.set(Calendar.MINUTE, selectedMinute);
-							if (calendar2.before(Calendar.getInstance())) {
-								calendar2.add(Calendar.DATE, 1);
-							}
-							Alarm newAlarm = new Alarm(alarm.getId(), alarm.isActive(), calendar2.getTime(),
+							Alarm newAlarm = new Alarm(alarm.getId(), alarm.isActive(), Alarm.getDate(selectedHour, selectedMinute),
 									alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
 							AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 						},

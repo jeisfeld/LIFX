@@ -198,12 +198,7 @@ public class AlarmConfigurationFragment extends Fragment {
 				return;
 			}
 
-			Calendar calendar = Calendar.getInstance();
-			calendar.set(Calendar.HOUR_OF_DAY, mHour);
-			calendar.set(Calendar.MINUTE, mMinute);
-			if (calendar.before(Calendar.getInstance())) {
-				calendar.add(Calendar.DATE, 1);
-			}
+			Date startDate = Alarm.getDate(mHour, mMinute);
 
 			Set<Integer> weekDays = new HashSet<>();
 			if (((ToggleButton) root.findViewById(R.id.toggleButtonMonday)).isChecked()) {
@@ -232,7 +227,7 @@ public class AlarmConfigurationFragment extends Fragment {
 				DialogUtil.displayConfirmationMessage(AlarmConfigurationFragment.this.requireActivity(), new ConfirmDialogListener() {
 							@Override
 							public void onDialogPositiveClick(final DialogFragment dialog) {
-								Alarm newAlarm = new Alarm(switchAlarmActive.isChecked(), calendar.getTime(), weekDays,
+								Alarm newAlarm = new Alarm(switchAlarmActive.isChecked(), startDate, weekDays,
 										editTextAlarmName.getText().toString(), new ArrayList<>());
 								AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 								NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
@@ -241,7 +236,7 @@ public class AlarmConfigurationFragment extends Fragment {
 
 							@Override
 							public void onDialogNegativeClick(final DialogFragment dialog) {
-								Alarm newAlarm = new Alarm(alarmId, switchAlarmActive.isChecked(), calendar.getTime(), weekDays,
+								Alarm newAlarm = new Alarm(alarmId, switchAlarmActive.isChecked(), startDate, weekDays,
 										editTextAlarmName.getText().toString(), new ArrayList<>());
 								AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 								NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
@@ -251,7 +246,7 @@ public class AlarmConfigurationFragment extends Fragment {
 						R.string.message_confirm_rename_or_copy, alarm.getName(), editTextAlarmName.getText().toString());
 			}
 			else {
-				Alarm newAlarm = new Alarm(alarmId, switchAlarmActive.isChecked(), calendar.getTime(), weekDays,
+				Alarm newAlarm = new Alarm(alarmId, switchAlarmActive.isChecked(), startDate, weekDays,
 						editTextAlarmName.getText().toString(), mAlarmSteps);
 				AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 				if (alarmId < 0) {

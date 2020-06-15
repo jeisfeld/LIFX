@@ -1,17 +1,18 @@
 package de.jeisfeld.lifx.app.alarms;
 
-import android.content.Context;
-import android.content.Intent;
-
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import android.content.Context;
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
@@ -50,12 +51,12 @@ public class Alarm {
 	/**
 	 * Generate an alarm.
 	 *
-	 * @param id        The id for storage
-	 * @param isActive  The active flag
+	 * @param id The id for storage
+	 * @param isActive The active flag
 	 * @param startTime The alarm start time
-	 * @param weekDays  The week days
-	 * @param name      The name
-	 * @param steps     The steps
+	 * @param weekDays The week days
+	 * @param name The name
+	 * @param steps The steps
 	 */
 	public Alarm(final int id, final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
 		mId = id;
@@ -69,11 +70,11 @@ public class Alarm {
 	/**
 	 * Generate a new alarm without id.
 	 *
-	 * @param isActive  The active flag
+	 * @param isActive The active flag
 	 * @param startTime The alarm start time
-	 * @param weekDays  The week days
-	 * @param name      The name
-	 * @param steps     The steps
+	 * @param weekDays The week days
+	 * @param name The name
+	 * @param steps The steps
 	 */
 	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
 		this(-1, isActive, startTime, weekDays, name, steps);
@@ -82,7 +83,7 @@ public class Alarm {
 	/**
 	 * Generate a new alarm by adding id.
 	 *
-	 * @param id    The id
+	 * @param id The id
 	 * @param alarm the base alarm.
 	 */
 	public Alarm(final int id, final Alarm alarm) {
@@ -137,6 +138,14 @@ public class Alarm {
 		}
 		alarm.getSteps().clear();
 		alarm.getSteps().addAll(newSteps);
+
+		if (alarm.isActive()) {
+			AlarmReceiver.setAlarm(Application.getAppContext(), alarm);
+		}
+		else {
+			AlarmReceiver.cancelAlarm(Application.getAppContext(), alarm.getId());
+		}
+
 		return alarm;
 	}
 
@@ -239,6 +248,24 @@ public class Alarm {
 	}
 
 	/**
+	 * Create a date out of hour and minute, resulting in the next future date with this time.
+	 *
+	 * @param hour The hour
+	 * @param minute The minute
+	 * @return The date
+	 */
+	public static Date getDate(final int hour, final int minute) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.HOUR_OF_DAY, hour);
+		calendar.set(Calendar.MINUTE, minute);
+		calendar.set(Calendar.SECOND, 0);
+		if (calendar.before(Calendar.getInstance())) {
+			calendar.add(Calendar.DATE, 1);
+		}
+		return calendar.getTime();
+	}
+
+	/**
 	 * An alarm step.
 	 */
 	public static class Step implements Comparable<Step> {
@@ -262,10 +289,10 @@ public class Alarm {
 		/**
 		 * Generate an alarm step.
 		 *
-		 * @param id            The id for storage
-		 * @param delay         the delay
+		 * @param id The id for storage
+		 * @param delay the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration      the duration
+		 * @param duration the duration
 		 */
 		public Step(final int id, final long delay, final int storedColorId, final long duration) {
 			mId = id;
@@ -277,9 +304,9 @@ public class Alarm {
 		/**
 		 * Generate a new alarm step without id.
 		 *
-		 * @param delay         the delay
+		 * @param delay the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration      the duration
+		 * @param duration the duration
 		 */
 		public Step(final long delay, final int storedColorId, final long duration) {
 			this(-1, delay, storedColorId, duration);
@@ -288,7 +315,7 @@ public class Alarm {
 		/**
 		 * Generate a new alarm step by adding id.
 		 *
-		 * @param id   The id
+		 * @param id The id
 		 * @param step the base step.
 		 */
 		public Step(final int id, final Step step) {
@@ -383,6 +410,26 @@ public class Alarm {
 		@Override
 		public final String toString() {
 			return "[" + getId() + "](" + getDelay() + ")(" + getStoredColor() + ")(" + getDuration() + ")";
+		}
+
+		@Override
+		public final int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + (int) (mDelay ^ (mDelay >>> 32)); // MAGIC_NUMBER
+			result = prime * result + (int) (mDuration ^ (mDuration >>> 32)); // MAGIC_NUMBER
+			result = prime * result + mId;
+			result = prime * result + mStoredColorId;
+			return result;
+		}
+
+		@Override
+		public final boolean equals(final Object obj) {
+			if (!(obj instanceof Step)) {
+				return false;
+			}
+			Step other = (Step) obj;
+			return mDelay == other.mDelay && mDuration == other.mDuration && mId == other.mId && mStoredColorId == other.mStoredColorId;
 		}
 
 		@Override
