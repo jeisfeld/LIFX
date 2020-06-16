@@ -13,10 +13,6 @@ public final class Logger {
 	 * The application tag for logging.
 	 */
 	private static final String TAG = Application.TAG;
-	/**
-	 * The tag used for logging errors.
-	 */
-	private static final String ERROR_TAG = "LIFX.ERR";
 
 	/**
 	 * Hide the default constructor.
@@ -30,7 +26,7 @@ public final class Logger {
 	 * @param message The request message.
 	 */
 	public static void traceRequest(final RequestMessage message) {
-		Log.d(Logger.TAG, "SEND: " + message.toString());
+		Log.d(TAG, "SEND: " + message.toString());
 	}
 
 	/**
@@ -40,7 +36,7 @@ public final class Logger {
 	 * @param isIgnored flag indicating if the message is ignored.
 	 */
 	public static void traceResponse(final ResponseMessage message, final boolean isIgnored) {
-		Log.d(Logger.TAG, (isIgnored ? "RECX: " : "RECV: ") + message.toString());
+		Log.d(TAG, (isIgnored ? "RECX: " : "RECV: ") + message.toString());
 	}
 
 	/**
@@ -49,7 +45,7 @@ public final class Logger {
 	 * @param e The exception
 	 */
 	public static void error(final Exception e) {
-		Log.e(ERROR_TAG, e.toString(), e);
+		Log.e(TAG, e.toString(), e);
 	}
 
 	/**
@@ -58,7 +54,7 @@ public final class Logger {
 	 * @param message the message
 	 */
 	public static void info(final String message) {
-		Log.i(Logger.TAG, message);
+		Log.i(TAG, message);
 	}
 
 	/**
@@ -67,6 +63,6 @@ public final class Logger {
 	 * @param message the message
 	 */
 	public static void log(final String message) {
-		Log.i(Logger.TAG, message);
+		Log.i(TAG, message);
 	}
 }

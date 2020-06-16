@@ -1,5 +1,8 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import android.content.Context;
+import android.content.Intent;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -8,16 +11,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import android.content.Context;
-import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Class holding information about an alarm.
@@ -51,12 +52,12 @@ public class Alarm {
 	/**
 	 * Generate an alarm.
 	 *
-	 * @param id The id for storage
-	 * @param isActive The active flag
+	 * @param id        The id for storage
+	 * @param isActive  The active flag
 	 * @param startTime The alarm start time
-	 * @param weekDays The week days
-	 * @param name The name
-	 * @param steps The steps
+	 * @param weekDays  The week days
+	 * @param name      The name
+	 * @param steps     The steps
 	 */
 	public Alarm(final int id, final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
 		mId = id;
@@ -70,11 +71,11 @@ public class Alarm {
 	/**
 	 * Generate a new alarm without id.
 	 *
-	 * @param isActive The active flag
+	 * @param isActive  The active flag
 	 * @param startTime The alarm start time
-	 * @param weekDays The week days
-	 * @param name The name
-	 * @param steps The steps
+	 * @param weekDays  The week days
+	 * @param name      The name
+	 * @param steps     The steps
 	 */
 	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
 		this(-1, isActive, startTime, weekDays, name, steps);
@@ -83,7 +84,7 @@ public class Alarm {
 	/**
 	 * Generate a new alarm by adding id.
 	 *
-	 * @param id The id
+	 * @param id    The id
 	 * @param alarm the base alarm.
 	 */
 	public Alarm(final int id, final Alarm alarm) {
@@ -231,13 +232,14 @@ public class Alarm {
 	/**
 	 * Start the alarm service.
 	 *
-	 * @param context the context.
+	 * @param context   the context.
 	 * @param alarmDate the alarm date.
 	 */
 	public void startService(final Context context, final Date alarmDate) {
-		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
-		serviceIntent.putExtra(LifxAnimationService.EXTRA_ALARM_ID, getId());
-		serviceIntent.putExtra(LifxAnimationService.EXTRA_ALARM_TIME, alarmDate);
+		Intent serviceIntent = new Intent(context, LifxAlarmService.class);
+		serviceIntent.putExtra(LifxAlarmService.EXTRA_ALARM_ID, getId());
+		serviceIntent.putExtra(LifxAlarmService.EXTRA_ALARM_TIME, alarmDate);
+		Logger.log("Starting alarm service");
 		ContextCompat.startForegroundService(context, serviceIntent);
 	}
 
@@ -250,7 +252,7 @@ public class Alarm {
 	/**
 	 * Create a date out of hour and minute, resulting in the next future date with this time.
 	 *
-	 * @param hour The hour
+	 * @param hour   The hour
 	 * @param minute The minute
 	 * @return The date
 	 */
@@ -289,10 +291,10 @@ public class Alarm {
 		/**
 		 * Generate an alarm step.
 		 *
-		 * @param id The id for storage
-		 * @param delay the delay
+		 * @param id            The id for storage
+		 * @param delay         the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration the duration
+		 * @param duration      the duration
 		 */
 		public Step(final int id, final long delay, final int storedColorId, final long duration) {
 			mId = id;
@@ -304,9 +306,9 @@ public class Alarm {
 		/**
 		 * Generate a new alarm step without id.
 		 *
-		 * @param delay the delay
+		 * @param delay         the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration the duration
+		 * @param duration      the duration
 		 */
 		public Step(final long delay, final int storedColorId, final long duration) {
 			this(-1, delay, storedColorId, duration);
@@ -315,7 +317,7 @@ public class Alarm {
 		/**
 		 * Generate a new alarm step by adding id.
 		 *
-		 * @param id The id
+		 * @param id   The id
 		 * @param step the base step.
 		 */
 		public Step(final int id, final Step step) {

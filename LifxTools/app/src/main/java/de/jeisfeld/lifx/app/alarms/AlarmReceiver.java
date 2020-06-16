@@ -16,15 +16,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Receiver for the alarm triggering the update of the image widget.
  */
 public class AlarmReceiver extends BroadcastReceiver {
 	/**
-	 * The resource key for the flag indicating a cancellation.
+	 * The number of seconds for early start.
 	 */
-	protected static final String STRING_IS_CANCELLATION = "de.jeisfeld.lifx.app.IS_CANCELLATION";
+	protected static final int EARLY_START_SECONDS = 10;
 	/**
 	 * The resource key for the notification id.
 	 */
@@ -32,9 +33,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	@Override
 	public final void onReceive(final Context context, final Intent intent) {
+		Logger.log("Received alarm");
 		int alarmId = intent.getIntExtra(STRING_ALARM_ID, -1);
 		if (alarmId != -1) {
-			cancelAlarm(context, alarmId);
 			Alarm alarm = new Alarm(alarmId);
 			retriggerAlarm(context, alarm);
 			alarm.startService(context, alarm.getStartTime());
@@ -52,6 +53,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
 			alarmMgr.setAlarmClock(new AlarmClockInfo(alarmTime, alarmIntent), alarmIntent);
+			Logger.log("Triggered alarm for " + new Date(alarmTime));
 		}
 	}
 
@@ -108,7 +110,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @return true if the alarm has been created.
 	 */
 	private static boolean setAlarm(final Context context, final Alarm alarm, final boolean onlyFuture) {
-		cancelAlarm(context, alarm.getId());
 		if (!alarm.isActive()) {
 			// only create active alarms.
 			return false;
@@ -137,9 +138,9 @@ public class AlarmReceiver extends BroadcastReceiver {
 		}
 
 		// Start alarm 30 seconds in advance, to allow time for preparation and getting connected
-		long alarmTimeMillis = startTime.getTime() - TimeUnit.SECONDS.toMillis(30); // MAGIC_NUMBER
+		long alarmTimeMillis = startTime.getTime() - TimeUnit.SECONDS.toMillis(EARLY_START_SECONDS); // MAGIC_NUMBER
 
-		if (alarmTimeMillis < new Date().getTime() + TimeUnit.SECONDS.toMillis(1)) {
+		if (alarmTimeMillis < new Date().getTime() + TimeUnit.SECONDS.toMillis(EARLY_START_SECONDS)) {
 			// Too late, hence no service - just start the animation.
 			retriggerAlarm(context, alarm);
 			alarm.startService(context, startTime);

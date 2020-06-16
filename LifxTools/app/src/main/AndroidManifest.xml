@@ -26,10 +26,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service
             android:name="de.jeisfeld.lifx.app.animation.LifxAnimationService"
             android:enabled="true"
-            android:exported="false"/>
+            android:exported="false" />
+        <service
+            android:name="de.jeisfeld.lifx.app.alarms.LifxAlarmService"
+            android:enabled="true"
+            android:exported="false" />
         <receiver
             android:name="de.jeisfeld.lifx.app.alarms.BootReceiver"
             android:exported="true">

@@ -22,4 +22,7 @@
     <string name="notification_channel_animation">LIFX Animations</string>
     <string name="notification_title_animation">LIFX Animation</string>
     <string name="notification_text_animation_running">Animation running for %1$s</string>
+    <string name="notification_channel_alarm">LIFX Alarms</string>
+    <string name="notification_title_alarm">LIFX Alarm</string>
+    <string name="notification_text_alarm_running">Alarm %1$s running</string>
 </resources>
