@@ -235,10 +235,10 @@ public class Alarm {
 	 * @param context   the context.
 	 * @param alarmDate the alarm date.
 	 */
-	public void startService(final Context context, final Date alarmDate) {
+	public void triggerAlarm(final Context context, final Date alarmDate) {
 		Intent serviceIntent = new Intent(context, LifxAlarmService.class);
-		serviceIntent.putExtra(LifxAlarmService.EXTRA_ALARM_ID, getId());
-		serviceIntent.putExtra(LifxAlarmService.EXTRA_ALARM_TIME, alarmDate);
+		serviceIntent.putExtra(AlarmReceiver.EXTRA_ALARM_ID, getId());
+		serviceIntent.putExtra(AlarmReceiver.EXTRA_ALARM_TIME, alarmDate);
 		Logger.log("Starting alarm service");
 		ContextCompat.startForegroundService(context, serviceIntent);
 	}

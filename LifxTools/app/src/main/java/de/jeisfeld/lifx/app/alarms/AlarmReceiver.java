@@ -29,16 +29,21 @@ public class AlarmReceiver extends BroadcastReceiver {
 	/**
 	 * The resource key for the notification id.
 	 */
-	private static final String STRING_ALARM_ID = "de.jeisfeld.lifx.app.ALARM_ID";
+	public static final String EXTRA_ALARM_ID = "de.jeisfeld.lifx.app.ALARM_ID";
+	/**
+	 * The resource key for the notification id.
+	 */
+	public static final String EXTRA_ALARM_TIME = "de.jeisfeld.lifx.app.ALARM_TIME";
 
 	@Override
 	public final void onReceive(final Context context, final Intent intent) {
 		Logger.log("Received alarm");
-		int alarmId = intent.getIntExtra(STRING_ALARM_ID, -1);
+		int alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1);
+		Date alarmTime = (Date) intent.getSerializableExtra(EXTRA_ALARM_TIME);
 		if (alarmId != -1) {
 			Alarm alarm = new Alarm(alarmId);
 			retriggerAlarm(context, alarm);
-			alarm.startService(context, alarm.getStartTime());
+			alarm.triggerAlarm(context, alarmTime);
 		}
 	}
 
@@ -53,7 +58,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
 			alarmMgr.setAlarmClock(new AlarmClockInfo(alarmTime, alarmIntent), alarmIntent);
-			Logger.log("Triggered alarm for " + new Date(alarmTime));
+			Logger.log("Created alarm for " + new Date(alarmTime));
 		}
 	}
 
@@ -143,11 +148,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (alarmTimeMillis < new Date().getTime() + TimeUnit.SECONDS.toMillis(EARLY_START_SECONDS)) {
 			// Too late, hence no service - just start the animation.
 			retriggerAlarm(context, alarm);
-			alarm.startService(context, startTime);
+			alarm.triggerAlarm(context, startTime);
 			return false;
 		}
 		else {
-			PendingIntent alarmIntent = createAlarmIntent(context, alarm.getId(), true);
+			PendingIntent alarmIntent = createAlarmIntent(context, alarm.getId(), startTime, true);
 			setAlarm(context, alarmTimeMillis, alarmIntent);
 			reEnableAlarmsOnBoot(context);
 			return true;
@@ -163,21 +168,25 @@ public class AlarmReceiver extends BroadcastReceiver {
 	public static void cancelAlarm(final Context context, final int alarmId) {
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
-			alarmMgr.cancel(createAlarmIntent(context, alarmId, false));
+			alarmMgr.cancel(createAlarmIntent(context, alarmId, null, false));
 		}
 	}
 
 	/**
 	 * Create a PendingIntent which can be used for creating or cancelling an alarm.
 	 *
-	 * @param context The context in which the alarm is set.
-	 * @param alarmId the alarm id.
-	 * @param isNew   flag indicating if this is a new intent or if an existing intent should be reused.
+	 * @param context   The context in which the alarm is set.
+	 * @param alarmId   the alarm id.
+	 * @param alarmTime the alarm time.
+	 * @param isNew     flag indicating if this is a new intent or if an existing intent should be reused.
 	 * @return The PendingIntent.
 	 */
-	private static PendingIntent createAlarmIntent(final Context context, final int alarmId, final boolean isNew) {
+	private static PendingIntent createAlarmIntent(final Context context, final int alarmId, final Date alarmTime, final boolean isNew) {
 		Intent intent = new Intent(context, AlarmReceiver.class);
-		intent.putExtra(STRING_ALARM_ID, alarmId);
+		intent.putExtra(EXTRA_ALARM_ID, alarmId);
+		if (alarmTime != null) {
+			intent.putExtra(EXTRA_ALARM_TIME, alarmTime);
+		}
 		intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
 		return PendingIntent.getBroadcast(context, alarmId, intent,
 				isNew ? PendingIntent.FLAG_CANCEL_CURRENT : PendingIntent.FLAG_UPDATE_CURRENT);

@@ -42,14 +42,6 @@ public class LifxAlarmService extends Service {
 	 */
 	public static final String CHANNEL_ID = "LifxAlarmChannel";
 	/**
-	 * Key for the alarm id within the intent.
-	 */
-	public static final String EXTRA_ALARM_ID = "de.jeisfeld.lifx.ALARM_ID";
-	/**
-	 * Key for the alarm id within the intent.
-	 */
-	public static final String EXTRA_ALARM_TIME = "de.jeisfeld.lifx.ALARM_TIME";
-	/**
 	 * The retry count for alarms.
 	 */
 	private static final int ALARM_RETRY_COUNT = 3;
@@ -67,9 +59,8 @@ public class LifxAlarmService extends Service {
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
-		final int alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1);
-
-		final Date alarmDate = (Date) intent.getSerializableExtra(EXTRA_ALARM_TIME);
+		final int alarmId = intent.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1);
+		final Date alarmDate = (Date) intent.getSerializableExtra(AlarmReceiver.EXTRA_ALARM_TIME);
 		Alarm alarm = new Alarm(alarmId);
 		Logger.log("Started service for " + alarmDate);
 

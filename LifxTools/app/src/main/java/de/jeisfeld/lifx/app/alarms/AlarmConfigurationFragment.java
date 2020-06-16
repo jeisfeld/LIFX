@@ -108,7 +108,7 @@ public class AlarmConfigurationFragment extends Fragment {
 		root.findViewById(R.id.buttonAddAlarmStep).setOnClickListener(v ->
 				AlarmStepConfigurationFragment.navigate(this, alarmId, null));
 
-		root.findViewById(R.id.buttonTestAlarm).setOnClickListener(v -> alarm.startService(requireContext(), new Date()));
+		root.findViewById(R.id.buttonTestAlarm).setOnClickListener(v -> alarm.triggerAlarm(requireContext(), new Date()));
 
 		root.findViewById(R.id.buttonCancel).setOnClickListener(v -> {
 			NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);

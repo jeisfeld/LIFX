@@ -13,6 +13,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.LocaleList;
 import android.util.Log;
+
+import de.jeisfeld.lifx.app.alarms.AlarmReceiver;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
@@ -57,6 +59,7 @@ public class Application extends android.app.Application {
 		}
 
 		PreferenceUtil.incrementCounter(R.string.key_statistics_countstarts);
+		AlarmReceiver.createAllAlarms();
 	}
 
 	/**
