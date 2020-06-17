@@ -5,11 +5,13 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
@@ -38,38 +42,127 @@ import de.jeisfeld.lifx.os.Logger;
  */
 public class LifxAlarmService extends Service {
 	/**
+	 * Action for creating an alarm.
+	 */
+	protected static final String ACTION_CREATE_ALARM = "de.jeisfeld.lifx.app.ACTION_CREATE_ALARM";
+	/**
+	 * Action for cancelling an alarm.
+	 */
+	protected static final String ACTION_CANCEL_ALARM = "de.jeisfeld.lifx.app.ACTION_CANCEL_ALARM";
+	/**
+	 * Action for triggering an alarm from alarmManager.
+	 */
+	protected static final String ACTION_TRIGGER_ALARM = "de.jeisfeld.lifx.app.ACTION_TRIGGER_ALARM";
+	/**
+	 * Action for triggering an alarm immediately.
+	 */
+	protected static final String ACTION_IMMEDIATE_ALARM = "de.jeisfeld.lifx.app.ACTION_IMMEDIATE_ALARM";
+	/**
+	 * Action for testing an alarm.
+	 */
+	protected static final String ACTION_TEST_ALARM = "de.jeisfeld.lifx.app.ACTION_TEST_ALARM";
+
+	/**
 	 * The id of the notification channel.
 	 */
-	public static final String CHANNEL_ID = "LifxAlarmChannel";
+	private static final String CHANNEL_ID = "LifxAlarmChannel";
 	/**
 	 * The retry count for alarms.
 	 */
 	private static final int ALARM_RETRY_COUNT = 3;
 	/**
-	 * Map from alarm Ids to Light labels for all lights with running animations.
+	 * List of currently running alarms.
 	 */
-	private static final List<Alarm> ANIMATED_ALARMS = new ArrayList<>();
+	private static final List<Integer> ANIMATED_ALARMS = new ArrayList<>();
+	/**
+	 * List of pending alarms.
+	 */
+	private static final Set<Integer> PENDING_ALARMS = new HashSet<>();
+
+	/**
+	 * Send message to alarm service.
+	 *
+	 * @param context   The context.
+	 * @param action    the action.
+	 * @param alarmId   the alarm id.
+	 * @param alarmTime the alarm time.
+	 */
+	protected static void triggerAlarmService(final Context context, final String action, final int alarmId, final Date alarmTime) {
+		Intent intent = new Intent(context, LifxAlarmService.class);
+		intent.setAction(action);
+		intent.putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId);
+		if (alarmTime != null) {
+			intent.putExtra(AlarmReceiver.EXTRA_ALARM_TIME, alarmTime);
+		}
+		Logger.debugAlarm("Triggering alarm service " + action + " for " + new Alarm(alarmId).getName());
+		ContextCompat.startForegroundService(context, intent);
+	}
 
 	@Override
 	public final void onCreate() {
 		super.onCreate();
-		Logger.log("Created LifxAlarmService");
+		Logger.debugAlarm("Created LifxAlarmService");
 		createNotificationChannel();
 	}
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
+		final String action = intent.getAction();
 		final int alarmId = intent.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1);
 		final Date alarmDate = (Date) intent.getSerializableExtra(AlarmReceiver.EXTRA_ALARM_TIME);
 		Alarm alarm = new Alarm(alarmId);
-		Logger.log("Started service for " + alarmDate);
 
-		synchronized (ANIMATED_ALARMS) {
-			ANIMATED_ALARMS.add(alarm);
+		if (ACTION_CREATE_ALARM.equals(action)) {
+			Logger.debugAlarm("Started alarm service for " + alarm.getName() + " at " + alarmDate);
+			synchronized (PENDING_ALARMS) {
+				PENDING_ALARMS.add(alarmId);
+			}
+			startNotification();
+		}
+		else if (ACTION_CANCEL_ALARM.equals(action)) {
+			Logger.debugAlarm("Cancelled alarm for " + alarm.getName());
+			synchronized (PENDING_ALARMS) {
+				PENDING_ALARMS.remove((Integer) alarmId);
+				// Still start notification to be safe in case of saving previously inactive alarm.
+				startNotification();
+				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
+					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
+					stopService(serviceIntent);
+				}
+			}
+		}
+		else if (ACTION_TRIGGER_ALARM.equals(action)) {
+			Logger.debugAlarm("Triggered alarm for " + alarm.getName() + " at " + alarmDate);
+			synchronized (ANIMATED_ALARMS) {
+				PENDING_ALARMS.remove((Integer) alarmId);
+				ANIMATED_ALARMS.add(alarmId);
+			}
+			getAlarmAnimationThread(alarm, alarmDate).start();
+			startNotification();
+			AlarmReceiver.retriggerAlarm(this, alarm);
+		}
+		else if (ACTION_IMMEDIATE_ALARM.equals(action)) {
+			Logger.debugAlarm("Immediately started alarm for " + alarm.getName() + " at " + alarmDate);
+			synchronized (ANIMATED_ALARMS) {
+				PENDING_ALARMS.remove((Integer) alarmId);
+				ANIMATED_ALARMS.add(alarmId);
+			}
+			getAlarmAnimationThread(alarm, alarmDate).start();
+			startNotification();
+			AlarmReceiver.retriggerAlarm(this, alarm);
+		}
+		else if (ACTION_TEST_ALARM.equals(action)) {
+			Logger.debugAlarm("Testing alarm for " + alarm.getName() + " at " + alarmDate);
+			synchronized (ANIMATED_ALARMS) {
+				ANIMATED_ALARMS.add(alarmId);
+			}
+			getAlarmAnimationThread(alarm, alarmDate).start();
+			startNotification();
+		}
+		else {
+			Log.e(Application.TAG, "Unexpected action: " + action);
 		}
 
-		startNotification();
-		getAlarmAnimationThread(alarm, alarmDate).start();
 
 		return START_STICKY;
 	}
@@ -95,7 +188,8 @@ public class LifxAlarmService extends Service {
 		return new Thread() {
 			@Override
 			public void run() {
-				List<Step> alarmSteps = alarm.getSteps();
+				// Clone steps, so that there will be no issues if alarm is stored while this is executed.
+				List<Step> alarmSteps = new ArrayList<>(alarm.getSteps());
 				Collections.sort(alarmSteps);
 
 				final WakeLock wakeLock = acquireWakelock(alarm);
@@ -121,7 +215,7 @@ public class LifxAlarmService extends Service {
 							catch (InterruptedException e) {
 								// ignore
 							}
-							Logger.log("Started step " + String.format(Locale.getDefault(), "%1$tM:%1$tS", step.getDelay()));
+							Logger.debugAlarm("Started step " + String.format(Locale.getDefault(), "%1$tM:%1$tS", step.getDelay()));
 
 							StoredColor storedColor = step.getStoredColor();
 							Light light = storedColor.getLight();
@@ -191,7 +285,7 @@ public class LifxAlarmService extends Service {
 				}
 
 				long waitTime = alarmDate.getTime() - new Date().getTime();
-				Logger.log("Waiting " + waitTime + " milliseconds");
+				Logger.debugAlarm("Waiting " + waitTime + " milliseconds");
 				if (waitTime > 0) {
 					try {
 						Thread.sleep(waitTime);
@@ -201,11 +295,11 @@ public class LifxAlarmService extends Service {
 					}
 				}
 
-				Logger.log("Starting alarm threads");
+				Logger.debugAlarm("Starting alarm threads");
 				for (Thread thread : actionThreads) {
 					thread.start();
 				}
-				Logger.log("Started alarm threads");
+				Logger.debugAlarm("Started alarm threads");
 
 				for (Thread thread : actionThreads) {
 					try {
@@ -215,7 +309,7 @@ public class LifxAlarmService extends Service {
 						// ignore
 					}
 				}
-				Logger.log("Finished alarm threads");
+				Logger.debugAlarm("Finished alarm threads");
 
 				updateOnEndAnimation(alarm, wakeLock);
 			}
@@ -263,8 +357,8 @@ public class LifxAlarmService extends Service {
 				0, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_alarm))
-				.setContentText(getString(R.string.notification_text_alarm_running, getAnimatedDevicesString()))
-				.setSmallIcon(R.drawable.ic_notification_icon_logo)
+				.setContentText(getAnimatedDevicesString())
+				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
 				.setContentIntent(pendingIntent)
 				.build();
 		startForeground(1, notification);
@@ -281,8 +375,8 @@ public class LifxAlarmService extends Service {
 			wakeLock.release();
 		}
 		synchronized (ANIMATED_ALARMS) {
-			ANIMATED_ALARMS.remove(alarm);
-			if (ANIMATED_ALARMS.size() == 0) {
+			ANIMATED_ALARMS.remove((Integer) alarm.getId());
+			if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAlarmService.class);
 				stopService(serviceIntent);
 			}
@@ -297,13 +391,30 @@ public class LifxAlarmService extends Service {
 	 *
 	 * @return a display String for all animated devices.
 	 */
-	public static String getAnimatedDevicesString() {
+	public String getAnimatedDevicesString() {
 		StringBuilder builder = new StringBuilder();
-		for (Alarm alarm : ANIMATED_ALARMS) {
-			if (builder.length() > 0) {
+		if (ANIMATED_ALARMS.size() > 0) {
+			StringBuilder runningBuilder = new StringBuilder();
+			for (Integer alarmId : ANIMATED_ALARMS) {
+				if (runningBuilder.length() > 0) {
+					runningBuilder.append(", ");
+				}
+				runningBuilder.append(new Alarm(alarmId).getName());
+			}
+			builder.append(getString(R.string.notification_text_alarm_running, runningBuilder.toString()));
+		}
+		if (PENDING_ALARMS.size() > 0) {
+			if (ANIMATED_ALARMS.size() > 0) {
 				builder.append(", ");
 			}
-			builder.append(alarm.getName());
+			StringBuilder pendingBuilder = new StringBuilder();
+			for (Integer alarmId : PENDING_ALARMS) {
+				if (pendingBuilder.length() > 0) {
+					pendingBuilder.append(", ");
+				}
+				pendingBuilder.append(new Alarm(alarmId).getName());
+			}
+			builder.append(getString(R.string.notification_text_alarm_pending, pendingBuilder.toString()));
 		}
 		return builder.toString();
 	}

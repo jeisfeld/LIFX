@@ -1,8 +1,5 @@
 package de.jeisfeld.lifx.app.alarms;
 
-import android.content.Context;
-import android.content.Intent;
-
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -12,13 +9,11 @@ import java.util.Locale;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
-import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Class holding information about an alarm.
@@ -227,20 +222,6 @@ public class Alarm {
 	 */
 	public int getId() {
 		return mId;
-	}
-
-	/**
-	 * Start the alarm service.
-	 *
-	 * @param context   the context.
-	 * @param alarmDate the alarm date.
-	 */
-	public void triggerAlarm(final Context context, final Date alarmDate) {
-		Intent serviceIntent = new Intent(context, LifxAlarmService.class);
-		serviceIntent.putExtra(AlarmReceiver.EXTRA_ALARM_ID, getId());
-		serviceIntent.putExtra(AlarmReceiver.EXTRA_ALARM_TIME, alarmDate);
-		Logger.log("Starting alarm service");
-		ContextCompat.startForegroundService(context, serviceIntent);
 	}
 
 	@NonNull

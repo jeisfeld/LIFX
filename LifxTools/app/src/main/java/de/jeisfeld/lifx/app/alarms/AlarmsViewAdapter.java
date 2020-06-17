@@ -95,7 +95,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 
 		holder.mCheckBoxActive.setOnClickListener(v -> {
 			Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(),
-					alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
+					mAlarms.get(position).getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
 			AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 		});
 
@@ -110,7 +110,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 				TimePickerDialog mTimePicker = new TimePickerDialog(activity,
 						(timePicker, selectedHour, selectedMinute) -> {
 							holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
-							Alarm newAlarm = new Alarm(alarm.getId(), alarm.isActive(), Alarm.getDate(selectedHour, selectedMinute),
+							Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(), Alarm.getDate(selectedHour, selectedMinute),
 									alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
 							AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 							mAlarms.clear();

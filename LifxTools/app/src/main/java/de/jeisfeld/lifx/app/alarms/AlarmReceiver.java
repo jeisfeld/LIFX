@@ -37,13 +37,11 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	@Override
 	public final void onReceive(final Context context, final Intent intent) {
-		Logger.log("Received alarm");
+		Logger.debugAlarm("Received alarm");
 		int alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1);
 		Date alarmTime = (Date) intent.getSerializableExtra(EXTRA_ALARM_TIME);
 		if (alarmId != -1) {
-			Alarm alarm = new Alarm(alarmId);
-			retriggerAlarm(context, alarm);
-			alarm.triggerAlarm(context, alarmTime);
+			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_TRIGGER_ALARM, alarmId, alarmTime);
 		}
 	}
 
@@ -51,14 +49,16 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * Set an alarm.
 	 *
 	 * @param context     The context
+	 * @param alarmId     The alarm id.
 	 * @param alarmTime   The alarm time
 	 * @param alarmIntent The alarm intent
 	 */
-	private static void setAlarm(final Context context, final long alarmTime, final PendingIntent alarmIntent) {
+	private static void setAlarm(final Context context, final int alarmId, final long alarmTime, final PendingIntent alarmIntent) {
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
 			alarmMgr.setAlarmClock(new AlarmClockInfo(alarmTime, alarmIntent), alarmIntent);
-			Logger.log("Created alarm for " + new Date(alarmTime));
+			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_CREATE_ALARM, alarmId, new Date(alarmTime));
+			Logger.debugAlarm("Created alarm for " + new Date(alarmTime));
 		}
 	}
 
@@ -83,7 +83,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param context The context.
 	 * @param alarm   The alarm.
 	 */
-	private static void retriggerAlarm(final Context context, final Alarm alarm) {
+	protected static void retriggerAlarm(final Context context, final Alarm alarm) {
 		if (alarm.getWeekDays().size() == 0) {
 			// disable non-repeating alarm
 			Alarm newAlarm = new Alarm(alarm.getId(), false, alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
@@ -147,13 +147,12 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 		if (alarmTimeMillis < new Date().getTime() + TimeUnit.SECONDS.toMillis(EARLY_START_SECONDS)) {
 			// Too late, hence no service - just start the animation.
-			retriggerAlarm(context, alarm);
-			alarm.triggerAlarm(context, startTime);
+			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_IMMEDIATE_ALARM, alarm.getId(), startTime);
 			return false;
 		}
 		else {
 			PendingIntent alarmIntent = createAlarmIntent(context, alarm.getId(), startTime, true);
-			setAlarm(context, alarmTimeMillis, alarmIntent);
+			setAlarm(context, alarm.getId(), alarmTimeMillis, alarmIntent);
 			reEnableAlarmsOnBoot(context);
 			return true;
 		}
@@ -169,6 +168,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
 			alarmMgr.cancel(createAlarmIntent(context, alarmId, null, false));
+			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_CANCEL_ALARM, alarmId, null);
 		}
 	}
 
@@ -187,7 +187,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (alarmTime != null) {
 			intent.putExtra(EXTRA_ALARM_TIME, alarmTime);
 		}
-		intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
 		return PendingIntent.getBroadcast(context, alarmId, intent,
 				isNew ? PendingIntent.FLAG_CANCEL_CURRENT : PendingIntent.FLAG_UPDATE_CURRENT);
 	}
