@@ -25,7 +25,10 @@
     <string name="notification_title_animation">LIFX Animation</string>
     <string name="notification_text_animation_running">Animation running for %1$s</string>
     <string name="notification_channel_alarm">LIFX Alarms</string>
+    <string name="notification_channel_alarm_execution">LIFX Alarm Execution</string>
     <string name="notification_title_alarm">LIFX Alarm</string>
-    <string name="notification_text_alarm_pending">Alarm %1$s pending</string>
-    <string name="notification_text_alarm_running">Alarm %1$s running</string>
+    <string name="notification_title_alarm_execution">LIFX Alarm %1$s</string>
+    <string name="notification_text_alarm">Alarms: %1$s</string>
+    <string name="notification_text_no_alarm">No further alarms</string>
+    <string name="notification_alarm_action_stop">Stop</string>
 </resources>

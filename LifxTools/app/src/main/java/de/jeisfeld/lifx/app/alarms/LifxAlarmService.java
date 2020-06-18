@@ -76,7 +76,15 @@ public class LifxAlarmService extends Service {
 	/**
 	 * The id of the notification channel.
 	 */
-	private static final String CHANNEL_ID = "LifxAlarmChannel";
+	private static final String NOTIFICATION_CHANNEL_ID = "LifxAlarmChannel";
+	/**
+	 * The id of the notification channel for alarm execution.
+	 */
+	private static final String NOTIFICATION_CHANNEL_ID_EXECUTION = "LifxAlarmExecutionChannel";
+	/**
+	 * The notification tag for alarm execution notification.
+	 */
+	private static final String NOTIFICATION_TAG_ALARM_EXECUTION = "AlarmExecution";
 	/**
 	 * The retry count for alarms.
 	 */
@@ -113,7 +121,7 @@ public class LifxAlarmService extends Service {
 	public final void onCreate() {
 		super.onCreate();
 		Logger.debugAlarm("Created LifxAlarmService");
-		createNotificationChannel();
+		createNotificationChannels();
 	}
 
 	@Override
@@ -150,6 +158,7 @@ public class LifxAlarmService extends Service {
 			}
 			getAlarmAnimationThread(alarm, alarmDate).start();
 			startNotification();
+			startRunningNotification(alarm);
 			AlarmReceiver.retriggerAlarm(this, alarm);
 		}
 		else if (ACTION_IMMEDIATE_ALARM.equals(action)) {
@@ -160,6 +169,7 @@ public class LifxAlarmService extends Service {
 			}
 			getAlarmAnimationThread(alarm, alarmDate).start();
 			startNotification();
+			startRunningNotification(alarm);
 			AlarmReceiver.retriggerAlarm(this, alarm);
 		}
 		else if (ACTION_TEST_ALARM.equals(action)) {
@@ -169,6 +179,7 @@ public class LifxAlarmService extends Service {
 			}
 			getAlarmAnimationThread(alarm, alarmDate).start();
 			startNotification();
+			startRunningNotification(alarm);
 		}
 		else {
 			Log.e(Application.TAG, "Unexpected action: " + action);
@@ -367,13 +378,14 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Create the channel for service animation notifications.
 	 */
-	private void createNotificationChannel() {
+	private void createNotificationChannels() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			NotificationChannel animationChannel = new NotificationChannel(
-					CHANNEL_ID, getString(R.string.notification_channel_alarm), NotificationManager.IMPORTANCE_DEFAULT);
 			NotificationManager manager = getSystemService(NotificationManager.class);
 			assert manager != null;
-			manager.createNotificationChannel(animationChannel);
+			manager.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+					getString(R.string.notification_channel_alarm), NotificationManager.IMPORTANCE_LOW));
+			manager.createNotificationChannel(new NotificationChannel(NOTIFICATION_CHANNEL_ID_EXECUTION,
+					getString(R.string.notification_channel_alarm_execution), NotificationManager.IMPORTANCE_HIGH));
 		}
 	}
 
@@ -381,16 +393,49 @@ public class LifxAlarmService extends Service {
 	 * Start the notification.
 	 */
 	private void startNotification() {
-		Intent notificationIntent = MainActivity.createIntent(this, R.id.nav_alarms);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this,
-				0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
+		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_alarm))
-				.setContentText(getAnimatedDevicesString())
+				.setContentText(getRunningAlarmsString())
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
-				.setContentIntent(pendingIntent)
+				.setContentIntent(contentIntent)
 				.build();
 		startForeground(1, notification);
+	}
+
+	/**
+	 * Start the running notification for a certain alarm.
+	 *
+	 * @param alarm The alarm.
+	 */
+	private void startRunningNotification(final Alarm alarm) {
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent stopIntent = PendingIntent.getActivity(this, 0,
+				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
+		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_EXECUTION)
+				.setContentTitle(getString(R.string.notification_title_alarm_execution, alarm.getName()))
+				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
+				.setOngoing(true)
+				.setPriority(NotificationCompat.PRIORITY_HIGH)
+				.setContentIntent(contentIntent)
+				.addAction(R.drawable.ic_action_alarm_off, getString(R.string.notification_alarm_action_stop), stopIntent)
+				.build();
+		NotificationManager manager = getSystemService(NotificationManager.class);
+		assert manager != null;
+		manager.notify(NOTIFICATION_TAG_ALARM_EXECUTION, alarm.getId(), notification);
+	}
+
+	/**
+	 * End the running notification for a certain alarm.
+	 *
+	 * @param alarm The alarm.
+	 */
+	private void endRunningNotification(final Alarm alarm) {
+		NotificationManager manager = getSystemService(NotificationManager.class);
+		assert manager != null;
+		manager.cancel(NOTIFICATION_TAG_ALARM_EXECUTION, alarm.getId());
 	}
 
 	/**
@@ -412,6 +457,7 @@ public class LifxAlarmService extends Service {
 			else {
 				startNotification();
 			}
+			endRunningNotification(alarm);
 		}
 	}
 
@@ -420,32 +466,20 @@ public class LifxAlarmService extends Service {
 	 *
 	 * @return a display String for all animated devices.
 	 */
-	public String getAnimatedDevicesString() {
+	public String getRunningAlarmsString() {
 		StringBuilder builder = new StringBuilder();
-		if (ANIMATED_ALARMS.size() > 0) {
-			StringBuilder runningBuilder = new StringBuilder();
-			for (Integer alarmId : ANIMATED_ALARMS) {
-				if (runningBuilder.length() > 0) {
-					runningBuilder.append(", ");
-				}
-				runningBuilder.append(new Alarm(alarmId).getName());
-			}
-			builder.append(getString(R.string.notification_text_alarm_running, runningBuilder.toString()));
-		}
 		if (PENDING_ALARMS.size() > 0) {
-			if (ANIMATED_ALARMS.size() > 0) {
-				builder.append(", ");
-			}
-			StringBuilder pendingBuilder = new StringBuilder();
 			for (Integer alarmId : PENDING_ALARMS) {
-				if (pendingBuilder.length() > 0) {
-					pendingBuilder.append(", ");
+				if (builder.length() > 0) {
+					builder.append(", ");
 				}
-				pendingBuilder.append(new Alarm(alarmId).getName());
+				builder.append(new Alarm(alarmId).getName());
 			}
-			builder.append(getString(R.string.notification_text_alarm_pending, pendingBuilder.toString()));
+			return getString(R.string.notification_text_alarm, builder.toString());
 		}
-		return builder.toString();
+		else {
+			return getString(R.string.notification_text_no_alarm);
+		}
 	}
 
 }
