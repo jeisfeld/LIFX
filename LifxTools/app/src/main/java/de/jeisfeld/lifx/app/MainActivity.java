@@ -21,9 +21,26 @@ import androidx.navigation.ui.NavigationUI;
  */
 public class MainActivity extends AppCompatActivity {
 	/**
+	 * The resource key for the navigation page.
+	 */
+	private static final String EXTRA_NAVIGATION_PAGE = "de.jeisfeld.lifx.app.NAVIGATION_PAGE";
+	/**
 	 * The navigation bar configuration.
 	 */
 	private AppBarConfiguration mAppBarConfiguration;
+
+	/**
+	 * Static helper method to create an intent for the activity.
+	 *
+	 * @param context          The context creating the intent.
+	 * @param navigationPageId The navigation page id.
+	 * @return the intent.
+	 */
+	public static Intent createIntent(final Context context, final int navigationPageId) {
+		Intent intent = new Intent(context, MainActivity.class);
+		intent.putExtra(EXTRA_NAVIGATION_PAGE, navigationPageId);
+		return intent;
+	}
 
 	@Override
 	protected final void onCreate(final Bundle savedInstanceState) {
@@ -42,6 +59,12 @@ public class MainActivity extends AppCompatActivity {
 		NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 		NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
 		NavigationUI.setupWithNavController(navigationView, navController);
+
+		int navigationPageId = getIntent().getIntExtra(EXTRA_NAVIGATION_PAGE, -1);
+		if (navigationPageId >= 0) {
+			navController.popBackStack();
+			navController.navigate(navigationPageId);
+		}
 	}
 
 	@Override

@@ -350,9 +350,9 @@ public class LifxAlarmService extends Service {
 	 * Start the notification.
 	 */
 	private void startNotification() {
-		Intent notificationIntent = new Intent(this, MainActivity.class);
+		Intent notificationIntent = MainActivity.createIntent(this, R.id.nav_alarms);
 		PendingIntent pendingIntent = PendingIntent.getActivity(this,
-				0, notificationIntent, 0);
+				0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_alarm))
 				.setContentText(getAnimatedDevicesString())
