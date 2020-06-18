@@ -97,6 +97,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		view.findViewById(R.id.editTextSaveName).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
 
 		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
+		if (onlySelect) {
+			storedColors.add(0, StoredColor.fromDeviceOff(deviceId));
+		}
+
 		if (storedColors.size() > 0 && getContext() != null) {
 			view.findViewById(R.id.gridViewStoredColors).setVisibility(View.VISIBLE);
 			view.findViewById(R.id.dialog_title_select).setVisibility(View.VISIBLE);

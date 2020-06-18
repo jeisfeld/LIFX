@@ -328,7 +328,6 @@ public class Alarm {
 		 */
 		public Step store(final int alarmId) {
 			Step step = this;
-
 			if (getId() < 0) {
 				int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_alarm_step_max_id, 0) + 1;
 				PreferenceUtil.setSharedPreferenceInt(R.string.key_alarm_step_max_id, newId);

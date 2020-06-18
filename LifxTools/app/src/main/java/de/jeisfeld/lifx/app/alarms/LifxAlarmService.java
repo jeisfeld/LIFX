@@ -33,6 +33,7 @@ import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.os.Logger;
 
@@ -60,6 +61,10 @@ public class LifxAlarmService extends Service {
 	 * Action for testing an alarm.
 	 */
 	protected static final String ACTION_TEST_ALARM = "de.jeisfeld.lifx.app.ACTION_TEST_ALARM";
+	/**
+	 * Relative brightness for color off.
+	 */
+	private static final double OFF_BRIGHTNESS = 0.01;
 
 	/**
 	 * The id of the notification channel.
@@ -235,15 +240,15 @@ public class LifxAlarmService extends Service {
 										if (storedColor instanceof StoredMultizoneColors) {
 											StoredMultizoneColors storedMultizoneColors = (StoredMultizoneColors) storedColor;
 											storedMultizoneColors.getLight().setColors(
-													storedMultizoneColors.getColors().withRelativeBrightness(0.01), 0, false); // MAGIC_NUMBER
+													storedMultizoneColors.getColors().withRelativeBrightness(OFF_BRIGHTNESS), 0, false);
 										}
 										else if (storedColor instanceof StoredTileColors) {
 											StoredTileColors storedTileColors = (StoredTileColors) storedColor;
 											storedTileColors.getLight().setColors(
-													storedTileColors.getColors().withRelativeBrightness(0.01), 0, false); // MAGIC_NUMBER
+													storedTileColors.getColors().withRelativeBrightness(OFF_BRIGHTNESS), 0, false);
 										}
 										else {
-											storedColor.getLight().setColor(storedColor.getColor().withBrightness(0.01)); // MAGIC_NUMBER
+											storedColor.getLight().setColor(storedColor.getColor().withBrightness(OFF_BRIGHTNESS));
 										}
 										light.setPower(true);
 										success = true;
@@ -259,17 +264,23 @@ public class LifxAlarmService extends Service {
 							success = false;
 							while (!success && count < ALARM_RETRY_COUNT) {
 								try {
-									if (storedColor instanceof StoredMultizoneColors) {
-										StoredMultizoneColors storedMultizoneColors = (StoredMultizoneColors) storedColor;
-										storedMultizoneColors.getLight().setColors(storedMultizoneColors.getColors(),
-												(int) step.getDuration(), true);
-									}
-									else if (storedColor instanceof StoredTileColors) {
-										StoredTileColors storedTileColors = (StoredTileColors) storedColor;
-										storedTileColors.getLight().setColors(storedTileColors.getColors(), (int) step.getDuration(), true);
+									if (Color.OFF.equals(storedColor.getColor())) {
+										// do delayed power off
+										storedColor.getLight().setPower(false, (int) step.getDuration(), true);
 									}
 									else {
-										storedColor.getLight().setColor(storedColor.getColor(), (int) step.getDuration(), true);
+										if (storedColor instanceof StoredMultizoneColors) {
+											StoredMultizoneColors storedMultizoneColors = (StoredMultizoneColors) storedColor;
+											storedMultizoneColors.getLight().setColors(storedMultizoneColors.getColors(),
+													(int) step.getDuration(), true);
+										}
+										else if (storedColor instanceof StoredTileColors) {
+											StoredTileColors storedTileColors = (StoredTileColors) storedColor;
+											storedTileColors.getLight().setColors(storedTileColors.getColors(), (int) step.getDuration(), true);
+										}
+										else {
+											storedColor.getLight().setColor(storedColor.getColor(), (int) step.getDuration(), true);
+										}
 									}
 									success = true;
 								}

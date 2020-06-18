@@ -19,6 +19,8 @@
     <string name="message_searching_devices">Suche LIFX-Geräte&#8230;</string>
     <string name="message_no_devices_found">Keine Geräte gefunden.</string>
 
+    <string name="color_off">AUS</string>
+
     <string name="notification_channel_animation">LIFX-Animationen</string>
     <string name="notification_title_animation">LIFX Animation</string>
     <string name="notification_text_animation_running">Animation läuft für %1$s</string>

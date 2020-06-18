@@ -71,7 +71,12 @@ public final class ColorRegistry {
 	 * @return The stored color.
 	 */
 	public StoredColor getStoredColor(final int storedColorId) {
-		return mStoredColors.get(storedColorId);
+		if (storedColorId >= 0) {
+			return mStoredColors.get(storedColorId);
+		}
+		else {
+			return new StoredColor(storedColorId);
+		}
 	}
 
 	/**

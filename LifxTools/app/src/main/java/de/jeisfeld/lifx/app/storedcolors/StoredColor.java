@@ -3,6 +3,7 @@ package de.jeisfeld.lifx.app.storedcolors;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -26,17 +27,17 @@ public class StoredColor {
 	 */
 	private final String mName;
 	/**
-	 * The id for storage.
+	 * The id for storage. Negative values indicate power off for devices.
 	 */
 	private final int mId;
 
 	/**
 	 * Generate a stored color.
 	 *
-	 * @param id The id for storage
-	 * @param color The color
+	 * @param id       The id for storage
+	 * @param color    The color
 	 * @param deviceId The device id
-	 * @param name The name
+	 * @param name     The name
 	 */
 	public StoredColor(final int id, final Color color, final int deviceId, final String name) {
 		mColor = color;
@@ -48,9 +49,9 @@ public class StoredColor {
 	/**
 	 * Generate a new stored color without id.
 	 *
-	 * @param color The color
+	 * @param color    The color
 	 * @param deviceId The device id
-	 * @param name The name
+	 * @param name     The name
 	 */
 	public StoredColor(final Color color, final int deviceId, final String name) {
 		this(-1, color, deviceId, name);
@@ -59,7 +60,7 @@ public class StoredColor {
 	/**
 	 * Generate a new stored color by adding id.
 	 *
-	 * @param id The id
+	 * @param id          The id
 	 * @param storedColor the base stored color.
 	 */
 	public StoredColor(final int id, final StoredColor storedColor) {
@@ -72,10 +73,18 @@ public class StoredColor {
 	 * @param colorId The id.
 	 */
 	protected StoredColor(final int colorId) {
-		mId = colorId;
-		mName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_color_name, colorId);
-		mDeviceId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_device_id, colorId, -1);
-		mColor = PreferenceUtil.getIndexedSharedPreferenceColor(R.string.key_color_color, colorId, Color.NONE);
+		if (colorId >= 0) {
+			mId = colorId;
+			mName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_color_name, colorId);
+			mDeviceId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_device_id, colorId, -1);
+			mColor = PreferenceUtil.getIndexedSharedPreferenceColor(R.string.key_color_color, colorId, Color.NONE);
+		}
+		else {
+			mId = colorId;
+			mName = Application.getAppContext().getString(R.string.color_off);
+			mDeviceId = -colorId;
+			mColor = Color.OFF;
+		}
 	}
 
 	/**
@@ -97,6 +106,16 @@ public class StoredColor {
 		else {
 			return new StoredColor(colorId);
 		}
+	}
+
+	/**
+	 * Get the stored color for a certain device representing power off.
+	 *
+	 * @param deviceId The device id.
+	 * @return The stored color.
+	 */
+	public static StoredColor fromDeviceOff(final int deviceId) {
+		return new StoredColor(-deviceId, Color.OFF, deviceId, Application.getAppContext().getString(R.string.color_off));
 	}
 
 	/**
