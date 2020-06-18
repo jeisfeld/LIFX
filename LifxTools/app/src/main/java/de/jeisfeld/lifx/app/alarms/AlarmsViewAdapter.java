@@ -14,6 +14,7 @@ import android.widget.TextView;
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -94,8 +95,15 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 		});
 
 		holder.mCheckBoxActive.setOnClickListener(v -> {
+			Date startTime = mAlarms.get(position).getStartTime();
+			if (alarm.getWeekDays().size() == 0) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(startTime);
+				startTime = Alarm.getDate(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+			}
+
 			Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(),
-					mAlarms.get(position).getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
+					startTime, alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
 			AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 		});
 

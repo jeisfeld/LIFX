@@ -82,7 +82,7 @@ public class Alarm {
 	 * @param id    The id
 	 * @param alarm the base alarm.
 	 */
-	public Alarm(final int id, final Alarm alarm) {
+	protected Alarm(final int id, final Alarm alarm) {
 		this(id, alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
 	}
 
@@ -112,7 +112,7 @@ public class Alarm {
 	 *
 	 * @return the stored alarm.
 	 */
-	public Alarm store() {
+	protected Alarm store() {
 		Alarm alarm = this;
 		if (getId() < 0) {
 			int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_alarm_max_id, 0) + 1;
@@ -227,7 +227,8 @@ public class Alarm {
 	@NonNull
 	@Override
 	public final String toString() {
-		return "[" + getId() + "](" + getName() + ")(" + String.format(Locale.getDefault(), "%1$tH:%1$tM", getStartTime()) + ")" + getSteps();
+		return "[" + getId() + "](" + isActive() + ")(" + getName() + ")(" + String.format(Locale.getDefault(), "%1$tH:%1$tM", getStartTime())
+				+ ")(" + getWeekDays().size() + ")(" + getSteps();
 	}
 
 	/**
@@ -242,7 +243,9 @@ public class Alarm {
 		calendar.set(Calendar.HOUR_OF_DAY, hour);
 		calendar.set(Calendar.MINUTE, minute);
 		calendar.set(Calendar.SECOND, 0);
-		if (calendar.before(Calendar.getInstance())) {
+		Calendar now = Calendar.getInstance();
+		now.add(Calendar.SECOND, 2 * AlarmReceiver.EARLY_START_SECONDS); // put one-time alarm at least 10 seconds in future
+		if (calendar.before(now)) {
 			calendar.add(Calendar.DATE, 1);
 		}
 		return calendar.getTime();

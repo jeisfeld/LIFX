@@ -25,7 +25,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 	/**
 	 * The number of seconds for early start.
 	 */
-	protected static final int EARLY_START_SECONDS = 10;
+	protected static final int EARLY_START_SECONDS = 5;
 	/**
 	 * The resource key for the notification id.
 	 */
