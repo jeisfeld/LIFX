@@ -1,12 +1,11 @@
 package de.jeisfeld.lifx.app.home;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
-
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -36,7 +35,7 @@ public class TileViewModel extends LightViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light   The light.
+	 * @param light The light.
 	 */
 	public TileViewModel(final Context context, final TileChain light) {
 		super(context, light);
@@ -98,7 +97,7 @@ public class TileViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors           the colors to be set.
+	 * @param colors the colors to be set.
 	 * @param brightnessFactor the brightness factor.
 	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
@@ -139,7 +138,7 @@ public class TileViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors           The given colors.
+	 * @param colors The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	private void updateStoredColors(final TileChainColors colors, final double brightnessFactor) {
@@ -226,7 +225,7 @@ public class TileViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model  The underlying model.
+		 * @param model The underlying model.
 		 * @param colors The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
@@ -244,9 +243,10 @@ public class TileViewModel extends LightViewModel {
 			}
 
 			try {
-				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
-						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				model.getLight().setColors(colorDuration, mColors);
+				int colorDuration = mIsImmediate ? 0
+						: PreferenceUtil.getSharedPreferenceIntString(
+								R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				model.getLight().setColors(mColors, colorDuration, false);
 				return mColors;
 			}
 			catch (IOException e) {

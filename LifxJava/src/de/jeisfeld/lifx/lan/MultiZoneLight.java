@@ -203,12 +203,12 @@ public class MultiZoneLight extends Light {
 	/**
 	 * Set the colors of the multizone light.
 	 *
+	 * @param colors the target colors intermediate colors will be interpolated.
 	 * @param duration the duration of power change in millis.
 	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @param colors the target colors intermediate colors will be interpolated.
 	 * @throws IOException Connection issues
 	 */
-	public void setColors(final int duration, final boolean wait, final MultizoneColors colors) throws IOException {
+	public void setColors(final MultizoneColors colors, final int duration, final boolean wait) throws IOException {
 		if (hasExtendedApi()) {
 			getConnection().requestWithResponse(
 					new MultizoneSetExtendedColorZones((byte) 0, duration, Apply.APPLY, colors.getColors(mZoneCount)));
@@ -370,11 +370,11 @@ public class MultiZoneLight extends Light {
 								MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
 								Power power;
 								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
-									getLight().setColors(0, false, colors);
+									getLight().setColors(colors, 0, false);
 									getLight().setPower(true, duration, false);
 								}
 								else {
-									getLight().setColors(duration, false, colors);
+									getLight().setColors(colors, duration, false);
 								}
 								success = true;
 							}
@@ -402,7 +402,7 @@ public class MultiZoneLight extends Light {
 					getLight().setPower(false, mEndTransitionTime, true);
 				}
 				else {
-					getLight().setColors(mEndTransitionTime, true, mEndColors);
+					getLight().setColors(mEndColors, mEndTransitionTime, true);
 				}
 				if (getAnimationCallback() != null) {
 					getAnimationCallback().onAnimationEnd(isInterrupted);

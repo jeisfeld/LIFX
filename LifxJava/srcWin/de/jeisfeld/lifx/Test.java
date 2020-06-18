@@ -97,8 +97,8 @@ public final class Test {
 
 	void test4() throws Exception { // SUPPRESS_CHECKSTYLE
 		System.out.println(Z2.getFullInformation());
-		Z2.setColors(FIVESECONDS, true, new MultizoneColors.Fixed(Color.RED).combine(new MultizoneColors.Fixed(Color.GREEN), 0.5) // MAGIC_NUMBER
-				.combine(new MultizoneColors.Fixed(Color.BLUE), 0.75)); // MAGIC_NUMBER
+		Z2.setColors(new MultizoneColors.Fixed(Color.RED).combine(new MultizoneColors.Fixed(Color.GREEN), 0.5) // MAGIC_NUMBER
+				.combine(new MultizoneColors.Fixed(Color.BLUE), 0.75), FIVESECONDS, true); // MAGIC_NUMBER
 		Logger.setLogDetails(true);
 		Z2.setPower(true);
 		Logger.setLogDetails(false);
@@ -126,7 +126,7 @@ public final class Test {
 		double yCenter = (TILE_4.getTotalHeight() - 1) / 2.0;
 		for (int i = 0; i < Integer.MAX_VALUE; i++) {
 			final int j = i;
-			TILE_4.setColors(0, new TileChainColors() {
+			TILE_4.setColors(new TileChainColors() {
 				/**
 				 * The default serializable version id.
 				 */
@@ -137,14 +137,14 @@ public final class Test {
 					double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
 					return new Color((int) (1024 * (5 * distance - j)), -1, 10000, 4000); // MAGIC_NUMBER
 				}
-			});
+			}, 0, false);
 		}
 
 	}
 
 	void test8() throws Exception { // SUPPRESS_CHECKSTYLE
-		TILE_4.setColors(0, new TileChainColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.GREEN, Color.RED)
-				.withRelativeBrightness(0.01)); // MAGIC_NUMBER
+		TILE_4.setColors(new TileChainColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.GREEN, Color.RED)
+				.withRelativeBrightness(0.01), 0, false); // MAGIC_NUMBER
 
 		// TILE_4.setEffect(new TileEffectInfo.Morph(10000, Color.RED, Color.WHITE));
 	}

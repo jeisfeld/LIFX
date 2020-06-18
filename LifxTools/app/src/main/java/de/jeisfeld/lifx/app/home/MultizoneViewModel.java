@@ -291,9 +291,10 @@ public class MultizoneViewModel extends LightViewModel {
 			}
 
 			try {
-				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
-						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				model.getLight().setColors(colorDuration, false, mColors);
+				int colorDuration = mIsImmediate ? 0
+						: PreferenceUtil.getSharedPreferenceIntString(
+								R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				model.getLight().setColors(mColors, colorDuration, false);
 				return mColors;
 			}
 			catch (IOException e) {

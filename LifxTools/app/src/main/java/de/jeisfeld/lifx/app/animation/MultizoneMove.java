@@ -132,7 +132,7 @@ public class MultizoneMove extends AnimationData {
 		return new NativeAnimationDefinition() {
 			@Override
 			public void startAnimation() throws IOException {
-				multiZoneLight.setColors(0, true, mColors.withRelativeBrightness(getSelectedBrightness(light)));
+				multiZoneLight.setColors(mColors.withRelativeBrightness(getSelectedBrightness(light)), 0, false);
 				multiZoneLight.setEffect(new Move(Math.abs(getDuration()), getDirection() == Direction.BACKWARD));
 			}
 

@@ -331,10 +331,10 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 				int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
 						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
 				if (storedColor instanceof StoredMultizoneColors) {
-					((MultiZoneLight) storedColor.getLight()).setColors(powerDuration, false, ((StoredMultizoneColors) storedColor).getColors());
+					((MultiZoneLight) storedColor.getLight()).setColors(((StoredMultizoneColors) storedColor).getColors(), powerDuration, false);
 				}
 				else if (storedColor instanceof StoredTileColors) {
-					((TileChain) storedColor.getLight()).setColors(powerDuration, ((StoredTileColors) storedColor).getColors());
+					((TileChain) storedColor.getLight()).setColors(((StoredTileColors) storedColor).getColors(), powerDuration, false);
 				}
 				else {
 					storedColor.getLight().setColor(storedColor.getColor(), powerDuration, false);

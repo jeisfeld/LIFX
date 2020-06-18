@@ -284,30 +284,40 @@ public class TileChain extends Light implements Serializable {
 	/**
 	 * Set the colors for all tiles.
 	 *
-	 * @param duration The duration of the color change.
 	 * @param colors the colors to be set.
+	 * @param duration The duration of the color change.
+	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
-	public final void setColors(final int duration, final TileChainColors colors) throws IOException {
+	public final void setColors(final TileChainColors colors, final int duration, final boolean wait) throws IOException {
 		for (byte tileIndex = 0; tileIndex < mTileCount; tileIndex++) {
 			TileInfo tileInfo = mTileInfo.get(tileIndex);
 			setColors(tileIndex, duration,
 					colors.getTileColors(tileInfo.getWidth(), tileInfo.getHeight(), tileInfo.getMinX(), tileInfo.getMinY(),
 							tileInfo.getRotation(), mTotalWidth, mTotalHeight));
+			if (wait) {
+				try {
+					Thread.sleep(duration);
+				}
+				catch (InterruptedException e) {
+					// ignore
+				}
+			}
 		}
 	}
 
 	/**
 	 * Set the colors for a subset of tiles.
 	 *
-	 * @param duration The duration of the color change.
 	 * @param colors the colors to be set. May have null entries.
+	 * @param duration The duration of the color change.
+	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
-	public final void setColorsOptional(final int duration, final TileChainColors colors) throws IOException {
+	public final void setColorsOptional(final TileChainColors colors, final int duration, final boolean wait) throws IOException {
 		final TileChainColors oldColors = getColors();
 		if (oldColors != null) {
-			setColors(duration, new TileChainColors() {
+			setColors(new TileChainColors() {
 				/**
 				 * The default serializable version id.
 				 */
@@ -318,7 +328,7 @@ public class TileChain extends Light implements Serializable {
 					Color newColor = colors.getColor(x, y, mTotalWidth, mTotalHeight);
 					return newColor == null ? oldColors.getColor(x, y, mTotalWidth, mTotalHeight) : newColor;
 				}
-			});
+			}, duration, wait);
 		}
 	}
 
@@ -410,11 +420,11 @@ public class TileChain extends Light implements Serializable {
 								TileChainColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
 								Power power;
 								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
-									getLight().setColors(0, colors);
+									getLight().setColors(colors, 0, false);
 									getLight().setPower(true, duration, false);
 								}
 								else {
-									getLight().setColors(duration, colors);
+									getLight().setColors(colors, duration, false);
 								}
 								success = true;
 							}
@@ -442,7 +452,7 @@ public class TileChain extends Light implements Serializable {
 					getLight().setPower(false, mEndTransitionTime, true);
 				}
 				else {
-					getLight().setColors(mEndTransitionTime, mEndColors);
+					getLight().setColors(mEndColors, mEndTransitionTime, true);
 				}
 				if (getAnimationCallback() != null) {
 					getAnimationCallback().onAnimationEnd(isInterrupted);
