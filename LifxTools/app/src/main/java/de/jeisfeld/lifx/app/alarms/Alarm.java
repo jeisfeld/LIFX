@@ -2,10 +2,13 @@ package de.jeisfeld.lifx.app.alarms;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -14,6 +17,7 @@ import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Light;
 
 /**
  * Class holding information about an alarm.
@@ -188,6 +192,23 @@ public class Alarm {
 	 */
 	public List<Step> getSteps() {
 		return mSteps;
+	}
+
+
+	protected final Map<Light, List<Step>> getLightStepMap() {
+		List<Step> alarmSteps = new ArrayList<>(getSteps());
+		Collections.sort(alarmSteps);
+
+		Map<Light, List<Step>> lightStepMap = new HashMap<>();
+		for (Step step : alarmSteps) {
+			List<Step> lightSteps = lightStepMap.get(step.getStoredColor().getLight());
+			if (lightSteps == null) {
+				lightSteps = new ArrayList<>();
+				lightStepMap.put(step.getStoredColor().getLight(), lightSteps);
+			}
+			lightSteps.add(step);
+		}
+		return lightStepMap;
 	}
 
 	/**

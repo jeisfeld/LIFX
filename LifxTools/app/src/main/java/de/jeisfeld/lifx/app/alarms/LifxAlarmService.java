@@ -1,18 +1,5 @@
 package de.jeisfeld.lifx.app.alarms;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -26,6 +13,16 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
@@ -35,10 +32,17 @@ import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
+import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.Light.AnimationCallback;
+import de.jeisfeld.lifx.lan.Light.AnimationThread;
+import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.MultiZoneLight.AnimationDefinition;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
-import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.os.Logger;
 
 /**
@@ -66,13 +70,9 @@ public class LifxAlarmService extends Service {
 	 */
 	protected static final String ACTION_TEST_ALARM = "de.jeisfeld.lifx.app.ACTION_TEST_ALARM";
 	/**
-	 * Relative brightness for color off.
+	 * Action for interrupting an alarm.
 	 */
-	private static final double OFF_BRIGHTNESS = 0.01;
-	/**
-	 * Additional time in ms to really get the light off.
-	 */
-	private static final long OFF_TIME = 500;
+	protected static final String ACTION_INTERRUPT_ALARM = "de.jeisfeld.lifx.app.ACTION_INTERRUPT_ALARM";
 	/**
 	 * The id of the notification channel.
 	 */
@@ -85,10 +85,6 @@ public class LifxAlarmService extends Service {
 	 * The notification tag for alarm execution notification.
 	 */
 	private static final String NOTIFICATION_TAG_ALARM_EXECUTION = "AlarmExecution";
-	/**
-	 * The retry count for alarms.
-	 */
-	private static final int ALARM_RETRY_COUNT = 3;
 	/**
 	 * List of currently running alarms.
 	 */
@@ -107,20 +103,31 @@ public class LifxAlarmService extends Service {
 	 * @param alarmTime the alarm time.
 	 */
 	protected static void triggerAlarmService(final Context context, final String action, final int alarmId, final Date alarmTime) {
+		ContextCompat.startForegroundService(context, createIntent(context, action, alarmId, alarmTime));
+	}
+
+	/**
+	 * Create an intent for alarm service.
+	 *
+	 * @param context   The context.
+	 * @param action    the action.
+	 * @param alarmId   the alarm id.
+	 * @param alarmTime the alarm time.
+	 * @return the intent.
+	 */
+	private static Intent createIntent(final Context context, final String action, final int alarmId, final Date alarmTime) {
 		Intent intent = new Intent(context, LifxAlarmService.class);
 		intent.setAction(action);
 		intent.putExtra(AlarmReceiver.EXTRA_ALARM_ID, alarmId);
 		if (alarmTime != null) {
 			intent.putExtra(AlarmReceiver.EXTRA_ALARM_TIME, alarmTime);
 		}
-		Logger.debugAlarm("Triggering alarm service " + action + " for " + new Alarm(alarmId).getName());
-		ContextCompat.startForegroundService(context, intent);
+		return intent;
 	}
 
 	@Override
 	public final void onCreate() {
 		super.onCreate();
-		Logger.debugAlarm("Created LifxAlarmService");
 		createNotificationChannels();
 	}
 
@@ -132,14 +139,12 @@ public class LifxAlarmService extends Service {
 		Alarm alarm = new Alarm(alarmId);
 
 		if (ACTION_CREATE_ALARM.equals(action)) {
-			Logger.debugAlarm("Started alarm service for " + alarm.getName() + " at " + alarmDate);
 			synchronized (PENDING_ALARMS) {
 				PENDING_ALARMS.add(alarmId);
 			}
 			startNotification();
 		}
 		else if (ACTION_CANCEL_ALARM.equals(action)) {
-			Logger.debugAlarm("Cancelled alarm for " + alarm.getName());
 			synchronized (PENDING_ALARMS) {
 				PENDING_ALARMS.remove(alarmId);
 				// Still start notification to be safe in case of saving previously inactive alarm.
@@ -151,35 +156,21 @@ public class LifxAlarmService extends Service {
 			}
 		}
 		else if (ACTION_TRIGGER_ALARM.equals(action)) {
-			Logger.debugAlarm("Triggered alarm for " + alarm.getName() + " at " + alarmDate);
 			synchronized (ANIMATED_ALARMS) {
 				PENDING_ALARMS.remove(alarmId);
-				ANIMATED_ALARMS.add(alarmId);
 			}
-			getAlarmAnimationThread(alarm, alarmDate).start();
-			startNotification();
-			startRunningNotification(alarm);
+			runAnimations(alarm, alarmDate);
 			AlarmReceiver.retriggerAlarm(this, alarm);
 		}
 		else if (ACTION_IMMEDIATE_ALARM.equals(action)) {
-			Logger.debugAlarm("Immediately started alarm for " + alarm.getName() + " at " + alarmDate);
-			synchronized (ANIMATED_ALARMS) {
-				PENDING_ALARMS.remove(alarmId);
-				ANIMATED_ALARMS.add(alarmId);
-			}
-			getAlarmAnimationThread(alarm, alarmDate).start();
-			startNotification();
-			startRunningNotification(alarm);
+			runAnimations(alarm, alarmDate);
 			AlarmReceiver.retriggerAlarm(this, alarm);
 		}
 		else if (ACTION_TEST_ALARM.equals(action)) {
-			Logger.debugAlarm("Testing alarm for " + alarm.getName() + " at " + alarmDate);
-			synchronized (ANIMATED_ALARMS) {
-				ANIMATED_ALARMS.add(alarmId);
-			}
-			getAlarmAnimationThread(alarm, alarmDate).start();
-			startNotification();
-			startRunningNotification(alarm);
+			runAnimations(alarm, alarmDate);
+		}
+		else if (ACTION_INTERRUPT_ALARM.equals(action)) {
+			interruptAlarm(alarm);
 		}
 		else {
 			Log.e(Application.TAG, "Unexpected action: " + action);
@@ -199,160 +190,146 @@ public class LifxAlarmService extends Service {
 	}
 
 	/**
-	 * Get an alarm animation thread.
+	 * Run the animations for an alarm.
 	 *
 	 * @param alarm     the alarm
 	 * @param alarmDate the alarm date
-	 * @return The animation thread
 	 */
-	private Thread getAlarmAnimationThread(final Alarm alarm, final Date alarmDate) {
-		return new Thread() {
-			@Override
-			public void run() {
-				// Clone steps, so that there will be no issues if alarm is stored while this is executed.
-				List<Step> alarmSteps = new ArrayList<>(alarm.getSteps());
-				Collections.sort(alarmSteps);
+	private void runAnimations(final Alarm alarm, final Date alarmDate) {
+		synchronized (ANIMATED_ALARMS) {
+			ANIMATED_ALARMS.add(alarm.getId());
+		}
+		for (AnimationThread animationThread : getAnimationThreads(alarm, alarmDate)) {
+			animationThread.start();
+		}
+		Logger.info("Started Alarm " + alarm.getName());
 
-				final WakeLock wakeLock = acquireWakelock(alarm);
-
-				Map<Light, List<Step>> lightStepMap = new HashMap<>();
-				for (Step step : alarmSteps) {
-					List<Step> lightSteps = lightStepMap.get(step.getStoredColor().getLight());
-					if (lightSteps == null) {
-						lightSteps = new ArrayList<>();
-						lightStepMap.put(step.getStoredColor().getLight(), lightSteps);
-					}
-					lightSteps.add(step);
-				}
-
-				for (Light light : lightStepMap.keySet()) {
-					light.endAnimation(false);
-				}
-
-				List<Thread> actionThreads = new ArrayList<>();
-
-				for (final Entry<Light, List<Step>> entry : lightStepMap.entrySet()) {
-					final Light light = entry.getKey();
-					final List<Step> steps = entry.getValue();
-					actionThreads.add(new Thread() {
-						@Override
-						public void run() {
-							for (final Step step : steps) {
-								long expectedStartTime = alarmDate.getTime() + step.getDelay();
-								LifxAlarmService.sleep(expectedStartTime - System.currentTimeMillis());
-
-								Logger.debugAlarm("Started " + light.getLabel() + " step " + step.getStoredColor().getName() + " - "
-										+ String.format(Locale.getDefault(), "%1$tM:%1$tS", step.getDelay()));
-								StoredColor storedColor = step.getStoredColor();
-
-								// First check if power is on
-								Power power = null;
-								int count = 0;
-								boolean success;
-								while (power == null && count < ALARM_RETRY_COUNT) {
-									power = light.getPower();
-									count++;
-								}
-
-								if (power != null && power.isOff()) {
-									count = 0;
-									success = false;
-									while (!success && count < ALARM_RETRY_COUNT) {
-										try {
-											if (storedColor instanceof StoredMultizoneColors) {
-												StoredMultizoneColors storedMultizoneColors = (StoredMultizoneColors) storedColor;
-												storedMultizoneColors.getLight().setColors(
-														storedMultizoneColors.getColors().withRelativeBrightness(OFF_BRIGHTNESS), 0, false);
-											}
-											else if (storedColor instanceof StoredTileColors) {
-												StoredTileColors storedTileColors = (StoredTileColors) storedColor;
-												storedTileColors.getLight().setColors(
-														storedTileColors.getColors().withRelativeBrightness(OFF_BRIGHTNESS), 0, false);
-											}
-											else {
-												storedColor.getLight().setColor(storedColor.getColor().withBrightness(OFF_BRIGHTNESS));
-											}
-											light.setPower(true);
-											success = true;
-										}
-										catch (IOException e) {
-											Logger.error(e);
-											count++;
-										}
-									}
-								}
-
-								count = 0;
-								success = false;
-								while (!success && count < ALARM_RETRY_COUNT) {
-									int duration = (int) Math.max(0, step.getDuration() + expectedStartTime - System.currentTimeMillis());
-									try {
-										if (Color.OFF.equals(storedColor.getColor())) {
-											// do delayed power off
-											storedColor.getLight().setPower(false, duration, true);
-											LifxAlarmService.sleep(OFF_TIME);
-										}
-										else {
-											if (storedColor instanceof StoredMultizoneColors) {
-												StoredMultizoneColors storedMultizoneColors = (StoredMultizoneColors) storedColor;
-												storedMultizoneColors.getLight().setColors(storedMultizoneColors.getColors(), duration, true);
-											}
-											else if (storedColor instanceof StoredTileColors) {
-												StoredTileColors storedTileColors = (StoredTileColors) storedColor;
-												storedTileColors.getLight().setColors(storedTileColors.getColors(), duration, true);
-											}
-											else {
-												storedColor.getLight().setColor(storedColor.getColor(), duration, true);
-											}
-										}
-										success = true;
-									}
-									catch (IOException e) {
-										Logger.error(e);
-										count++;
-									}
-								}
-							}
-						}
-					});
-				}
-
-				LifxAlarmService.sleep(alarmDate.getTime() - new Date().getTime());
-
-				Logger.debugAlarm("Starting alarm threads");
-				for (Thread thread : actionThreads) {
-					thread.start();
-				}
-				Logger.debugAlarm("Started alarm threads");
-
-				for (Thread thread : actionThreads) {
-					try {
-						thread.join();
-					}
-					catch (InterruptedException e) {
-						// ignore
-					}
-				}
-				Logger.debugAlarm("Finished alarm threads");
-
-				updateOnEndAnimation(alarm, wakeLock);
-			}
-		};
+		startNotification();
+		startRunningNotification(alarm);
 	}
 
 	/**
-	 * Sleep certain time, ignoring interruption.
+	 * Get the animation threads for an alarm.
 	 *
-	 * @param millis the time in millis
+	 * @param alarm     The alarm
+	 * @param alarmDate The alarm start date
+	 * @return The animation threads
 	 */
-	private static void sleep(final long millis) {
-		if (millis > 0) {
-			try {
-				Thread.sleep(millis);
-			}
-			catch (InterruptedException e) {
-				// ignore
-			}
+	private List<AnimationThread> getAnimationThreads(final Alarm alarm, final Date alarmDate) {
+		final WakeLock wakeLock = acquireWakelock(alarm);
+
+		final Map<Light, List<Step>> lightStepMap = alarm.getLightStepMap();
+		for (Light light : lightStepMap.keySet()) {
+			light.endAnimation(false);
+		}
+
+		final List<AnimationThread> animationThreads = new ArrayList<>();
+		final List<Light> animatedLights = new ArrayList<>();
+
+		for (final Entry<Light, List<Step>> entry : lightStepMap.entrySet()) {
+			final Light light = entry.getKey();
+			final List<Step> steps = entry.getValue();
+			animatedLights.add(light);
+
+			AnimationThread animationThread = light.animation(getAnimationDefiniton(alarmDate, light, steps))
+					.setAnimationCallback(new AnimationCallback() {
+						@Override
+						public void onException(final IOException e) {
+							Logger.info("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
+							updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+						}
+
+						@Override
+						public void onAnimationEnd(final boolean isInterrupted) {
+							Logger.info("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
+							updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+						}
+					});
+			animationThreads.add(animationThread);
+		}
+		return animationThreads;
+	}
+
+	/**
+	 * Create the animation definition for a certain light.
+	 *
+	 * @param alarmDate The alarm start date
+	 * @param light     The light.
+	 * @param steps     The steps.
+	 * @return The animation definition.
+	 */
+	private Light.AnimationDefinition getAnimationDefiniton(final Date alarmDate, final Light light, final List<Step> steps) {
+		if (light instanceof MultiZoneLight) {
+			return new AnimationDefinition() {
+				@Override
+				public MultizoneColors getColors(final int n) {
+					if (n >= steps.size()) {
+						return null;
+					}
+					StoredColor storedColor = steps.get(n).getStoredColor();
+					if (storedColor instanceof StoredMultizoneColors) {
+						return ((StoredMultizoneColors) storedColor).getColors();
+					}
+					else {
+						return new MultizoneColors.Fixed(storedColor.getColor());
+					}
+				}
+
+				@Override
+				public int getDuration(final int n) {
+					return n >= steps.size() ? 0 : (int) steps.get(n).getDuration();
+				}
+
+				@Override
+				public Date getStartTime(final int n) {
+					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
+				}
+			};
+		}
+		else if (light instanceof TileChain) {
+			return new TileChain.AnimationDefinition() {
+				@Override
+				public TileChainColors getColors(final int n) {
+					if (n >= steps.size()) {
+						return null;
+					}
+					StoredColor storedColor = steps.get(n).getStoredColor();
+					if (storedColor instanceof StoredTileColors) {
+						return ((StoredTileColors) storedColor).getColors();
+					}
+					else {
+						return new TileChainColors.Fixed(storedColor.getColor());
+					}
+				}
+
+				@Override
+				public int getDuration(final int n) {
+					return n >= steps.size() ? 0 : (int) steps.get(n).getDuration();
+				}
+
+				@Override
+				public Date getStartTime(final int n) {
+					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
+				}
+			};
+		}
+		else {
+			return new Light.AnimationDefinition() {
+				@Override
+				public Color getColor(final int n) {
+					return n >= steps.size() ? null : steps.get(n).getStoredColor().getColor();
+				}
+
+				@Override
+				public int getDuration(final int n) {
+					return n >= steps.size() ? 0 : (int) steps.get(n).getDuration();
+				}
+
+				@Override
+				public Date getStartTime(final int n) {
+					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
+				}
+			};
 		}
 	}
 
@@ -366,7 +343,7 @@ public class LifxAlarmService extends Service {
 		if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_use_wakelock, true)) {
 			PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 			assert powerManager != null;
-			WakeLock wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "de.jeisfeld.lifx.alarm." + alarm.getId());
+			WakeLock wakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "de.jeisfeld.lifx.alarm." + System.currentTimeMillis());
 			wakelock.acquire(TimeUnit.HOURS.toMillis(2));
 			return wakelock;
 		}
@@ -412,11 +389,12 @@ public class LifxAlarmService extends Service {
 	private void startRunningNotification(final Alarm alarm) {
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
 				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
-		PendingIntent stopIntent = PendingIntent.getActivity(this, 0,
-				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent stopIntent = PendingIntent.getService(this, 0,
+				LifxAlarmService.createIntent(this, ACTION_INTERRUPT_ALARM, alarm.getId(), null), PendingIntent.FLAG_CANCEL_CURRENT);
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_EXECUTION)
 				.setContentTitle(getString(R.string.notification_title_alarm_execution, alarm.getName()))
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
+				.setLargeIcon(ImageUtil.createBitmapFromDrawable(this, R.drawable.ic_notification_icon_large_alarm))
 				.setOngoing(true)
 				.setPriority(NotificationCompat.PRIORITY_HIGH)
 				.setContentIntent(contentIntent)
@@ -425,6 +403,17 @@ public class LifxAlarmService extends Service {
 		NotificationManager manager = getSystemService(NotificationManager.class);
 		assert manager != null;
 		manager.notify(NOTIFICATION_TAG_ALARM_EXECUTION, alarm.getId(), notification);
+	}
+
+	/**
+	 * End the animation for an alarm.
+	 *
+	 * @param alarm The alarm.
+	 */
+	private void interruptAlarm(final Alarm alarm) {
+		for (Light light : alarm.getLightStepMap().keySet()) {
+			light.endAnimation(false);
+		}
 	}
 
 	/**
@@ -441,23 +430,28 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Update the service after an alarm animation has ended.
 	 *
-	 * @param alarm    The alarm
-	 * @param wakeLock The wakelock on that light.
+	 * @param alarm          The alarm
+	 * @param wakeLock       The wakelock on that light
+	 * @param light          The light
+	 * @param animatedLights The list of animated lights
 	 */
-	private void updateOnEndAnimation(final Alarm alarm, final WakeLock wakeLock) {
-		if (wakeLock != null) {
+	private void updateOnEndAnimation(final Alarm alarm, final WakeLock wakeLock, final Light light, final List<Light> animatedLights) {
+		animatedLights.remove(light);
+		if (wakeLock != null && animatedLights.size() == 0) {
 			wakeLock.release();
-		}
-		synchronized (ANIMATED_ALARMS) {
-			ANIMATED_ALARMS.remove((Integer) alarm.getId());
-			if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
-				Intent serviceIntent = new Intent(this, LifxAlarmService.class);
-				stopService(serviceIntent);
+			synchronized (ANIMATED_ALARMS) {
+				ANIMATED_ALARMS.remove((Integer) alarm.getId());
+				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
+					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
+					stopService(serviceIntent);
+				}
+				else {
+					startNotification();
+				}
+				if (!ANIMATED_ALARMS.contains(alarm.getId())) {
+					endRunningNotification(alarm);
+				}
 			}
-			else {
-				startNotification();
-			}
-			endRunningNotification(alarm);
 		}
 	}
 

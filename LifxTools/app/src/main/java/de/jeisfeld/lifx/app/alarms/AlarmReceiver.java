@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import de.jeisfeld.lifx.app.Application;
-import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Receiver for the alarm triggering the update of the image widget.
@@ -37,7 +36,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
 	@Override
 	public final void onReceive(final Context context, final Intent intent) {
-		Logger.debugAlarm("Received alarm");
 		int alarmId = intent.getIntExtra(EXTRA_ALARM_ID, -1);
 		Date alarmTime = (Date) intent.getSerializableExtra(EXTRA_ALARM_TIME);
 		if (alarmId != -1) {
@@ -58,7 +56,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		if (alarmMgr != null) {
 			alarmMgr.setAlarmClock(new AlarmClockInfo(alarmTime, alarmIntent), alarmIntent);
 			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_CREATE_ALARM, alarmId, new Date(alarmTime));
-			Logger.debugAlarm("Created alarm for " + new Date(alarmTime));
 		}
 	}
 

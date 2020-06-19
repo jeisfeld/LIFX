@@ -10,6 +10,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.provider.MediaStore.MediaColumns;
@@ -136,5 +137,21 @@ public final class ImageUtil {
 		else {
 			return Bitmap.createScaledBitmap(bitmap, width, height, false);
 		}
+	}
+
+	/**
+	 * Create a bitmap from a drawable resource.
+	 * @param context The context
+	 * @param drawableId The drawable resource id.
+	 * @return The bitmap.
+	 */
+	public static Bitmap createBitmapFromDrawable(final Context context, final int drawableId) {
+		Drawable drawable = context.getResources().getDrawable(drawableId, null);
+		Canvas canvas = new Canvas();
+		Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+		canvas.setBitmap(bitmap);
+		drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+		drawable.draw(canvas);
+		return bitmap;
 	}
 }

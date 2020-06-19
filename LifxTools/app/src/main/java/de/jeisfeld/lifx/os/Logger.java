@@ -58,15 +58,6 @@ public final class Logger {
 	}
 
 	/**
-	 * Debug an alarm message.
-	 *
-	 * @param message the message
-	 */
-	public static void debugAlarm(final String message) {
-		Log.d(TAG + ".Alarm", message);
-	}
-
-	/**
 	 * Log a message temporarily.
 	 *
 	 * @param message the message
