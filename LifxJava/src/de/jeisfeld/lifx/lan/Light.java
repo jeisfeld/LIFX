@@ -5,6 +5,7 @@ import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.util.Date;
 
 import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetInfrared;
@@ -624,20 +625,34 @@ public class Light extends Device implements Serializable {
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColor(count) != null) {
-						long startTime = System.currentTimeMillis();
+						Date givenStartTime = mDefinition.getStartTime(count);
+						final long startTime = givenStartTime == null ? System.currentTimeMillis() : givenStartTime.getTime();
+						if (givenStartTime != null) {
+							long waitTime = givenStartTime.getTime() - System.currentTimeMillis();
+							if (waitTime > 0) {
+								Thread.sleep(waitTime);
+							}
+						}
+
 						int errorCount = 0;
 						boolean success = false;
 						int duration = Math.max(mDefinition.getDuration(count), 0);
+						Power power;
+						boolean wasOff = count == 0
+								? ((power = getLight().getPower()) != null && power.isOff()) // SUPPRESS_CHECKSTYLE
+								: mDefinition.getColor(count - 1).isOff();
 						while (!success) {
 							try { // SUPPRESS_CHECKSTYLE
-								Color color = mDefinition.getColor(count);
-								Power power;
-								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
-									getLight().setColor(color.withRelativeBrightness(mRelativeBrightness));
+								Color color = mDefinition.getColor(count).withRelativeBrightness(mRelativeBrightness);
+								if (wasOff) {
+									getLight().setColor(color, 0, false);
 									getLight().setPower(true, duration, false);
 								}
+								else if (color.isOff()) {
+									getLight().setPower(false, duration, false);
+								}
 								else {
-									getLight().setColor(color.withRelativeBrightness(mRelativeBrightness), duration, false);
+									getLight().setColor(color, duration, false);
 								}
 								success = true;
 							}
@@ -667,14 +682,14 @@ public class Light extends Device implements Serializable {
 				else {
 					getLight().setColor(mEndColor, mEndTransitionTime, true);
 				}
-				if (mAnimationCallback != null) {
-					mAnimationCallback.onAnimationEnd(isInterrupted);
+				if (getAnimationCallback() != null) {
+					getAnimationCallback().onAnimationEnd(isInterrupted);
 				}
 			}
 			catch (IOException e) {
 				Logger.error(e);
-				if (mAnimationCallback != null) {
-					mAnimationCallback.onException(e);
+				if (getAnimationCallback() != null) {
+					getAnimationCallback().onException(e);
 				}
 			}
 		}
@@ -773,6 +788,16 @@ public class Light extends Device implements Serializable {
 		 * @return The duration in millis for the change to color n
 		 */
 		int getDuration(int n);
+
+		/**
+		 * An optional start time for this step.
+		 *
+		 * @param n counter starting with 0
+		 * @return The start time.
+		 */
+		default Date getStartTime(final int n) {
+			return null;
+		}
 	}
 
 	/**

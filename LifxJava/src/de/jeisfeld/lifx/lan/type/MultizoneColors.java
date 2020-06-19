@@ -21,17 +21,7 @@ public abstract class MultizoneColors implements Serializable {
 	/**
 	 * The colors used for switching the multizone device off.
 	 */
-	public static final MultizoneColors OFF = new MultizoneColors() {
-		/**
-		 * The default serializable version id.
-		 */
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public Color getColor(final int zoneIndex, final int zoneCount) {
-			return Color.OFF;
-		}
-	};
+	public static final MultizoneColors OFF = new MultizoneColors.Fixed(Color.OFF);
 
 	/**
 	 * Get the color at a certain zone index.
@@ -41,6 +31,15 @@ public abstract class MultizoneColors implements Serializable {
 	 * @return the color at this index.
 	 */
 	public abstract Color getColor(int zoneIndex, int zoneCount);
+
+	/**
+	 * Get information if this is off color.
+	 *
+	 * @return true if this is off color.
+	 */
+	public boolean isOff() {
+		return false;
+	}
 
 	/**
 	 * Get the colors for a certain device.
@@ -74,6 +73,11 @@ public abstract class MultizoneColors implements Serializable {
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor(zoneIndex - shiftCount, zoneCount);
 			}
+
+			@Override
+			public boolean isOff() {
+				return base.isOff();
+			}
 		};
 	}
 
@@ -95,6 +99,11 @@ public abstract class MultizoneColors implements Serializable {
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor((int) Math.round(zoneIndex / stretchFactor), zoneCount);
 			}
+
+			@Override
+			public boolean isOff() {
+				return base.isOff();
+			}
 		};
 	}
 
@@ -115,6 +124,11 @@ public abstract class MultizoneColors implements Serializable {
 			@Override
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor(zoneIndex, zoneCount).withRelativeBrightness(brightnessFactor);
+			}
+
+			@Override
+			public boolean isOff() {
+				return base.isOff();
 			}
 		};
 	}
@@ -194,6 +208,11 @@ public abstract class MultizoneColors implements Serializable {
 			public Color getColor(final int zoneIndex, final int zoneCount) {
 				return base.getColor(zoneIndex < zoneCount / 2 ? zoneCount / 2 - 1 - zoneIndex : zoneIndex - zoneCount / 2, zoneCount / 2);
 			}
+
+			@Override
+			public boolean isOff() {
+				return base.isOff();
+			}
 		};
 	}
 
@@ -271,6 +290,11 @@ public abstract class MultizoneColors implements Serializable {
 		@Override
 		public final MultizoneColors withRelativeBrightness(final double brightnessFactor) {
 			return new MultizoneColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
+		}
+
+		@Override
+		public final boolean isOff() {
+			return mColor.isOff();
 		}
 
 		/**

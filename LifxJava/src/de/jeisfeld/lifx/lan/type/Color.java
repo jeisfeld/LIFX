@@ -275,6 +275,15 @@ public class Color implements Serializable {
 	}
 
 	/**
+	 * Get information if this is off color.
+	 *
+	 * @return true if this is off color.
+	 */
+	public boolean isOff() {
+		return equals(Color.OFF);
+	}
+
+	/**
 	 * Get the color temperature in Kelvin.
 	 *
 	 * @return the color temperature in Kelvin

@@ -5,6 +5,7 @@ import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import de.jeisfeld.lifx.lan.message.MultizoneGetColorZones;
@@ -361,17 +362,31 @@ public class MultiZoneLight extends Light {
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
-						final long startTime = System.currentTimeMillis();
+						Date givenStartTime = mDefinition.getStartTime(count);
+						final long startTime = givenStartTime == null ? System.currentTimeMillis() : givenStartTime.getTime();
+						if (givenStartTime != null) {
+							long waitTime = givenStartTime.getTime() - System.currentTimeMillis();
+							if (waitTime > 0) {
+								Thread.sleep(waitTime);
+							}
+						}
+
 						int errorCount = 0;
 						boolean success = false;
 						int duration = Math.max(mDefinition.getDuration(count), 0);
+						Power power;
+						boolean wasOff = count == 0
+								? ((power = getLight().getPower()) != null && power.isOff()) // SUPPRESS_CHECKSTYLE
+								: mDefinition.getColors(count - 1).isOff();
 						while (!success) {
 							try { // SUPPRESS_CHECKSTYLE
 								MultizoneColors colors = mDefinition.getColors(count).withRelativeBrightness(getRelativeBrightness());
-								Power power;
-								if (count == 0 && (power = getLight().getPower()) != null && power.isOff()) { // SUPPRESS_CHECKSTYLE
+								if (wasOff) {
 									getLight().setColors(colors, 0, false);
 									getLight().setPower(true, duration, false);
+								}
+								else if (colors.isOff()) {
+									getLight().setPower(false, duration, false);
 								}
 								else {
 									getLight().setColors(colors, duration, false);

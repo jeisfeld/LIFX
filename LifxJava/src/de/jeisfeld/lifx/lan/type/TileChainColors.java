@@ -22,17 +22,7 @@ public abstract class TileChainColors implements Serializable {
 	/**
 	 * The colors used for switching the tile chain off.
 	 */
-	public static final TileChainColors OFF = new TileChainColors() {
-		/**
-		 * The default serializable version id.
-		 */
-		private static final long serialVersionUID = 1L;
-
-		@Override
-		public Color getColor(final int x, final int y, final int width, final int height) {
-			return Color.OFF;
-		}
-	};
+	public static final TileChainColors OFF = new TileChainColors.Fixed(Color.OFF);
 
 	/**
 	 * Get the color at a certain position.
@@ -44,6 +34,15 @@ public abstract class TileChainColors implements Serializable {
 	 * @return The color at this position.
 	 */
 	public abstract Color getColor(int x, int y, int width, int height);
+
+	/**
+	 * Get information if this is off color.
+	 *
+	 * @return true if this is off color.
+	 */
+	public boolean isOff() {
+		return false;
+	}
 
 	/**
 	 * Shift the colors by a certain amount of zones.
@@ -63,6 +62,11 @@ public abstract class TileChainColors implements Serializable {
 			@Override
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				return base.getColor(x - shiftX, y - shiftY, width, height);
+			}
+
+			@Override
+			public boolean isOff() {
+				return base.isOff();
 			}
 		};
 	}
@@ -85,6 +89,11 @@ public abstract class TileChainColors implements Serializable {
 			public Color getColor(final int x, final int y, final int width, final int height) {
 				Color baseColor = base.getColor(x, y, width, height);
 				return baseColor == null ? null : baseColor.withRelativeBrightness(brightnessFactor);
+			}
+
+			@Override
+			public boolean isOff() {
+				return base.isOff();
 			}
 		};
 	}
@@ -314,6 +323,11 @@ public abstract class TileChainColors implements Serializable {
 		@Override
 		public final TileChainColors withRelativeBrightness(final double brightnessFactor) {
 			return new TileChainColors.Fixed(mColor.withRelativeBrightness(brightnessFactor));
+		}
+
+		@Override
+		public final boolean isOff() {
+			return mColor.isOff();
 		}
 
 		@Override
