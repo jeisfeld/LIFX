@@ -117,7 +117,7 @@ public final class AlarmRegistry {
 	private void removePreferencesForStepId(final int stepId) {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_stored_color_id, stepId);
-		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_duration, stepId);
 	}
 
 	/**

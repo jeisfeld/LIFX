@@ -228,8 +228,12 @@ public class AlarmConfigurationFragment extends Fragment {
 				DialogUtil.displayConfirmationMessage(AlarmConfigurationFragment.this.requireActivity(), new ConfirmDialogListener() {
 							@Override
 							public void onDialogPositiveClick(final DialogFragment dialog) {
+								List<Step> newSteps = new ArrayList<>();
+								for (Step step : alarm.getSteps()) {
+									newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
+								}
 								Alarm newAlarm = new Alarm(switchAlarmActive.isChecked(), startDate, weekDays,
-										editTextAlarmName.getText().toString(), new ArrayList<>());
+										editTextAlarmName.getText().toString(), newSteps);
 								AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 								NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 								navController.navigateUp();
@@ -238,7 +242,7 @@ public class AlarmConfigurationFragment extends Fragment {
 							@Override
 							public void onDialogNegativeClick(final DialogFragment dialog) {
 								Alarm newAlarm = new Alarm(alarmId, switchAlarmActive.isChecked(), startDate, weekDays,
-										editTextAlarmName.getText().toString(), new ArrayList<>());
+										editTextAlarmName.getText().toString(), alarm.getSteps());
 								AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 								NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 								navController.navigateUp();

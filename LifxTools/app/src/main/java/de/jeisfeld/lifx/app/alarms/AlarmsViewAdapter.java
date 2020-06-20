@@ -137,6 +137,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 				DialogUtil.displayConfirmationMessage(activity, new ConfirmDialogListener() {
 					@Override
 					public void onDialogPositiveClick(final DialogFragment dialog) {
+						AlarmReceiver.cancelAlarm(activity, alarm.getId());
 						AlarmRegistry.getInstance().remove(alarm);
 						mAlarms.remove(position);
 						mAlarmIds.remove(position);
