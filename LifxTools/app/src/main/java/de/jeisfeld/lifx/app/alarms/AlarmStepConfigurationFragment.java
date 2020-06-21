@@ -60,12 +60,11 @@ public class AlarmStepConfigurationFragment extends Fragment {
 	/**
 	 * Navigate to this fragment.
 	 *
-	 * @param fragment The source fragment.
+	 * @param activity The source activity.
 	 * @param alarmId  The alarm id for which to start the fragment.
 	 * @param stepId   The step id for which to start the fragment.
 	 */
-	public static void navigate(final Fragment fragment, final int alarmId, final Integer stepId) {
-		FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+	public static void  navigate(final FragmentActivity activity, final int alarmId, final Integer stepId) {
 		if (activity != null) {
 			NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
 			Bundle bundle = new Bundle();

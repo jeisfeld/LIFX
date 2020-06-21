@@ -6,10 +6,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.ListView;
+import android.widget.ExpandableListView;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -18,23 +16,25 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
-import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Light;
 
 /**
  * Fragment for configuration of an alarm.
@@ -57,9 +57,13 @@ public class AlarmConfigurationFragment extends Fragment {
 	 */
 	private List<Step> mAlarmSteps = new ArrayList<>();
 	/**
-	 * The array adapter.
+	 * The adapter of the list of steps.
 	 */
-	private ArrayAdapter<Step> mArrayAdapter;
+	private AlarmStepExpandableListAdapter mAdapter;
+	/**
+	 * The last number of lights (used to identify if a light is added).
+	 */
+	private Map<Light, Boolean> mInitialExpandingStatus = new HashMap<>();
 
 	/**
 	 * Navigate to this fragment.
@@ -85,7 +89,8 @@ public class AlarmConfigurationFragment extends Fragment {
 		final int alarmId = getArguments() == null ? -1 : getArguments().getInt(PARAM_ALARM_ID, -1);
 
 		final TextView textViewAlarmStartTime = root.findViewById(R.id.textViewStartTime);
-		final ListView listViewAlarmSteps = root.findViewById(R.id.listViewAlarmSteps);
+		final ExpandableListView listViewAlarmSteps = root.findViewById(R.id.listViewAlarmSteps);
+		// the following fills also mAlarmSteps, mHour, mMinute
 		final Alarm alarm = fillFromAlarmId(root, alarmId);
 
 		textViewAlarmStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", mHour, mMinute));
@@ -102,11 +107,17 @@ public class AlarmConfigurationFragment extends Fragment {
 			mTimePicker.show();
 		});
 
-		mArrayAdapter = createArrayAdapter(alarmId, alarm);
-		listViewAlarmSteps.setAdapter(mArrayAdapter);
+		for (LightSteps lightSteps : Alarm.getLightSteps(mAlarmSteps)) {
+			if (mInitialExpandingStatus.get(lightSteps.getLight()) == null) {
+				mInitialExpandingStatus.put(lightSteps.getLight(), true);
+			}
+		}
+		mAdapter = new AlarmStepExpandableListAdapter(getActivity(), alarmId, alarm, Alarm.getLightSteps(mAlarmSteps), mInitialExpandingStatus);
+		listViewAlarmSteps.setAdapter(mAdapter);
+		mInitialExpandingStatus = new HashMap<>();
 
 		root.findViewById(R.id.buttonAddAlarmStep).setOnClickListener(v ->
-				AlarmStepConfigurationFragment.navigate(this, alarmId, null));
+				AlarmStepConfigurationFragment.navigate(getActivity(), alarmId, null));
 
 		root.findViewById(R.id.buttonTestAlarm).setOnClickListener(v ->
 				LifxAlarmService.triggerAlarmService(getContext(), LifxAlarmService.ACTION_TEST_ALARM, alarmId, new Date()));
@@ -117,68 +128,19 @@ public class AlarmConfigurationFragment extends Fragment {
 		});
 
 		root.findViewById(R.id.buttonSave).setOnClickListener(createOnSaveListener(root, alarmId, alarm));
-
 		return root;
+	}
+
+	@Override
+	public final void onDestroyView() {
+		super.onDestroyView();
+		mInitialExpandingStatus = mAdapter == null ? new HashMap<>() : mAdapter.getExpandingStatus();
 	}
 
 	@Override
 	public final void onDestroy() {
 		super.onDestroy();
 		AlarmRegistry.getInstance().removeTemporarySteps();
-	}
-
-	/**
-	 * Create the array adapter for alarm steps.
-	 *
-	 * @param alarmId The alarm id.
-	 * @param alarm   The alarm (if already stored)
-	 * @return The array adapter.
-	 */
-	private ArrayAdapter<Step> createArrayAdapter(final int alarmId, final Alarm alarm) {
-		return new ArrayAdapter<Step>(requireContext(), R.layout.list_view_alarm_steps, mAlarmSteps) {
-			@Override
-			@NonNull
-			public View getView(final int position, final View view, @NonNull final ViewGroup parent) {
-				final View newView;
-				if (view == null) {
-					newView = View.inflate(requireActivity(), R.layout.list_view_alarm_steps, null);
-				}
-				else {
-					newView = view;
-				}
-
-				final Step step = mAlarmSteps.get(position);
-				((ImageView) newView.findViewById(R.id.imageViewStoredColor))
-						.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(requireContext(), step.getStoredColor()));
-				((TextView) newView.findViewById(R.id.textViewDeviceName)).setText(step.getStoredColor().getLight().getLabel());
-				((TextView) newView.findViewById(R.id.textViewStartTime)).setText(AlarmStepConfigurationFragment.getDelayString(step.getDelay()));
-				((TextView) newView.findViewById(R.id.textViewEndTime)).setText(
-						AlarmStepConfigurationFragment.getDelayString(step.getDelay() + step.getDuration()));
-
-				newView.findViewById(R.id.imageViewDelete).setOnClickListener(v ->
-						DialogUtil.displayConfirmationMessage(requireActivity(), new ConfirmDialogListener() {
-							@Override
-							public void onDialogPositiveClick(final DialogFragment dialog) {
-								if (alarm != null) {
-									alarm.removeStep(step);
-								}
-								AlarmRegistry.getInstance().remove(step, alarmId);
-								mAlarmSteps.remove(step);
-								if (mArrayAdapter != null) {
-									mArrayAdapter.notifyDataSetChanged();
-								}
-							}
-
-							@Override
-							public void onDialogNegativeClick(final DialogFragment dialog) {
-								// do nothing
-							}
-						}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_step));
-
-				newView.setOnClickListener(v -> AlarmStepConfigurationFragment.navigate(AlarmConfigurationFragment.this, alarmId, step.getId()));
-				return newView;
-			}
-		};
 	}
 
 	/**
@@ -309,5 +271,4 @@ public class AlarmConfigurationFragment extends Fragment {
 
 		return alarm;
 	}
-
 }

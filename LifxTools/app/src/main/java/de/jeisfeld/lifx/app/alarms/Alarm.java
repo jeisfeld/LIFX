@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 
 import androidx.annotation.NonNull;
@@ -194,21 +192,40 @@ public class Alarm {
 		return mSteps;
 	}
 
+	/**
+	 * Get a list of LightSteps from the total list of steps.
+	 *
+	 * @return The lightsteps.
+	 */
+	protected final List<LightSteps> getLightSteps() {
+		return getLightSteps(getSteps());
+	}
 
-	protected final Map<Light, List<Step>> getLightStepMap() {
-		List<Step> alarmSteps = new ArrayList<>(getSteps());
-		Collections.sort(alarmSteps);
-
-		Map<Light, List<Step>> lightStepMap = new HashMap<>();
-		for (Step step : alarmSteps) {
-			List<Step> lightSteps = lightStepMap.get(step.getStoredColor().getLight());
-			if (lightSteps == null) {
-				lightSteps = new ArrayList<>();
-				lightStepMap.put(step.getStoredColor().getLight(), lightSteps);
+	/**
+	 * Get a list of LightSteps from the total list of steps.
+	 *
+	 * @param steps The total list of steps.
+	 * @return The lightsteps.
+	 */
+	protected static List<LightSteps> getLightSteps(final List<Step> steps) {
+		Collections.sort(steps);
+		List<LightSteps> result = new ArrayList<>();
+		for (Step step : steps) {
+			boolean found = false;
+			Light light = step.getStoredColor().getLight();
+			for (LightSteps lightSteps : result) {
+				if (lightSteps.getLight().equals(light)) {
+					found = true;
+					lightSteps.getSteps().add(step);
+				}
 			}
-			lightSteps.add(step);
+			if (!found) {
+				List<Step> newSteps = new ArrayList<>();
+				newSteps.add(step);
+				result.add(new LightSteps(light, newSteps));
+			}
 		}
-		return lightStepMap;
+		return result;
 	}
 
 	/**
@@ -453,4 +470,48 @@ public class Alarm {
 			}
 		}
 	}
+
+	/**
+	 * Information about the steps for a light.
+	 */
+	public static class LightSteps {
+		/**
+		 * The light.
+		 */
+		private Light mLight;
+		/**
+		 * The steps for this light.
+		 */
+		private List<Step> mSteps;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param light The light
+		 * @param steps The steps for this light
+		 */
+		public LightSteps(final Light light, final List<Step> steps) {
+			mLight = light;
+			mSteps = steps;
+		}
+
+		/**
+		 * Get the light.
+		 *
+		 * @return The light.
+		 */
+		public Light getLight() {
+			return mLight;
+		}
+
+		/**
+		 * Get the steps.
+		 *
+		 * @return The steps.
+		 */
+		public List<Step> getSteps() {
+			return mSteps;
+		}
+	}
+
 }

@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -28,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
@@ -218,20 +217,19 @@ public class LifxAlarmService extends Service {
 	private List<AnimationThread> getAnimationThreads(final Alarm alarm, final Date alarmDate) {
 		final WakeLock wakeLock = acquireWakelock(alarm);
 
-		final Map<Light, List<Step>> lightStepMap = alarm.getLightStepMap();
-		for (Light light : lightStepMap.keySet()) {
-			light.endAnimation(false);
+		final List<LightSteps> lightStepsList = alarm.getLightSteps();
+		for (LightSteps lightSteps : lightStepsList) {
+			lightSteps.getLight().endAnimation(false);
 		}
 
 		final List<AnimationThread> animationThreads = new ArrayList<>();
 		final List<Light> animatedLights = new ArrayList<>();
 
-		for (final Entry<Light, List<Step>> entry : lightStepMap.entrySet()) {
-			final Light light = entry.getKey();
-			final List<Step> steps = entry.getValue();
+		for (final LightSteps lightSteps : lightStepsList) {
+			final Light light = lightSteps.getLight();
 			animatedLights.add(light);
 
-			AnimationThread animationThread = light.animation(getAnimationDefiniton(alarmDate, light, steps))
+			AnimationThread animationThread = light.animation(getAnimationDefiniton(alarmDate, light, lightSteps.getSteps()))
 					.setAnimationCallback(new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
@@ -411,8 +409,8 @@ public class LifxAlarmService extends Service {
 	 * @param alarm The alarm.
 	 */
 	private void interruptAlarm(final Alarm alarm) {
-		for (Light light : alarm.getLightStepMap().keySet()) {
-			light.endAnimation(false);
+		for (LightSteps lightSteps : alarm.getLightSteps()) {
+			lightSteps.getLight().endAnimation(false);
 		}
 	}
 

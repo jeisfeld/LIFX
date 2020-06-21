@@ -154,7 +154,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/labelWeekDays" />
 
-    <ListView
+    <ExpandableListView
         android:id="@+id/listViewAlarmSteps"
         android:layout_width="match_parent"
         android:layout_height="0dp"
