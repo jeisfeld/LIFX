@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:paddingStart="?attr/dialogPreferredPadding"
     android:paddingTop="?attr/dialogPreferredPadding"
-    android:paddingEnd="?attr/dialogPreferredPadding">
+    android:paddingEnd="?attr/dialogPreferredPadding"
+    android:paddingBottom="?attr/dialogPreferredPadding">
 
     <TextView
         android:id="@+id/dialog_title_select"
@@ -23,11 +24,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/small_margin"
-        android:layout_marginBottom="?attr/dialogPreferredPadding"
         android:numColumns="3"
         app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dialog_title_select"
         app:layout_constraintVertical_bias="0" />
+
+    <TextView
+        android:id="@+id/textViewNoDeviceAvailable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/small_margin"
+        android:text="@string/message_no_device_with_stored_colors"
+        android:textAlignment="viewStart"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_title_select" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -18,7 +19,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.lan.Device;
 
 /**
@@ -29,17 +29,26 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
 	private static final String PREVENT_RECREATION = "preventRecreation";
+	/**
+	 * Parameter to pass the list of devices to the fragment.
+	 */
+	private static final String PARAM_LIST_OF_DEVICES = "listOfDevices";
 
 	/**
 	 * Display a dialog for storing a color or displaying a stored color.
 	 *
 	 * @param activity the current activity
 	 * @param listener The listener waiting for the response
+	 * @param devices  The list of devices to be shown.
 	 */
 	public static void displaySelectDeviceDialog(final FragmentActivity activity,
-												 final SelectDeviceDialogListener listener) {
+												 final SelectDeviceDialogListener listener,
+												 final ArrayList<Device> devices) {
 		SelectDeviceDialogFragment fragment = new SelectDeviceDialogFragment();
 		fragment.setListener(listener);
+		Bundle args = new Bundle();
+		args.putSerializable(PARAM_LIST_OF_DEVICES, devices);
+		fragment.setArguments(args);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 	}
 
@@ -71,9 +80,11 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 		}
 
 		final View view = View.inflate(requireActivity(), R.layout.dialog_select_device, null);
-		List<Device> devices = DeviceRegistry.getInstance().getDevices(true);
-		if (devices.size() > 0 && getContext() != null) {
-			ArrayAdapter<Device> adapter = new ArrayAdapter<Device>(getContext(), R.layout.list_view_select_device, devices) {
+		assert getArguments() != null;
+		@SuppressWarnings("unchecked")
+		List<Device> lights = (List<Device>) getArguments().getSerializable(PARAM_LIST_OF_DEVICES);
+		if (lights != null && lights.size() > 0 && getContext() != null) {
+			ArrayAdapter<Device> adapter = new ArrayAdapter<Device>(getContext(), R.layout.list_view_select_device, lights) {
 				@Override
 				public View getView(final int position, final View view, @NonNull final ViewGroup parent) {
 					final View newView;
@@ -83,7 +94,7 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 					else {
 						newView = view;
 					}
-					Device device = devices.get(position);
+					Device device = lights.get(position);
 					TextView textViewDeviceName = newView.findViewById(R.id.textViewDeviceName);
 					textViewDeviceName.setText(device.getLabel());
 					newView.setOnClickListener(v -> {
@@ -97,6 +108,9 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 				}
 			};
 			((ListView) view.findViewById(R.id.listViewSelectDevice)).setAdapter(adapter);
+		}
+		else {
+			((TextView) view.findViewById(R.id.textViewNoDeviceAvailable)).setVisibility(View.VISIBLE);
 		}
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

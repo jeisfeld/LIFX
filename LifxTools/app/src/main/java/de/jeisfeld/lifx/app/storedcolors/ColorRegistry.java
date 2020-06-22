@@ -1,12 +1,17 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.util.SparseArray;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Device;
+import de.jeisfeld.lifx.lan.Light;
 
 /**
  * A registry holding information about stored colors.
@@ -105,6 +110,22 @@ public final class ColorRegistry {
 		PreferenceUtil.setSharedPreferenceIntList(R.string.key_color_ids, newColorIds);
 
 		return colorsOfDevice;
+	}
+
+	/**
+	 * Get the list of all lights having stored colors.
+	 *
+	 * @return The lights having stored colors.
+	 */
+	public List<Light> getLightsWithStoredColors() {
+		Set<Device> lightsWithStoredColors = getStoredColors().stream().map(StoredColor::getLight).collect(Collectors.toSet());
+		List<Light> result = new ArrayList<>();
+		for (Device device : DeviceRegistry.getInstance().getDevices(true)) {
+			if (lightsWithStoredColors.contains(device)) {
+				result.add((Light) device);
+			}
+		}
+		return result;
 	}
 
 	/**

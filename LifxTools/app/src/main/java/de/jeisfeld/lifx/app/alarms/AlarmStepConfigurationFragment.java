@@ -10,6 +10,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -21,6 +22,7 @@ import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
@@ -64,7 +66,7 @@ public class AlarmStepConfigurationFragment extends Fragment {
 	 * @param alarmId  The alarm id for which to start the fragment.
 	 * @param stepId   The step id for which to start the fragment.
 	 */
-	public static void  navigate(final FragmentActivity activity, final int alarmId, final Integer stepId) {
+	public static void navigate(final FragmentActivity activity, final int alarmId, final Integer stepId) {
 		if (activity != null) {
 			NavController navController = Navigation.findNavController(activity, R.id.nav_host_fragment);
 			Bundle bundle = new Bundle();
@@ -167,7 +169,8 @@ public class AlarmStepConfigurationFragment extends Fragment {
 								textViewDeviceName.setText(storedColor.getLight().getLabel());
 								imageViewStoredColor.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(requireContext(), storedColor));
 							}
-						}));
+						}), new ArrayList<>(ColorRegistry.getInstance().getLightsWithStoredColors()));
+
 		imageViewStoredColor.setOnClickListener(selectStoredColorListener);
 		textViewColorName.setOnClickListener(selectStoredColorListener);
 		textViewDeviceName.setOnClickListener(selectStoredColorListener);
