@@ -186,14 +186,9 @@ public class AlarmStepConfigurationFragment extends Fragment {
 				return;
 			}
 			Step newStep = new Step(stepId, mStartTime, mStoredColor.getId(), mEndTime - mStartTime);
-			if (alarmId >= 0) {
-				Alarm alarm = new Alarm(alarmId);
-				alarm.putStep(newStep);
-				AlarmRegistry.getInstance().addOrUpdate(alarm);
-			}
-			else {
-				newStep.store(-1);
-			}
+			Alarm alarm = new Alarm(alarmId);
+			alarm.putStep(newStep);
+			AlarmRegistry.getInstance().addOrUpdate(alarm);
 
 			NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 			navController.navigateUp();

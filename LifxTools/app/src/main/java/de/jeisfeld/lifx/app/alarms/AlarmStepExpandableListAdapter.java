@@ -33,10 +33,6 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	 */
 	private FragmentActivity mActivity;
 	/**
-	 * The alarm id.
-	 */
-	private int mAlarmId;
-	/**
 	 * The alarm.
 	 */
 	private Alarm mAlarm;
@@ -57,17 +53,14 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	 * Constructor.
 	 *
 	 * @param activity               The activity.
-	 * @param alarmId                The alarm id.
 	 * @param alarm                  The alarm (if already saved)
-	 * @param lightStepsList         The list of lightSteps.
 	 * @param initialExpandingStatus The initial expanding status
 	 */
-	protected AlarmStepExpandableListAdapter(final FragmentActivity activity, final int alarmId, final Alarm alarm,
-											 final List<LightSteps> lightStepsList, final Map<Light, Boolean> initialExpandingStatus) {
+	protected AlarmStepExpandableListAdapter(final FragmentActivity activity, final Alarm alarm,
+											 final Map<Light, Boolean> initialExpandingStatus) {
 		mActivity = activity;
-		mAlarmId = alarmId;
 		mAlarm = alarm;
-		mLightStepsList = lightStepsList;
+		mLightStepsList = alarm.getLightSteps();
 		mInitialExpandingStatus = initialExpandingStatus;
 	}
 
@@ -177,7 +170,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 						if (mAlarm != null) {
 							mAlarm.removeStep(step);
 						}
-						AlarmRegistry.getInstance().remove(step, mAlarmId);
+						AlarmRegistry.getInstance().remove(step, mAlarm.getId());
 						getGroup(groupPosition).getSteps().remove(step);
 						if (getGroup(groupPosition).getSteps().size() == 0) {
 							mLightStepsList.remove(groupPosition);
@@ -191,7 +184,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 					}
 				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_step));
 
-		view.setOnClickListener(v -> AlarmStepConfigurationFragment.navigate(mActivity, mAlarmId, step.getId()));
+		view.setOnClickListener(v -> AlarmStepConfigurationFragment.navigate(mActivity, mAlarm.getId(), step.getId()));
 
 		return view;
 	}

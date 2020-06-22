@@ -198,19 +198,9 @@ public class Alarm {
 	 * @return The lightsteps.
 	 */
 	protected final List<LightSteps> getLightSteps() {
-		return getLightSteps(getSteps());
-	}
-
-	/**
-	 * Get a list of LightSteps from the total list of steps.
-	 *
-	 * @param steps The total list of steps.
-	 * @return The lightsteps.
-	 */
-	protected static List<LightSteps> getLightSteps(final List<Step> steps) {
-		Collections.sort(steps);
+		Collections.sort(getSteps());
 		List<LightSteps> result = new ArrayList<>();
-		for (Step step : steps) {
+		for (Step step : getSteps()) {
 			boolean found = false;
 			Light light = step.getStoredColor().getLight();
 			for (LightSteps lightSteps : result) {

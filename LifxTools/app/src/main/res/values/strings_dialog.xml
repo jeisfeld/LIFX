@@ -69,6 +69,10 @@
     <string name="message_confirm_rename_or_copy">Do you want to rename alarm %1$s to %2$s or do you want to create a copy?</string>
     <string name="message_no_device_with_stored_colors">No LIFX device with stored colors available.</string>
 
+    <string name="title_copy_alarm">Copy Alarm</string>
+    <string name="title_change_alarm_name">Change Alarm Name</string>
+    <string name="message_new_alarm_name">New Alarm Name:</string>
+
     <string name="toast_saved_color">Saved color %1$s.</string>
     <string name="toast_did_not_save_empty_name">Did not save - name was empty.</string>
     <string name="toast_did_not_save_no_color">Did not save - no color selected.</string>

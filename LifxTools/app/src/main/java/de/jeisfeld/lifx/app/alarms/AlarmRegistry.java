@@ -1,9 +1,11 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import android.content.Context;
 import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
@@ -49,13 +51,36 @@ public final class AlarmRegistry {
 	}
 
 	/**
+	 * Get a new automatic alarm name.
+	 *
+	 * @param context The context.
+	 * @return The alarm name.
+	 */
+	public String getNewAlarmName(final Context context) {
+		List<String> existingAlarmNames = getAlarms().stream().map(Alarm::getName).collect(Collectors.toList());
+		String alarmName = null;
+		int count = 1;
+		while (alarmName == null) {
+			alarmName = context.getResources().getString(R.string.default_alarm_name, count);
+			if (existingAlarmNames.contains(alarmName)) {
+				alarmName = null;
+				count++;
+			}
+		}
+		return alarmName;
+	}
+
+
+	/**
 	 * Add or update an alarm in local store.
 	 *
 	 * @param alarm the stored alarm.
+	 * @return the stored alarm.
 	 */
-	protected void addOrUpdate(final Alarm alarm) {
+	protected Alarm addOrUpdate(final Alarm alarm) {
 		Alarm newAlarm = alarm.store();
 		mAlarms.put(newAlarm.getId(), newAlarm);
+		return newAlarm;
 	}
 
 	/**
@@ -78,19 +103,6 @@ public final class AlarmRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_start_time, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_week_days, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_name, alarmId);
-	}
-
-	/**
-	 * Remove all temporary steps.
-	 */
-	protected void removeTemporarySteps() {
-		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, -1);
-		for (Integer stepId : stepIds) {
-			if (stepId != null) {
-				removePreferencesForStepId(stepId);
-			}
-		}
-		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_ids, -1);
 	}
 
 	/**

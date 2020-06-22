@@ -68,6 +68,10 @@
     <string name="message_confirm_rename_or_copy">Wolle Sie den Alarm %1$s in %2$s umbenennen oder eine Kopie erstellen?</string>
     <string name="message_no_device_with_stored_colors">Keine LIFX-Lampe mit gespeicherten Farben verfügbar.</string>
 
+    <string name="title_copy_alarm">Alarm kopieren</string>
+    <string name="title_change_alarm_name">Alarmnamen ändern</string>
+    <string name="message_new_alarm_name">Neuer Alarmname:</string>
+
     <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
     <string name="toast_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>
     <string name="toast_did_not_save_no_color">Keine Speicherung - es wurde keine Farbe gewählt.</string>

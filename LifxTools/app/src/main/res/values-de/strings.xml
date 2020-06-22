@@ -20,6 +20,7 @@
     <string name="message_no_devices_found">Keine Geräte gefunden.</string>
 
     <string name="color_off">AUS</string>
+    <string name="default_alarm_name">Alarm %1$d</string>
 
     <string name="notification_channel_animation">LIFX-Animationen</string>
     <string name="notification_title_animation">LIFX Animation</string>
