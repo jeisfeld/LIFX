@@ -168,10 +168,10 @@ public class AlarmConfigurationFragment extends Fragment {
 		listViewAlarmSteps.setAdapter(mAdapter);
 		mInitialExpandingStatus = new HashMap<>();
 
-		root.findViewById(R.id.buttonAddAlarmStep).setOnClickListener(v ->
+		root.findViewById(R.id.imageViewAddAlarmLight).setOnClickListener(v ->
 				AlarmStepConfigurationFragment.navigate(getActivity(), mAlarm.getId(), null));
 
-		root.findViewById(R.id.buttonTestAlarm).setOnClickListener(v ->
+		root.findViewById(R.id.imageViewTestAlarm).setOnClickListener(v ->
 				LifxAlarmService.triggerAlarmService(getContext(), LifxAlarmService.ACTION_TEST_ALARM, mAlarm.getId(), new Date()));
 
 		return root;

@@ -2,7 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="?android:attr/expandableListPreferredItemPaddingLeft"
     android:paddingTop="@dimen/list_vertical_margin"
@@ -33,11 +33,22 @@
 
     <TextView
         android:id="@+id/textViewDeviceName"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        app:layout_constraintLeft_toRightOf="@id/textViewEndTime"
+        app:layout_constraintEnd_toStartOf="@id/imageViewAddAlarmStep"
+        app:layout_constraintStart_toEndOf="@id/textViewEndTime"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription,RtlSymmetry" />
 
+    <ImageView
+        android:id="@+id/imageViewAddAlarmStep"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:src="@drawable/ic_button_add"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 </androidx.constraintlayout.widget.ConstraintLayout>

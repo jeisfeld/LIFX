@@ -169,24 +169,28 @@
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/medium_margin"
         android:layout_marginBottom="@dimen/medium_margin"
-        app:layout_constraintBottom_toTopOf="@id/buttonAddAlarmStep"
+        app:layout_constraintBottom_toTopOf="@id/imageViewAddAlarmLight"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/labelWeekDays"
         app:layout_constraintVertical_bias="0" />
 
-    <Button
-        android:id="@+id/buttonAddAlarmStep"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/button_add_alarm_step"
-        app:layout_constraintBottom_toTopOf="@id/buttonTestAlarm" />
+    <ImageView
+        android:id="@+id/imageViewAddAlarmLight"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:src="@drawable/ic_button_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="ContentDescription" />
 
-    <Button
-        android:id="@+id/buttonTestAlarm"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/button_test_alarm"
-        app:layout_constraintBottom_toBottomOf="parent" />
+    <ImageView
+        android:id="@+id/imageViewTestAlarm"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:src="@drawable/ic_button_play"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

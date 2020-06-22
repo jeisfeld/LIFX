@@ -148,6 +148,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 
 		TextView textViewStartTime = view.findViewById(R.id.textViewStartTime);
 		TextView textViewEndTime = view.findViewById(R.id.textViewEndTime);
+		ImageView imageViewAddStep = view.findViewById(R.id.imageViewAddAlarmStep);
 		if (isCollapsed) {
 			long minDelay = Long.MAX_VALUE;
 			long maxEndTime = Long.MIN_VALUE;
@@ -159,10 +160,16 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			textViewStartTime.setVisibility(View.VISIBLE);
 			textViewEndTime.setText(AlarmStepConfigurationFragment.getDelayString(maxEndTime));
 			textViewEndTime.setVisibility(View.VISIBLE);
+			imageViewAddStep.setVisibility(View.GONE);
 		}
 		else {
 			textViewStartTime.setVisibility(View.GONE);
 			textViewEndTime.setVisibility(View.GONE);
+			imageViewAddStep.setVisibility(View.VISIBLE);
+			imageViewAddStep.setOnClickListener(v -> {
+				// TODO: preselect light
+				AlarmStepConfigurationFragment.navigate(mActivity, mAlarm.getId(), null);
+			});
 		}
 
 		return view;
