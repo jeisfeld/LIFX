@@ -13,6 +13,11 @@
     <string name="message_dialog_new_alarm_name">Neuer Alarmname:</string>
     <string name="message_dialog_new_color_name">Neuer Farbname:</string>
 
+    <string name="title_dialog_alarm_step_delay">Startpunkt des Alarmschritts</string>
+    <string name="message_dialog_alarm_step_delay">Legen Sie den Startpunkt des Alarmschrittes nach der Alarmzeit fest.</string>
+    <string name="title_dialog_alarm_step_duration">Dauer des Alarmschritts</string>
+    <string name="message_dialog_alarm_step_duration">Legen Sie die Dauer des Alarmschrittes fest</string>
+
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Starten</string>

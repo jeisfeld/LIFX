@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -30,6 +31,9 @@ import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.lan.Light;
@@ -101,7 +105,6 @@ public class AlarmConfigurationFragment extends Fragment {
 						saveAlarm(root);
 					},
 					mHour, mMinute, true);
-			mTimePicker.setTitle(R.string.title_dialog_alarm_time);
 			mTimePicker.show();
 		});
 
@@ -168,8 +171,19 @@ public class AlarmConfigurationFragment extends Fragment {
 		listViewAlarmSteps.setAdapter(mAdapter);
 		mInitialExpandingStatus = new HashMap<>();
 
-		root.findViewById(R.id.imageViewAddAlarmLight).setOnClickListener(v ->
-				AlarmStepConfigurationFragment.navigate(getActivity(), mAlarm.getId(), null));
+		root.findViewById(R.id.imageViewAddAlarmLight).setOnClickListener(v -> {
+			List<Light> lightsWithStoredColors = ColorRegistry.getInstance().getLightsWithStoredColors();
+			lightsWithStoredColors.removeAll(mAlarm.getLightSteps().stream().map(LightSteps::getLight).collect(Collectors.toSet()));
+			SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(), device ->
+							StoredColorsDialogFragment.displayStoredColorsDialog(
+									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true,
+									storedColor -> {
+										mAlarm.getSteps().add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
+										Alarm newAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+										mAdapter.notifyDataSetChanged(newAlarm);
+									}),
+					new ArrayList<>(lightsWithStoredColors));
+		});
 
 		root.findViewById(R.id.imageViewTestAlarm).setOnClickListener(v ->
 				LifxAlarmService.triggerAlarmService(getContext(), LifxAlarmService.ACTION_TEST_ALARM, mAlarm.getId(), new Date()));

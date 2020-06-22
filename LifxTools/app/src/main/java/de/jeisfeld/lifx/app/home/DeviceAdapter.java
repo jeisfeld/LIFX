@@ -703,11 +703,6 @@ public class DeviceAdapter extends BaseAdapter {
 				}
 
 				@Override
-				public void onDialogNegativeClick(final DialogFragment dialog) {
-					// do nothing
-				}
-
-				@Override
 				public void onStoredColorClick(final StoredColor storedColor) {
 					model.updateStoredColor(storedColor);
 				}

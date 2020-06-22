@@ -1,9 +1,5 @@
 package de.jeisfeld.lifx.app.util;
 
-import java.util.Locale;
-
-import javax.annotation.Nonnull;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -14,15 +10,24 @@ import android.os.Looper;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.NumberPicker;
 import android.widget.Toast;
+
+import java.util.Locale;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
+import de.jeisfeld.lifx.app.util.DialogUtil.RequestDurationDialogFragment.RequestDurationDialogListener;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 
 /**
@@ -50,9 +55,25 @@ public final class DialogUtil {
 	 */
 	private static final String PARAM_TEXT_VALUE = "textValue";
 	/**
+	 * Parameter to pass the minutes value of the duration picker.
+	 */
+	private static final String PARAM_MINUTES_VALUE = "minutesValue";
+	/**
+	 * Parameter to pass the seconds value of the duration picker.
+	 */
+	private static final String PARAM_SECONDS_VALUE = "secondsValue";
+	/**
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
 	private static final String PREVENT_RECREATION = "preventRecreation";
+	/**
+	 * The max number of minutes in duration picker.
+	 */
+	private static final int MAX_MINUTES = 59;
+	/**
+	 * The max number of seconds in duration picker.
+	 */
+	private static final int MAX_SECONDS = 59;
 
 	/**
 	 * Hide default constructor.
@@ -64,9 +85,9 @@ public final class DialogUtil {
 	/**
 	 * Display a toast.
 	 *
-	 * @param context the current activity or context
+	 * @param context  the current activity or context
 	 * @param resource the message resource
-	 * @param args arguments for the error message
+	 * @param args     arguments for the error message
 	 */
 	public static void displayToast(final Context context, final int resource, final Object... args) {
 		try {
@@ -86,17 +107,17 @@ public final class DialogUtil {
 	/**
 	 * Display a confirmation message asking for cancel or ok.
 	 *
-	 * @param activity the current activity
-	 * @param listener The listener waiting for the response
-	 * @param titleResource the title of the confirmation dialog
-	 * @param cancelButtonResource the display on the negative button
+	 * @param activity              the current activity
+	 * @param listener              The listener waiting for the response
+	 * @param titleResource         the title of the confirmation dialog
+	 * @param cancelButtonResource  the display on the negative button
 	 * @param confirmButtonResource the display on the positive button
-	 * @param messageResource the confirmation message
-	 * @param args arguments for the confirmation message
+	 * @param messageResource       the confirmation message
+	 * @param args                  arguments for the confirmation message
 	 */
 	public static void displayConfirmationMessage(final FragmentActivity activity, final ConfirmDialogListener listener,
-			final Integer titleResource, final int cancelButtonResource, final int confirmButtonResource,
-			final int messageResource, final Object... args) {
+												  final Integer titleResource, final int cancelButtonResource, final int confirmButtonResource,
+												  final int messageResource, final Object... args) {
 		String message = capitalizeFirst(activity.getString(messageResource, args));
 		Bundle bundle = new Bundle();
 		bundle.putCharSequence(PARAM_MESSAGE, message);
@@ -112,17 +133,17 @@ public final class DialogUtil {
 	/**
 	 * Display a confirmation message asking for cancel or ok.
 	 *
-	 * @param activity the current activity
-	 * @param listener The listener waiting for the response
-	 * @param titleResource the resource with the title string
-	 * @param buttonResource the display on the positive button
-	 * @param textValue the text to be displayed in the input field
+	 * @param activity        the current activity
+	 * @param listener        The listener waiting for the response
+	 * @param titleResource   the resource with the title string
+	 * @param buttonResource  the display on the positive button
+	 * @param textValue       the text to be displayed in the input field
 	 * @param messageResource the confirmation message
-	 * @param args arguments for the confirmation message
+	 * @param args            arguments for the confirmation message
 	 */
 	public static void displayInputDialog(final FragmentActivity activity,
-			final RequestInputDialogListener listener, final int titleResource, final int buttonResource,
-			final String textValue, final int messageResource, final Object... args) {
+										  final RequestInputDialogListener listener, final int titleResource, final int buttonResource,
+										  final String textValue, final int messageResource, final Object... args) {
 		String message = capitalizeFirst(activity.getString(messageResource, args));
 		Bundle bundle = new Bundle();
 		bundle.putCharSequence(PARAM_MESSAGE, message);
@@ -130,6 +151,34 @@ public final class DialogUtil {
 		bundle.putInt(PARAM_CONFIRM_BUTTON_RESOURCE, buttonResource);
 		bundle.putString(PARAM_TEXT_VALUE, textValue);
 		RequestInputDialogFragment fragment = new RequestInputDialogFragment();
+		fragment.setListener(listener);
+		fragment.setArguments(bundle);
+		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
+	}
+
+	/**
+	 * Display a confirmation message asking for cancel or ok.
+	 *
+	 * @param activity        the current activity
+	 * @param listener        The listener waiting for the response
+	 * @param titleResource   the resource with the title string
+	 * @param buttonResource  the display on the positive button
+	 * @param minutesValue    the minutes to be displayed
+	 * @param secondsValue    the seconds to be displayed
+	 * @param messageResource the confirmation message
+	 * @param args            arguments for the confirmation message
+	 */
+	public static void displayDurationDialog(final FragmentActivity activity, // SUPPRESS_CHECKSTYLE
+											 final RequestDurationDialogListener listener, final int titleResource, final int buttonResource,
+											 final int minutesValue, final int secondsValue, final int messageResource, final Object... args) {
+		String message = capitalizeFirst(activity.getString(messageResource, args));
+		Bundle bundle = new Bundle();
+		bundle.putCharSequence(PARAM_MESSAGE, message);
+		bundle.putInt(PARAM_TITLE_RESOURCE, titleResource);
+		bundle.putInt(PARAM_CONFIRM_BUTTON_RESOURCE, buttonResource);
+		bundle.putInt(PARAM_MINUTES_VALUE, minutesValue);
+		bundle.putInt(PARAM_SECONDS_VALUE, secondsValue);
+		RequestDurationDialogFragment fragment = new RequestDurationDialogFragment();
 		fragment.setListener(listener);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
@@ -284,7 +333,7 @@ public final class DialogUtil {
 			final EditText input = new EditText(getActivity());
 			input.setText(getArguments().getString(PARAM_TEXT_VALUE));
 
-			final FrameLayout container = new FrameLayout(getActivity());
+			final FrameLayout container = new FrameLayout(requireActivity());
 			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 			params.leftMargin = getResources().getDimensionPixelSize(R.dimen.activity_margin);
 			params.rightMargin = getResources().getDimensionPixelSize(R.dimen.activity_margin);
@@ -344,15 +393,120 @@ public final class DialogUtil {
 		 */
 		public interface RequestInputDialogListener {
 			/**
-			 * Callback method for positive click from the confirmation dialog.
+			 * Callback method for positive click from the input dialog.
 			 *
 			 * @param dialog the confirmation dialog fragment.
-			 * @param text the text returned from the input.
+			 * @param text   the text returned from the input.
 			 */
 			void onDialogPositiveClick(DialogFragment dialog, String text);
 
 			/**
-			 * Callback method for negative click from the confirmation dialog.
+			 * Callback method for negative click from the input dialog.
+			 *
+			 * @param dialog the confirmation dialog fragment.
+			 */
+			void onDialogNegativeClick(DialogFragment dialog);
+		}
+	}
+
+	/**
+	 * Fragment to request a duration.
+	 */
+	public static class RequestDurationDialogFragment extends DialogFragment {
+		/**
+		 * The listener called when the dialog is ended.
+		 */
+		private RequestDurationDialogListener mListener = null;
+
+		/**
+		 * Set the listener.
+		 *
+		 * @param listener The listener.
+		 */
+		public final void setListener(final RequestDurationDialogListener listener) {
+			mListener = listener;
+		}
+
+		@Override
+		@Nonnull
+		public final Dialog onCreateDialog(final Bundle savedInstanceState) {
+			assert getArguments() != null;
+			final CharSequence message = getArguments().getCharSequence(PARAM_MESSAGE);
+			final int confirmButtonResource = getArguments().getInt(PARAM_CONFIRM_BUTTON_RESOURCE);
+			final int titleResource = getArguments().getInt(PARAM_TITLE_RESOURCE);
+
+			View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_duration_picker, null);
+			NumberPicker numberPickerMinutes = view.findViewById(R.id.numberPickerMinutes);
+			NumberPicker numberPickerSeconds = view.findViewById(R.id.numberPickerSeconds);
+			numberPickerMinutes.setMaxValue(MAX_MINUTES);
+			numberPickerSeconds.setMaxValue(MAX_SECONDS);
+			numberPickerMinutes.setValue(getArguments().getInt(PARAM_MINUTES_VALUE));
+			numberPickerSeconds.setValue(getArguments().getInt(PARAM_SECONDS_VALUE));
+
+			// Listeners cannot retain functionality when automatically recreated.
+			// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
+			boolean preventRecreation = false;
+			if (savedInstanceState != null) {
+				preventRecreation = savedInstanceState.getBoolean(PREVENT_RECREATION);
+			}
+			if (preventRecreation) {
+				mListener = null;
+				dismiss();
+			}
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setTitle(titleResource) //
+					.setMessage(message) //
+					.setView(view) //
+					.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
+						// Send the positive button event back to the host activity
+						if (mListener != null) {
+							mListener.onDialogNegativeClick(RequestDurationDialogFragment.this);
+						}
+					}) //
+					.setPositiveButton(confirmButtonResource, (dialog, id) -> {
+						// Send the negative button event back to the host activity
+						if (mListener != null) {
+							mListener.onDialogPositiveClick(RequestDurationDialogFragment.this,
+									numberPickerMinutes.getValue(), numberPickerSeconds.getValue());
+						}
+					});
+			return builder.create();
+		}
+
+		@Override
+		public final void onCancel(@Nonnull final DialogInterface dialogInterface) {
+			if (mListener != null) {
+				mListener.onDialogNegativeClick(RequestDurationDialogFragment.this);
+			}
+			super.onCancel(dialogInterface);
+		}
+
+		@Override
+		public final void onSaveInstanceState(@Nonnull final Bundle outState) {
+			if (mListener != null) {
+				// Typically cannot serialize the listener due to its reference to the activity.
+				mListener = null;
+				outState.putBoolean(PREVENT_RECREATION, true);
+			}
+			super.onSaveInstanceState(outState);
+		}
+
+		/**
+		 * A callback handler for the dialog.
+		 */
+		public interface RequestDurationDialogListener {
+			/**
+			 * Callback method for positive click from the duration dialog.
+			 *
+			 * @param dialog  the confirmation dialog fragment.
+			 * @param minutes the number of minutes selected
+			 * @param seconds the number of seconds selected
+			 */
+			void onDialogPositiveClick(DialogFragment dialog, int minutes, int seconds);
+
+			/**
+			 * Callback method for negative click from the duration dialog.
 			 *
 			 * @param dialog the confirmation dialog fragment.
 			 */

@@ -184,14 +184,18 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		 * @param dialog the confirmation dialog fragment.
 		 * @param text   the text returned from the input.
 		 */
-		void onDialogPositiveClick(DialogFragment dialog, String text);
+		default void onDialogPositiveClick(DialogFragment dialog, String text) {
+			// do nothing
+		}
 
 		/**
 		 * Callback method for negative click from the confirmation dialog.
 		 *
 		 * @param dialog the confirmation dialog fragment.
 		 */
-		void onDialogNegativeClick(DialogFragment dialog);
+		default void onDialogNegativeClick(DialogFragment dialog) {
+			// do nothing
+		}
 
 		/**
 		 * Callback method for click on a stored color.

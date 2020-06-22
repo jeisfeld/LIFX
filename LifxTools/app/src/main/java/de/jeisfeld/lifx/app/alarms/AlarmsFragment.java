@@ -1,14 +1,27 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.Step;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
+import de.jeisfeld.lifx.app.util.DialogUtil;
+import de.jeisfeld.lifx.lan.Light;
 
 /**
  * Fragment for management of alarms.
@@ -20,7 +33,7 @@ public class AlarmsFragment extends Fragment {
 		final RecyclerView recyclerView = root.findViewById(R.id.recyclerViewAlarms);
 		populateRecyclerView(recyclerView);
 
-		root.findViewById(R.id.buttonAddAlarm).setOnClickListener(v -> AlarmConfigurationFragment.navigate(this, null));
+		root.findViewById(R.id.buttonAddAlarm).setOnClickListener(v -> createNewAlarm());
 
 		return root;
 	}
@@ -39,4 +52,36 @@ public class AlarmsFragment extends Fragment {
 
 		recyclerView.setAdapter(adapter);
 	}
+
+	private void createNewAlarm() {
+		if (ColorRegistry.getInstance().getLightsWithStoredColors().size() == 0) {
+			DialogUtil.displayToast(getContext(), R.string.message_no_device_with_stored_colors);
+			return;
+		}
+
+		final Calendar calendar = Calendar.getInstance();
+		TimePickerDialog mTimePicker = new TimePickerDialog(getContext(),
+				(timePicker, selectedHour, selectedMinute) -> {
+					final Date startDate = Alarm.getDate(selectedHour, selectedMinute);
+					List<Light> lightsWithStoredColors = ColorRegistry.getInstance().getLightsWithStoredColors();
+					SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(),
+							device ->
+									StoredColorsDialogFragment.displayStoredColorsDialog(
+											requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true,
+											storedColor -> {
+												List<Step> steps = new ArrayList<>();
+												steps.add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
+												Alarm alarm = new Alarm(true, startDate, new HashSet<>(),
+														AlarmRegistry.getInstance().getNewAlarmName(getContext()), steps);
+												alarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
+												AlarmConfigurationFragment.navigate(AlarmsFragment.this, alarm.getId());
+											}),
+							new ArrayList<>(lightsWithStoredColors));
+				},
+				calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
+		mTimePicker.setMessage(getString(R.string.title_dialog_alarm_time));
+		mTimePicker.show();
+	}
+
+
 }

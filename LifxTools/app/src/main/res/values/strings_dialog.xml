@@ -13,6 +13,12 @@
     <string name="message_dialog_new_alarm_name">New Alarm Name:</string>
     <string name="message_dialog_new_color_name">New Color Name:</string>
 
+    <string name="title_dialog_alarm_step_delay">Alarm step delay</string>
+    <string name="message_dialog_alarm_step_delay">Set the delay of the alarm step after alarm start</string>
+    <string name="title_dialog_alarm_step_duration">Alarm step duration</string>
+    <string name="message_dialog_alarm_step_duration">Set the duration of the alarm step</string>
+
+
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Start</string>
