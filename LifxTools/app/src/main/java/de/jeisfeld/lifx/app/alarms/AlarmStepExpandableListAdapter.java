@@ -130,16 +130,39 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 		TextView listTitleTextView = (TextView) view.findViewById(R.id.textViewDeviceName);
 		listTitleTextView.setText(lightSteps.getLight().getLabel());
 
+		boolean isCollapsed = !isExpanded;
+
 		// workaround for maintaining expending status after reordering lights due to adding light
 		Boolean initialExpandingStatus = mInitialExpandingStatus.get(lightSteps.getLight());
 		if (mInitialExpandingStatus != null && initialExpandingStatus != null) {
 			if (initialExpandingStatus) {
 				((ExpandableListView) parent).expandGroup(groupPosition);
+				isCollapsed = false;
 			}
 			else {
 				((ExpandableListView) parent).collapseGroup(groupPosition);
+				isCollapsed = true;
 			}
 			mInitialExpandingStatus.remove(lightSteps.getLight());
+		}
+
+		TextView textViewStartTime = view.findViewById(R.id.textViewStartTime);
+		TextView textViewEndTime = view.findViewById(R.id.textViewEndTime);
+		if (isCollapsed) {
+			long minDelay = Long.MAX_VALUE;
+			long maxEndTime = Long.MIN_VALUE;
+			for (Step step : lightSteps.getSteps()) {
+				minDelay = Math.min(minDelay, step.getDelay());
+				maxEndTime = Math.max(maxEndTime, step.getDelay() + step.getDuration());
+			}
+			textViewStartTime.setText(AlarmStepConfigurationFragment.getDelayString(minDelay));
+			textViewStartTime.setVisibility(View.VISIBLE);
+			textViewEndTime.setText(AlarmStepConfigurationFragment.getDelayString(maxEndTime));
+			textViewEndTime.setVisibility(View.VISIBLE);
+		}
+		else {
+			textViewStartTime.setVisibility(View.GONE);
+			textViewEndTime.setVisibility(View.GONE);
 		}
 
 		return view;

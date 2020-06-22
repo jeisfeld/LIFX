@@ -4,16 +4,39 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:paddingStart="?android:attr/expandableListPreferredItemPaddingLeft"
     android:paddingTop="@dimen/list_vertical_margin"
-    android:paddingBottom="@dimen/list_vertical_margin">
+    android:paddingBottom="@dimen/list_vertical_margin"
+    tools:ignore="RtlSymmetry">
+
+    <TextView
+        android:id="@+id/textViewStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/textViewEndTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/list_horizontal_margin"
+        android:paddingEnd="@dimen/list_horizontal_margin"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:visibility="gone"
+        app:layout_constraintStart_toEndOf="@id/textViewStartTime"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/textViewDeviceName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingStart="?android:attr/expandableListPreferredItemPaddingLeft"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/textViewEndTime"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription,RtlSymmetry" />
 
