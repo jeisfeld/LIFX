@@ -682,7 +682,7 @@ public class DeviceAdapter extends BaseAdapter {
 			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, false, new StoredColorsDialogListener() {
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
-					if (text != null && text.trim().length() > 0) {
+					if (text != null && text.trim().isEmpty()) {
 						String name = text.trim();
 						StoredColor storedColor;
 						if (multizoneColors != null) {

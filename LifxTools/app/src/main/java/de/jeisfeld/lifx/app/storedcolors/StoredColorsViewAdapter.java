@@ -1,10 +1,5 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.Collections;
-import java.util.List;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -22,9 +17,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.Collections;
+import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
@@ -33,6 +35,7 @@ import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
+import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -101,6 +104,33 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		final StoredColor storedColor = mStoredColors.get(position);
 		Light light = storedColor.getLight();
 		holder.mTitle.setText(storedColor.getName());
+
+		holder.mTitle.setOnClickListener(v -> {
+			FragmentActivity activity = mFragment.get() == null ? null : mFragment.get().getActivity();
+			if (activity != null) {
+				DialogUtil.displayInputDialog(activity, new RequestInputDialogListener() {
+					@Override
+					public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
+						if (text == null || text.trim().isEmpty()) {
+							DialogUtil.displayToast(activity, R.string.toast_did_not_save_empty_name);
+						}
+						else {
+							holder.mTitle.setText(text.trim());
+							StoredColor newColor =
+									new StoredColor(storedColor.getId(), storedColor.getColor(), storedColor.getDeviceId(), text.trim());
+							ColorRegistry.getInstance().addOrUpdate(newColor);
+						}
+					}
+
+					@Override
+					public void onDialogNegativeClick(final DialogFragment dialog) {
+						// do nothing
+					}
+				}, R.string.title_dialog_change_color_name, R.string.button_rename, storedColor.getName(), R.string.message_dialog_new_color_name);
+			}
+		});
+
+
 		if (light != null) {
 			holder.mDeviceName.setText(light.getLabel());
 		}
@@ -352,16 +382,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 				return null;
 			}
 		}
-	}
-
-	/**
-	 * Interface for an async task.
-	 */
-	protected interface AsyncExecutable {
-		/**
-		 * Execute the task.
-		 */
-		void execute();
 	}
 
 	/**

@@ -7,7 +7,11 @@
     <string name="title_dialog_image">Adapt image</string>
     <string name="title_dialog_animation">Animation Settings</string>
     <string name="title_dialog_alarm_time">Set Alarm Time</string>
-    <string name="title_dialog_rename_or_copy">Rename or Copy</string>
+    <string name="title_dialog_copy_alarm">Copy Alarm</string>
+    <string name="title_dialog_change_alarm_name">Change Alarm Name</string>
+    <string name="title_dialog_change_color_name">Change Color Name</string>
+    <string name="message_dialog_new_alarm_name">New Alarm Name:</string>
+    <string name="message_dialog_new_color_name">New Color Name:</string>
 
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
@@ -23,8 +27,6 @@
     <string name="label_alarm_active">Active</string>
     <string name="label_alarm_time">Time</string>
     <string name="label_alarm_week_days">Repeat</string>
-    <string name="hint_alarm_name">Enter a name for the alarm</string>
-    <string name="hint_alarm_start_time">Select alarm time</string>
     <string name="text_monday">Mo</string>
     <string name="text_tuesday">Tu</string>
     <string name="text_wednesday">We</string>
@@ -66,12 +68,7 @@
     <string name="message_confirm_delete_color">Do you want to delete the color %1$s from the app?</string>
     <string name="message_confirm_delete_alarm">Do you want to delete the alarm %1$s from the app?</string>
     <string name="message_confirm_delete_alarm_step">Do you want to delete the alarm step?</string>
-    <string name="message_confirm_rename_or_copy">Do you want to rename alarm %1$s to %2$s or do you want to create a copy?</string>
     <string name="message_no_device_with_stored_colors">No LIFX device with stored colors available.</string>
-
-    <string name="title_copy_alarm">Copy Alarm</string>
-    <string name="title_change_alarm_name">Change Alarm Name</string>
-    <string name="message_new_alarm_name">New Alarm Name:</string>
 
     <string name="toast_saved_color">Saved color %1$s.</string>
     <string name="toast_did_not_save_empty_name">Did not save - name was empty.</string>

@@ -122,7 +122,7 @@ public class AlarmConfigurationFragment extends Fragment {
 			public void onDialogNegativeClick(final DialogFragment dialog) {
 				// do nothing
 			}
-		}, R.string.title_change_alarm_name, R.string.button_rename, mAlarm.getName(), R.string.message_new_alarm_name));
+		}, R.string.title_dialog_change_alarm_name, R.string.button_rename, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
 
 		((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setOnClickListener(v ->
 				DialogUtil.displayInputDialog(requireActivity(), new RequestInputDialogListener() {
@@ -138,7 +138,7 @@ public class AlarmConfigurationFragment extends Fragment {
 							for (Step step : mAlarm.getSteps()) {
 								newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
 							}
-							Alarm alarm = new Alarm(mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), text, newSteps);
+							Alarm alarm = new Alarm(mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), text.trim(), newSteps);
 							mAlarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
 						}
 					}
@@ -147,7 +147,7 @@ public class AlarmConfigurationFragment extends Fragment {
 					public void onDialogNegativeClick(final DialogFragment dialog) {
 						// do nothing
 					}
-				}, R.string.title_copy_alarm, R.string.button_save, mAlarm.getName(), R.string.message_new_alarm_name));
+				}, R.string.title_dialog_copy_alarm, R.string.button_save, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
 
 
 		((Switch) root.findViewById(R.id.switchAlarmActive)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
