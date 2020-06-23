@@ -58,6 +58,9 @@
     <string name="label_animation_color_regex">Colors (regex)</string>
     <string name="label_animation_adjust_brightness">Adjust brightness</string>
 
+    <string name="label_minutes">Minutes</string>
+    <string name="label_seconds">Seconds</string>
+
     <string-array name="values_multizone_animation_direction">
         <item>forward</item>
         <item>backward</item>
@@ -73,13 +76,13 @@
         <item>inward</item>
     </string-array>
 
-    <string name="message_confirm_delete_light">Do you want to delete the device %1$s from the app? (Will be re-created if detected in the LAN.)</string>
+    <string name="message_confirm_delete_light">Do you want to delete the device “%1$s” from the app? (Will be re-created if detected in the LAN.)</string>
     <string name="message_dialog_save_color_name">Please enter a name for the color.</string>
-    <string name="message_confirm_delete_color">Do you want to delete the color %1$s from the app?</string>
-    <string name="message_confirm_delete_alarm">Do you want to delete the alarm %1$s from the app?</string>
+    <string name="message_confirm_delete_color">Do you want to delete the color “%1$s” from the app?</string>
+    <string name="message_confirm_delete_alarm">Do you want to delete the alarm “%1$s” from the app?</string>
     <string name="message_confirm_delete_alarm_step">Do you want to delete the alarm step?</string>
     <string name="message_no_device_with_stored_colors">No LIFX device with stored colors available.</string>
 
-    <string name="toast_saved_color">Saved color %1$s.</string>
+    <string name="toast_saved_color">Saved color “%1$s”.</string>
     <string name="toast_connection_failed">Connection to %1$s failed.</string>
 </resources>

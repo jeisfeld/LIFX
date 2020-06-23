@@ -250,6 +250,9 @@ public final class DialogUtil {
 			final int confirmButtonResource = getArguments().getInt(PARAM_CONFIRM_BUTTON_RESOURCE);
 			final int titleResource = getArguments().getInt(PARAM_TITLE_RESOURCE);
 
+			View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_confirmation, null);
+			((TextView) view.findViewById(R.id.textViewConfirmationMessage)).setText(message);
+
 			// Listeners cannot retain functionality when automatically recreated.
 			// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
 			boolean preventRecreation = false;
@@ -264,7 +267,7 @@ public final class DialogUtil {
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(titleResource) //
 					.setIcon(R.drawable.ic_warning) //
-					.setMessage(message) //
+					.setView(view) //
 					.setPositiveButton(confirmButtonResource, (dialog, id) -> {
 						// Send the negative button event back to the host activity
 						if (mListener != null) {
@@ -455,6 +458,7 @@ public final class DialogUtil {
 			numberPickerSeconds.setMaxValue(MAX_SECONDS);
 			numberPickerMinutes.setValue(getArguments().getInt(PARAM_MINUTES_VALUE));
 			numberPickerSeconds.setValue(getArguments().getInt(PARAM_SECONDS_VALUE));
+			((TextView) view.findViewById(R.id.numberPickerMessage)).setText(message);
 
 			// Listeners cannot retain functionality when automatically recreated.
 			// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
@@ -469,7 +473,6 @@ public final class DialogUtil {
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(titleResource) //
-					.setMessage(message) //
 					.setView(view) //
 					.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 						// Send the positive button event back to the host activity

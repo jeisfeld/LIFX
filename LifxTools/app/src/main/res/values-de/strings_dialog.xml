@@ -57,6 +57,10 @@
     <string name="label_animation_colors">Farben</string>
     <string name="label_animation_color_regex">Farben (RegEx)</string>
     <string name="label_animation_adjust_brightness">Helligkeit anpassen</string>
+
+    <string name="label_minutes">Minuten</string>
+    <string name="label_seconds">Sekunden</string>
+
     <string-array name="values_multizone_animation_direction">
         <item>vorwärts</item>
         <item>rückwärts</item>
@@ -72,13 +76,13 @@
         <item>einwärts</item>
     </string-array>
 
-    <string name="message_confirm_delete_light">Wollen Sie die Lampe %1$s aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
+    <string name="message_confirm_delete_light">Wollen Sie die Lampe „%1$s“ aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>
-    <string name="message_confirm_delete_color">Wollen Sie die Farbe %1$s aus der App entfernen?</string>
-    <string name="message_confirm_delete_alarm">Wollen Sie den Alarm %1$s aus der App entfernen?</string>
+    <string name="message_confirm_delete_color">Wollen Sie die Farbe „%1$s“ aus der App entfernen?</string>
+    <string name="message_confirm_delete_alarm">Wollen Sie den Alarm „%1$s“ aus der App entfernen?</string>
     <string name="message_confirm_delete_alarm_step">Wollen Sie den Alarmschritt entfernen?</string>
     <string name="message_no_device_with_stored_colors">Keine LIFX-Lampe mit gespeicherten Farben verfügbar.</string>
 
-    <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
+    <string name="toast_saved_color">Farbe „%1$s“ wurde gespeichert.</string>
     <string name="toast_connection_failed">Verbindung zu %1$s fehlgeschlagen.</string>
 </resources>

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_margin"
+    android:paddingTop="@dimen/activity_margin"
+    android:paddingRight="@dimen/activity_margin"
+    android:paddingBottom="@dimen/activity_margin">
+
+    <TextView
+        android:id="@+id/textViewAlarmName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        app:layout_constraintEnd_toStartOf="@id/switchAlarmActive"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Switch
+        android:id="@+id/switchAlarmActive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/big_margin"
+        android:checked="true"
+        app:layout_constraintEnd_toStartOf="@id/imageViewAddAlarmLight"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/imageViewAddAlarmLight"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/big_margin"
+        android:src="@drawable/ic_button_add"
+        app:layout_constraintEnd_toStartOf="@id/imageViewTestAlarm"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageViewTestAlarm"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/big_margin"
+        android:src="@drawable/ic_button_play"
+        app:layout_constraintEnd_toStartOf="@id/imageViewCopyAlarm"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageViewCopyAlarm"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:src="@drawable/ic_button_copy"
+        app:layout_constraintBottom_toBottomOf="@id/textViewAlarmName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/labelStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:text="@string/label_alarm_time"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewAlarmName" />
+
+    <TextView
+        android:id="@+id/textViewStartTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/medium_margin"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonMonday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+
+    <ToggleButton
+        android:id="@+id/toggleButtonMonday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_monday"
+        android:textOn="@string/text_monday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonTuesday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonTuesday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_tuesday"
+        android:textOn="@string/text_tuesday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonWednesday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonWednesday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+
+        android:textOff="@string/text_wednesday"
+        android:textOn="@string/text_wednesday"
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonThursday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonThursday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_thursday"
+        android:textOn="@string/text_thursday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonFriday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonFriday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_friday"
+        android:textOn="@string/text_friday"
+
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonSaturday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonSaturday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_saturday"
+        android:textOn="@string/text_saturday"
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toStartOf="@id/toggleButtonSunday"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ToggleButton
+        android:id="@+id/toggleButtonSunday"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:background="@drawable/ic_toggle_weekday"
+        android:textOff="@string/text_sunday"
+        android:textOn="@string/text_sunday"
+        app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/labelStartTime" />
+
+    <ExpandableListView
+        android:id="@+id/listViewAlarmSteps"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:layout_marginBottom="@dimen/medium_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/labelStartTime"
+        app:layout_constraintVertical_bias="0" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

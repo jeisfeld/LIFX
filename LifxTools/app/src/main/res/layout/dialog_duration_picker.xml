@@ -5,23 +5,55 @@
     android:layout_height="match_parent"
     android:paddingStart="?attr/dialogPreferredPadding"
     android:paddingTop="?attr/dialogPreferredPadding"
-    android:paddingEnd="?attr/dialogPreferredPadding"
-    android:paddingBottom="?attr/dialogPreferredPadding">
+    android:paddingEnd="?attr/dialogPreferredPadding">
+
+    <TextView
+        android:id="@+id/numberPickerMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:layout_marginBottom="@dimen/medium_margin"
+        android:text="@string/label_minutes"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintBottom_toTopOf="@id/numberPickerMinutes"
+        app:layout_constraintEnd_toEndOf="@id/numberPickerMinutes"
+        app:layout_constraintStart_toStartOf="@id/numberPickerMinutes"
+        app:layout_constraintTop_toBottomOf="@id/numberPickerMessage" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/medium_margin"
+        android:layout_marginBottom="@dimen/medium_margin"
+        android:text="@string/label_seconds"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintBottom_toTopOf="@id/numberPickerSeconds"
+        app:layout_constraintEnd_toEndOf="@id/numberPickerSeconds"
+        app:layout_constraintStart_toStartOf="@id/numberPickerSeconds"
+        app:layout_constraintTop_toBottomOf="@id/numberPickerMessage" />
 
     <NumberPicker
         android:id="@+id/numberPickerMinutes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:theme="@style/NumberPickerText"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toStartOf="@id/numberPickerSeconds"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <NumberPicker
         android:id="@+id/numberPickerSeconds"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:theme="@style/NumberPickerText"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/numberPickerMinutes"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toEndOf="@id/numberPickerMinutes" />
 </androidx.constraintlayout.widget.ConstraintLayout>
