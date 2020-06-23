@@ -222,10 +222,10 @@ public class Alarm {
 	/**
 	 * Remove a step from the alarm.
 	 *
-	 * @param step The step to be removed.
+	 * @param stepId The id of the step to be removed.
 	 */
-	public void removeStep(final Step step) {
-		getSteps().remove(step);
+	public void removeStep(final int stepId) {
+		getSteps().remove(getSteps().stream().filter(step -> step.getId() == stepId).findFirst().orElse(null));
 	}
 
 	/**
@@ -294,7 +294,7 @@ public class Alarm {
 				for (Step step : lightSteps.getSteps()) {
 					if (step.getId() == updatedStep.getId()) {
 						durationDiff = updatedStep.getDuration() - step.getDuration();
-						updatedSteps.add(new Step(step.getId(), step.getDelay(), step.getStoredColorId(), updatedStep.getDuration()));
+						updatedSteps.add(updatedStep);
 						afterUpdatedStep = true;
 					}
 					else if (afterUpdatedStep) {

@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
@@ -300,11 +302,19 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 				DialogUtil.displayConfirmationMessage(mActivity, new ConfirmDialogListener() {
 					@Override
 					public void onDialogPositiveClick(final DialogFragment dialog) {
-						if (mAlarm != null) {
-							mAlarm.removeStep(originalStep);
-						}
+						// Update duration, so that following steps are shifted
+						mAlarm.updateDuration(new Step(originalStep.getId(), originalStep.getDelay(), originalStep.getStoredColorId(), 0));
+						mAlarm.removeStep(originalStep.getId());
 						AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
+						AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 						notifyDataSetChanged();
+
+						if (mAlarm.getSteps().size() == 0) {
+							AlarmReceiver.cancelAlarm(mActivity, mAlarm.getId());
+							AlarmRegistry.getInstance().remove(mAlarm);
+							NavController navController = Navigation.findNavController(mActivity, R.id.nav_host_fragment);
+							navController.navigateUp();
+						}
 					}
 
 					@Override
