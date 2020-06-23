@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Device;
 
 /**
  * A registry holding information about alarms.
@@ -130,6 +133,40 @@ public final class AlarmRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_delay, stepId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_stored_color_id, stepId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_step_duration, stepId);
+	}
+
+	/**
+	 * Check if a stored color is used by an alarm.
+	 *
+	 * @param storedColor a stored color.
+	 * @return True if used by an alarm.
+	 */
+	public boolean isUsed(final StoredColor storedColor) {
+		for (Alarm alarm : getAlarms()) {
+			for (Step step : alarm.getSteps()) {
+				if (step.getStoredColor().equals(storedColor)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if a device is used by an alarm.
+	 *
+	 * @param device a device
+	 * @return True if used by an alarm.
+	 */
+	public boolean isUsed(final Device device) {
+		for (Alarm alarm : getAlarms()) {
+			for (LightSteps lightSteps : alarm.getLightSteps()) {
+				if (lightSteps.getLight().equals(device)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**

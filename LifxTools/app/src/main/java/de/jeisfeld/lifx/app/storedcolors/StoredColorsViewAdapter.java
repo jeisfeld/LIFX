@@ -30,6 +30,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
@@ -145,26 +146,32 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			return false;
 		});
 
-		holder.mDeleteButton.setOnClickListener(v -> {
-			Fragment fragment = mFragment.get();
-			if (fragment != null && fragment.getActivity() != null) {
-				DialogUtil.displayConfirmationMessage(fragment.getActivity(), new ConfirmDialogListener() {
-					@Override
-					public void onDialogPositiveClick(final DialogFragment dialog) {
-						ColorRegistry.getInstance().remove(storedColor);
-						mStoredColors.remove(position);
-						mColorIds.remove(position);
-						notifyItemRemoved(position);
-						notifyItemRangeChanged(position, mStoredColors.size() - position);
-					}
+		if (AlarmRegistry.getInstance().isUsed(storedColor)) {
+			holder.mDeleteButton.setVisibility(View.INVISIBLE);
+		}
+		else {
+			holder.mDeleteButton.setVisibility(View.VISIBLE);
+			holder.mDeleteButton.setOnClickListener(v -> {
+				Fragment fragment = mFragment.get();
+				if (fragment != null && fragment.getActivity() != null) {
+					DialogUtil.displayConfirmationMessage(fragment.getActivity(), new ConfirmDialogListener() {
+						@Override
+						public void onDialogPositiveClick(final DialogFragment dialog) {
+							ColorRegistry.getInstance().remove(storedColor);
+							mStoredColors.remove(position);
+							mColorIds.remove(position);
+							notifyItemRemoved(position);
+							notifyItemRangeChanged(position, mStoredColors.size() - position);
+						}
 
-					@Override
-					public void onDialogNegativeClick(final DialogFragment dialog) {
-						// do nothing
-					}
-				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_color, storedColor.getName());
-			}
-		});
+						@Override
+						public void onDialogNegativeClick(final DialogFragment dialog) {
+							// do nothing
+						}
+					}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_color, storedColor.getName());
+				}
+			});
+		}
 
 		holder.mApplyColorButton.setOnClickListener(v -> {
 			Fragment fragment = mFragment.get();

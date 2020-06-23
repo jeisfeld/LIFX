@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DialogUtil;
@@ -101,27 +102,33 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			PreferenceUtil.setIndexedSharedPreferenceBoolean(R.string.key_device_show, device.getParameter(DeviceRegistry.DEVICE_ID), isChecked);
 		});
 
-		holder.mDeleteButton.setOnClickListener(v -> {
-			Fragment fragment = mFragment.get();
-			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
-			if (activity != null) {
-				DialogUtil.displayConfirmationMessage(activity, new ConfirmDialogListener() {
-					@Override
-					public void onDialogPositiveClick(final DialogFragment dialog) {
-						DeviceRegistry.getInstance().remove(device);
-						mDevices.remove(position);
-						mDeviceIds.remove(position);
-						notifyItemRemoved(position);
-						notifyItemRangeChanged(position, mDevices.size() - position);
-					}
+		if (AlarmRegistry.getInstance().isUsed(device)) {
+			holder.mDeleteButton.setVisibility(View.INVISIBLE);
+		}
+		else {
+			holder.mDeleteButton.setVisibility(View.VISIBLE);
+			holder.mDeleteButton.setOnClickListener(v -> {
+				Fragment fragment = mFragment.get();
+				FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+				if (activity != null) {
+					DialogUtil.displayConfirmationMessage(activity, new ConfirmDialogListener() {
+						@Override
+						public void onDialogPositiveClick(final DialogFragment dialog) {
+							DeviceRegistry.getInstance().remove(device);
+							mDevices.remove(position);
+							mDeviceIds.remove(position);
+							notifyItemRemoved(position);
+							notifyItemRangeChanged(position, mDevices.size() - position);
+						}
 
-					@Override
-					public void onDialogNegativeClick(final DialogFragment dialog) {
-						// do nothing
-					}
-				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
-			}
-		});
+						@Override
+						public void onDialogNegativeClick(final DialogFragment dialog) {
+							// do nothing
+						}
+					}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
+				}
+			});
+		}
 
 		holder.mStoredColorsButton.setOnClickListener(v ->
 				StoredColorsFragment.navigate(mFragment.get(), (Integer) device.getParameter(DeviceRegistry.DEVICE_ID)));
