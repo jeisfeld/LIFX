@@ -240,9 +240,9 @@ public class AlarmConfigurationFragment extends Fragment {
 		Date startDate = Alarm.getDate(mHour, mMinute);
 		Set<Integer> weekDays = getSelectecWeekDays(root);
 
-		Alarm newAlarm = new Alarm(mAlarm.getId(), switchAlarmActive.isChecked(), startDate, weekDays,
+		mAlarm = new Alarm(mAlarm.getId(), switchAlarmActive.isChecked(), startDate, weekDays,
 				textViewAlarmName.getText().toString(), mAlarm.getSteps());
-		AlarmRegistry.getInstance().addOrUpdate(newAlarm);
+		AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 	}
 
 	/**

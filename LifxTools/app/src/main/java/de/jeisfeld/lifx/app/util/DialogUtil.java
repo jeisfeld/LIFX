@@ -12,10 +12,9 @@ import android.text.Spanned;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.NumberPicker;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Locale;
@@ -330,15 +329,11 @@ public final class DialogUtil {
 			final int confirmButtonResource = getArguments().getInt(PARAM_CONFIRM_BUTTON_RESOURCE);
 			final int titleResource = getArguments().getInt(PARAM_TITLE_RESOURCE);
 
-			final EditText input = new EditText(getActivity());
+			View view = LayoutInflater.from(getContext()).inflate(R.layout.dialog_input, null);
+			final EditText input = view.findViewById(R.id.editTextDialog);
 			input.setText(getArguments().getString(PARAM_TEXT_VALUE));
 
-			final FrameLayout container = new FrameLayout(requireActivity());
-			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-			params.leftMargin = getResources().getDimensionPixelSize(R.dimen.activity_margin);
-			params.rightMargin = getResources().getDimensionPixelSize(R.dimen.activity_margin);
-			input.setLayoutParams(params);
-			container.addView(input);
+			((TextView) view.findViewById(R.id.textViewInputDialog)).setText(message);
 
 			// Listeners cannot retain functionality when automatically recreated.
 			// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
@@ -353,8 +348,7 @@ public final class DialogUtil {
 
 			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 			builder.setTitle(titleResource) //
-					.setMessage(message) //
-					.setView(container) //
+					.setView(view) //
 					.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 						// Send the positive button event back to the host activity
 						if (mListener != null) {
