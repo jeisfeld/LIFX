@@ -55,7 +55,7 @@ public class AlarmsFragment extends Fragment {
 
 	private void createNewAlarm() {
 		if (ColorRegistry.getInstance().getLightsWithStoredColors().size() == 0) {
-			DialogUtil.displayToast(getContext(), R.string.message_no_device_with_stored_colors);
+			DialogUtil.displayConfirmationMessage(requireActivity(), R.string.title_no_stored_colors, R.string.message_no_stored_colors);
 			return;
 		}
 

@@ -115,18 +115,33 @@ public final class DialogUtil {
 	 * @param args                  arguments for the confirmation message
 	 */
 	public static void displayConfirmationMessage(final FragmentActivity activity, final ConfirmDialogListener listener,
-												  final Integer titleResource, final int cancelButtonResource, final int confirmButtonResource,
+												  final Integer titleResource, final Integer cancelButtonResource, final int confirmButtonResource,
 												  final int messageResource, final Object... args) {
 		String message = capitalizeFirst(activity.getString(messageResource, args));
 		Bundle bundle = new Bundle();
 		bundle.putCharSequence(PARAM_MESSAGE, message);
-		bundle.putInt(PARAM_CANCEL_BUTTON_RESOURCE, cancelButtonResource);
+		if (cancelButtonResource != null) {
+			bundle.putInt(PARAM_CANCEL_BUTTON_RESOURCE, cancelButtonResource);
+		}
 		bundle.putInt(PARAM_CONFIRM_BUTTON_RESOURCE, confirmButtonResource);
 		bundle.putInt(PARAM_TITLE_RESOURCE, titleResource == null ? R.string.title_dialog_confirmation : titleResource);
 		ConfirmDialogFragment fragment = new ConfirmDialogFragment();
 		fragment.setListener(listener);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
+	}
+
+	/**
+	 * Display a confirmation message asking for cancel or ok.
+	 *
+	 * @param activity        the current activity
+	 * @param titleResource   the title of the confirmation dialog
+	 * @param messageResource the confirmation message
+	 * @param args            arguments for the confirmation message
+	 */
+	public static void displayConfirmationMessage(final FragmentActivity activity, final Integer titleResource,
+												  final int messageResource, final Object... args) {
+		displayConfirmationMessage(activity, null, titleResource, null, R.string.button_ok, messageResource, args);
 	}
 
 	/**
@@ -250,18 +265,22 @@ public final class DialogUtil {
 			builder.setTitle(titleResource) //
 					.setIcon(R.drawable.ic_warning) //
 					.setMessage(message) //
-					.setNegativeButton(cancelButtonResource, (dialog, id) -> {
-						// Send the positive button event back to the host activity
-						if (mListener != null) {
-							mListener.onDialogNegativeClick(ConfirmDialogFragment.this);
-						}
-					}) //
 					.setPositiveButton(confirmButtonResource, (dialog, id) -> {
 						// Send the negative button event back to the host activity
 						if (mListener != null) {
 							mListener.onDialogPositiveClick(ConfirmDialogFragment.this);
 						}
 					});
+
+			if (cancelButtonResource > 0) {
+				builder.setNegativeButton(cancelButtonResource, (dialog, id) -> {
+					// Send the positive button event back to the host activity
+					if (mListener != null) {
+						mListener.onDialogNegativeClick(ConfirmDialogFragment.this);
+					}
+				});
+			}
+
 			return builder.create();
 		}
 

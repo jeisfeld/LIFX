@@ -113,7 +113,8 @@ public class AlarmConfigurationFragment extends Fragment {
 			@Override
 			public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 				if (text == null || text.trim().isEmpty()) {
-					DialogUtil.displayToast(getContext(), R.string.toast_did_not_save_empty_name);
+					DialogUtil.displayConfirmationMessage(requireActivity(),
+							R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
 				}
 				else {
 					textViewAlarmName.setText(text.trim());
@@ -132,7 +133,8 @@ public class AlarmConfigurationFragment extends Fragment {
 					@Override
 					public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 						if (text == null || text.trim().isEmpty()) {
-							DialogUtil.displayToast(getContext(), R.string.toast_did_not_save_empty_name);
+							DialogUtil.displayConfirmationMessage(requireActivity(),
+									R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
 						}
 						else {
 							textViewAlarmName.setText(text.trim());

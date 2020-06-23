@@ -18,6 +18,11 @@
     <string name="title_dialog_alarm_step_duration">Dauer des Alarmschritts</string>
     <string name="message_dialog_alarm_step_duration">Legen Sie die Dauer des Alarmschrittes fest</string>
 
+    <string name="title_no_stored_colors">Keine gespeicherten Farben</string>
+    <string name="message_no_stored_colors">Es gibt keine gespeicherten Farben. Sie müssen Farben speichern, bevor Sie diese für Alarme verwenden können.</string>
+    <string name="title_did_not_save_empty_name">Fehlender Name</string>
+    <string name="message_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>
+
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Starten</string>
@@ -75,7 +80,5 @@
     <string name="message_no_device_with_stored_colors">Keine LIFX-Lampe mit gespeicherten Farben verfügbar.</string>
 
     <string name="toast_saved_color">Farbe %1$s wurde gespeichert.</string>
-    <string name="toast_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>
-    <string name="toast_did_not_save_no_color">Keine Speicherung - es wurde keine Farbe gewählt.</string>
     <string name="toast_connection_failed">Verbindung zu %1$s fehlgeschlagen.</string>
 </resources>

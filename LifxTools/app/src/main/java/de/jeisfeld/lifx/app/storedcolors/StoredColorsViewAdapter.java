@@ -69,9 +69,9 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	/**
 	 * Constructor.
 	 *
-	 * @param fragment the calling fragment.
+	 * @param fragment     the calling fragment.
 	 * @param recyclerView The recycler view.
-	 * @param deviceId The device id.
+	 * @param deviceId     The device id.
 	 */
 	public StoredColorsViewAdapter(final Fragment fragment, final RecyclerView recyclerView, final Integer deviceId) {
 		if (deviceId == null) {
@@ -113,7 +113,8 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 					@Override
 					public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
 						if (text == null || text.trim().isEmpty()) {
-							DialogUtil.displayToast(activity, R.string.toast_did_not_save_empty_name);
+							DialogUtil.displayConfirmationMessage(activity,
+									R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
 						}
 						else {
 							holder.mTitle.setText(text.trim());
@@ -190,7 +191,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	/**
 	 * Get the drawable to be used for display of the stored color.
 	 *
-	 * @param context The context.
+	 * @param context     The context.
 	 * @param storedColor The stored color.
 	 * @return The drawable to be used.
 	 */
@@ -425,7 +426,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		 * Constructor.
 		 *
 		 * @param gradientOrientation The gradient orientation.
-		 * @param buttonResource The button resource.
+		 * @param buttonResource      The button resource.
 		 */
 		MultizoneOrientation(final Orientation gradientOrientation, final int buttonResource) {
 			mGradientOrientation = gradientOrientation;

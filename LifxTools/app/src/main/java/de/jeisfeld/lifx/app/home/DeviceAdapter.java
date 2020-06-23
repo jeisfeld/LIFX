@@ -290,7 +290,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the power button.
 	 *
 	 * @param powerButton The power button.
-	 * @param model The device view model.
+	 * @param model       The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
@@ -313,7 +313,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the color picker started via button.
 	 *
 	 * @param colorPickerButton The color picker button.
-	 * @param model The light view model.
+	 * @param model             The light view model.
 	 */
 	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
 		colorPickerButton.setVisibility(View.VISIBLE);
@@ -333,7 +333,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the picker for brightness and color temperature started via button.
 	 *
 	 * @param brightnessColorTempButton The brightness/colortemp picker button.
-	 * @param model The light view model.
+	 * @param model                     The light view model.
 	 */
 	private void prepareBrightnessColortempPicker(final Button brightnessColorTempButton, final LightViewModel model) {
 		brightnessColorTempButton.setVisibility(View.VISIBLE);
@@ -351,7 +351,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the multizone color picker started via button.
 	 *
 	 * @param multiColorPickerButton The multizone color picker button.
-	 * @param model The multizone view model.
+	 * @param model                  The multizone view model.
 	 */
 	private void prepareMultiColorPicker(final Button multiColorPickerButton, final MultizoneViewModel model) {
 		multiColorPickerButton.setVisibility(View.VISIBLE);
@@ -406,7 +406,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
-						final boolean[] flags) {
+												  final boolean[] flags) {
 					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1, true);
 				}
 
@@ -422,8 +422,8 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Load a tile image via button.
 	 *
 	 * @param imageButton The image button.
-	 * @param model The tile view model.
-	 * @param position The position where the button was clicked.
+	 * @param model       The tile view model.
+	 * @param position    The position where the button was clicked.
 	 */
 	private void prepareImageButton(final Button imageButton, final TileViewModel model, final int position) {
 		imageButton.setVisibility(View.VISIBLE);
@@ -486,8 +486,8 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Tune brightness, contrast, saturation, hue.
 	 *
 	 * @param tuneButton The tune button.
-	 * @param model The tile view model.
-	 * @param position The position where the button was clicked.
+	 * @param model      The tile view model.
+	 * @param position   The position where the button was clicked.
 	 */
 	private void prepareTuneButton(final Button tuneButton, final TileViewModel model, final int position) {
 		tuneButton.setVisibility(View.VISIBLE);
@@ -521,7 +521,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the brightness button and seekbar.
 	 *
 	 * @param seekBar The brightness seekbar.
-	 * @param model The light view model.
+	 * @param model   The light view model.
 	 */
 	private void prepareBrightnessSeekbar(final SeekBar seekBar, final LightViewModel model) {
 		seekBar.setVisibility(View.VISIBLE);
@@ -576,7 +576,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the animation button.
 	 *
 	 * @param animationButton The animation button.
-	 * @param model The light view model.
+	 * @param model           The light view model.
 	 */
 	private void prepareAnimationButton(final ToggleButton animationButton, final LightViewModel model) {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
@@ -647,7 +647,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the save button.
 	 *
 	 * @param saveButton The save button.
-	 * @param model The light view model.
+	 * @param model      The light view model.
 	 */
 	private void prepareSaveButton(final Button saveButton, final LightViewModel model) {
 		saveButton.setOnClickListener(v -> {
@@ -680,9 +680,14 @@ public class DeviceAdapter extends BaseAdapter {
 				return;
 			}
 			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, false, new StoredColorsDialogListener() {
+				/**
+				 * Flag indicating if color was changed during this dialog.
+				 */
+				private boolean mIsColorChanged = false;
+
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
-					if (text != null && text.trim().isEmpty()) {
+					if (text != null && !text.trim().isEmpty()) {
 						String name = text.trim();
 						StoredColor storedColor;
 						if (multizoneColors != null) {
@@ -698,13 +703,17 @@ public class DeviceAdapter extends BaseAdapter {
 						DialogUtil.displayToast(fragment.getContext(), R.string.toast_saved_color, name);
 					}
 					else {
-						DialogUtil.displayToast(fragment.getContext(), R.string.toast_did_not_save_empty_name);
+						if (!mIsColorChanged) {
+							DialogUtil.displayConfirmationMessage(fragment.requireActivity(),
+									R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
+						}
 					}
 				}
 
 				@Override
 				public void onStoredColorClick(final StoredColor storedColor) {
 					model.updateStoredColor(storedColor);
+					mIsColorChanged = true;
 				}
 			});
 		});
