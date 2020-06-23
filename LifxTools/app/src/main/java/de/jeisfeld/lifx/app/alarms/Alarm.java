@@ -131,6 +131,7 @@ public class Alarm {
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_name, alarm.getId(), alarm.getName());
 
 		List<Step> newSteps = new ArrayList<>();
+		Collections.sort(alarm.getSteps());
 		for (Step step : alarm.getSteps()) {
 			newSteps.add(step.store(alarm.getId()));
 		}
@@ -277,6 +278,79 @@ public class Alarm {
 			calendar.add(Calendar.DATE, 1);
 		}
 		return calendar.getTime();
+	}
+
+	/**
+	 * Update the duration of a step, shifting other steps accordingly.
+	 *
+	 * @param updatedStep The updated step.
+	 */
+	protected void updateDuration(final Step updatedStep) {
+		List<Step> updatedSteps = new ArrayList<>();
+		for (LightSteps lightSteps : getLightSteps()) {
+			if (updatedStep.getStoredColor().getLight().equals(lightSteps.getLight())) {
+				boolean afterUpdatedStep = false;
+				long durationDiff = 0;
+				for (Step step : lightSteps.getSteps()) {
+					if (step.getId() == updatedStep.getId()) {
+						durationDiff = updatedStep.getDuration() - step.getDuration();
+						updatedSteps.add(new Step(step.getId(), step.getDelay(), step.getStoredColorId(), updatedStep.getDuration()));
+						afterUpdatedStep = true;
+					}
+					else if (afterUpdatedStep) {
+						updatedSteps.add(new Step(step.getId(), step.getDelay() + durationDiff, step.getStoredColorId(), step.getDuration()));
+					}
+					else {
+						updatedSteps.add(step);
+					}
+				}
+			}
+			else {
+				updatedSteps.addAll(lightSteps.getSteps());
+			}
+		}
+		getSteps().clear();
+		getSteps().addAll(updatedSteps);
+		Collections.sort(getSteps());
+	}
+
+	/**
+	 * Update the delay of a step, shifting other steps accordingly.
+	 *
+	 * @param updatedStep The updated step.
+	 */
+	protected void updateDelay(final Step updatedStep) {
+		List<Step> updatedSteps = new ArrayList<>();
+		for (LightSteps lightSteps : getLightSteps()) {
+			if (updatedStep.getStoredColor().getLight().equals(lightSteps.getLight())) {
+				boolean afterUpdatedStep = false;
+				long durationDiff = 0;
+				for (Step step : lightSteps.getSteps()) {
+					if (step.getId() == updatedStep.getId()) {
+						durationDiff -= step.getDuration();
+					}
+					else if (!afterUpdatedStep && step.getDelay() + durationDiff + step.getDuration() > updatedStep.getDelay()) {
+						updatedSteps.add(updatedStep);
+						durationDiff = updatedStep.getDelay() + updatedStep.getDuration() - step.getDelay();
+						updatedSteps.add(new Step(step.getId(), updatedStep.getDelay() + updatedStep.getDuration(),
+								step.getStoredColorId(), step.getDuration()));
+						afterUpdatedStep = true;
+					}
+					else {
+						updatedSteps.add(new Step(step.getId(), step.getDelay() + durationDiff, step.getStoredColorId(), step.getDuration()));
+					}
+				}
+				if (!afterUpdatedStep) {
+					updatedSteps.add(updatedStep);
+				}
+			}
+			else {
+				updatedSteps.addAll(lightSteps.getSteps());
+			}
+		}
+		getSteps().clear();
+		getSteps().addAll(updatedSteps);
+		Collections.sort(getSteps());
 	}
 
 	/**

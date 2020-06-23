@@ -261,8 +261,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 						public void onDialogPositiveClick(final DialogFragment dialog, final int minutes, final int seconds) {
 							Step newStep = new Step(step.getId(), TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds),
 									step.getStoredColorId(), step.getDuration());
-							mAlarm.getSteps().remove(step);
-							mAlarm.getSteps().add(newStep);
+							mAlarm.updateDelay(newStep);
 							AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 							notifyDataSetChanged();
 						}
@@ -284,8 +283,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 						public void onDialogPositiveClick(final DialogFragment dialog, final int minutes, final int seconds) {
 							Step newStep = new Step(step.getId(), step.getDelay(), step.getStoredColorId(),
 									TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds));
-							mAlarm.getSteps().remove(step);
-							mAlarm.getSteps().add(newStep);
+							mAlarm.updateDuration(newStep);
 							AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 							notifyDataSetChanged();
 						}
