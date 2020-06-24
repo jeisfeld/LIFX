@@ -39,7 +39,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	/**
 	 * The context.
 	 */
-	private FragmentActivity mActivity;
+	private final FragmentActivity mActivity;
 	/**
 	 * The alarm.
 	 */
@@ -51,7 +51,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	/**
 	 * The initial expanding status.
 	 */
-	private Map<Light, Boolean> mInitialExpandingStatus;
+	private final Map<Light, Boolean> mInitialExpandingStatus;
 	/**
 	 * Reference to the parent view.
 	 */
@@ -146,7 +146,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 
 		// workaround for maintaining expending status after reordering lights due to adding light
 		Boolean initialExpandingStatus = mInitialExpandingStatus.get(lightSteps.getLight());
-		if (mInitialExpandingStatus != null && initialExpandingStatus != null) {
+		if (initialExpandingStatus != null) {
 			if (initialExpandingStatus) {
 				((ExpandableListView) parent).expandGroup(groupPosition);
 				isCollapsed = false;
@@ -297,22 +297,21 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 					durationSeconds % SECONDS_PER_MINUTE, R.string.message_dialog_alarm_step_duration);
 		});
 
-		view.findViewById(R.id.imageViewDelete).setOnClickListener(v ->
-				DialogUtil.displayConfirmationMessage(mActivity, dialog -> {
-					// Update duration, so that following steps are shifted
-					mAlarm.updateDuration(new Step(originalStep.getId(), originalStep.getDelay(), originalStep.getStoredColorId(), 0));
-					mAlarm.removeStep(originalStep.getId());
-					AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
-					AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-					notifyDataSetChanged();
+		view.findViewById(R.id.imageViewDelete).setOnClickListener(v -> DialogUtil.displayConfirmationMessage(mActivity, dialog -> {
+			// Update duration, so that following steps are shifted
+			mAlarm.updateDuration(new Step(originalStep.getId(), originalStep.getDelay(), originalStep.getStoredColorId(), 0));
+			mAlarm.removeStep(originalStep.getId());
+			AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
+			AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+			notifyDataSetChanged();
 
-					if (mAlarm.getSteps().size() == 0) {
-						AlarmReceiver.cancelAlarm(mActivity, mAlarm.getId());
-						AlarmRegistry.getInstance().remove(mAlarm);
-						NavController navController = Navigation.findNavController(mActivity, R.id.nav_host_fragment);
-						navController.navigateUp();
-					}
-				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_step));
+			if (mAlarm.getSteps().size() == 0) {
+				AlarmReceiver.cancelAlarm(mActivity, mAlarm.getId());
+				AlarmRegistry.getInstance().remove(mAlarm);
+				NavController navController = Navigation.findNavController(mActivity, R.id.nav_host_fragment);
+				navController.navigateUp();
+			}
+		}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_step));
 
 		return view;
 	}

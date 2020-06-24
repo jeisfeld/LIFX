@@ -50,6 +50,14 @@ import de.jeisfeld.lifx.os.Logger;
  */
 public class LifxAlarmService extends Service {
 	/**
+	 * The request code for the main notification.
+	 */
+	private static final int REQUEST_CODE = -1;
+	/**
+	 * The id for the service.
+	 */
+	private static final int SERVICE_ID = 1;
+	/**
 	 * Action for creating an alarm.
 	 */
 	protected static final String ACTION_CREATE_ALARM = "de.jeisfeld.lifx.app.ACTION_CREATE_ALARM";
@@ -404,7 +412,7 @@ public class LifxAlarmService extends Service {
 	 * Start the notification.
 	 */
 	private void startNotification() {
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+		PendingIntent contentIntent = PendingIntent.getActivity(this, REQUEST_CODE,
 				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_alarm))
@@ -412,7 +420,7 @@ public class LifxAlarmService extends Service {
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
 				.setContentIntent(contentIntent)
 				.build();
-		startForeground(1, notification);
+		startForeground(SERVICE_ID, notification);
 	}
 
 	/**
@@ -422,9 +430,9 @@ public class LifxAlarmService extends Service {
 	 */
 	private void startRunningNotification(final Alarm alarm) {
 		PendingIntent contentIntent = PendingIntent.getActivity(this, alarm.getId(),
-				MainActivity.createIntent(this, R.id.nav_alarms), 0);
+				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_IMMUTABLE);
 		PendingIntent stopIntent = PendingIntent.getService(this, alarm.getId(),
-				LifxAlarmService.createIntent(this, ACTION_INTERRUPT_ALARM, alarm.getId(), null), 0);
+				LifxAlarmService.createIntent(this, ACTION_INTERRUPT_ALARM, alarm.getId(), null), PendingIntent.FLAG_IMMUTABLE);
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_EXECUTION)
 				.setContentTitle(getString(R.string.notification_title_alarm_execution, alarm.getName()))
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)

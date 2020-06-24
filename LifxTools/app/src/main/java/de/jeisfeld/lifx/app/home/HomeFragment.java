@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
@@ -87,8 +86,7 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
-		LocalBroadcastManager.getInstance(requireContext()).registerReceiver(mReceiver,
-				new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
+		requireActivity().registerReceiver(mReceiver, new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
 
 		mExecutor = Executors.newScheduledThreadPool(1);
 		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0) {
@@ -104,7 +102,7 @@ public class HomeFragment extends ListFragment {
 		mExecutor.shutdown();
 		mExecutor = null;
 
-		LocalBroadcastManager.getInstance(requireContext()).unregisterReceiver(mReceiver);
+		requireActivity().unregisterReceiver(mReceiver);
 	}
 
 	/**

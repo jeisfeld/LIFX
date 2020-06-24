@@ -1,12 +1,12 @@
 package de.jeisfeld.lifx.app;
 
-import com.google.android.material.navigation.NavigationView;
-
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
 	 */
 	public static Intent createIntent(final Context context, final int navigationPageId) {
 		Intent intent = new Intent(context, MainActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		intent.putExtra(EXTRA_NAVIGATION_PAGE, navigationPageId);
 		return intent;
 	}

@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import androidx.core.app.NotificationCompat;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -32,6 +31,14 @@ import de.jeisfeld.lifx.lan.Light.BaseAnimationThread;
  * A service handling LIFX animations in the background.
  */
 public class LifxAnimationService extends Service {
+	/**
+	 * The request code for the main notification.
+	 */
+	private static final int REQUEST_CODE = -2;
+	/**
+	 * The id for the service.
+	 */
+	private static final int SERVICE_ID = 2;
 	/**
 	 * The id of the notification channel.
 	 */
@@ -60,16 +67,11 @@ public class LifxAnimationService extends Service {
 	 * Map from MACs to Light labels for all lights with running animations.
 	 */
 	private static final Map<String, String> ANIMATED_LIGHT_LABELS = new HashMap<>();
-	/**
-	 * The local broadcast manager.
-	 */
-	private LocalBroadcastManager mBroadcastManager;
 
 	@Override
 	public final void onCreate() {
 		super.onCreate();
 		createNotificationChannel();
-		mBroadcastManager = LocalBroadcastManager.getInstance(this);
 	}
 
 	@Override
@@ -208,7 +210,7 @@ public class LifxAnimationService extends Service {
 	public void sendBroadcastStopAnimation(final String mac) {
 		Intent intent = new Intent(EXTRA_ANIMATION_STOP_INTENT);
 		intent.putExtra(EXTRA_ANIMATION_STOP_MAC, mac);
-		mBroadcastManager.sendBroadcast(intent);
+		sendBroadcast(intent);
 	}
 
 	/**
@@ -230,14 +232,14 @@ public class LifxAnimationService extends Service {
 	private void startNotification() {
 		Intent notificationIntent = new Intent(this, MainActivity.class);
 		PendingIntent pendingIntent = PendingIntent.getActivity(this,
-				0, notificationIntent, 0);
+				REQUEST_CODE, notificationIntent, 0);
 		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_animation))
 				.setContentText(getString(R.string.notification_text_animation_running, getAnimatedDevicesString()))
 				.setSmallIcon(R.drawable.ic_notification_icon_logo)
 				.setContentIntent(pendingIntent)
 				.build();
-		startForeground(1, notification);
+		startForeground(SERVICE_ID, notification);
 	}
 
 	/**
