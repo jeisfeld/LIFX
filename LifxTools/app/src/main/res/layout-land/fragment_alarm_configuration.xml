@@ -34,6 +34,15 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/big_margin"
         android:src="@drawable/ic_button_add"
+        app:layout_constraintEnd_toStartOf="@id/imageViewAlarmType"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageViewAlarmType"
+        android:layout_width="@dimen/small_button_size"
+        android:layout_height="@dimen/small_button_size"
+        android:layout_marginEnd="@dimen/big_margin"
         app:layout_constraintEnd_toStartOf="@id/imageViewTestAlarm"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />

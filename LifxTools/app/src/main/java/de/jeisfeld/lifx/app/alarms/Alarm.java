@@ -45,37 +45,53 @@ public class Alarm {
 	 * The alarm steps.
 	 */
 	private final List<Step> mSteps;
+	/**
+	 * The alarm type.
+	 */
+	private final AlarmType mAlarmType;
+	/**
+	 * The alarm used as stop sequence.
+	 */
+	private final Alarm mStopSequence;
 
 	/**
 	 * Generate an alarm.
 	 *
-	 * @param id        The id for storage
-	 * @param isActive  The active flag
-	 * @param startTime The alarm start time
-	 * @param weekDays  The week days
-	 * @param name      The name
-	 * @param steps     The steps
+	 * @param id           The id for storage
+	 * @param isActive     The active flag
+	 * @param startTime    The alarm start time
+	 * @param weekDays     The week days
+	 * @param name         The name
+	 * @param steps        The steps
+	 * @param alarmType    The alarm type.
+	 * @param stopSequence The stop sequence.
 	 */
-	public Alarm(final int id, final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
+	public Alarm(final int id, final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, // SUPPRESS_CHECKSTYLE
+				 final List<Step> steps, final AlarmType alarmType, final Alarm stopSequence) {
 		mId = id;
 		mIsActive = isActive;
 		mStartTime = startTime;
 		mWeekDays = weekDays;
 		mName = name;
 		mSteps = steps;
+		mAlarmType = alarmType;
+		mStopSequence = stopSequence;
 	}
 
 	/**
 	 * Generate a new alarm without id.
 	 *
-	 * @param isActive  The active flag
-	 * @param startTime The alarm start time
-	 * @param weekDays  The week days
-	 * @param name      The name
-	 * @param steps     The steps
+	 * @param isActive     The active flag
+	 * @param startTime    The alarm start time
+	 * @param weekDays     The week days
+	 * @param name         The name
+	 * @param steps        The steps
+	 * @param alarmType    The alarm type.
+	 * @param stopSequence The stop sequence.
 	 */
-	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps) {
-		this(-1, isActive, startTime, weekDays, name, steps);
+	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps,
+				 final AlarmType alarmType, final Alarm stopSequence) {
+		this(-1, isActive, startTime, weekDays, name, steps, alarmType, stopSequence);
 	}
 
 	/**
@@ -85,7 +101,8 @@ public class Alarm {
 	 * @param alarm the base alarm.
 	 */
 	protected Alarm(final int id, final Alarm alarm) {
-		this(id, alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
+		this(id, alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps(),
+				alarm.getAlarmType(), alarm.getStopSequence());
 	}
 
 	/**
@@ -99,6 +116,7 @@ public class Alarm {
 		mStartTime = new Date(PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_start_time, alarmId, 0));
 		mWeekDays = new HashSet<>(PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarmId));
 		mName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_alarm_name, alarmId);
+		mAlarmType = AlarmType.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_type, alarmId, -1));
 
 		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId);
 		mSteps = new ArrayList<>();
@@ -106,6 +124,14 @@ public class Alarm {
 			if (stepId != null) {
 				mSteps.add(new Step(stepId));
 			}
+		}
+
+		int stopSequenceId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_stop_sequence_id, alarmId, -1);
+		if (stopSequenceId >= 0) {
+			mStopSequence = new Alarm(stopSequenceId);
+		}
+		else {
+			mStopSequence = null;
 		}
 	}
 
@@ -120,15 +146,22 @@ public class Alarm {
 			int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_alarm_max_id, 0) + 1;
 			PreferenceUtil.setSharedPreferenceInt(R.string.key_alarm_max_id, newId);
 
-			List<Integer> alarmIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids);
-			alarmIds.add(newId);
-			PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
+			if (alarm.getAlarmType().isPrimary()) {
+				List<Integer> alarmIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids);
+				alarmIds.add(newId);
+				PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
+			}
+
 			alarm = new Alarm(newId, this);
 		}
+
+		alarm = alarm.storeStopSequence();
+
 		PreferenceUtil.setIndexedSharedPreferenceBoolean(R.string.key_alarm_active, alarm.getId(), alarm.isActive());
 		PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_alarm_start_time, alarm.getId(), alarm.getStartTime().getTime());
 		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarm.getId(), new ArrayList<>(alarm.getWeekDays()));
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_name, alarm.getId(), alarm.getName());
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_type, alarm.getId(), alarm.getAlarmType().ordinal());
 
 		List<Step> newSteps = new ArrayList<>();
 		Collections.sort(alarm.getSteps());
@@ -145,6 +178,41 @@ public class Alarm {
 			AlarmReceiver.cancelAlarm(Application.getAppContext(), alarm.getId());
 		}
 
+		return alarm;
+	}
+
+	/**
+	 * Store the stop sequence status.
+	 *
+	 * @return The alarm with updated stop sequence.
+	 */
+	private Alarm storeStopSequence() {
+		Alarm alarm = this;
+		if (alarm.getStopSequence() == null) {
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_stop_sequence_id, alarm.getId());
+		}
+		else {
+			Alarm stopSequence = alarm.getStopSequence();
+			if (stopSequence.getSteps().size() == 0) {
+				if (stopSequence.getId() >= 0) {
+					AlarmRegistry.getInstance().remove(stopSequence);
+				}
+				alarm = new Alarm(alarm.getId(), alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(),
+						alarm.getSteps(), alarm.getAlarmType(), null);
+				PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_stop_sequence_id, alarm.getId());
+			}
+			else {
+				if (stopSequence.getId() < 0) {
+					stopSequence = stopSequence.store();
+					alarm = new Alarm(alarm.getId(), alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(),
+							alarm.getSteps(), alarm.getAlarmType(), stopSequence);
+				}
+				else {
+					stopSequence.store();
+				}
+				PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_stop_sequence_id, alarm.getId(), stopSequence.getId());
+			}
+		}
 		return alarm;
 	}
 
@@ -194,6 +262,25 @@ public class Alarm {
 	}
 
 	/**
+	 * Get the alarm type.
+	 *
+	 * @return The alarm type.
+	 */
+	public AlarmType getAlarmType() {
+		return mAlarmType;
+	}
+
+	/**
+	 * Get the stop sequence.
+	 *
+	 * @return The stop sequence.
+	 */
+	public Alarm getStopSequence() {
+		return mStopSequence;
+	}
+
+
+	/**
 	 * Get a list of LightSteps from the total list of steps.
 	 *
 	 * @return The lightsteps.
@@ -229,19 +316,22 @@ public class Alarm {
 	}
 
 	/**
-	 * Put a step to the alarm.
+	 * Get a clone of the alarm.
 	 *
-	 * @param step The step to be put.
+	 * @param newName the name of the cloned alarm.
+	 * @return A clone of the alarm.
 	 */
-	public void putStep(final Step step) {
-		List<Step> stepsToRemove = new ArrayList<>();
-		for (Step oldStep : getSteps()) {
-			if (step.getId() == oldStep.getId()) {
-				stepsToRemove.add(oldStep);
-			}
+	public Alarm clone(final String newName) {
+		List<Step> newSteps = new ArrayList<>();
+		for (Step step : getSteps()) {
+			newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
 		}
-		getSteps().removeAll(stepsToRemove);
-		getSteps().add(step);
+		Alarm newStopSequence = null;
+		if (getStopSequence() != null) {
+			newStopSequence = getStopSequence().clone("");
+		}
+		Alarm alarm = new Alarm(isActive(), getStartTime(), getWeekDays(), newName, newSteps, getAlarmType(), newStopSequence);
+		return AlarmRegistry.getInstance().addOrUpdate(alarm);
 	}
 
 	/**
@@ -251,6 +341,19 @@ public class Alarm {
 	 */
 	public int getId() {
 		return mId;
+	}
+
+	/**
+	 * Get the total duration of the alarm.
+	 *
+	 * @return The total duration of the alarm.
+	 */
+	public long getDuration() {
+		long duration = 0;
+		for (Step step : getSteps()) {
+			duration = Math.max(duration, step.getDelay() + step.getDuration());
+		}
+		return duration;
 	}
 
 	@NonNull
@@ -576,6 +679,90 @@ public class Alarm {
 		public List<Step> getSteps() {
 			return mSteps;
 		}
+	}
+
+	/**
+	 * The alarm types.
+	 */
+	public enum AlarmType {
+		/**
+		 * Standard alarm. Runs once and stops on the end.
+		 */
+		STANDARD(R.drawable.ic_alarmtype_standard),
+		/**
+		 * Alarm having notification that waits until stopped manually.
+		 */
+		STOP_MANUALLY(R.drawable.ic_alarmtype_stopmanual),
+		/**
+		 * Alarm running cyclically until stopped manually.
+		 */
+		CYCLIC(R.drawable.ic_alarmtype_cyclic),
+		/**
+		 * Secondary alarm used as stop sequence after stopping an alarm.
+		 */
+		STOP_SEQUENCE(R.drawable.ic_alarmtype_stopsequence);
+
+		/**
+		 * The button resource used for the alarm type.
+		 */
+		private final int mButtonResource;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param buttonResource The button resource.
+		 */
+		AlarmType(final int buttonResource) {
+			mButtonResource = buttonResource;
+		}
+
+		/**
+		 * Get the button resource.
+		 *
+		 * @return The button resource.
+		 */
+		public int getButtonResource() {
+			return mButtonResource;
+		}
+
+		/**
+		 * Get the Alarm Type from its integer value.
+		 *
+		 * @param alarmType the alarm type integer value.
+		 * @return The tile effect.
+		 */
+		public static AlarmType fromInt(final int alarmType) {
+			for (AlarmType effect : values()) {
+				if (effect.ordinal() == alarmType) {
+					return effect;
+				}
+			}
+			return AlarmType.STANDARD;
+		}
+
+		/**
+		 * Get the next primary alarm type.
+		 *
+		 * @return The next primary alarm type.
+		 */
+		public AlarmType getNext() {
+			AlarmType result = this;
+			do {
+				result = fromInt((result.ordinal() + 1) % values().length);
+			}
+			while (!result.isPrimary());
+			return result;
+		}
+
+		/**
+		 * Check if this alarm is primary alarm (and to be listed in list of alarms).
+		 *
+		 * @return True for primary alarms.
+		 */
+		public boolean isPrimary() {
+			return this != STOP_SEQUENCE;
+		}
+
 	}
 
 }

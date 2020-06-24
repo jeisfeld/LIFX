@@ -95,9 +95,17 @@ public final class AlarmRegistry {
 		int alarmId = alarm.getId();
 		mAlarms.remove(alarmId);
 
-		List<Integer> alarmIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids);
-		alarmIds.remove((Integer) alarmId);
-		PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
+		if (alarm.getAlarmType().isPrimary()) {
+			List<Integer> alarmIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids);
+			alarmIds.remove((Integer) alarmId);
+			PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
+		}
+
+		Alarm stopSequence = alarm.getStopSequence();
+		if (stopSequence != null) {
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_stop_sequence_id, stopSequence.getId());
+			remove(stopSequence);
+		}
 
 		for (Step step : alarm.getSteps()) {
 			remove(step, alarmId);
@@ -106,6 +114,7 @@ public final class AlarmRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_start_time, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_week_days, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_name, alarmId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_type, alarmId);
 	}
 
 	/**

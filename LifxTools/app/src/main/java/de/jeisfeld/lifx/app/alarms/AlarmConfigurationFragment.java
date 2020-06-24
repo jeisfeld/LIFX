@@ -29,6 +29,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.AlarmType;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -91,11 +92,23 @@ public class AlarmConfigurationFragment extends Fragment {
 
 		final TextView textViewAlarmStartTime = root.findViewById(R.id.textViewStartTime);
 		final ExpandableListView listViewAlarmSteps = root.findViewById(R.id.listViewAlarmSteps);
+		final ImageView imageViewAlarmType = root.findViewById(R.id.imageViewAlarmType);
+
 		// the following fills also mAlarmSteps, mHour, mMinute
 		final int alarmId = getArguments() == null ? -1 : getArguments().getInt(PARAM_ALARM_ID, -1);
 		mAlarm = fillFromAlarmId(root, mAlarm == null ? alarmId : mAlarm.getId());
 
 		textViewAlarmStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", mHour, mMinute));
+		imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
+
+		imageViewAlarmType.setOnClickListener(v -> {
+			mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
+					mAlarm.getSteps(), mAlarm.getAlarmType().getNext(), mAlarm.getStopSequence());
+			imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
+			AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+			mAdapter.notifyDataSetChanged(mAlarm);
+		});
+
 		textViewAlarmStartTime.setOnClickListener(v -> {
 			TimePickerDialog mTimePicker = new TimePickerDialog(getContext(),
 					(timePicker, selectedHour, selectedMinute) -> {
@@ -138,13 +151,8 @@ public class AlarmConfigurationFragment extends Fragment {
 						}
 						else {
 							textViewAlarmName.setText(text.trim());
-							// clone steps
-							List<Step> newSteps = new ArrayList<>();
-							for (Step step : mAlarm.getSteps()) {
-								newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
-							}
-							Alarm alarm = new Alarm(mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), text.trim(), newSteps);
-							mAlarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
+							mAlarm = mAlarm.clone(text.trim());
+							mAdapter.notifyDataSetChanged(mAlarm);
 						}
 					}
 
@@ -181,8 +189,8 @@ public class AlarmConfigurationFragment extends Fragment {
 									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true,
 									storedColor -> {
 										mAlarm.getSteps().add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
-										Alarm newAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-										mAdapter.notifyDataSetChanged(newAlarm);
+										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+										mAdapter.notifyDataSetChanged(mAlarm);
 									}),
 					new ArrayList<>(lightsWithStoredColors));
 		});
@@ -243,8 +251,9 @@ public class AlarmConfigurationFragment extends Fragment {
 		Set<Integer> weekDays = getSelectecWeekDays(root);
 
 		mAlarm = new Alarm(mAlarm.getId(), switchAlarmActive.isChecked(), startDate, weekDays,
-				textViewAlarmName.getText().toString(), mAlarm.getSteps());
+				textViewAlarmName.getText().toString(), mAlarm.getSteps(), mAlarm.getAlarmType(), mAlarm.getStopSequence());
 		AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+		mAdapter.notifyDataSetChanged(mAlarm);
 	}
 
 	/**
@@ -260,7 +269,8 @@ public class AlarmConfigurationFragment extends Fragment {
 			alarm = new Alarm(alarmId);
 		}
 		else {
-			alarm = new Alarm(true, new Date(), new HashSet<>(), AlarmRegistry.getInstance().getNewAlarmName(getContext()), new ArrayList<>());
+			alarm = new Alarm(true, new Date(), new HashSet<>(), AlarmRegistry.getInstance().getNewAlarmName(getContext()),
+					new ArrayList<>(), AlarmType.STANDARD, null);
 			alarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
 		}
 

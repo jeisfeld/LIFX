@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.AlarmType;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
@@ -226,10 +227,14 @@ public class LifxAlarmService extends Service {
 		final List<Light> animatedLights = new ArrayList<>();
 
 		for (final LightSteps lightSteps : lightStepsList) {
+			if (lightSteps.getSteps().size() == 0) {
+				continue;
+			}
+
 			final Light light = lightSteps.getLight();
 			animatedLights.add(light);
 
-			AnimationThread animationThread = light.animation(getAnimationDefiniton(alarmDate, light, lightSteps.getSteps()))
+			AnimationThread animationThread = light.animation(getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
 					.setAnimationCallback(new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
@@ -251,36 +256,77 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Create the animation definition for a certain light.
 	 *
+	 * @param alarm     The alarm.
 	 * @param alarmDate The alarm start date
 	 * @param light     The light.
 	 * @param steps     The steps.
 	 * @return The animation definition.
 	 */
-	private Light.AnimationDefinition getAnimationDefiniton(final Date alarmDate, final Light light, final List<Step> steps) {
+	private Light.AnimationDefinition getAnimationDefiniton(final Alarm alarm, final Date alarmDate, final Light light, final List<Step> steps) {
+		final Light.AnimationDefinition baseDefinition = new Light.AnimationDefinition() {
+			@Override
+			public Color getColor(final int n) {
+				if (n < steps.size() || alarm.getAlarmType() == AlarmType.CYCLIC) {
+					return steps.get(n % steps.size()).getStoredColor().getColor();
+				}
+				else if (n == steps.size() && alarm.getAlarmType() == AlarmType.STOP_MANUALLY) {
+					return Color.OFF;
+				}
+				else {
+					return null;
+				}
+			}
+
+			@Override
+			public int getDuration(final int n) {
+				return (int) steps.get(n % steps.size()).getDuration();
+			}
+
+			@Override
+			public Date getStartTime(final int n) {
+				switch (alarm.getAlarmType()) {
+				case CYCLIC:
+					return new Date(alarmDate.getTime() + (n / steps.size()) * alarm.getDuration() + steps.get(n % steps.size()).getDelay());
+				case STOP_MANUALLY:
+					// Maintain max. one day
+					return n < steps.size() ? new Date(alarmDate.getTime() + steps.get(n).getDelay())
+							: new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
+				default:
+					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
+				}
+			}
+		};
+
+
 		if (light instanceof MultiZoneLight) {
 			return new AnimationDefinition() {
 				@Override
 				public MultizoneColors getColors(final int n) {
-					if (n >= steps.size()) {
-						return null;
+					if (n < steps.size() || alarm.getAlarmType() == AlarmType.CYCLIC) {
+						StoredColor storedColor = steps.get(n % steps.size()).getStoredColor();
+						if (storedColor instanceof StoredMultizoneColors) {
+							return ((StoredMultizoneColors) storedColor).getColors();
+						}
+						else {
+							return new MultizoneColors.Fixed(storedColor.getColor());
+						}
 					}
-					StoredColor storedColor = steps.get(n).getStoredColor();
-					if (storedColor instanceof StoredMultizoneColors) {
-						return ((StoredMultizoneColors) storedColor).getColors();
+					else if (n == steps.size() && alarm.getAlarmType() == AlarmType.STOP_MANUALLY) {
+						return MultizoneColors.OFF;
 					}
 					else {
-						return new MultizoneColors.Fixed(storedColor.getColor());
+						return null;
 					}
 				}
 
 				@Override
 				public int getDuration(final int n) {
-					return n >= steps.size() ? 0 : (int) steps.get(n).getDuration();
+					return baseDefinition.getDuration(n);
 				}
 
 				@Override
 				public Date getStartTime(final int n) {
-					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
+					return baseDefinition.getStartTime(n);
 				}
 			};
 		}
@@ -288,46 +334,36 @@ public class LifxAlarmService extends Service {
 			return new TileChain.AnimationDefinition() {
 				@Override
 				public TileChainColors getColors(final int n) {
-					if (n >= steps.size()) {
-						return null;
+					if (n < steps.size() || alarm.getAlarmType() == AlarmType.CYCLIC) {
+						StoredColor storedColor = steps.get(n % steps.size()).getStoredColor();
+						if (storedColor instanceof StoredTileColors) {
+							return ((StoredTileColors) storedColor).getColors();
+						}
+						else {
+							return new TileChainColors.Fixed(storedColor.getColor());
+						}
 					}
-					StoredColor storedColor = steps.get(n).getStoredColor();
-					if (storedColor instanceof StoredTileColors) {
-						return ((StoredTileColors) storedColor).getColors();
+					else if (n == steps.size() && alarm.getAlarmType() == AlarmType.STOP_MANUALLY) {
+						return TileChainColors.OFF;
 					}
 					else {
-						return new TileChainColors.Fixed(storedColor.getColor());
+						return null;
 					}
 				}
 
 				@Override
 				public int getDuration(final int n) {
-					return n >= steps.size() ? 0 : (int) steps.get(n).getDuration();
+					return baseDefinition.getDuration(n);
 				}
 
 				@Override
 				public Date getStartTime(final int n) {
-					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
+					return baseDefinition.getStartTime(n);
 				}
 			};
 		}
 		else {
-			return new Light.AnimationDefinition() {
-				@Override
-				public Color getColor(final int n) {
-					return n >= steps.size() ? null : steps.get(n).getStoredColor().getColor();
-				}
-
-				@Override
-				public int getDuration(final int n) {
-					return n >= steps.size() ? 0 : (int) steps.get(n).getDuration();
-				}
-
-				@Override
-				public Date getStartTime(final int n) {
-					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
-				}
-			};
+			return baseDefinition;
 		}
 	}
 

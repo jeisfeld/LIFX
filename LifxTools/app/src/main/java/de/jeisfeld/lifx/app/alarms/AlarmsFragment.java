@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.AlarmType;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
@@ -72,7 +73,8 @@ public class AlarmsFragment extends Fragment {
 												List<Step> steps = new ArrayList<>();
 												steps.add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
 												Alarm alarm = new Alarm(true, startDate, new HashSet<>(),
-														AlarmRegistry.getInstance().getNewAlarmName(getContext()), steps);
+														AlarmRegistry.getInstance().getNewAlarmName(getContext()), steps,
+														AlarmType.STANDARD, null);
 												alarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
 												AlarmConfigurationFragment.navigate(AlarmsFragment.this, alarm.getId());
 											}),

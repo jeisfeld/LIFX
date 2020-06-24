@@ -83,7 +83,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	protected static void retriggerAlarm(final Context context, final Alarm alarm) {
 		if (alarm.getWeekDays().size() == 0) {
 			// disable non-repeating alarm
-			Alarm newAlarm = new Alarm(alarm.getId(), false, alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps());
+			Alarm newAlarm = new Alarm(alarm.getId(), false, alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(),
+					alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence());
 			AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 		}
 		else {

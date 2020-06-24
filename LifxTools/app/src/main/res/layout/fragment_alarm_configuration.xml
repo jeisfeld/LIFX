@@ -181,7 +181,16 @@
         android:layout_height="@dimen/medium_button_size"
         android:src="@drawable/ic_button_add"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageViewAlarmType"
+        android:layout_width="@dimen/medium_button_size"
+        android:layout_height="@dimen/medium_button_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageViewAddAlarmLight"
+        app:layout_constraintEnd_toStartOf="@id/imageViewTestAlarm"
         tools:ignore="ContentDescription" />
 
     <ImageView
@@ -190,7 +199,7 @@
         android:layout_height="@dimen/medium_button_size"
         android:src="@drawable/ic_button_play"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="ContentDescription" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
