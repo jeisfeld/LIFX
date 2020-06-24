@@ -212,4 +212,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         tools:ignore="ContentDescription" />
 
+    <ImageView
+        android:id="@+id/imageViewDeleteAlarm"
+        android:layout_width="@dimen/medium_button_size"
+        android:layout_height="@dimen/medium_button_size"
+        android:src="@drawable/ic_button_delete"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/imageViewTestAlarm"
+        app:layout_constraintStart_toEndOf="@id/imageViewAddAlarmLight"
+        tools:ignore="ContentDescription" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

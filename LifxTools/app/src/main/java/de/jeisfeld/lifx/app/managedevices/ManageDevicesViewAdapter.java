@@ -15,7 +15,6 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -24,7 +23,6 @@ import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -111,20 +109,12 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 				Fragment fragment = mFragment.get();
 				FragmentActivity activity = fragment == null ? null : fragment.getActivity();
 				if (activity != null) {
-					DialogUtil.displayConfirmationMessage(activity, new ConfirmDialogListener() {
-						@Override
-						public void onDialogPositiveClick(final DialogFragment dialog) {
-							DeviceRegistry.getInstance().remove(device);
-							mDevices.remove(position);
-							mDeviceIds.remove(position);
-							notifyItemRemoved(position);
-							notifyItemRangeChanged(position, mDevices.size() - position);
-						}
-
-						@Override
-						public void onDialogNegativeClick(final DialogFragment dialog) {
-							// do nothing
-						}
+					DialogUtil.displayConfirmationMessage(activity, dialog -> {
+						DeviceRegistry.getInstance().remove(device);
+						mDevices.remove(position);
+						mDeviceIds.remove(position);
+						notifyItemRemoved(position);
+						notifyItemRangeChanged(position, mDevices.size() - position);
 					}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
 				}
 			});

@@ -321,7 +321,9 @@ public final class DialogUtil {
 			 *
 			 * @param dialog the confirmation dialog fragment.
 			 */
-			void onDialogNegativeClick(DialogFragment dialog);
+			default void onDialogNegativeClick(DialogFragment dialog) {
+				// do nothing
+			}
 		}
 	}
 

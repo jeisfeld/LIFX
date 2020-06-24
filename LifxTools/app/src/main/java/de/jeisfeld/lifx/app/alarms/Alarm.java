@@ -375,6 +375,20 @@ public class Alarm {
 		return duration;
 	}
 
+	/**
+	 * Get the parent alarm for stop sequences.
+	 *
+	 * @return The parent alarm.
+	 */
+	public Alarm getParent() {
+		for (int parentAlarmId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids)) {
+			if (PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_stop_sequence_id, parentAlarmId, -1) == getId()) {
+				return new Alarm(parentAlarmId);
+			}
+		}
+		return null;
+	}
+
 	@NonNull
 	@Override
 	public final String toString() {

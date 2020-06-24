@@ -29,7 +29,6 @@ import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestDurationDialogFragment.RequestDurationDialogListener;
 import de.jeisfeld.lifx.lan.Light;
 
@@ -299,27 +298,19 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 		});
 
 		view.findViewById(R.id.imageViewDelete).setOnClickListener(v ->
-				DialogUtil.displayConfirmationMessage(mActivity, new ConfirmDialogListener() {
-					@Override
-					public void onDialogPositiveClick(final DialogFragment dialog) {
-						// Update duration, so that following steps are shifted
-						mAlarm.updateDuration(new Step(originalStep.getId(), originalStep.getDelay(), originalStep.getStoredColorId(), 0));
-						mAlarm.removeStep(originalStep.getId());
-						AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
-						AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-						notifyDataSetChanged();
+				DialogUtil.displayConfirmationMessage(mActivity, dialog -> {
+					// Update duration, so that following steps are shifted
+					mAlarm.updateDuration(new Step(originalStep.getId(), originalStep.getDelay(), originalStep.getStoredColorId(), 0));
+					mAlarm.removeStep(originalStep.getId());
+					AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
+					AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+					notifyDataSetChanged();
 
-						if (mAlarm.getSteps().size() == 0) {
-							AlarmReceiver.cancelAlarm(mActivity, mAlarm.getId());
-							AlarmRegistry.getInstance().remove(mAlarm);
-							NavController navController = Navigation.findNavController(mActivity, R.id.nav_host_fragment);
-							navController.navigateUp();
-						}
-					}
-
-					@Override
-					public void onDialogNegativeClick(final DialogFragment dialog) {
-						// do nothing
+					if (mAlarm.getSteps().size() == 0) {
+						AlarmReceiver.cancelAlarm(mActivity, mAlarm.getId());
+						AlarmRegistry.getInstance().remove(mAlarm);
+						NavController navController = Navigation.findNavController(mActivity, R.id.nav_host_fragment);
+						navController.navigateUp();
 					}
 				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_step));
 

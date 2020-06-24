@@ -251,6 +251,18 @@ public class AlarmConfigurationFragment extends Fragment {
 			((ToggleButton) root.findViewById(R.id.toggleButtonFriday)).setVisibility(View.GONE);
 			((ToggleButton) root.findViewById(R.id.toggleButtonSaturday)).setVisibility(View.GONE);
 			((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setVisibility(View.GONE);
+
+			final Alarm parentAlarm = mAlarm.getParent();
+			if (parentAlarm != null) {
+				ImageView imageViewDeleteAlarm = root.findViewById(R.id.imageViewDeleteAlarm);
+				imageViewDeleteAlarm.setVisibility(View.VISIBLE);
+				imageViewDeleteAlarm.setOnClickListener(v -> DialogUtil.displayConfirmationMessage(requireActivity(), dialog -> {
+							AlarmRegistry.getInstance().remove(mAlarm);
+							NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+							navController.navigateUp();
+						}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_stopsequence,
+						parentAlarm.getName()));
+			}
 		}
 	}
 

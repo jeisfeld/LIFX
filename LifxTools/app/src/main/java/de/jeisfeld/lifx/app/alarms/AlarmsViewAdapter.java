@@ -18,13 +18,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 
 /**
@@ -134,21 +132,13 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 			Fragment fragment = mFragment.get();
 			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
 			if (activity != null) {
-				DialogUtil.displayConfirmationMessage(activity, new ConfirmDialogListener() {
-					@Override
-					public void onDialogPositiveClick(final DialogFragment dialog) {
-						AlarmReceiver.cancelAlarm(activity, alarm.getId());
-						AlarmRegistry.getInstance().remove(alarm);
-						mAlarms.remove(position);
-						mAlarmIds.remove(position);
-						notifyItemRemoved(position);
-						notifyItemRangeChanged(position, mAlarms.size() - position);
-					}
-
-					@Override
-					public void onDialogNegativeClick(final DialogFragment dialog) {
-						// do nothing
-					}
+				DialogUtil.displayConfirmationMessage(activity, dialog -> {
+					AlarmReceiver.cancelAlarm(activity, alarm.getId());
+					AlarmRegistry.getInstance().remove(alarm);
+					mAlarms.remove(position);
+					mAlarmIds.remove(position);
+					notifyItemRemoved(position);
+					notifyItemRangeChanged(position, mAlarms.size() - position);
 				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm, alarm.getName());
 			}
 		});

@@ -35,7 +35,6 @@ import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
-import de.jeisfeld.lifx.app.util.DialogUtil.ConfirmDialogFragment.ConfirmDialogListener;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
@@ -155,20 +154,12 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			holder.mDeleteButton.setOnClickListener(v -> {
 				Fragment fragment = mFragment.get();
 				if (fragment != null && fragment.getActivity() != null) {
-					DialogUtil.displayConfirmationMessage(fragment.getActivity(), new ConfirmDialogListener() {
-						@Override
-						public void onDialogPositiveClick(final DialogFragment dialog) {
-							ColorRegistry.getInstance().remove(storedColor);
-							mStoredColors.remove(position);
-							mColorIds.remove(position);
-							notifyItemRemoved(position);
-							notifyItemRangeChanged(position, mStoredColors.size() - position);
-						}
-
-						@Override
-						public void onDialogNegativeClick(final DialogFragment dialog) {
-							// do nothing
-						}
+					DialogUtil.displayConfirmationMessage(fragment.getActivity(), dialog -> {
+						ColorRegistry.getInstance().remove(storedColor);
+						mStoredColors.remove(position);
+						mColorIds.remove(position);
+						notifyItemRemoved(position);
+						notifyItemRangeChanged(position, mStoredColors.size() - position);
 					}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_color, storedColor.getName());
 				}
 			});
