@@ -446,24 +446,28 @@ public class Alarm {
 		for (LightSteps lightSteps : getLightSteps()) {
 			if (updatedStep.getStoredColor().getLight().equals(lightSteps.getLight())) {
 				boolean afterUpdatedStep = false;
-				long durationDiff = 0;
+				long delayDiff = 0;
 				for (Step step : lightSteps.getSteps()) {
 					if (step.getId() == updatedStep.getId()) {
-						durationDiff -= step.getDuration();
+						if (afterUpdatedStep) {
+							delayDiff -= step.getDuration();
+						}
+						else {
+							updatedSteps.add(updatedStep);
+							afterUpdatedStep = true;
+							delayDiff = updatedStep.getDelay() - step.getDelay();
+						}
 					}
-					else if (!afterUpdatedStep && step.getDelay() + durationDiff + step.getDuration() > updatedStep.getDelay()) {
+					else if (!afterUpdatedStep && step.getDelay() + step.getDuration() > updatedStep.getDelay()) {
 						updatedSteps.add(updatedStep);
-						durationDiff = updatedStep.getDelay() + updatedStep.getDuration() - step.getDelay();
-						updatedSteps.add(new Step(step.getId(), updatedStep.getDelay() + updatedStep.getDuration(),
-								step.getStoredColorId(), step.getDuration()));
 						afterUpdatedStep = true;
+						delayDiff = Math.max(0, updatedStep.getDelay() + updatedStep.getDuration() - step.getDelay());
+						updatedSteps.add(new Step(step.getId(), step.getDelay() + delayDiff,
+								step.getStoredColorId(), step.getDuration()));
 					}
 					else {
-						updatedSteps.add(new Step(step.getId(), step.getDelay() + durationDiff, step.getStoredColorId(), step.getDuration()));
+						updatedSteps.add(new Step(step.getId(), step.getDelay() + delayDiff, step.getStoredColorId(), step.getDuration()));
 					}
-				}
-				if (!afterUpdatedStep) {
-					updatedSteps.add(updatedStep);
 				}
 			}
 			else {
