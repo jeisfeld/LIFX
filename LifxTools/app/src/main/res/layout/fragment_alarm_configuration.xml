@@ -189,8 +189,18 @@
         android:layout_width="@dimen/medium_button_size"
         android:layout_height="@dimen/medium_button_size"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/imageViewStopSequence"
         app:layout_constraintStart_toEndOf="@id/imageViewAddAlarmLight"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/imageViewStopSequence"
+        android:layout_width="@dimen/medium_button_size"
+        android:layout_height="@dimen/medium_button_size"
+        android:src="@drawable/ic_alarm_stopsequence_off"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/imageViewTestAlarm"
+        app:layout_constraintStart_toEndOf="@id/imageViewAlarmType"
         tools:ignore="ContentDescription" />
 
     <ImageView

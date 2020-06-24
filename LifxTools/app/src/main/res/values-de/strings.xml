@@ -21,6 +21,7 @@
 
     <string name="color_off">AUS</string>
     <string name="default_alarm_name">Alarm %1$d</string>
+    <string name="alarm_stopsequence_name">%1$s (Stoppsequenz)</string>
 
     <string name="notification_channel_animation">LIFX-Animationen</string>
     <string name="notification_title_animation">LIFX Animation</string>
@@ -31,5 +32,5 @@
     <string name="notification_title_alarm_execution">LIFX-Alarm %1$s</string>
     <string name="notification_text_alarm">Alarme: %1$s</string>
     <string name="notification_text_no_alarm">Kein weiterer Alarm</string>
-    <string name="notification_alarm_action_stop">Stop</string>
+    <string name="notification_alarm_action_stop">Stopp</string>
 </resources>

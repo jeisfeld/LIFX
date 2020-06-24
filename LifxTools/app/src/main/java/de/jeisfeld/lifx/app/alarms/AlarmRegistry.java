@@ -96,9 +96,18 @@ public final class AlarmRegistry {
 		mAlarms.remove(alarmId);
 
 		if (alarm.getAlarmType().isPrimary()) {
+			// update list of alarms
 			List<Integer> alarmIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids);
 			alarmIds.remove((Integer) alarmId);
 			PreferenceUtil.setSharedPreferenceIntList(R.string.key_alarm_ids, alarmIds);
+		}
+		else {
+			// remove reference from parent
+			for (int parentAlarmId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_alarm_ids)) {
+				if (PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_stop_sequence_id, parentAlarmId, -1) == alarmId) {
+					PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_stop_sequence_id, parentAlarmId);
+				}
+			}
 		}
 
 		Alarm stopSequence = alarm.getStopSequence();

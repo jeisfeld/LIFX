@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -318,20 +320,37 @@ public class Alarm {
 	/**
 	 * Get a clone of the alarm.
 	 *
+	 * @param context The context.
 	 * @param newName the name of the cloned alarm.
 	 * @return A clone of the alarm.
 	 */
-	public Alarm clone(final String newName) {
+	public Alarm clone(final Context context, final String newName) {
 		List<Step> newSteps = new ArrayList<>();
 		for (Step step : getSteps()) {
 			newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
 		}
 		Alarm newStopSequence = null;
 		if (getStopSequence() != null) {
-			newStopSequence = getStopSequence().clone("");
+			newStopSequence = getStopSequence().clone(context, context.getString(R.string.alarm_stopsequence_name, newName));
 		}
 		Alarm alarm = new Alarm(isActive(), getStartTime(), getWeekDays(), newName, newSteps, getAlarmType(), newStopSequence);
 		return AlarmRegistry.getInstance().addOrUpdate(alarm);
+	}
+
+	/**
+	 * Update the alarm with changed name.
+	 *
+	 * @param context the context.
+	 * @param newName The new name.
+	 * @return The updated alarm.
+	 */
+	protected Alarm withChangedName(final Context context, final String newName) {
+		Alarm stopSequence = getStopSequence();
+		if (stopSequence != null) {
+			stopSequence = new Alarm(stopSequence.getId(), stopSequence.isActive(), stopSequence.getStartTime(), stopSequence.getWeekDays(),
+					context.getString(R.string.alarm_stopsequence_name, newName), stopSequence.getSteps(), AlarmType.STOP_SEQUENCE, null);
+		}
+		return new Alarm(getId(), isActive(), getStartTime(), getWeekDays(), newName, getSteps(), getAlarmType(), stopSequence);
 	}
 
 	/**
@@ -700,7 +719,7 @@ public class Alarm {
 		/**
 		 * Secondary alarm used as stop sequence after stopping an alarm.
 		 */
-		STOP_SEQUENCE(R.drawable.ic_alarmtype_stopsequence);
+		STOP_SEQUENCE(R.drawable.ic_alarm_stopsequence_off);
 
 		/**
 		 * The button resource used for the alarm type.

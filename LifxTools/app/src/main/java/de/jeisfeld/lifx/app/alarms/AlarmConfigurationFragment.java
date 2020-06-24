@@ -4,6 +4,7 @@ import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
@@ -34,6 +35,7 @@ import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
@@ -47,6 +49,10 @@ public class AlarmConfigurationFragment extends Fragment {
 	 * Parameter to pass the alarmId.
 	 */
 	private static final String PARAM_ALARM_ID = "alarmId";
+	/**
+	 * The default duration of alarm steps.
+	 */
+	private static final long DEFAULT_DURATION = 10000;
 	/**
 	 * The hour.
 	 */
@@ -89,88 +95,15 @@ public class AlarmConfigurationFragment extends Fragment {
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		View root = inflater.inflate(R.layout.fragment_alarm_configuration, container, false);
-
-		final TextView textViewAlarmStartTime = root.findViewById(R.id.textViewStartTime);
 		final ExpandableListView listViewAlarmSteps = root.findViewById(R.id.listViewAlarmSteps);
-		final ImageView imageViewAlarmType = root.findViewById(R.id.imageViewAlarmType);
 
 		// the following fills also mAlarmSteps, mHour, mMinute
 		final int alarmId = getArguments() == null ? -1 : getArguments().getInt(PARAM_ALARM_ID, -1);
 		mAlarm = fillFromAlarmId(root, mAlarm == null ? alarmId : mAlarm.getId());
 
-		textViewAlarmStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", mHour, mMinute));
-		imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
-
-		imageViewAlarmType.setOnClickListener(v -> {
-			mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
-					mAlarm.getSteps(), mAlarm.getAlarmType().getNext(), mAlarm.getStopSequence());
-			imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
-			AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-			mAdapter.notifyDataSetChanged(mAlarm);
-		});
-
-		textViewAlarmStartTime.setOnClickListener(v -> {
-			TimePickerDialog mTimePicker = new TimePickerDialog(getContext(),
-					(timePicker, selectedHour, selectedMinute) -> {
-						textViewAlarmStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
-						mHour = selectedHour;
-						mMinute = selectedMinute;
-						saveAlarm(root);
-					},
-					mHour, mMinute, true);
-			mTimePicker.show();
-		});
-
-		final TextView textViewAlarmName = root.findViewById(R.id.textViewAlarmName);
-		textViewAlarmName.setOnClickListener(v -> DialogUtil.displayInputDialog(requireActivity(), new RequestInputDialogListener() {
-			@Override
-			public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
-				if (text == null || text.trim().isEmpty()) {
-					DialogUtil.displayConfirmationMessage(requireActivity(),
-							R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
-				}
-				else {
-					textViewAlarmName.setText(text.trim());
-					saveAlarm(root);
-				}
-			}
-
-			@Override
-			public void onDialogNegativeClick(final DialogFragment dialog) {
-				// do nothing
-			}
-		}, R.string.title_dialog_change_alarm_name, R.string.button_rename, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
-
-		((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setOnClickListener(v ->
-				DialogUtil.displayInputDialog(requireActivity(), new RequestInputDialogListener() {
-					@Override
-					public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
-						if (text == null || text.trim().isEmpty()) {
-							DialogUtil.displayConfirmationMessage(requireActivity(),
-									R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
-						}
-						else {
-							textViewAlarmName.setText(text.trim());
-							mAlarm = mAlarm.clone(text.trim());
-							mAdapter.notifyDataSetChanged(mAlarm);
-						}
-					}
-
-					@Override
-					public void onDialogNegativeClick(final DialogFragment dialog) {
-						// do nothing
-					}
-				}, R.string.title_dialog_copy_alarm, R.string.button_save, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
-
+		configurePrimaryAlarmElements(root);
 
 		((Switch) root.findViewById(R.id.switchAlarmActive)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonMonday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonTuesday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonWednesday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonThursday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonFriday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonSaturday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
-		((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
 
 		for (LightSteps lightSteps : mAlarm.getLightSteps()) {
 			if (mInitialExpandingStatus.get(lightSteps.getLight()) == null) {
@@ -188,7 +121,7 @@ public class AlarmConfigurationFragment extends Fragment {
 							StoredColorsDialogFragment.displayStoredColorsDialog(
 									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true,
 									storedColor -> {
-										mAlarm.getSteps().add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
+										mAlarm.getSteps().add(new Step(0, storedColor.getId(), DEFAULT_DURATION));
 										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 										mAdapter.notifyDataSetChanged(mAlarm);
 									}),
@@ -200,6 +133,127 @@ public class AlarmConfigurationFragment extends Fragment {
 
 		return root;
 	}
+
+	/**
+	 * Configure the elements relevant for primary alarm.
+	 *
+	 * @param root The view root.
+	 */
+	private void configurePrimaryAlarmElements(final View root) {
+		if (mAlarm.getAlarmType().isPrimary()) {
+			final TextView textViewAlarmName = root.findViewById(R.id.textViewAlarmName);
+			textViewAlarmName.setOnClickListener(v -> DialogUtil.displayInputDialog(requireActivity(), new RequestInputDialogListener() {
+				@Override
+				public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
+					if (text == null || text.trim().isEmpty()) {
+						DialogUtil.displayConfirmationMessage(requireActivity(),
+								R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
+					}
+					else {
+						textViewAlarmName.setText(text.trim());
+						mAlarm = mAlarm.withChangedName(getContext(), text.trim());
+						AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+						mAdapter.notifyDataSetChanged(mAlarm);
+					}
+				}
+
+				@Override
+				public void onDialogNegativeClick(final DialogFragment dialog) {
+					// do nothing
+				}
+			}, R.string.title_dialog_change_alarm_name, R.string.button_rename, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
+
+			final TextView textViewAlarmStartTime = root.findViewById(R.id.textViewStartTime);
+			textViewAlarmStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", mHour, mMinute));
+			textViewAlarmStartTime.setOnClickListener(v -> {
+				TimePickerDialog mTimePicker = new TimePickerDialog(getContext(),
+						(timePicker, selectedHour, selectedMinute) -> {
+							textViewAlarmStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
+							mHour = selectedHour;
+							mMinute = selectedMinute;
+							saveAlarm(root);
+						},
+						mHour, mMinute, true);
+				mTimePicker.show();
+			});
+
+			final ImageView imageViewAlarmType = root.findViewById(R.id.imageViewAlarmType);
+			imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
+			imageViewAlarmType.setOnClickListener(v -> {
+				mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
+						mAlarm.getSteps(), mAlarm.getAlarmType().getNext(), mAlarm.getStopSequence());
+				imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
+				AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+				mAdapter.notifyDataSetChanged(mAlarm);
+			});
+
+			((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setOnClickListener(v ->
+					DialogUtil.displayInputDialog(requireActivity(), new RequestInputDialogListener() {
+						@Override
+						public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
+							if (text == null || text.trim().isEmpty()) {
+								DialogUtil.displayConfirmationMessage(requireActivity(),
+										R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
+							}
+							else {
+								textViewAlarmName.setText(text.trim());
+								mAlarm = mAlarm.clone(getContext(), text.trim());
+								mAdapter.notifyDataSetChanged(mAlarm);
+							}
+						}
+
+						@Override
+						public void onDialogNegativeClick(final DialogFragment dialog) {
+							// do nothing
+						}
+					}, R.string.title_dialog_copy_alarm, R.string.button_save, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
+
+			ImageView imageViewStopSequence = root.findViewById(R.id.imageViewStopSequence);
+			imageViewStopSequence.setOnClickListener((OnClickListener) v -> {
+				if (mAlarm.getStopSequence() == null) {
+					List<Step> alarmSteps = new ArrayList<>();
+					for (LightSteps lightSteps : mAlarm.getLightSteps()) {
+						alarmSteps.add(new Step(0,
+								StoredColor.fromDeviceOff((int) lightSteps.getLight().getParameter(DeviceRegistry.DEVICE_ID)).getId(),
+								DEFAULT_DURATION));
+					}
+					Alarm stopSequence = new Alarm(true, new Date(), new HashSet<>(), getString(R.string.alarm_stopsequence_name, mAlarm.getName()),
+							alarmSteps, AlarmType.STOP_SEQUENCE, null);
+					mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
+							mAlarm.getSteps(), mAlarm.getAlarmType(), stopSequence);
+					mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+				}
+				navigate(this, mAlarm.getStopSequence().getId());
+			});
+
+			((ToggleButton) root.findViewById(R.id.toggleButtonMonday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+			((ToggleButton) root.findViewById(R.id.toggleButtonTuesday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+			((ToggleButton) root.findViewById(R.id.toggleButtonWednesday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+			((ToggleButton) root.findViewById(R.id.toggleButtonThursday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+			((ToggleButton) root.findViewById(R.id.toggleButtonFriday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+			((ToggleButton) root.findViewById(R.id.toggleButtonSaturday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+			((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
+		}
+		else {
+			((TextView) root.findViewById(R.id.labelStartTime)).setVisibility(View.GONE);
+			TextView labelWeekDays = root.findViewById(R.id.labelWeekDays);
+			if (labelWeekDays != null) {
+				labelWeekDays.setVisibility(View.GONE);
+			}
+			((TextView) root.findViewById(R.id.textViewStartTime)).setVisibility(View.GONE);
+			((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setVisibility(View.GONE);
+			((ImageView) root.findViewById(R.id.imageViewAlarmType)).setVisibility(View.GONE);
+			((ImageView) root.findViewById(R.id.imageViewStopSequence)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonMonday)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonTuesday)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonWednesday)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonThursday)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonFriday)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonSaturday)).setVisibility(View.GONE);
+			((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setVisibility(View.GONE);
+		}
+	}
+
 
 	@Override
 	public final void onDestroyView() {
@@ -245,13 +299,12 @@ public class AlarmConfigurationFragment extends Fragment {
 	 * @param root The view.
 	 */
 	private void saveAlarm(final View root) {
-		final TextView textViewAlarmName = root.findViewById(R.id.textViewAlarmName);
 		final Switch switchAlarmActive = root.findViewById(R.id.switchAlarmActive);
 		Date startDate = Alarm.getDate(mHour, mMinute);
 		Set<Integer> weekDays = getSelectecWeekDays(root);
 
 		mAlarm = new Alarm(mAlarm.getId(), switchAlarmActive.isChecked(), startDate, weekDays,
-				textViewAlarmName.getText().toString(), mAlarm.getSteps(), mAlarm.getAlarmType(), mAlarm.getStopSequence());
+				mAlarm.getName(), mAlarm.getSteps(), mAlarm.getAlarmType(), mAlarm.getStopSequence());
 		AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 		mAdapter.notifyDataSetChanged(mAlarm);
 	}
@@ -283,6 +336,8 @@ public class AlarmConfigurationFragment extends Fragment {
 		((ToggleButton) root.findViewById(R.id.toggleButtonFriday)).setChecked(alarm.getWeekDays().contains(Calendar.FRIDAY));
 		((ToggleButton) root.findViewById(R.id.toggleButtonSaturday)).setChecked(alarm.getWeekDays().contains(Calendar.SATURDAY));
 		((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setChecked(alarm.getWeekDays().contains(Calendar.SUNDAY));
+		((ImageView) root.findViewById(R.id.imageViewStopSequence)).setImageResource(
+				alarm.getStopSequence() == null ? R.drawable.ic_alarm_stopsequence_off : R.drawable.ic_alarm_stopsequence_on);
 
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(alarm.getStartTime());

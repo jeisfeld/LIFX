@@ -485,6 +485,9 @@ public class LifxAlarmService extends Service {
 				if (!ANIMATED_ALARMS.contains(alarm.getId())) {
 					endRunningNotification(alarm);
 				}
+				if (alarm.getStopSequence() != null && alarm.getStopSequence().isActive()) {
+					triggerAlarmService(this, ACTION_TRIGGER_ALARM, alarm.getStopSequence().getId(), new Date());
+				}
 			}
 		}
 	}
