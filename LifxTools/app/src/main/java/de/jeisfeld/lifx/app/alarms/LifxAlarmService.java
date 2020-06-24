@@ -385,10 +385,10 @@ public class LifxAlarmService extends Service {
 	 * @param alarm The alarm.
 	 */
 	private void startRunningNotification(final Alarm alarm) {
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
-				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
-		PendingIntent stopIntent = PendingIntent.getService(this, 0,
-				LifxAlarmService.createIntent(this, ACTION_INTERRUPT_ALARM, alarm.getId(), null), PendingIntent.FLAG_CANCEL_CURRENT);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, alarm.getId(),
+				MainActivity.createIntent(this, R.id.nav_alarms), 0);
+		PendingIntent stopIntent = PendingIntent.getService(this, alarm.getId(),
+				LifxAlarmService.createIntent(this, ACTION_INTERRUPT_ALARM, alarm.getId(), null), 0);
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_EXECUTION)
 				.setContentTitle(getString(R.string.notification_title_alarm_execution, alarm.getName()))
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
