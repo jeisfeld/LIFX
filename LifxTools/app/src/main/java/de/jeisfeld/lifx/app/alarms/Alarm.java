@@ -173,11 +173,13 @@ public class Alarm {
 		alarm.getSteps().clear();
 		alarm.getSteps().addAll(newSteps);
 
-		if (alarm.isActive()) {
-			AlarmReceiver.setAlarm(Application.getAppContext(), alarm);
-		}
-		else {
-			AlarmReceiver.cancelAlarm(Application.getAppContext(), alarm.getId());
+		if (alarm.getAlarmType().isPrimary()) {
+			if (alarm.isActive()) {
+				AlarmReceiver.setAlarm(Application.getAppContext(), alarm);
+			}
+			else {
+				AlarmReceiver.cancelAlarm(Application.getAppContext(), alarm.getId());
+			}
 		}
 
 		return alarm;

@@ -1,5 +1,9 @@
 package de.jeisfeld.lifx.app.managedevices;
 
+import android.os.AsyncTask;
+import android.util.Log;
+import android.util.SparseArray;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
@@ -8,10 +12,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import android.os.AsyncTask;
-import android.util.Log;
-import android.util.SparseArray;
 
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
@@ -31,12 +31,13 @@ import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.TileInfo;
 import de.jeisfeld.lifx.lan.type.TileInfo.Rotation;
 import de.jeisfeld.lifx.lan.type.Vendor;
+import de.jeisfeld.lifx.os.DeviceRegistryInterface;
 import de.jeisfeld.lifx.os.OsTools;
 
 /**
  * A registry holding information about devices.
  */
-public final class DeviceRegistry {
+public final class DeviceRegistry implements DeviceRegistryInterface {
 	/**
 	 * The default port.
 	 */
@@ -144,12 +145,7 @@ public final class DeviceRegistry {
 
 	}
 
-	/**
-	 * Get the list of known devices.
-	 *
-	 * @param onlyFlagged Get only devices which are flagged.
-	 * @return The list of known devices.
-	 */
+	@Override
 	public List<Device> getDevices(final boolean onlyFlagged) {
 		List<Device> result = new ArrayList<>();
 		for (int deviceId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids)) {
@@ -161,22 +157,12 @@ public final class DeviceRegistry {
 		return result;
 	}
 
-	/**
-	 * Get a known device by its storage id.
-	 *
-	 * @param id the storage id
-	 * @return The device
-	 */
+	@Override
 	public Device getDeviceById(final int id) {
 		return mDevices.get(id);
 	}
 
-	/**
-	 * Get a known device by its mac.
-	 *
-	 * @param mac The mac.
-	 * @return The device.
-	 */
+	@Override
 	public Device getDeviceByMac(final String mac) {
 		Integer deviceId = mMacToIdMap.get(mac);
 		return deviceId == null ? null : getDeviceById(deviceId);

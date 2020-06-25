@@ -22,6 +22,8 @@ import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
+import de.jeisfeld.lifx.os.DeviceRegistryFactory;
+import de.jeisfeld.lifx.os.DeviceRegistryInterface;
 import de.jeisfeld.lifx.os.Logger;
 
 import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
@@ -561,6 +563,11 @@ public class Light extends Device implements Serializable {
 		 * An exception callback called in case of SocketException.
 		 */
 		private AnimationCallback mAnimationCallback = null;
+		/**
+		 * Keep private store of device registry, so that it is not garbage collected, which would lead to loss of reference.
+		 */
+		@SuppressWarnings("unused")
+		private DeviceRegistryInterface mDeviceRegistry;
 
 		/**
 		 * Create an animation thread.
@@ -622,6 +629,7 @@ public class Light extends Device implements Serializable {
 		public void run() {
 			int count = 0;
 			try {
+				storeDeviceRegistry();
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColor(count) != null) {
@@ -673,8 +681,10 @@ public class Light extends Device implements Serializable {
 				}
 
 				if (mEndColor == null) {
-					// stop the previous color transition by sending setWaveform command with no change.
-					getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					if (isInterrupted) {
+						// stop the previous color transition by sending setWaveform command with no change.
+						getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					}
 				}
 				else if (mEndColor.getBrightness() == 0) {
 					getLight().setPower(false, mEndTransitionTime, true);
@@ -692,6 +702,7 @@ public class Light extends Device implements Serializable {
 					getAnimationCallback().onException(e);
 				}
 			}
+			cleanAnimationThread();
 		}
 
 		/**
@@ -701,6 +712,25 @@ public class Light extends Device implements Serializable {
 		 */
 		protected double getRelativeBrightness() {
 			return mRelativeBrightness;
+		}
+
+		/**
+		 * Clean the animation thread.
+		 */
+		protected void cleanAnimationThread() {
+			synchronized (getLight()) {
+				getLight().mAnimationThread = null;
+			}
+			if (mDeviceRegistry != null) {
+				mDeviceRegistry = null;
+			}
+		}
+
+		/**
+		 * Store the device registry instance so that it is not cleaned by GC.
+		 */
+		protected void storeDeviceRegistry() {
+			mDeviceRegistry = DeviceRegistryFactory.getDeviceRegistry();
 		}
 
 		/**

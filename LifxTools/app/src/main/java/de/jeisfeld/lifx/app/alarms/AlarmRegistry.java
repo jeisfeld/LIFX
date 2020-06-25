@@ -82,7 +82,15 @@ public final class AlarmRegistry {
 	 */
 	protected Alarm addOrUpdate(final Alarm alarm) {
 		Alarm newAlarm = alarm.store();
-		mAlarms.put(newAlarm.getId(), newAlarm);
+		if (newAlarm.getAlarmType().isPrimary()) {
+			mAlarms.put(newAlarm.getId(), newAlarm);
+		}
+		else {
+			Alarm parent = alarm.getParent();
+			Alarm newParent = new Alarm(parent.getId(), parent.isActive(), parent.getStartTime(), parent.getWeekDays(), parent.getName(),
+					parent.getSteps(), parent.getAlarmType(), newAlarm);
+			mAlarms.put(newParent.getId(), newParent);
+		}
 		return newAlarm;
 	}
 
@@ -166,6 +174,13 @@ public final class AlarmRegistry {
 					return true;
 				}
 			}
+			if (alarm.getStopSequence() != null) {
+				for (Step step : alarm.getStopSequence().getSteps()) {
+					if (step.getStoredColor().equals(storedColor)) {
+						return true;
+					}
+				}
+			}
 		}
 		return false;
 	}
@@ -181,6 +196,13 @@ public final class AlarmRegistry {
 			for (LightSteps lightSteps : alarm.getLightSteps()) {
 				if (lightSteps.getLight().equals(device)) {
 					return true;
+				}
+			}
+			if (alarm.getStopSequence() != null) {
+				for (LightSteps lightSteps : alarm.getStopSequence().getLightSteps()) {
+					if (lightSteps.getLight().equals(device)) {
+						return true;
+					}
 				}
 			}
 		}

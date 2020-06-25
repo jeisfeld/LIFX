@@ -359,6 +359,7 @@ public class MultiZoneLight extends Light {
 		public void run() {
 			int count = 0;
 			try {
+				storeDeviceRegistry();
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
@@ -410,8 +411,10 @@ public class MultiZoneLight extends Light {
 				}
 
 				if (mEndColors == null) {
-					// stop the previous color transition by sending setWaveform command with no change.
-					getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					if (isInterrupted) {
+						// stop the previous color transition by sending setWaveform command with no change.
+						getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					}
 				}
 				else if (mEndColors == MultizoneColors.OFF) {
 					getLight().setPower(false, mEndTransitionTime, true);
@@ -429,6 +432,7 @@ public class MultiZoneLight extends Light {
 					getAnimationCallback().onException(e);
 				}
 			}
+			cleanAnimationThread();
 		}
 	}
 

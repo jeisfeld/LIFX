@@ -480,10 +480,15 @@ public class LifxAlarmService extends Service {
 	 * @param animatedLights The list of animated lights
 	 */
 	private void updateOnEndAnimation(final Alarm alarm, final WakeLock wakeLock, final Light light, final List<Light> animatedLights) {
-		animatedLights.remove(light);
+		boolean isLastLight;
+		//noinspection SynchronizationOnLocalVariableOrMethodParameter
+		synchronized (animatedLights) {
+			animatedLights.remove(light);
+			isLastLight = animatedLights.size() == 0;
+		}
 		Logger.info("LifxAlarmService end (" + alarm.getName() + "," + light.getLabel() + ") (" + animatedLights.size() + ")");
 
-		if (animatedLights.size() == 0) {
+		if (isLastLight) {
 			if (wakeLock != null) {
 				wakeLock.release();
 			}

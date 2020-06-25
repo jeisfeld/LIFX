@@ -409,6 +409,7 @@ public class TileChain extends Light implements Serializable {
 		public void run() {
 			int count = 0;
 			try {
+				storeDeviceRegistry();
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
@@ -460,8 +461,10 @@ public class TileChain extends Light implements Serializable {
 				}
 
 				if (mEndColors == null) {
-					// stop the previous color transition by sending setWaveform command with no change.
-					getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					if (isInterrupted) {
+						// stop the previous color transition by sending setWaveform command with no change.
+						getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+					}
 				}
 				else if (mEndColors == TileChainColors.OFF) {
 					getLight().setPower(false, mEndTransitionTime, true);
@@ -479,6 +482,7 @@ public class TileChain extends Light implements Serializable {
 					getAnimationCallback().onException(e);
 				}
 			}
+			cleanAnimationThread();
 		}
 	}
 
