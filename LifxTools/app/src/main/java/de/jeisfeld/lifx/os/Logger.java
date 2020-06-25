@@ -1,7 +1,9 @@
 package de.jeisfeld.lifx.os;
 
 import android.util.Log;
+
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.message.RequestMessage;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 
@@ -46,6 +48,17 @@ public final class Logger {
 	 */
 	public static void error(final Exception e) {
 		Log.e(TAG, e.toString(), e);
+	}
+
+	/**
+	 * Log a connection error.
+	 *
+	 * @param device The device
+	 * @param action The action
+	 * @param e      The exception
+	 */
+	public static void connectionError(final Device device, final String action, final Exception e) {
+		Log.i(TAG, "Failed to connect to " + (device == null ? "(null)" : device.getLabel()) + " for " + action + ": " + e.getMessage());
 	}
 
 	/**

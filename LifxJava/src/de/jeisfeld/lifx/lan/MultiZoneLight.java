@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.lan;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -27,6 +25,8 @@ import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
+
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 /**
  * Class managing a LIFX multizone light.
@@ -102,7 +102,7 @@ public class MultiZoneLight extends Light {
 			return (MultizoneStateZone) getConnection().requestWithResponse(new MultizoneGetColorZones(startIndex, endIndex));
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "State", e);
 			return null;
 		}
 	}
@@ -124,7 +124,7 @@ public class MultiZoneLight extends Light {
 			}
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "ExtendedColors", e);
 			return null;
 		}
 	}
@@ -180,7 +180,7 @@ public class MultiZoneLight extends Light {
 			return ((MultizoneStateMultizoneEffect) getConnection().requestWithResponse(new MultizoneGetMultizoneEffect())).getEffectInfo();
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "EffectInfo", e);
 			return null;
 		}
 	}
@@ -424,7 +424,7 @@ public class MultiZoneLight extends Light {
 				}
 			}
 			catch (IOException e) {
-				Logger.error(e);
+				Logger.connectionError(getLight(), "Animation", e);
 				if (getAnimationCallback() != null) {
 					getAnimationCallback().onException(e);
 				}

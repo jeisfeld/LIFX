@@ -1,5 +1,6 @@
 package de.jeisfeld.lifx.os;
 
+import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.message.RequestMessage;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 
@@ -62,7 +63,23 @@ public final class Logger {
 		}
 		else {
 			System.err.println(e.toString());
-//			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Log a connection error.
+	 *
+	 * @param device The device
+	 * @param action The action
+	 * @param e The exception
+	 */
+	public static void connectionError(final Device device, final String action, final Exception e) {
+		if (Logger.mLogDetails) {
+			System.err.println("Connection error for " + (device == null ? "(null)" : device.getLabel()) + " for " + action);
+			e.printStackTrace();
+		}
+		else {
+			System.err.println("Failed to connect to " + (device == null ? "(null)" : device.getLabel()) + " for " + action + ": " + e.getMessage());
 		}
 	}
 

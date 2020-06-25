@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.lan;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -43,6 +41,8 @@ import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
+
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 /**
  * Class managing a LIFX device.
@@ -503,7 +503,7 @@ public class Device implements Serializable {
 			return new Power(statePower.getLevel());
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "Power", e);
 			return null;
 		}
 	}

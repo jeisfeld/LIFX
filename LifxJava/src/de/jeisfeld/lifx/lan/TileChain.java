@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.lan;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -28,6 +26,8 @@ import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
+
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 /**
  * Class managing a LIFX Tile Chain.
@@ -139,7 +139,7 @@ public class TileChain extends Light implements Serializable {
 			return (TileStateDeviceChain) getConnection().requestWithResponse(new TileGetDeviceChain());
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "ChainState", e);
 			return null;
 		}
 	}
@@ -215,7 +215,7 @@ public class TileChain extends Light implements Serializable {
 					mTileInfo.get(tileIndex).getWidth(), mTileInfo.get(tileIndex).getHeight());
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "Colors" + tileIndex, e);
 			return null;
 		}
 	}
@@ -237,7 +237,7 @@ public class TileChain extends Light implements Serializable {
 			return new TileChainColors.PerTile(this, colors);
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "Colors", e);
 			return null;
 		}
 	}
@@ -252,7 +252,7 @@ public class TileChain extends Light implements Serializable {
 			return ((TileStateTileEffect) getConnection().requestWithResponse(new TileGetTileEffect())).getEffectInfo();
 		}
 		catch (IOException e) {
-			Logger.error(e);
+			Logger.connectionError(this, "EffectInfo", e);
 			return null;
 		}
 	}
@@ -474,7 +474,7 @@ public class TileChain extends Light implements Serializable {
 				}
 			}
 			catch (IOException e) {
-				Logger.error(e);
+				Logger.connectionError(getLight(), "Animation", e);
 				if (getAnimationCallback() != null) {
 					getAnimationCallback().onException(e);
 				}

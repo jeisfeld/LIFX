@@ -145,6 +145,7 @@ public class LifxAlarmService extends Service {
 		final int alarmId = intent.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1);
 		final Date alarmDate = (Date) intent.getSerializableExtra(AlarmReceiver.EXTRA_ALARM_TIME);
 		Alarm alarm = new Alarm(alarmId);
+		Logger.info("LifxAlarmService start " + action + " - " + alarm.getName());
 
 		if (ACTION_CREATE_ALARM.equals(action)) {
 			synchronized (PENDING_ALARMS) {
@@ -159,6 +160,7 @@ public class LifxAlarmService extends Service {
 				startNotification();
 				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
 					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
+					Logger.info("LifxAlarmService stop after cancel - no alarms left");
 					stopService(serviceIntent);
 				}
 			}
@@ -479,10 +481,15 @@ public class LifxAlarmService extends Service {
 	 */
 	private void updateOnEndAnimation(final Alarm alarm, final WakeLock wakeLock, final Light light, final List<Light> animatedLights) {
 		animatedLights.remove(light);
-		if (wakeLock != null && animatedLights.size() == 0) {
-			wakeLock.release();
+		Logger.info("LifxAlarmService end (" + alarm.getName() + "," + light.getLabel() + ") (" + animatedLights.size() + ")");
+
+		if (animatedLights.size() == 0) {
+			if (wakeLock != null) {
+				wakeLock.release();
+			}
 			synchronized (ANIMATED_ALARMS) {
 				ANIMATED_ALARMS.remove((Integer) alarm.getId());
+				Logger.info("LifxAlarmService end (" + ANIMATED_ALARMS.size() + "," + PENDING_ALARMS.size() + ")");
 				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
 					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
 					stopService(serviceIntent);

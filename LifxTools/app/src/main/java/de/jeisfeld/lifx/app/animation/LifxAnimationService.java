@@ -26,6 +26,7 @@ import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
 import de.jeisfeld.lifx.lan.Light.BaseAnimationThread;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * A service handling LIFX animations in the background.
@@ -84,6 +85,7 @@ public class LifxAnimationService extends Service {
 		assert mac != null;
 		assert label != null;
 		ANIMATED_LIGHT_LABELS.put(mac, label);
+		Logger.info("LifxAnimationService start (" + ANIMATED_LIGHT_LABELS.size() + ") (" + mac + "," + label + ")");
 
 		startNotification();
 
@@ -266,9 +268,11 @@ public class LifxAnimationService extends Service {
 			wakeLock.release();
 		}
 		sendBroadcastStopAnimation(mac);
+		final String label = ANIMATED_LIGHT_LABELS.get(mac);
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(mac);
 			ANIMATED_LIGHT_LABELS.remove(mac);
+			Logger.info("LifxAnimationService end (" + ANIMATED_LIGHT_LABELS.size() + ") (" + mac + "," + label + ")");
 			if (ANIMATED_LIGHTS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAnimationService.class);
 				stopService(serviceIntent);
