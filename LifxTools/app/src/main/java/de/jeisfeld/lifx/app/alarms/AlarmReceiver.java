@@ -55,7 +55,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
 			alarmMgr.setAlarmClock(new AlarmClockInfo(alarmTime, alarmIntent), alarmIntent);
-			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_CREATE_ALARM, alarmId, new Date(alarmTime));
 		}
 	}
 
@@ -153,6 +152,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 		else {
 			PendingIntent alarmIntent = createAlarmIntent(context, alarm.getId(), startTime, true);
 			setAlarm(context, alarm.getId(), alarmTimeMillis, alarmIntent);
+			LifxAlarmService.triggerAlarmService(context, LifxAlarmService.ACTION_CREATE_ALARM, alarm.getId(), startTime);
 			reEnableAlarmsOnBoot(context);
 			return true;
 		}

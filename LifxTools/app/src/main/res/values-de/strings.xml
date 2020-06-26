@@ -30,7 +30,7 @@
     <string name="notification_channel_alarm_execution">LIFX-Alarm-Ausführung</string>
     <string name="notification_title_alarm">LIFX-Alarm</string>
     <string name="notification_title_alarm_execution">LIFX-Alarm %1$s</string>
-    <string name="notification_text_alarm">Alarme: %1$s</string>
+    <string name="notification_text_alarm">%2$s: %1$s\n</string>
     <string name="notification_text_no_alarm">Kein weiterer Alarm</string>
     <string name="notification_alarm_action_stop">Stopp</string>
 </resources>

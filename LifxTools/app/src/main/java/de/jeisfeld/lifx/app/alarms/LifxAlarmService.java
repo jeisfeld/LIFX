@@ -11,17 +11,20 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.text.format.DateFormat;
 import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationCompat.BigTextStyle;
 import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.MainActivity;
@@ -98,9 +101,9 @@ public class LifxAlarmService extends Service {
 	 */
 	private static final List<Integer> ANIMATED_ALARMS = new ArrayList<>();
 	/**
-	 * List of pending alarms.
+	 * Map from alarmId to Alarm for pending alarms.
 	 */
-	private static final Set<Integer> PENDING_ALARMS = new HashSet<>();
+	private static final Map<Integer, Alarm> PENDING_ALARMS = new HashMap<>();
 
 	/**
 	 * Send message to alarm service.
@@ -145,11 +148,13 @@ public class LifxAlarmService extends Service {
 		final int alarmId = intent.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1);
 		final Date alarmDate = (Date) intent.getSerializableExtra(AlarmReceiver.EXTRA_ALARM_TIME);
 		Alarm alarm = new Alarm(alarmId);
+		alarm = new Alarm(alarm.getId(), alarm.isActive(), alarmDate, alarm.getWeekDays(), alarm.getName(), alarm.getSteps(),
+				alarm.getAlarmType(), alarm.getStopSequence());
 		Logger.info("LifxAlarmService start " + action + " - " + alarm.getName());
 
 		if (ACTION_CREATE_ALARM.equals(action)) {
 			synchronized (PENDING_ALARMS) {
-				PENDING_ALARMS.add(alarmId);
+				PENDING_ALARMS.put(alarmId, alarm);
 			}
 			startNotification();
 		}
@@ -416,9 +421,11 @@ public class LifxAlarmService extends Service {
 	private void startNotification() {
 		PendingIntent contentIntent = PendingIntent.getActivity(this, REQUEST_CODE,
 				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
+		String notificationMessage = getRunningAlarmsString();
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_alarm))
-				.setContentText(getRunningAlarmsString())
+				.setStyle(new BigTextStyle().bigText(notificationMessage))
+				.setContentText(notificationMessage)
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
 				.setContentIntent(contentIntent)
 				.build();
@@ -520,13 +527,16 @@ public class LifxAlarmService extends Service {
 	public String getRunningAlarmsString() {
 		StringBuilder builder = new StringBuilder();
 		if (PENDING_ALARMS.size() > 0) {
-			for (Integer alarmId : PENDING_ALARMS) {
-				if (builder.length() > 0) {
-					builder.append(", ");
-				}
-				builder.append(new Alarm(alarmId).getName());
+			List<Alarm> pendingAlarms = new ArrayList<>(PENDING_ALARMS.values());
+			pendingAlarms.sort((o1, o2) -> o1.getStartTime().compareTo(o2.getStartTime()));
+			String dateFormat = DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEHHmm");
+			for (Alarm alarm : pendingAlarms) {
+				DateFormat.format(dateFormat, alarm.getStartTime());
+				builder.append(getString(R.string.notification_text_alarm, alarm.getName(), DateFormat.format(dateFormat, alarm.getStartTime())));
 			}
-			return getString(R.string.notification_text_alarm, builder.toString());
+			// delete final linebreak
+			builder.deleteCharAt(builder.length() - 1);
+			return builder.toString();
 		}
 		else {
 			return getString(R.string.notification_text_no_alarm);
