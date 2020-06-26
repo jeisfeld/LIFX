@@ -62,20 +62,20 @@ public class MultiZoneLight extends Light {
 	/**
 	 * Constructor including version information.
 	 *
-	 * @param targetAddress The target address.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param sourceId The sourceId.
-	 * @param vendor The vendor.
-	 * @param product The product.
-	 * @param version The version.
-	 * @param label The label.
-	 * @param zoneCount The number of zones.
+	 * @param targetAddress          The target address.
+	 * @param inetAddress            The internet address.
+	 * @param port                   The port.
+	 * @param sourceId               The sourceId.
+	 * @param vendor                 The vendor.
+	 * @param product                The product.
+	 * @param version                The version.
+	 * @param label                  The label.
+	 * @param zoneCount              The number of zones.
 	 * @param firmwareBuildTimeStamp The firmware build timestamp
 	 */
 	public MultiZoneLight(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
-			final long firmwareBuildTimeStamp) {
+						  final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
+						  final long firmwareBuildTimeStamp) {
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 		mZoneCount = zoneCount;
 		setFirmwareBuildTime(firmwareBuildTimeStamp);
@@ -94,7 +94,7 @@ public class MultiZoneLight extends Light {
 	 * Get the light state.
 	 *
 	 * @param startIndex the start index.
-	 * @param endIndex the end index.
+	 * @param endIndex   the end index.
 	 * @return the light state.
 	 */
 	private MultizoneStateZone getMultizoneState(final byte startIndex, final byte endIndex) {
@@ -133,7 +133,7 @@ public class MultiZoneLight extends Light {
 	 * Get the colors of a range of zones.
 	 *
 	 * @param startIndex The index of the start zone.
-	 * @param endIndex The index of the end zone.
+	 * @param endIndex   The index of the end zone.
 	 * @return The colors of these zones.
 	 */
 	public final List<Color> getColors(final byte startIndex, final byte endIndex) {
@@ -189,11 +189,11 @@ public class MultiZoneLight extends Light {
 	 * Set the color of a certain range.
 	 *
 	 * @param startIndex the start index.
-	 * @param endIndex the end index.
-	 * @param color the target color.
-	 * @param duration the duration of power change in millis.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @param apply flag indicating if the change should apply.
+	 * @param endIndex   the end index.
+	 * @param color      the target color.
+	 * @param duration   the duration of power change in millis.
+	 * @param wait       flag indicating if the method should return only after the final color is reached.
+	 * @param apply      flag indicating if the change should apply.
 	 * @throws IOException Connection issues
 	 */
 	public void setColor(final byte startIndex, final byte endIndex, final Color color, final int duration, final boolean wait, final boolean apply)
@@ -204,9 +204,9 @@ public class MultiZoneLight extends Light {
 	/**
 	 * Set the colors of the multizone light.
 	 *
-	 * @param colors the target colors intermediate colors will be interpolated.
+	 * @param colors   the target colors intermediate colors will be interpolated.
 	 * @param duration the duration of power change in millis.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param wait     flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setColors(final MultizoneColors colors, final int duration, final boolean wait) throws IOException {
@@ -260,7 +260,7 @@ public class MultiZoneLight extends Light {
 	 * Set the multizone effect.
 	 *
 	 * @param effectInfo The effect info.
-	 * @param duration the duration of the effect in milliseconds
+	 * @param duration   the duration of the effect in milliseconds
 	 * @throws IOException Connection issues
 	 */
 	public final void setEffect(final MultizoneEffectInfo effectInfo, final long duration) throws IOException {
@@ -286,7 +286,7 @@ public class MultiZoneLight extends Light {
 	 * Create an animation rolling colors cyclically along the stripe.
 	 *
 	 * @param duration The duration of one rolling cycle. Negative values roll backwards.
-	 * @param colors The colors.
+	 * @param colors   The colors.
 	 * @return The animation thread.
 	 */
 	public final AnimationThread rollingAnimation(final int duration, final MultizoneColors colors) {
@@ -329,7 +329,7 @@ public class MultiZoneLight extends Light {
 		/**
 		 * Create an animation thread.
 		 *
-		 * @param light the multizone light.
+		 * @param light      the multizone light.
 		 * @param definition The rules for the animation.
 		 */
 		private AnimationThread(final MultiZoneLight light, final AnimationDefinition definition) {
@@ -345,7 +345,7 @@ public class MultiZoneLight extends Light {
 		/**
 		 * Set the color that the lamp should get after finishing the cycle.
 		 *
-		 * @param endColors The end colors. List of length 0 turns power off. Null keeps the current color.
+		 * @param endColors         The end colors. List of length 0 turns power off. Null keeps the current color.
 		 * @param endTransitionTime The transition time to the end color.
 		 * @return The updated animation thread.
 		 */
@@ -360,6 +360,9 @@ public class MultiZoneLight extends Light {
 			int count = 0;
 			try {
 				storeDeviceRegistry();
+				if (mDefinition.waitForPreviousAnimationEnd()) {
+					waitForPreviousAnimationEnd();
+				}
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {

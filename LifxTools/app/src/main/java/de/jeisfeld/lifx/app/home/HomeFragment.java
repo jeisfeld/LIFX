@@ -25,7 +25,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.ImageUtil;
@@ -38,6 +37,14 @@ import de.jeisfeld.lifx.lan.type.Color;
  */
 public class HomeFragment extends ListFragment {
 	/**
+	 * The intent of the broadcast for stopping an animation.
+	 */
+	public static final String EXTRA_ANIMATION_STOP_INTENT = "de.jeisfeld.lifx.ANIMATION_STOP_INTENT";
+	/**
+	 * Key for the broadcast data giving MAC of stopped animation.
+	 */
+	public static final String EXTRA_ANIMATION_STOP_MAC = "de.jeisfeld.lifx.ANIMATION_STOP_MAC";
+	/**
 	 * Executor service for tasks run while the fragment is active.
 	 */
 	private ScheduledExecutorService mExecutor;
@@ -49,6 +56,18 @@ public class HomeFragment extends ListFragment {
 	 * The adapter used.
 	 */
 	private DeviceAdapter mAdapter;
+
+	/**
+	 * Send broadcast to home fragment informing about the end of an animation.
+	 *
+	 * @param context The context.
+	 * @param mac     The MAC for which the animation ended.
+	 */
+	public static void sendBroadcastStopAnimation(final Context context, final String mac) {
+		Intent intent = new Intent(EXTRA_ANIMATION_STOP_INTENT);
+		intent.putExtra(EXTRA_ANIMATION_STOP_MAC, mac);
+		context.sendBroadcast(intent);
+	}
 
 	@Override
 	public final View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
@@ -73,7 +92,7 @@ public class HomeFragment extends ListFragment {
 		mReceiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(final Context context, final Intent intent) {
-				String mac = intent.getStringExtra(LifxAnimationService.EXTRA_ANIMATION_STOP_MAC);
+				String mac = intent.getStringExtra(EXTRA_ANIMATION_STOP_MAC);
 				DeviceViewModel viewModel = mAdapter.getViewModel(mac);
 				if (viewModel instanceof LightViewModel) {
 					((LightViewModel) viewModel).mAnimationStatus.setValue(false);
@@ -86,7 +105,7 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
-		requireActivity().registerReceiver(mReceiver, new IntentFilter(LifxAnimationService.EXTRA_ANIMATION_STOP_INTENT));
+		requireActivity().registerReceiver(mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT));
 
 		mExecutor = Executors.newScheduledThreadPool(1);
 		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0) {
@@ -108,7 +127,7 @@ public class HomeFragment extends ListFragment {
 	/**
 	 * Prepare the color pickers shown in landscape view.
 	 *
-	 * @param layoutColorPicker The color picker layout.
+	 * @param layoutColorPicker               The color picker layout.
 	 * @param layoutBrightnessColorTempPicker The brightness/contrast picker layout.
 	 */
 	private void prepareColorPickers(final ConstraintLayout layoutColorPicker, final ConstraintLayout layoutBrightnessColorTempPicker) {
@@ -179,8 +198,7 @@ public class HomeFragment extends ListFragment {
 	public final void onActivityResult(final int requestCode, final int resultCode, final Intent intent) {
 		super.onActivityResult(requestCode, resultCode, intent);
 		if (resultCode == Activity.RESULT_OK) {
-			switch (requestCode) {
-			case DeviceAdapter.REQUESTCODE_PICK_IMAGE:
+			if (requestCode == DeviceAdapter.REQUESTCODE_PICK_IMAGE) {
 				try {
 					if (getActivity() == null) {
 						return;
@@ -194,10 +212,6 @@ public class HomeFragment extends ListFragment {
 					Log.e(Application.TAG, "Exception while retrieving bitmap", e);
 					e.printStackTrace();
 				}
-				break;
-			default:
-				// nothing to do.
-				break;
 			}
 		}
 	}

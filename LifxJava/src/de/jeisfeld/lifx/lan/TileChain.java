@@ -410,6 +410,9 @@ public class TileChain extends Light implements Serializable {
 			int count = 0;
 			try {
 				storeDeviceRegistry();
+				if (mDefinition.waitForPreviousAnimationEnd()) {
+					waitForPreviousAnimationEnd();
+				}
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {

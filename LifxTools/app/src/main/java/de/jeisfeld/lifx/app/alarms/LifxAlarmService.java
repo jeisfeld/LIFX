@@ -212,7 +212,6 @@ public class LifxAlarmService extends Service {
 		for (AnimationThread animationThread : getAnimationThreads(alarm, alarmDate)) {
 			animationThread.start();
 		}
-		Logger.info("Started Alarm " + alarm.getName());
 
 		startNotification();
 		startRunningNotification(alarm);
@@ -229,10 +228,6 @@ public class LifxAlarmService extends Service {
 		final WakeLock wakeLock = acquireWakelock(alarm);
 
 		final List<LightSteps> lightStepsList = alarm.getLightSteps();
-		for (LightSteps lightSteps : lightStepsList) {
-			lightSteps.getLight().endAnimation(false);
-		}
-
 		final List<AnimationThread> animationThreads = new ArrayList<>();
 		final List<Light> animatedLights = new ArrayList<>();
 
@@ -248,13 +243,13 @@ public class LifxAlarmService extends Service {
 					.setAnimationCallback(new AnimationCallback() {
 						@Override
 						public void onException(final IOException e) {
-							Logger.info("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
+							Logger.debug("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
 							updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
 						}
 
 						@Override
 						public void onAnimationEnd(final boolean isInterrupted) {
-							Logger.info("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
+							Logger.debug("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
 							updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
 						}
 					});
@@ -304,6 +299,11 @@ public class LifxAlarmService extends Service {
 				default:
 					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
 				}
+			}
+
+			@Override
+			public boolean waitForPreviousAnimationEnd() {
+				return true;
 			}
 		};
 
@@ -486,7 +486,7 @@ public class LifxAlarmService extends Service {
 			animatedLights.remove(light);
 			isLastLight = animatedLights.size() == 0;
 		}
-		Logger.info("LifxAlarmService end (" + alarm.getName() + "," + light.getLabel() + ") (" + animatedLights.size() + ")");
+		Logger.debug("LifxAlarmService end (" + alarm.getName() + "," + light.getLabel() + ") (" + animatedLights.size() + ")");
 
 		if (isLastLight) {
 			if (wakeLock != null) {
@@ -494,7 +494,7 @@ public class LifxAlarmService extends Service {
 			}
 			synchronized (ANIMATED_ALARMS) {
 				ANIMATED_ALARMS.remove((Integer) alarm.getId());
-				Logger.info("LifxAlarmService end (" + ANIMATED_ALARMS.size() + "," + PENDING_ALARMS.size() + ")");
+				Logger.debug("LifxAlarmService end (" + ANIMATED_ALARMS.size() + "," + PENDING_ALARMS.size() + ")");
 				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
 					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
 					stopService(serviceIntent);

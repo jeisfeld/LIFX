@@ -1,5 +1,6 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -19,6 +20,7 @@ import java.util.Map;
 import androidx.core.app.NotificationCompat;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.home.HomeFragment;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
@@ -52,14 +54,6 @@ public class LifxAnimationService extends Service {
 	 * Key for the device Label within the intent.
 	 */
 	public static final String EXTRA_DEVICE_LABEL = "de.jeisfeld.lifx.DEVICE_LABEL";
-	/**
-	 * The intent of the broadcast for stopping an animation.
-	 */
-	public static final String EXTRA_ANIMATION_STOP_INTENT = "de.jeisfeld.lifx.ANIMATION_STOP_INTENT";
-	/**
-	 * Key for the broadcast data giving MAC of stopped animation.
-	 */
-	public static final String EXTRA_ANIMATION_STOP_MAC = "de.jeisfeld.lifx.ANIMATION_STOP_MAC";
 	/**
 	 * Map from MACs to Lights for all lights with running animations.
 	 */
@@ -149,6 +143,7 @@ public class LifxAnimationService extends Service {
 							catch (IOException e) {
 								updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 							}
+							//noinspection InfiniteLoopStatement
 							while (true) {
 								try {
 									Thread.sleep(60000); // MAGIC_NUMBER
@@ -191,6 +186,7 @@ public class LifxAnimationService extends Service {
 	 * @param device The device.
 	 * @return The wakelock.
 	 */
+	@SuppressLint("WakelockTimeout")
 	private WakeLock acquireWakelock(final Device device) {
 		if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_use_wakelock, true)) {
 			PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -202,17 +198,6 @@ public class LifxAnimationService extends Service {
 		else {
 			return null;
 		}
-	}
-
-	/**
-	 * Send broadcast informing about the end of an animation.
-	 *
-	 * @param mac The MAC for which the animation ended.
-	 */
-	public void sendBroadcastStopAnimation(final String mac) {
-		Intent intent = new Intent(EXTRA_ANIMATION_STOP_INTENT);
-		intent.putExtra(EXTRA_ANIMATION_STOP_MAC, mac);
-		sendBroadcast(intent);
 	}
 
 	/**
@@ -267,7 +252,7 @@ public class LifxAnimationService extends Service {
 		if (wakeLock != null) {
 			wakeLock.release();
 		}
-		sendBroadcastStopAnimation(mac);
+		HomeFragment.sendBroadcastStopAnimation(this, mac);
 		final String label = ANIMATED_LIGHT_LABELS.get(mac);
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(mac);

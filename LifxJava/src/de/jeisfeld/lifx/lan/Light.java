@@ -40,7 +40,7 @@ public class Light extends Device implements Serializable {
 	/**
 	 * The waiting times before retry after error (increasing delays for repeated errors).
 	 */
-	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[] {1000, 2000, 5000, 10000, 10000, 10000};
+	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[]{1000, 2000, 5000, 10000, 10000, 10000};
 	/**
 	 * The animation thread.
 	 */
@@ -60,16 +60,16 @@ public class Light extends Device implements Serializable {
 	 * Constructor including version information.
 	 *
 	 * @param targetAddress The target address.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param sourceId The sourceId.
-	 * @param vendor The vendor.
-	 * @param product The product.
-	 * @param version The version.
-	 * @param label The label.
+	 * @param inetAddress   The internet address.
+	 * @param port          The port.
+	 * @param sourceId      The sourceId.
+	 * @param vendor        The vendor.
+	 * @param product       The product.
+	 * @param version       The version.
+	 * @param label         The label.
 	 */
 	public Light(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label) {
+				 final Vendor vendor, final Product product, final int version, final String label) {
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 	}
 
@@ -144,9 +144,9 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Set the power.
 	 *
-	 * @param status true for switching on, false for switching off
+	 * @param status   true for switching on, false for switching off
 	 * @param duration the duration of power change in millis.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param wait     flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setPower(final boolean status, final int duration, final boolean wait) throws IOException {
@@ -164,9 +164,9 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Set the color.
 	 *
-	 * @param color the target color.
+	 * @param color    the target color.
 	 * @param duration the duration of power change in millis.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param wait     flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setColor(final Color color, final int duration, final boolean wait) throws IOException {
@@ -195,17 +195,17 @@ public class Light extends Device implements Serializable {
 	 * Set a waveform.
 	 *
 	 * @param isTransient the transient flag indicating if the color should finally return to prior value.
-	 * @param color The target color.
-	 * @param period the cycle period.
-	 * @param cycles the number of cycles.
-	 * @param waveform the waveform.
-	 * @param skewRatio the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and Triangle this
-	 *            is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param color       The target color.
+	 * @param period      the cycle period.
+	 * @param cycles      the number of cycles.
+	 * @param waveform    the waveform.
+	 * @param skewRatio   the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and Triangle this
+	 *                    is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
+	 * @param wait        flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final boolean isTransient, final Color color, final int period, final double cycles,
-			final Waveform waveform, final double skewRatio, final boolean wait) throws IOException {
+							final Waveform waveform, final double skewRatio, final boolean wait) throws IOException {
 		float floatCycles = (float) Math.max(0, Math.min(Float.MAX_VALUE, cycles));
 		getConnection()
 				.requestWithResponse(
@@ -225,24 +225,24 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Set a waveform.
 	 *
-	 * @param color The target color.
-	 * @param period the cycle period.
-	 * @param cycles the number of cycles. 0 for eternal run without waiting. Positive number for limited run with waiting.
+	 * @param color    The target color.
+	 * @param period   the cycle period.
+	 * @param cycles   the number of cycles. 0 for eternal run without waiting. Positive number for limited run with waiting.
 	 * @param waveform the waveform.
 	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final Color color, final int period, final int cycles,
-			final Waveform waveform) throws IOException {
+							final Waveform waveform) throws IOException {
 		setWaveform(true, color, period, cycles <= 0 ? Float.MAX_VALUE : cycles, waveform, 0.5, cycles > 0); // MAGIC_NUMBER
 	}
 
 	/**
 	 * Set a waveform, transitioning once.
 	 *
-	 * @param color The target color.
-	 * @param period the cycle period.
+	 * @param color    The target color.
+	 * @param period   the cycle period.
 	 * @param waveform the waveform.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param wait     flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final Color color, final int period, final Waveform waveform, final boolean wait) throws IOException {
@@ -252,22 +252,22 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Set a waveform for change of only some of the parameters hue, saturation, brightness, color temperature.
 	 *
-	 * @param isTransient the transient flag indicating if the color should finally return to prior value.
-	 * @param hue The hue value from 0 to 360. May be null.
-	 * @param saturation The saturation value from 0 to 1. May be null.
-	 * @param brightness The brightness value from 0 to 1. May be null.
+	 * @param isTransient      the transient flag indicating if the color should finally return to prior value.
+	 * @param hue              The hue value from 0 to 360. May be null.
+	 * @param saturation       The saturation value from 0 to 1. May be null.
+	 * @param brightness       The brightness value from 0 to 1. May be null.
 	 * @param colorTemperature The color temperature value in Kelvin. May be null.
-	 * @param period the cycle period.
-	 * @param cycles the number of cycles.
-	 * @param skewRatio the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and
-	 *            Triangle this is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
-	 * @param waveform the waveform.
+	 * @param period           the cycle period.
+	 * @param cycles           the number of cycles.
+	 * @param skewRatio        the skew ratio between 0 and 1. For Pulse, this is the time in the period when the pulse goes on. For Sine and
+	 *                         Triangle this is the time in the period where the target color is reached. For Saw and Half-sine this has no effect.
+	 * @param wait             flag indicating if the method should return only after the final color is reached.
+	 * @param waveform         the waveform.
 	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final boolean isTransient, final Double hue, final Double saturation, final Double brightness, // SUPPRESS_CHECKSTYLE
-			final Integer colorTemperature, final int period, final double cycles, final double skewRatio,
-			final Waveform waveform, final boolean wait) throws IOException {
+							final Integer colorTemperature, final int period, final double cycles, final double skewRatio,
+							final Waveform waveform, final boolean wait) throws IOException {
 		float floatCycles = (float) Math.max(0, Math.min(Float.MAX_VALUE, cycles));
 		short hueValue = TypeUtil.toShort((hue == null ? 180 : hue) / 360); // MAGIC_NUMBER
 		short saturationValue = TypeUtil.toShort(saturation == null ? 1 : saturation);
@@ -302,7 +302,7 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Wait until the color fulfils a certain condition.
 	 *
-	 * @param filter The filtering condition.
+	 * @param filter  The filtering condition.
 	 * @param timeout Max waiting time in millis. No timeout in case of negative values.
 	 */
 	public void waitForColor(final ColorFilter filter, final long timeout) {
@@ -324,7 +324,7 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Wait until the color matches a certain color.
 	 *
-	 * @param color The matching color.
+	 * @param color   The matching color.
 	 * @param timeout Max waiting time in millis. No timeout in case of negative values.
 	 */
 	public void waitForColor(final Color color, final long timeout) {
@@ -441,7 +441,7 @@ public class Light extends Device implements Serializable {
 		/**
 		 * Create a cycle thread.
 		 *
-		 * @param light the light.
+		 * @param light  the light.
 		 * @param colors The colors of the cycle.
 		 */
 		private CycleThread(final Light light, final Color... colors) {
@@ -572,7 +572,7 @@ public class Light extends Device implements Serializable {
 		/**
 		 * Create an animation thread.
 		 *
-		 * @param light the light.
+		 * @param light      the light.
 		 * @param definition The rules for the animation.
 		 */
 		protected AnimationThread(final Light light, final AnimationDefinition definition) {
@@ -592,7 +592,7 @@ public class Light extends Device implements Serializable {
 		/**
 		 * Set the color that the lamp should get after finishing the cycle.
 		 *
-		 * @param endColor The end color. Brightness 0 switches power off. Null keeps the current color.
+		 * @param endColor          The end color. Brightness 0 switches power off. Null keeps the current color.
 		 * @param endTransitionTime The transition time to the end color.
 		 * @return The updated animation thread.
 		 */
@@ -630,6 +630,9 @@ public class Light extends Device implements Serializable {
 			int count = 0;
 			try {
 				storeDeviceRegistry();
+				if (mDefinition.waitForPreviousAnimationEnd()) {
+					waitForPreviousAnimationEnd();
+				}
 				boolean isInterrupted = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColor(count) != null) {
@@ -751,6 +754,10 @@ public class Light extends Device implements Serializable {
 		 * The light.
 		 */
 		private final Light mLight;
+		/**
+		 * The previous animation thread.
+		 */
+		private BaseAnimationThread mPreviousAnimationThread = null;
 
 		/**
 		 * Constructor.
@@ -774,7 +781,8 @@ public class Light extends Device implements Serializable {
 		public final void start() {
 			synchronized (mLight) {
 				if (mLight.mAnimationThread != null) {
-					mLight.mAnimationThread.end(false);
+					mPreviousAnimationThread = mLight.mAnimationThread;
+					mLight.endAnimation(false);
 				}
 				mLight.mAnimationThread = this;
 			}
@@ -791,6 +799,21 @@ public class Light extends Device implements Serializable {
 			if (waitForEnd) {
 				try {
 					join();
+				}
+				catch (InterruptedException e) {
+					// ignore
+				}
+			}
+		}
+
+		/**
+		 * Wait for the end of the previous animation thread.
+		 */
+		protected void waitForPreviousAnimationEnd() {
+			if (mPreviousAnimationThread != null) {
+				mPreviousAnimationThread.interrupt();
+				try {
+					mPreviousAnimationThread.join();
 				}
 				catch (InterruptedException e) {
 					// ignore
@@ -827,6 +850,15 @@ public class Light extends Device implements Serializable {
 		 */
 		default Date getStartTime(final int n) {
 			return null;
+		}
+
+		/**
+		 * Flag indicating if animation should wait until end of the previous animation.
+		 *
+		 * @return false by default
+		 */
+		default boolean waitForPreviousAnimationEnd() {
+			return false;
 		}
 	}
 

@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.lan.type;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,6 +7,8 @@ import java.util.List;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.TileInfo.Rotation;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
+
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 /**
  * Class to hold tile chain colors.
@@ -22,6 +22,7 @@ public abstract class TileChainColors implements Serializable {
 	/**
 	 * The colors used for switching the tile chain off.
 	 */
+	@SuppressWarnings("StaticInitializerReferencesSubClass")
 	public static final TileChainColors OFF = new TileChainColors.Fixed(Color.OFF);
 
 	/**

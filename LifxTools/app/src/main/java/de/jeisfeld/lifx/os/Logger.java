@@ -71,6 +71,15 @@ public final class Logger {
 	}
 
 	/**
+	 * Log a message.
+	 *
+	 * @param message the message
+	 */
+	public static void debug(final String message) {
+		Log.d(TAG, message);
+	}
+
+	/**
 	 * Log a message temporarily.
 	 *
 	 * @param message the message

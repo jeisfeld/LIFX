@@ -1,13 +1,13 @@
 package de.jeisfeld.lifx.lan.type;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import de.jeisfeld.lifx.lan.util.TypeUtil;
+
+import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
 
 /**
  * Class to hold multizone colors.
@@ -21,6 +21,7 @@ public abstract class MultizoneColors implements Serializable {
 	/**
 	 * The colors used for switching the multizone device off.
 	 */
+	@SuppressWarnings("StaticInitializerReferencesSubClass")
 	public static final MultizoneColors OFF = new MultizoneColors.Fixed(Color.OFF);
 
 	/**
@@ -337,7 +338,7 @@ public abstract class MultizoneColors implements Serializable {
 
 		@Override
 		public final Color getColor(final int zoneIndex, final int zoneCount) {
-			return mColors.get((zoneIndex % mColors.size() + zoneCount) % mColors.size());
+			return mColors.get((zoneIndex % mColors.size() + mColors.size()) % mColors.size());
 		}
 
 		@Override

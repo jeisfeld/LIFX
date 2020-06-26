@@ -1,14 +1,15 @@
 package de.jeisfeld.lifx.app.home;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
+import android.util.Log;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.AsyncTask;
-import android.util.Log;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -159,7 +160,7 @@ public class LightViewModel extends DeviceViewModel {
 	 */
 	public void updateColor(final Color color, final boolean isImmediate) {
 		mColor.postValue(color);
-
+		stopAnimationOrAlarm();
 		synchronized (mRunningSetColorTasks) {
 			mRunningSetColorTasks.add(new SetColorTask(this, color, isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
@@ -208,6 +209,14 @@ public class LightViewModel extends DeviceViewModel {
 		}
 		mAnimationStatus.setValue(false);
 		LifxAnimationService.stopAnimationForMac(context, getLight().getTargetAddress());
+	}
+
+	/**
+	 * Stop the animation or any alarm on this device.
+	 */
+	protected void stopAnimationOrAlarm() {
+		mAnimationStatus.setValue(false);
+		getLight().endAnimation(false);
 	}
 
 	/**

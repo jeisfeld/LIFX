@@ -1,12 +1,13 @@
 package de.jeisfeld.lifx.app.home;
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -119,6 +120,7 @@ public class MultizoneViewModel extends LightViewModel {
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate) {
 		updateStoredColors(colors, brightnessFactor);
 
+		stopAnimationOrAlarm();
 		synchronized (mRunningSetColorTasks) {
 			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
