@@ -145,7 +145,12 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 
 	}
 
-	@Override
+	/**
+	 * Get the list of known devices.
+	 *
+	 * @param onlyFlagged Get only devices which are flagged.
+	 * @return The list of known devices.
+	 */
 	public List<Device> getDevices(final boolean onlyFlagged) {
 		List<Device> result = new ArrayList<>();
 		for (int deviceId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids)) {
@@ -158,14 +163,24 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	}
 
 	@Override
-	public Device getDeviceById(final int id) {
-		return mDevices.get(id);
+	public List<Device> getDevices() {
+		return getDevices(false);
 	}
 
 	@Override
 	public Device getDeviceByMac(final String mac) {
 		Integer deviceId = mMacToIdMap.get(mac);
 		return deviceId == null ? null : getDeviceById(deviceId);
+	}
+
+	/**
+	 * Get a known device by its storage id.
+	 *
+	 * @param id the storage id
+	 * @return The device
+	 */
+	public Device getDeviceById(final int id) {
+		return mDevices.get(id);
 	}
 
 	/**

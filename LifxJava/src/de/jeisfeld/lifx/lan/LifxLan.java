@@ -9,13 +9,14 @@ import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
 import de.jeisfeld.lifx.lan.message.GetService;
 import de.jeisfeld.lifx.lan.message.ResponseMessage;
 import de.jeisfeld.lifx.lan.message.StateService;
+import de.jeisfeld.lifx.os.DeviceRegistryInterface;
 import de.jeisfeld.lifx.os.Logger;
 import de.jeisfeld.lifx.os.OsTools;
 
 /**
  * Handler for managing LIFX via LAN API.
  */
-public final class LifxLan {
+public final class LifxLan implements DeviceRegistryInterface {
 	/**
 	 * The singleton instance.
 	 */
@@ -52,14 +53,37 @@ public final class LifxLan {
 		mSourceId = OsTools.getPid();
 	}
 
+	@Override
+	public List<Device> getDevices() {
+		try {
+			return getDevices(mDevices == null || mDevices.isEmpty());
+		}
+		catch (IOException e) {
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public Device getDeviceByMac(final String mac) {
+		for (Device device : getDevices()) {
+			if (device.getTargetAddress().equals(mac)) {
+				return device;
+			}
+		}
+		return null;
+	}
+
 	/**
-	 * Get all devices in the LAN.
+	 * Get all devices.
 	 *
+	 * @param search flag indicating if devices should be newly searched or only already found devices should be shown.
 	 * @return The list of found devices.
 	 * @throws IOException Exception while getting information
 	 */
-	public List<Device> getDevices() throws IOException {
-		retrieveDeviceInformation();
+	public List<Device> getDevices(final boolean search) throws IOException {
+		if (search) {
+			retrieveDeviceInformation();
+		}
 		return mDevices;
 	}
 
@@ -86,12 +110,7 @@ public final class LifxLan {
 				return light;
 			}
 		}
-		DeviceFilter lightFilter = new DeviceFilter() {
-			@Override
-			public boolean matches(final Device device) {
-				return device.getProduct().isLight() && filter.matches(device);
-			}
-		};
+		DeviceFilter lightFilter = device -> device.getProduct().isLight() && filter.matches(device);
 		try {
 			List<Device> devices = retrieveDeviceInformation(new RetryPolicy() {
 				@Override
@@ -205,8 +224,8 @@ public final class LifxLan {
 			mLights = new ArrayList<>();
 		}
 		else {
-			mDevices.removeIf(device -> filter.matches(device));
-			mLights.removeIf(device -> filter.matches(device));
+			mDevices.removeIf(filter::matches);
+			mLights.removeIf(filter::matches);
 		}
 		List<Device> foundDevices = new ArrayList<>();
 		for (ResponseMessage response : responses) {
@@ -219,5 +238,4 @@ public final class LifxLan {
 		}
 		return foundDevices;
 	}
-
 }

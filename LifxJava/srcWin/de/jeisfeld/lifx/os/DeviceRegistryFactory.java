@@ -1,8 +1,6 @@
 package de.jeisfeld.lifx.os;
 
-import java.util.List;
-
-import de.jeisfeld.lifx.lan.Device;
+import de.jeisfeld.lifx.lan.LifxLan;
 
 /**
  * A factory for a device registry.
@@ -14,26 +12,7 @@ public final class DeviceRegistryFactory {
 	 * @return null
 	 */
 	public static DeviceRegistryInterface getDeviceRegistry() {
-		return new DeviceRegistryInterface() {
-
-			@Override
-			public List<Device> getDevices(final boolean onlyFlagged) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public Device getDeviceByMac(final String mac) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-
-			@Override
-			public Device getDeviceById(final int id) {
-				// TODO Auto-generated method stub
-				return null;
-			}
-		};
+		return LifxLan.getInstance();
 	}
 
 	/**
