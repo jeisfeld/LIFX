@@ -16,6 +16,13 @@
 
 package de.jeisfeld.lifx.app.view;
 
+import android.content.Context;
+import android.database.Cursor;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
+
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener;
 import com.skydoves.colorpickerview.listeners.ColorListener;
@@ -24,17 +31,10 @@ import com.skydoves.colorpickerview.preference.ColorPickerPreferenceManager;
 import com.skydoves.colorpickerview.sliders.AlphaSlideBar;
 import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 
-import android.content.Context;
-import android.database.Cursor;
-import android.graphics.drawable.Drawable;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
 import androidx.appcompat.app.AlertDialog;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.DeviceAdapter;
 import de.jeisfeld.lifx.app.home.LightViewModel;
-import de.jeisfeld.lifx.app.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
@@ -57,7 +57,7 @@ public class ColorPickerDialog extends AlertDialog {
 	 * Update a color picker view with color from a light.
 	 *
 	 * @param colorPickerView The color picker view to be updated.
-	 * @param color the color from which to update.
+	 * @param color           the color from which to update.
 	 */
 	public static void updateColorPickerFromLight(final ColorPickerView colorPickerView, final Color color) {
 		if (color != null) {
@@ -100,7 +100,7 @@ public class ColorPickerDialog extends AlertDialog {
 	 * Update a brightness/colorTemp view with color from a light.
 	 *
 	 * @param colorPickerView The brightness/colorTemp view to be updated.
-	 * @param color The color for update.
+	 * @param color           The color for update.
 	 */
 	public static void updateBrightnessColorTempFromLight(final ColorPickerView colorPickerView, final Color color) {
 		if (color != null) {
@@ -114,7 +114,7 @@ public class ColorPickerDialog extends AlertDialog {
 	/**
 	 * Prepare the color picker.
 	 *
-	 * @param parentView The parent view.
+	 * @param parentView      The parent view.
 	 * @param colorPickerView The view of the color picker.
 	 */
 	public static void prepareColorPickerView(final View parentView, final ColorPickerView colorPickerView) {
@@ -148,7 +148,7 @@ public class ColorPickerDialog extends AlertDialog {
 		/**
 		 * Constructor.
 		 *
-		 * @param context The context
+		 * @param context          The context
 		 * @param layoutResourceId The layout resource
 		 */
 		public Builder(final Context context, final int layoutResourceId) {
@@ -166,18 +166,8 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @return {@link Builder}.
 		 */
 		public Builder initializeFromLight(final LightViewModel model) {
-			Color color;
-			if (model instanceof MultizoneViewModel) {
-				Double brightness = ((MultizoneViewModel) model).getRelativeBrightness().getValue();
-				Color baseColor = model.getColor().getValue();
-				color = (baseColor == null ? Color.WHITE : baseColor).withBrightness(brightness == null ? 1 : brightness);
-			}
-			else {
-				color = model.getColor().getValue();
-			}
-
 			mColorPickerView.getViewTreeObserver()
-					.addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, color));
+					.addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model.getColor().getValue()));
 			return this;
 		}
 
@@ -214,7 +204,7 @@ public class ColorPickerDialog extends AlertDialog {
 		/**
 		 * sets positive button with {@link ColorPickerViewListener} on the {@link ColorPickerDialog}.
 		 *
-		 * @param textId string resource integer id.
+		 * @param textId        string resource integer id.
 		 * @param colorListener {@link ColorListener}.
 		 * @return {@link Builder}.
 		 */
@@ -226,7 +216,7 @@ public class ColorPickerDialog extends AlertDialog {
 		/**
 		 * sets positive button with {@link ColorPickerViewListener} on the {@link ColorPickerDialog}.
 		 *
-		 * @param text string text value.
+		 * @param text          string text value.
 		 * @param colorListener {@link ColorListener}.
 		 * @return {@link Builder}.
 		 */

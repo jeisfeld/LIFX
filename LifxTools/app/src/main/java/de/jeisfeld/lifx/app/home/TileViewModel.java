@@ -127,6 +127,7 @@ public class TileViewModel extends LightViewModel {
 
 	@Override
 	public final void checkColor() {
+		super.checkColor();
 		new CheckTileChainColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 

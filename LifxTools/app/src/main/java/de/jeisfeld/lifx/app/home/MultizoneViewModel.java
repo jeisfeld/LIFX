@@ -142,6 +142,7 @@ public class MultizoneViewModel extends LightViewModel {
 
 	@Override
 	public final void checkColor() {
+		super.checkColor();
 		new CheckMultizoneColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
