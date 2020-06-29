@@ -185,6 +185,7 @@ public class AlarmConfigurationFragment extends Fragment {
 				imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
 				AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 				mAdapter.notifyDataSetChanged(mAlarm);
+				DialogUtil.displayToast(getContext(), mAlarm.getAlarmType().getToastResource());
 			});
 
 			((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setOnClickListener(v ->
@@ -222,6 +223,7 @@ public class AlarmConfigurationFragment extends Fragment {
 					mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
 							mAlarm.getSteps(), mAlarm.getAlarmType(), stopSequence);
 					mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+					DialogUtil.displayToast(getContext(), AlarmType.STOP_SEQUENCE.getToastResource());
 				}
 				navigate(this, mAlarm.getStopSequence().getId());
 			});

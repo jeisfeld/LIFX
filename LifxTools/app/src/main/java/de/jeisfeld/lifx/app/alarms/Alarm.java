@@ -727,32 +727,38 @@ public class Alarm {
 		/**
 		 * Standard alarm. Runs once and stops on the end.
 		 */
-		STANDARD(R.drawable.ic_alarmtype_standard),
+		STANDARD(R.drawable.ic_alarmtype_standard, R.string.toast_alarmtype_standard),
 		/**
 		 * Alarm having notification that waits until stopped manually.
 		 */
-		STOP_MANUALLY(R.drawable.ic_alarmtype_stopmanual),
+		STOP_MANUALLY(R.drawable.ic_alarmtype_stopmanual, R.string.toast_alarmtype_stopmanual),
 		/**
 		 * Alarm running cyclically until stopped manually.
 		 */
-		CYCLIC(R.drawable.ic_alarmtype_cyclic),
+		CYCLIC(R.drawable.ic_alarmtype_cyclic, R.string.toast_alarmtype_cyclic),
 		/**
 		 * Secondary alarm used as stop sequence after stopping an alarm.
 		 */
-		STOP_SEQUENCE(R.drawable.ic_alarm_stopsequence_off);
+		STOP_SEQUENCE(R.drawable.ic_alarm_stopsequence_off, R.string.toast_alarmtype_stopsequence);
 
 		/**
 		 * The button resource used for the alarm type.
 		 */
 		private final int mButtonResource;
+		/**
+		 * The toast resource used for the alarm type.
+		 */
+		private final int mToastResource;
 
 		/**
 		 * Constructor.
 		 *
 		 * @param buttonResource The button resource.
+		 * @param toastResource The toat resource.
 		 */
-		AlarmType(final int buttonResource) {
+		AlarmType(final int buttonResource, final int toastResource) {
 			mButtonResource = buttonResource;
+			mToastResource = toastResource;
 		}
 
 		/**
@@ -762,6 +768,15 @@ public class Alarm {
 		 */
 		public int getButtonResource() {
 			return mButtonResource;
+		}
+
+		/**
+		 * Get the toast resource.
+		 *
+		 * @return The toast resource.
+		 */
+		public int getToastResource() {
+			return mToastResource;
 		}
 
 		/**

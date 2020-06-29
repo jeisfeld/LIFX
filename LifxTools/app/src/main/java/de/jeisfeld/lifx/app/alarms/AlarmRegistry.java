@@ -87,9 +87,11 @@ public final class AlarmRegistry {
 		}
 		else {
 			Alarm parent = alarm.getParent();
-			Alarm newParent = new Alarm(parent.getId(), parent.isActive(), parent.getStartTime(), parent.getWeekDays(), parent.getName(),
-					parent.getSteps(), parent.getAlarmType(), newAlarm);
-			mAlarms.put(newParent.getId(), newParent);
+			if (parent != null) {
+				Alarm newParent = new Alarm(parent.getId(), parent.isActive(), parent.getStartTime(), parent.getWeekDays(), parent.getName(),
+						parent.getSteps(), parent.getAlarmType(), newAlarm);
+				mAlarms.put(newParent.getId(), newParent);
+			}
 		}
 		return newAlarm;
 	}

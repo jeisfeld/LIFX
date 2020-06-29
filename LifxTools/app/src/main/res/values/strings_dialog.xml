@@ -86,4 +86,10 @@
 
     <string name="toast_saved_color">Saved color “%1$s”.</string>
     <string name="toast_connection_failed">Connection to %1$s failed.</string>
+
+    <string name="toast_alarmtype_standard">Alarm ends automatically</string>
+    <string name="toast_alarmtype_stopmanual">Alarm waits for manual stop</string>
+    <string name="toast_alarmtype_cyclic">Alarm runs cyclically, until it is manually stopped</string>
+    <string name="toast_alarmtype_stopsequence">Configuration of the stop seqeuence that is executed after stopping the alarm</string>
+
 </resources>
