@@ -1,41 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ListPreference
         android:defaultValue="@string/pref_default_language"
         android:entries="@array/pref_list_titles_language"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false"
         android:entryValues="@array/pref_list_values_language"
         android:key="@string/key_pref_language"
-        android:title="@string/pref_title_language" />
+        android:title="@string/pref_title_language"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
     <ListPreference
         android:defaultValue="@string/pref_default_power_duration"
         android:entries="@array/pref_list_titles_power_duration"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false"
         android:entryValues="@array/pref_list_values_power_duration"
         android:key="@string/key_pref_power_duration"
-        android:title="@string/pref_title_power_duration" />
+        android:title="@string/pref_title_power_duration"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
     <ListPreference
         android:defaultValue="@string/pref_default_color_duration"
         android:entries="@array/pref_list_titles_color_duration"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false"
         android:entryValues="@array/pref_list_values_color_duration"
         android:key="@string/key_pref_color_duration"
-        android:title="@string/pref_title_color_duration" />
+        android:title="@string/pref_title_color_duration"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
     <ListPreference
         android:defaultValue="@string/pref_default_refresh_period"
         android:entries="@array/pref_list_titles_refresh_period"
-        app:useSimpleSummaryProvider="true"
-        app:iconSpaceReserved="false"
         android:entryValues="@array/pref_list_values_refresh_period"
         android:key="@string/key_pref_refresh_period"
-        android:title="@string/pref_title_refresh_period" />
+        android:title="@string/pref_title_refresh_period"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
     <CheckBoxPreference
         android:defaultValue="true"
-        app:iconSpaceReserved="false"
         android:key="@string/key_pref_use_wakelock"
-        android:title="@string/pref_title_use_wakelock" />
+        android:title="@string/pref_title_use_wakelock"
+        app:iconSpaceReserved="false" />
+    <Preference
+        android:key="@string/key_pref_dummy_export"
+        android:title="@string/pref_title_dummy_export"
+        app:iconSpaceReserved="false" />
+    <Preference
+        android:key="@string/key_pref_dummy_import"
+        android:title="@string/pref_title_dummy_import"
+        app:iconSpaceReserved="false" />
 </PreferenceScreen>

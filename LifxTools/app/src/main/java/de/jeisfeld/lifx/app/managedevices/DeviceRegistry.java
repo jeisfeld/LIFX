@@ -334,6 +334,13 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	}
 
 	/**
+	 * Cleanup the device registry, so that it is recreated next time.
+	 */
+	public static synchronized void cleanUp() {
+		DeviceRegistry.mInstance = null;
+	}
+
+	/**
 	 * Update the list of devices.
 	 *
 	 * @param callback Callback called in case of found devices.

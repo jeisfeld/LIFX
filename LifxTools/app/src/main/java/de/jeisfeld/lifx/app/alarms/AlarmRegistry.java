@@ -222,4 +222,12 @@ public final class AlarmRegistry {
 		}
 		return AlarmRegistry.mInstance;
 	}
+
+	/**
+	 * Cleanup the alarm registry, so that it is recreated next time.
+	 */
+	public static synchronized void cleanUp() {
+		AlarmRegistry.mInstance = null;
+	}
+
 }

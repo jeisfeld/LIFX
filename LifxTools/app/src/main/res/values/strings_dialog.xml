@@ -23,6 +23,13 @@
     <string name="title_did_not_save_empty_name">Missing Name</string>
     <string name="message_did_not_save_empty_name">Did not save - name was empty.</string>
 
+
+    <string name="title_dialog_export">Export of preferences</string>
+    <string name="message_dialog_export_overwrite">The preference export file %1$s is already existing. Do you want to overwrite it?</string>
+    <string name="title_dialog_import">Import of preferences</string>
+    <string name="message_dialog_import_missing_file">The preferences cannot be imported, because the preferences export file %1$s is missing</string>
+    <string name="message_dialog_import_overwrite">This will delete all existing settings (devices, stored colors, alarms) and replace them by the imported ones. Do you want to continue?</string>
+
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Start</string>
@@ -31,8 +38,8 @@
     <string name="button_rename">Rename</string>
     <string name="button_copy">Create copy</string>
     <string name="button_add_alarm">Add alarm</string>
-    <string name="button_add_alarm_step">Add step</string>
-    <string name="button_test_alarm">Test alarm configuration</string>
+    <string name="button_overwrite">Overwrite</string>
+    <string name="button_import">Import</string>
 
     <string name="label_alarm_active">Active</string>
     <string name="label_alarm_time">Time</string>
@@ -86,6 +93,11 @@
 
     <string name="toast_saved_color">Saved color “%1$s”.</string>
     <string name="toast_connection_failed">Connection to %1$s failed.</string>
+    <string name="toast_settings_exported">All settings have been exported to file %1$s</string>
+    <string name="toast_settings_export_canceled">The export of settings was canceled</string>
+    <string name="toast_settings_import_canceled">The import of settings was canceled</string>
+    <string name="toast_settings_import_failed">Error when importing settings: %1$s</string>
+    <string name="toast_settings_imported">All settings have been imported</string>
 
     <string name="toast_alarmtype_standard">Alarm ends automatically</string>
     <string name="toast_alarmtype_stopmanual">Alarm waits for manual stop</string>

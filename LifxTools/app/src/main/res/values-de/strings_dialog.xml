@@ -23,6 +23,12 @@
     <string name="title_did_not_save_empty_name">Fehlender Name</string>
     <string name="message_did_not_save_empty_name">Keine Speicherung - es wurde kein Name angegeben.</string>
 
+    <string name="title_dialog_export">Export der Einstellungen</string>
+    <string name="message_dialog_export_overwrite">Die Exportdatei %1$s existiert bereits. Wollen Sie sie überschreiben?</string>
+    <string name="title_dialog_import">Import der Einstellungen</string>
+    <string name="message_dialog_import_missing_file">Die Einstellungen können nicht importiert werden, da die Exportdatei %1$s nicht vorhanden ist.</string>
+    <string name="message_dialog_import_overwrite">Dies wird alle vorhandenen Einstellungen (Geräte, gespeicherte Farben, Alarme) löschen und durch die importierten Einstellungen ersetzen. Wollen Sie fortfahren?</string>
+
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Starten</string>
@@ -31,8 +37,8 @@
     <string name="button_rename">Umbenennen</string>
     <string name="button_copy">Kopie erstellen</string>
     <string name="button_add_alarm">Alarm hinzufügen</string>
-    <string name="button_add_alarm_step">Schritt hinzufügen</string>
-    <string name="button_test_alarm">Alarmkonfiguration testen</string>
+    <string name="button_overwrite">Überschreiben</string>
+    <string name="button_import">Importieren</string>
 
     <string name="label_alarm_active">Aktiv</string>
     <string name="label_alarm_time">Zeit</string>
@@ -86,6 +92,11 @@
 
     <string name="toast_saved_color">Farbe „%1$s“ wurde gespeichert.</string>
     <string name="toast_connection_failed">Verbindung zu %1$s fehlgeschlagen.</string>
+    <string name="toast_settings_exported">Die Einstellungen wurden in die Datei %1$s exportiert</string>
+    <string name="toast_settings_export_canceled">Der Export der Einstellungen wurde abgebrochen</string>
+    <string name="toast_settings_import_canceled">Der Import der Einstellungen wurde abgebrochen</string>
+    <string name="toast_settings_import_failed">Fehler beim Import der Einstellungen: %1$s</string>
+    <string name="toast_settings_imported">Die Einstellungen wurden importiert</string>
 
     <string name="toast_alarmtype_standard">Alarm endet automatisch</string>
     <string name="toast_alarmtype_stopmanual">Alarm wartet auf manuelle Beendigung</string>

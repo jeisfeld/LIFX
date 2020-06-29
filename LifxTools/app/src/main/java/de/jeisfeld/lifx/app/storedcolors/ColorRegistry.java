@@ -172,4 +172,12 @@ public final class ColorRegistry {
 		}
 		return ColorRegistry.mInstance;
 	}
+
+	/**
+	 * Cleanup the stored color registry, so that it is recreated next time.
+	 */
+	public static synchronized void cleanUp() {
+		ColorRegistry.mInstance = null;
+	}
+
 }
