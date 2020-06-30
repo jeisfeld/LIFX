@@ -7,8 +7,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.Html;
-import android.text.Spanned;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -211,16 +209,6 @@ public final class DialogUtil {
 		else {
 			return input.substring(0, 1).toUpperCase(Locale.getDefault()) + input.substring(1);
 		}
-	}
-
-	/**
-	 * Convert a html String into a text.
-	 *
-	 * @param html The html
-	 * @return the text
-	 */
-	public static Spanned fromHtml(final String html) {
-		return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
 	}
 
 	/**

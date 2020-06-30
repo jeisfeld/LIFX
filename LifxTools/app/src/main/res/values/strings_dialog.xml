@@ -10,6 +10,7 @@
     <string name="title_dialog_copy_alarm">Copy Alarm</string>
     <string name="title_dialog_change_alarm_name">Change Alarm Name</string>
     <string name="title_dialog_change_color_name">Change Color Name</string>
+    <string name="title_dialog_select_date_for_import">Select date of settings for import</string>
     <string name="message_dialog_new_alarm_name">New Alarm Name:</string>
     <string name="message_dialog_new_color_name">New Color Name:</string>
 
@@ -27,8 +28,10 @@
     <string name="title_dialog_export">Export of preferences</string>
     <string name="message_dialog_export_overwrite">The preference export file %1$s is already existing. Do you want to overwrite it?</string>
     <string name="title_dialog_import">Import of preferences</string>
-    <string name="message_dialog_import_missing_file">The preferences cannot be imported, because the preferences export file %1$s is missing</string>
+    <string name="message_dialog_import_missing_file">The preferences cannot be imported, because no preferences file was found at %1$s</string>
     <string name="message_dialog_import_overwrite">This will delete all existing settings (devices, stored colors, alarms) and replace them by the imported ones. Do you want to continue?</string>
+    <string name="title_dialog_delete_stored_settings">Delete stored settings</string>
+    <string name="message_dialog_delete_stored_settings">Do you really want to delete stored settings from %1$s?</string>
 
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>

@@ -10,6 +10,7 @@
     <string name="title_dialog_copy_alarm">Alarm kopieren</string>
     <string name="title_dialog_change_alarm_name">Alarmnamen ändern</string>
     <string name="title_dialog_change_color_name">Farbnamen ändern</string>
+    <string name="title_dialog_select_date_for_import">Wählen Sie das Datum der Einstellungen für den Import aus</string>
     <string name="message_dialog_new_alarm_name">Neuer Alarmname:</string>
     <string name="message_dialog_new_color_name">Neuer Farbname:</string>
 
@@ -26,8 +27,10 @@
     <string name="title_dialog_export">Export der Einstellungen</string>
     <string name="message_dialog_export_overwrite">Die Exportdatei %1$s existiert bereits. Wollen Sie sie überschreiben?</string>
     <string name="title_dialog_import">Import der Einstellungen</string>
-    <string name="message_dialog_import_missing_file">Die Einstellungen können nicht importiert werden, da die Exportdatei %1$s nicht vorhanden ist.</string>
+    <string name="message_dialog_import_missing_file">Die Einstellungen können nicht importiert werden, da keine Einstellungsdatei im Verzeichnis %1$s gefunden wurde.</string>
     <string name="message_dialog_import_overwrite">Dies wird alle vorhandenen Einstellungen (Geräte, gespeicherte Farben, Alarme) löschen und durch die importierten Einstellungen ersetzen. Wollen Sie fortfahren?</string>
+    <string name="title_dialog_delete_stored_settings">Gespeicherte Einstellungen</string>
+    <string name="message_dialog_delete_stored_settings">Wollen Sie gespeicherten Einstellungen vom %1$s wirklich löschen?</string>
 
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>

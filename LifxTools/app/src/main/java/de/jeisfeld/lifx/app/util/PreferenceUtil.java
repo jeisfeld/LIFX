@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 
 import androidx.preference.PreferenceManager;
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.app.alarms.AlarmReceiver;
 import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
@@ -95,6 +96,7 @@ public final class PreferenceUtil {
 		DeviceRegistry.cleanUp();
 		ColorRegistry.cleanUp();
 		AlarmRegistry.cleanUp();
+		AlarmReceiver.createAllAlarms();
 	}
 
 	/**

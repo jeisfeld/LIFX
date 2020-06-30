@@ -35,7 +35,7 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 	private static final String PARAM_LIST_OF_DEVICES = "listOfDevices";
 
 	/**
-	 * Display a dialog for storing a color or displaying a stored color.
+	 * Display a dialog for selecting a device.
 	 *
 	 * @param activity the current activity
 	 * @param listener The listener waiting for the response
