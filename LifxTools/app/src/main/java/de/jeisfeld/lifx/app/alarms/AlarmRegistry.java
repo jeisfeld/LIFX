@@ -89,7 +89,7 @@ public final class AlarmRegistry {
 			Alarm parent = alarm.getParent();
 			if (parent != null) {
 				Alarm newParent = new Alarm(parent.getId(), parent.isActive(), parent.getStartTime(), parent.getWeekDays(), parent.getName(),
-						parent.getSteps(), parent.getAlarmType(), newAlarm);
+						parent.getSteps(), parent.getAlarmType(), newAlarm, parent.isMaximizeVolume());
 				mAlarms.put(newParent.getId(), newParent);
 			}
 		}
@@ -134,6 +134,7 @@ public final class AlarmRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_week_days, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_name, alarmId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_type, alarmId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_maximize_volume, alarmId);
 	}
 
 	/**

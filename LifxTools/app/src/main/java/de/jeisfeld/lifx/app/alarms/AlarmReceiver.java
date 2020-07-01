@@ -84,7 +84,7 @@ public class AlarmReceiver extends BroadcastReceiver {
 			if (alarm.getWeekDays().size() == 0) {
 				// disable non-repeating alarm
 				Alarm newAlarm = new Alarm(alarm.getId(), false, alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(),
-						alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence());
+						alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence(), alarm.isMaximizeVolume());
 				AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 			}
 			else {

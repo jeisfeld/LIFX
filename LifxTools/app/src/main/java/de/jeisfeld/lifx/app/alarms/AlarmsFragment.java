@@ -74,7 +74,7 @@ public class AlarmsFragment extends Fragment {
 												steps.add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
 												Alarm alarm = new Alarm(true, startDate, new HashSet<>(),
 														AlarmRegistry.getInstance().getNewAlarmName(getContext()), steps,
-														AlarmType.STANDARD, null);
+														AlarmType.STANDARD, null, true);
 												alarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
 												AlarmConfigurationFragment.navigate(AlarmsFragment.this, alarm.getId());
 											}),

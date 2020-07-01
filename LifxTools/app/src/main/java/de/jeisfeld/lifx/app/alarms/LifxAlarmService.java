@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.Ringtone;
 import android.os.Build;
 import android.os.IBinder;
@@ -155,7 +156,7 @@ public class LifxAlarmService extends Service {
 		final Date alarmDate = (Date) intent.getSerializableExtra(AlarmReceiver.EXTRA_ALARM_TIME);
 		Alarm alarm = new Alarm(alarmId);
 		alarm = new Alarm(alarm.getId(), alarm.isActive(), alarmDate, alarm.getWeekDays(), alarm.getName(), alarm.getSteps(),
-				alarm.getAlarmType(), alarm.getStopSequence());
+				alarm.getAlarmType(), alarm.getStopSequence(), alarm.isMaximizeVolume());
 		Logger.info("LifxAlarmService start " + action + " - " + alarm.getName());
 
 		if (ACTION_CREATE_ALARM.equals(action)) {
@@ -336,6 +337,11 @@ public class LifxAlarmService extends Service {
 					else {
 						return null;
 					}
+				}
+
+				@Override
+				public boolean maximizeVolume() {
+					return alarm.isMaximizeVolume();
 				}
 
 				@Override
@@ -592,7 +598,7 @@ public class LifxAlarmService extends Service {
 	/**
 	 * A thread handling ringtone animation.
 	 */
-	public static class RingtoneAnimationThread extends BaseAnimationThread {
+	public class RingtoneAnimationThread extends BaseAnimationThread {
 		/**
 		 * The animation definiation.
 		 */
@@ -639,6 +645,14 @@ public class LifxAlarmService extends Service {
 			if (mDefinition.waitForPreviousAnimationEnd()) {
 				waitForPreviousAnimationEnd();
 			}
+
+			if (mDefinition.maximizeVolume()) {
+				AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+				if (audioManager != null) {
+					audioManager.setStreamVolume(AudioManager.STREAM_ALARM, audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM), 0);
+				}
+			}
+
 			boolean isInterrupted = false;
 			Ringtone ringtone = null;
 			try {
@@ -693,5 +707,12 @@ public class LifxAlarmService extends Service {
 		 * @return The n-th ringtone. Null will end the animation.
 		 */
 		Ringtone getRingtone(int n);
+
+		/**
+		 * Flag indicating if volume should be maximized.
+		 *
+		 * @return Flag indicating if volume should be maximized.
+		 */
+		boolean maximizeVolume();
 	}
 }

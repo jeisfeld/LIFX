@@ -101,7 +101,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 			}
 
 			Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(), startTime, alarm.getWeekDays(), alarm.getName(),
-					alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence());
+					alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence(), alarm.isMaximizeVolume());
 			AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 		});
 
@@ -117,7 +117,8 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 						(timePicker, selectedHour, selectedMinute) -> {
 							holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
 							Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(), Alarm.getDate(selectedHour, selectedMinute),
-									alarm.getWeekDays(), alarm.getName(), alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence());
+									alarm.getWeekDays(), alarm.getName(), alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence(),
+									alarm.isMaximizeVolume());
 							AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 							mAlarms.clear();
 							mAlarms.addAll(AlarmRegistry.getInstance().getAlarms());

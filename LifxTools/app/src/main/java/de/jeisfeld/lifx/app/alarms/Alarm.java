@@ -64,21 +64,26 @@ public class Alarm {
 	 * The alarm used as stop sequence.
 	 */
 	private final Alarm mStopSequence;
+	/**
+	 * Flag indicating if ringtone volume should be maximized.
+	 */
+	private final boolean mMaximizeVolume;
 
 	/**
 	 * Generate an alarm.
 	 *
-	 * @param id           The id for storage
-	 * @param isActive     The active flag
-	 * @param startTime    The alarm start time
-	 * @param weekDays     The week days
-	 * @param name         The name
-	 * @param steps        The steps
-	 * @param alarmType    The alarm type.
-	 * @param stopSequence The stop sequence.
+	 * @param id             The id for storage
+	 * @param isActive       The active flag
+	 * @param startTime      The alarm start time
+	 * @param weekDays       The week days
+	 * @param name           The name
+	 * @param steps          The steps
+	 * @param alarmType      The alarm type.
+	 * @param stopSequence   The stop sequence.
+	 * @param maximizeVolume Flag indicating if ringtone volume should be maximized.
 	 */
 	public Alarm(final int id, final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, // SUPPRESS_CHECKSTYLE
-				 final List<Step> steps, final AlarmType alarmType, final Alarm stopSequence) {
+				 final List<Step> steps, final AlarmType alarmType, final Alarm stopSequence, final boolean maximizeVolume) {
 		mId = id;
 		mIsActive = isActive;
 		mStartTime = startTime;
@@ -87,22 +92,24 @@ public class Alarm {
 		mSteps = steps;
 		mAlarmType = alarmType;
 		mStopSequence = stopSequence;
+		mMaximizeVolume = maximizeVolume;
 	}
 
 	/**
 	 * Generate a new alarm without id.
 	 *
-	 * @param isActive     The active flag
-	 * @param startTime    The alarm start time
-	 * @param weekDays     The week days
-	 * @param name         The name
-	 * @param steps        The steps
-	 * @param alarmType    The alarm type.
-	 * @param stopSequence The stop sequence.
+	 * @param isActive       The active flag
+	 * @param startTime      The alarm start time
+	 * @param weekDays       The week days
+	 * @param name           The name
+	 * @param steps          The steps
+	 * @param alarmType      The alarm type.
+	 * @param stopSequence   The stop sequence.
+	 * @param maximizeVolume Flag indicating if ringtone volume should be maximized.
 	 */
-	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, final List<Step> steps,
-				 final AlarmType alarmType, final Alarm stopSequence) {
-		this(-1, isActive, startTime, weekDays, name, steps, alarmType, stopSequence);
+	public Alarm(final boolean isActive, final Date startTime, final Set<Integer> weekDays, final String name, // SUPPRESS_CHECKSTYLE
+				 final List<Step> steps, final AlarmType alarmType, final Alarm stopSequence, final boolean maximizeVolume) {
+		this(-1, isActive, startTime, weekDays, name, steps, alarmType, stopSequence, maximizeVolume);
 	}
 
 	/**
@@ -113,7 +120,7 @@ public class Alarm {
 	 */
 	protected Alarm(final int id, final Alarm alarm) {
 		this(id, alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(), alarm.getSteps(),
-				alarm.getAlarmType(), alarm.getStopSequence());
+				alarm.getAlarmType(), alarm.getStopSequence(), alarm.isMaximizeVolume());
 	}
 
 	/**
@@ -128,6 +135,7 @@ public class Alarm {
 		mWeekDays = new HashSet<>(PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarmId));
 		mName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_alarm_name, alarmId);
 		mAlarmType = AlarmType.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_type, alarmId, -1));
+		mMaximizeVolume = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_alarm_maximize_volume, alarmId, true);
 
 		List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId);
 		mSteps = new ArrayList<>();
@@ -179,6 +187,7 @@ public class Alarm {
 		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_alarm_week_days, alarm.getId(), new ArrayList<>(alarm.getWeekDays()));
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_name, alarm.getId(), alarm.getName());
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_alarm_type, alarm.getId(), alarm.getAlarmType().ordinal());
+		PreferenceUtil.setIndexedSharedPreferenceBoolean(R.string.key_alarm_maximize_volume, alarm.getId(), alarm.isMaximizeVolume());
 
 		List<Step> newSteps = new ArrayList<>();
 		Collections.sort(alarm.getSteps());
@@ -217,14 +226,14 @@ public class Alarm {
 					AlarmRegistry.getInstance().remove(stopSequence);
 				}
 				alarm = new Alarm(alarm.getId(), alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(),
-						alarm.getSteps(), alarm.getAlarmType(), null);
+						alarm.getSteps(), alarm.getAlarmType(), null, alarm.isMaximizeVolume());
 				PreferenceUtil.removeIndexedSharedPreference(R.string.key_alarm_stop_sequence_id, alarm.getId());
 			}
 			else {
 				if (stopSequence.getId() < 0) {
 					stopSequence = stopSequence.store();
 					alarm = new Alarm(alarm.getId(), alarm.isActive(), alarm.getStartTime(), alarm.getWeekDays(), alarm.getName(),
-							alarm.getSteps(), alarm.getAlarmType(), stopSequence);
+							alarm.getSteps(), alarm.getAlarmType(), stopSequence, alarm.isMaximizeVolume());
 				}
 				else {
 					stopSequence.store();
@@ -299,6 +308,27 @@ public class Alarm {
 	}
 
 	/**
+	 * Get the flag if ringtone volume should be maximized.
+	 *
+	 * @return true if ringtone volume should be maximized.
+	 */
+	public boolean isMaximizeVolume() {
+		return mMaximizeVolume;
+	}
+
+	/**
+	 * Toggle the maximizeVolume flag.
+	 *
+	 * @return The alarm with updated flag.
+	 */
+	protected Alarm toggleMaximizeVolume() {
+		Alarm newAlarm = new Alarm(getId(), isActive(), getStartTime(), getWeekDays(), getName(), getSteps(), getAlarmType(),
+				getStopSequence(), !isMaximizeVolume());
+		AlarmRegistry.getInstance().addOrUpdate(newAlarm);
+		return newAlarm;
+	}
+
+	/**
 	 * Get a list of LightSteps from the total list of steps.
 	 *
 	 * @return The lightsteps.
@@ -354,7 +384,7 @@ public class Alarm {
 		if (getStopSequence() != null) {
 			newStopSequence = getStopSequence().clone(context, context.getString(R.string.alarm_stopsequence_name, newName));
 		}
-		Alarm alarm = new Alarm(isActive(), getStartTime(), getWeekDays(), newName, newSteps, getAlarmType(), newStopSequence);
+		Alarm alarm = new Alarm(isActive(), getStartTime(), getWeekDays(), newName, newSteps, getAlarmType(), newStopSequence, isMaximizeVolume());
 		return AlarmRegistry.getInstance().addOrUpdate(alarm);
 	}
 
@@ -369,9 +399,10 @@ public class Alarm {
 		Alarm stopSequence = getStopSequence();
 		if (stopSequence != null) {
 			stopSequence = new Alarm(stopSequence.getId(), stopSequence.isActive(), stopSequence.getStartTime(), stopSequence.getWeekDays(),
-					context.getString(R.string.alarm_stopsequence_name, newName), stopSequence.getSteps(), AlarmType.STOP_SEQUENCE, null);
+					context.getString(R.string.alarm_stopsequence_name, newName), stopSequence.getSteps(), AlarmType.STOP_SEQUENCE,
+					null, stopSequence.isMaximizeVolume());
 		}
-		return new Alarm(getId(), isActive(), getStartTime(), getWeekDays(), newName, getSteps(), getAlarmType(), stopSequence);
+		return new Alarm(getId(), isActive(), getStartTime(), getWeekDays(), newName, getSteps(), getAlarmType(), stopSequence, isMaximizeVolume());
 	}
 
 	/**

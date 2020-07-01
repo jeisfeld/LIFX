@@ -205,7 +205,7 @@ public class AlarmConfigurationFragment extends Fragment {
 			imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
 			imageViewAlarmType.setOnClickListener(v -> {
 				mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
-						mAlarm.getSteps(), mAlarm.getAlarmType().getNext(), mAlarm.getStopSequence());
+						mAlarm.getSteps(), mAlarm.getAlarmType().getNext(), mAlarm.getStopSequence(), mAlarm.isMaximizeVolume());
 				imageViewAlarmType.setImageResource(mAlarm.getAlarmType().getButtonResource());
 				AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 				mAdapter.notifyDataSetChanged(mAlarm);
@@ -245,9 +245,9 @@ public class AlarmConfigurationFragment extends Fragment {
 						}
 					}
 					Alarm stopSequence = new Alarm(true, new Date(), new HashSet<>(), getString(R.string.alarm_stopsequence_name, mAlarm.getName()),
-							alarmSteps, AlarmType.STOP_SEQUENCE, null);
+							alarmSteps, AlarmType.STOP_SEQUENCE, null, false);
 					mAlarm = new Alarm(mAlarm.getId(), mAlarm.isActive(), mAlarm.getStartTime(), mAlarm.getWeekDays(), mAlarm.getName(),
-							mAlarm.getSteps(), mAlarm.getAlarmType(), stopSequence);
+							mAlarm.getSteps(), mAlarm.getAlarmType(), stopSequence, mAlarm.isMaximizeVolume());
 					mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 					DialogUtil.displayToast(getContext(), AlarmType.STOP_SEQUENCE.getToastResource());
 				}
@@ -343,8 +343,8 @@ public class AlarmConfigurationFragment extends Fragment {
 		Date startDate = Alarm.getDate(mHour, mMinute);
 		Set<Integer> weekDays = getSelectecWeekDays(root);
 
-		mAlarm = new Alarm(mAlarm.getId(), switchAlarmActive.isChecked(), startDate, weekDays,
-				mAlarm.getName(), mAlarm.getSteps(), mAlarm.getAlarmType(), mAlarm.getStopSequence());
+		mAlarm = new Alarm(mAlarm.getId(), switchAlarmActive.isChecked(), startDate, weekDays, mAlarm.getName(),
+				mAlarm.getSteps(), mAlarm.getAlarmType(), mAlarm.getStopSequence(), mAlarm.isMaximizeVolume());
 		AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 		mAdapter.notifyDataSetChanged(mAlarm);
 	}
@@ -363,7 +363,7 @@ public class AlarmConfigurationFragment extends Fragment {
 		}
 		else {
 			alarm = new Alarm(true, new Date(), new HashSet<>(), AlarmRegistry.getInstance().getNewAlarmName(getContext()),
-					new ArrayList<>(), AlarmType.STANDARD, null);
+					new ArrayList<>(), AlarmType.STANDARD, null, true);
 			alarm = AlarmRegistry.getInstance().addOrUpdate(alarm);
 		}
 

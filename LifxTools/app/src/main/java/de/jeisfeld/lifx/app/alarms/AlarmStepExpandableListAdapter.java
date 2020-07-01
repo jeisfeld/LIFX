@@ -176,6 +176,20 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			maxEndTime = Math.max(maxEndTime, step.getDelay() + step.getDuration());
 		}
 
+		ImageView imageViewAlarmVolume = view.findViewById(R.id.imageViewAlarmVolume);
+		if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(getGroup(groupPosition).getLight())) {
+			imageViewAlarmVolume.setVisibility(View.VISIBLE);
+			imageViewAlarmVolume.setImageResource(mAlarm.isMaximizeVolume() ? R.drawable.ic_button_volume_max : R.drawable.ic_button_volume_default);
+			imageViewAlarmVolume.setOnClickListener(v -> {
+				mAlarm = mAlarm.toggleMaximizeVolume();
+				imageViewAlarmVolume.setImageResource(
+						mAlarm.isMaximizeVolume() ? R.drawable.ic_button_volume_max : R.drawable.ic_button_volume_default);
+			});
+		}
+		else {
+			imageViewAlarmVolume.setVisibility(View.GONE);
+		}
+
 		if (isCollapsed) {
 			textViewStartTime.setText(getDelayString(minDelay));
 			textViewStartTime.setVisibility(View.VISIBLE);
