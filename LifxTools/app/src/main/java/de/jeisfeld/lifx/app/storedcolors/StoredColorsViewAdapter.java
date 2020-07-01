@@ -30,7 +30,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -132,7 +131,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			}
 		});
 
-
 		if (light != null) {
 			holder.mDeviceName.setText(light.getLabel());
 		}
@@ -188,7 +186,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 * @return The drawable to be used.
 	 */
 	public static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
-		if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(storedColor.getLight())) {
+		if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(storedColor.getLight())) {
 			return context.getResources().getDrawable(R.drawable.ic_alarm_ringtone, context.getTheme());
 		}
 

@@ -34,6 +34,7 @@ import de.jeisfeld.lifx.app.alarms.Alarm.AlarmType;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
@@ -43,7 +44,6 @@ import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
 import de.jeisfeld.lifx.lan.Light.BaseAnimationThread;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
-import de.jeisfeld.lifx.lan.MultiZoneLight.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
@@ -264,7 +264,7 @@ public class LifxAlarmService extends Service {
 				}
 			};
 
-			if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
+			if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
 				animationThreads.add(new RingtoneAnimationThread(
 						(RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
 						.setAnimationCallback(callback));
@@ -326,7 +326,7 @@ public class LifxAlarmService extends Service {
 			}
 		};
 
-		if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
+		if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
 			return new RingtoneAnimationDefinition() {
 				@Override
 				public Ringtone getRingtone(final int n) {
@@ -360,7 +360,7 @@ public class LifxAlarmService extends Service {
 			};
 		}
 		else if (light instanceof MultiZoneLight) {
-			return new AnimationDefinition() {
+			return new MultiZoneLight.AnimationDefinition() {
 				@Override
 				public MultizoneColors getColors(final int n) {
 					if (n < steps.size() || alarm.getAlarmType() == AlarmType.CYCLIC) {
@@ -608,7 +608,7 @@ public class LifxAlarmService extends Service {
 		 * @param definition The rules for the animation.
 		 */
 		protected RingtoneAnimationThread(final RingtoneAnimationDefinition definition) {
-			super(RingtoneStep.RINGTONE_DUMMY_LIGHT);
+			super(DeviceRegistry.getInstance().getRingtoneDummyLight());
 			setDefinition(definition);
 		}
 

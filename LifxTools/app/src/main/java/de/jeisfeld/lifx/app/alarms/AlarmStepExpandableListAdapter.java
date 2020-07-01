@@ -190,7 +190,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			final long newStartTime = maxStartTime == maxEndTime ? maxEndTime + TimeUnit.SECONDS.toMillis(1) : maxEndTime;
 			imageViewAddStep.setOnClickListener(v -> {
 				Light light = getGroup(groupPosition).getLight();
-				if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
+				if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
 					mFragment.startRingtoneDialog(newStartTime, null);
 				}
 				else {

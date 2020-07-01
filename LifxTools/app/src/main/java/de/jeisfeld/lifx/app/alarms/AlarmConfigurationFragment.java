@@ -133,10 +133,10 @@ public class AlarmConfigurationFragment extends Fragment {
 
 		root.findViewById(R.id.imageViewAddAlarmLight).setOnClickListener(v -> {
 			List<Light> lightsWithStoredColors = ColorRegistry.getInstance().getLightsWithStoredColors();
-			lightsWithStoredColors.add(RingtoneStep.RINGTONE_DUMMY_LIGHT);
+			lightsWithStoredColors.add(DeviceRegistry.getInstance().getRingtoneDummyLight());
 			lightsWithStoredColors.removeAll(mAlarm.getLightSteps().stream().map(LightSteps::getLight).collect(Collectors.toSet()));
 			SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(), device -> {
-						if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(device)) {
+						if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(device)) {
 							startRingtoneDialog(0, null);
 						}
 						else {
@@ -238,7 +238,7 @@ public class AlarmConfigurationFragment extends Fragment {
 				if (mAlarm.getStopSequence() == null) {
 					List<Step> alarmSteps = new ArrayList<>();
 					for (LightSteps lightSteps : mAlarm.getLightSteps()) {
-						if (!RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(lightSteps.getLight())) {
+						if (!DeviceRegistry.getInstance().getRingtoneDummyLight().equals(lightSteps.getLight())) {
 							alarmSteps.add(new Step(0,
 									StoredColor.fromDeviceOff((int) lightSteps.getLight().getParameter(DeviceRegistry.DEVICE_ID)).getId(),
 									DEFAULT_DURATION));

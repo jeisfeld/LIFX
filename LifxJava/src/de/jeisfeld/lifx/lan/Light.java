@@ -338,6 +338,25 @@ public class Light extends Device implements Serializable {
 	}
 
 	/**
+	 * Fetch the animation thread of another instance of the same light.
+	 *
+	 * @param other The other light.
+	 */
+	public void fetchAnimationThread(final Light other) {
+		if (other == this) {
+			return;
+		}
+		synchronized (this) {
+			//noinspection SynchronizationOnLocalVariableOrMethodParameter
+			synchronized (other) {
+				if (other.mAnimationThread != null) {
+					this.mAnimationThread = other.mAnimationThread;
+				}
+			}
+		}
+	}
+
+	/**
 	 * Create a cycle thread.
 	 *
 	 * @param colors The colors of the cycle.
@@ -723,7 +742,7 @@ public class Light extends Device implements Serializable {
 					getAnimationCallback().onException(e);
 				}
 			}
-			cleanAnimationThread();
+			cleanAnimationThread(this);
 		}
 
 		/**
@@ -737,10 +756,14 @@ public class Light extends Device implements Serializable {
 
 		/**
 		 * Clean the animation thread.
+		 *
+		 * @param thread The thread to be cleaned.
 		 */
-		protected void cleanAnimationThread() {
+		protected void cleanAnimationThread(final AnimationThread thread) {
 			synchronized (getLight()) {
-				getLight().mAnimationThread = null;
+				if (getLight().mAnimationThread == thread) {
+					getLight().mAnimationThread = null;
+				}
 			}
 			if (mDeviceRegistry != null) {
 				mDeviceRegistry = null;

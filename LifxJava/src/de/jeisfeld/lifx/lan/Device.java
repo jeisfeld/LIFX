@@ -263,13 +263,12 @@ public class Device implements Serializable {
 		mWifiFirmwareVersion = stateWifiFirmware.getMajorVersion() + "." + stateWifiFirmware.getMinorVersion();
 	}
 
+	// OVERRIDABLE
 	@Override
-	public final String toString() {
+	public String toString() {
 		return getClass().getSimpleName() + "[" + mTargetAddress + "] (" + getLabel() + "@" + mInetAddress.getHostAddress() + ":"
 				+ TypeUtil.toUnsignedString(mPort) + ")";
 	}
-
-	// OVERRIDABLE
 
 	/**
 	 * Get the device information as String.

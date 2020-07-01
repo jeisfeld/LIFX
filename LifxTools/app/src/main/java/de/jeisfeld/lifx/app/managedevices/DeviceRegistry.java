@@ -67,6 +67,37 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 * A map from MAC address to device id.
 	 */
 	private final Map<String, Integer> mMacToIdMap = new HashMap<>();
+	/**
+	 * The ringtone dummy light.
+	 */
+	private final Light mRingtoneDummyLight = new Light("RINGTONE", null, -1, 0, null, null, 0,
+			Application.getResourceString(R.string.list_entry_ringtone)) {
+		/**
+		 * The default serial version uid.
+		 */
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public boolean equals(final Object other) {
+			if (other instanceof Light) {
+				Light otherLight = (Light) other;
+				return getTargetAddress().equals(otherLight.getTargetAddress()) && getPort() == otherLight.getPort();
+			}
+			else {
+				return false;
+			}
+		}
+
+		@Override
+		public int hashCode() {
+			return 0;
+		}
+
+		@Override
+		public String toString() {
+			return "Ringtone Dummy Light";
+		}
+	};
 
 	/**
 	 * The source id.
@@ -228,6 +259,10 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 
 		device.setParameter(DEVICE_ID, deviceId);
 		device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
+		Device otherDevice = mDevices.get(deviceId);
+		if (otherDevice instanceof Light && device instanceof Light) {
+			((Light) device).fetchAnimationThread((Light) otherDevice);
+		}
 		mDevices.put(deviceId, device);
 
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_mac, deviceId, device.getTargetAddress());
@@ -313,15 +348,6 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	}
 
 	/**
-	 * Remove all devices from local store.
-	 */
-	public void removeAll() {
-		while (mDevices.size() > 0) {
-			remove(mDevices.valueAt(mDevices.size() - 1));
-		}
-	}
-
-	/**
 	 * Get the DeviceRegistry as singleton.
 	 *
 	 * @return The DeviceRegistry as singleton.
@@ -347,6 +373,15 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 */
 	public void update(final DeviceUpdateCallback callback) {
 		new DeviceUpdateTask(this, callback).execute();
+	}
+
+	/**
+	 * Get the ringtone dummy light.
+	 *
+	 * @return The ringtone dummy light.
+	 */
+	public Light getRingtoneDummyLight() {
+		return mRingtoneDummyLight;
 	}
 
 	/**

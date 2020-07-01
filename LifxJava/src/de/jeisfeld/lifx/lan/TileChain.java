@@ -503,7 +503,7 @@ public class TileChain extends Light implements Serializable {
 					getAnimationCallback().onException(e);
 				}
 			}
-			cleanAnimationThread();
+			cleanAnimationThread(this);
 		}
 	}
 

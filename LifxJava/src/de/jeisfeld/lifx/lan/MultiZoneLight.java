@@ -447,7 +447,7 @@ public class MultiZoneLight extends Light {
 					getAnimationCallback().onException(e);
 				}
 			}
-			cleanAnimationThread();
+			cleanAnimationThread(this);
 		}
 	}
 
