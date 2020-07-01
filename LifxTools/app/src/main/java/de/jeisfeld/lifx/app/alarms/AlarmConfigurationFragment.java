@@ -399,7 +399,7 @@ public class AlarmConfigurationFragment extends Fragment {
 		Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.title_dialog_ringtone));
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
-		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
 		if (originalStep != null) {
 			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, originalStep.getRingtoneUri());
 		}
@@ -426,7 +426,7 @@ public class AlarmConfigurationFragment extends Fragment {
 						mAlarm.getSteps().remove(mOriginalRingtoneStep);
 						mAlarm.getSteps().add(newStep);
 						AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-						mAdapter.notifyDataSetChanged();
+						mAdapter.notifyDataSetChanged(mAlarm);
 					}
 				}
 			}

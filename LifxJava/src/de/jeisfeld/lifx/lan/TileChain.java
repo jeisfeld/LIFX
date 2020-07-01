@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import de.jeisfeld.lifx.lan.message.TileGetDeviceChain;
 import de.jeisfeld.lifx.lan.message.TileGetTileEffect;
@@ -414,6 +415,7 @@ public class TileChain extends Light implements Serializable {
 					waitForPreviousAnimationEnd();
 				}
 				boolean isInterrupted = false;
+				boolean isPowerChange = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
 						Date givenStartTime = mDefinition.getStartTime(count);
@@ -438,12 +440,15 @@ public class TileChain extends Light implements Serializable {
 								if (wasOff) {
 									getLight().setColors(colors, 0, false);
 									getLight().setPower(true, duration, false);
+									isPowerChange = true;
 								}
 								else if (colors.isOff()) {
 									getLight().setPower(false, duration, false);
+									isPowerChange = true;
 								}
 								else {
 									getLight().setColors(colors, duration, false);
+									isPowerChange = false;
 								}
 								success = true;
 							}
@@ -465,8 +470,21 @@ public class TileChain extends Light implements Serializable {
 
 				if (mEndColors == null) {
 					if (isInterrupted) {
-						// stop the previous color transition by sending setWaveform command with no change.
-						getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+						if (isPowerChange) {
+							try {
+								TileChainColors colors = Objects.requireNonNull(getLight().getColors())
+										.withRelativeBrightness(TypeUtil.toDouble(getLight().getPower().getLevel()));
+								getLight().setColors(colors, 200, false); // MAGIC_NUMBER
+								getLight().setPower(true, 200, false); // MAGIC_NUMBER
+							}
+							catch (NullPointerException e) {
+								// ignore
+							}
+						}
+						else {
+							// stop the previous color transition by sending setWaveform command with no change.
+							getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+						}
 					}
 				}
 				else if (mEndColors == TileChainColors.OFF) {

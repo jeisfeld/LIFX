@@ -364,6 +364,7 @@ public class MultiZoneLight extends Light {
 					waitForPreviousAnimationEnd();
 				}
 				boolean isInterrupted = false;
+				boolean isPowerChange = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColors(count) != null) {
 						Date givenStartTime = mDefinition.getStartTime(count);
@@ -388,12 +389,15 @@ public class MultiZoneLight extends Light {
 								if (wasOff) {
 									getLight().setColors(colors, 0, false);
 									getLight().setPower(true, duration, false);
+									isPowerChange = true;
 								}
 								else if (colors.isOff()) {
 									getLight().setPower(false, duration, false);
+									isPowerChange = true;
 								}
 								else {
 									getLight().setColors(colors, duration, false);
+									isPowerChange = false;
 								}
 								success = true;
 							}
@@ -415,8 +419,16 @@ public class MultiZoneLight extends Light {
 
 				if (mEndColors == null) {
 					if (isInterrupted) {
-						// stop the previous color transition by sending setWaveform command with no change.
-						getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+						if (isPowerChange) {
+							// Multizone light behaves differently than other lights - colors contain already relative power.
+							MultizoneColors colors = new MultizoneColors.Exact(getLight().getColors());
+							getLight().setColors(colors, 200, false); // MAGIC_NUMBER
+							getLight().setPower(true, 200, false); // MAGIC_NUMBER
+						}
+						else {
+							// stop the previous color transition by sending setWaveform command with no change.
+							getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+						}
 					}
 				}
 				else if (mEndColors == MultizoneColors.OFF) {

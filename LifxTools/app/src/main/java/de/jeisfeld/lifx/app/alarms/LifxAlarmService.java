@@ -126,9 +126,9 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Create an intent for alarm service.
 	 *
-	 * @param context   The context.
-	 * @param action    the action.
-	 * @param alarmId   the alarm id.
+	 * @param context The context.
+	 * @param action the action.
+	 * @param alarmId the alarm id.
 	 * @param alarmTime the alarm time.
 	 * @return the intent.
 	 */
@@ -213,7 +213,7 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Run the animations for an alarm.
 	 *
-	 * @param alarm     the alarm
+	 * @param alarm the alarm
 	 * @param alarmDate the alarm date
 	 */
 	private void runAnimations(final Alarm alarm, final Date alarmDate) {
@@ -231,7 +231,7 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Get the animation threads for an alarm.
 	 *
-	 * @param alarm     The alarm
+	 * @param alarm The alarm
 	 * @param alarmDate The alarm start date
 	 * @return The animation threads
 	 */
@@ -265,10 +265,6 @@ public class LifxAlarmService extends Service {
 			};
 
 			if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
-				List<RingtoneStep> steps = new ArrayList<>();
-				for (Step step : lightSteps.getSteps()) {
-					steps.add((RingtoneStep) step);
-				}
 				animationThreads.add(new RingtoneAnimationThread(
 						(RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
 						.setAnimationCallback(callback));
@@ -284,10 +280,10 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Create the animation definition for a certain light.
 	 *
-	 * @param alarm     The alarm.
+	 * @param alarm The alarm.
 	 * @param alarmDate The alarm start date
-	 * @param light     The light.
-	 * @param steps     The steps.
+	 * @param light The light.
+	 * @param steps The steps.
 	 * @return The animation definition.
 	 */
 	private Light.AnimationDefinition getAnimationDefiniton(final Alarm alarm, final Date alarmDate, final Light light, final List<Step> steps) {
@@ -531,14 +527,14 @@ public class LifxAlarmService extends Service {
 	/**
 	 * Update the service after an alarm animation has ended.
 	 *
-	 * @param alarm          The alarm
-	 * @param wakeLock       The wakelock on that light
-	 * @param light          The light
+	 * @param alarm The alarm
+	 * @param wakeLock The wakelock on that light
+	 * @param light The light
 	 * @param animatedLights The list of animated lights
 	 */
 	private void updateOnEndAnimation(final Alarm alarm, final WakeLock wakeLock, final Light light, final List<Light> animatedLights) {
 		boolean isLastLight;
-		//noinspection SynchronizationOnLocalVariableOrMethodParameter
+		// noinspection SynchronizationOnLocalVariableOrMethodParameter
 		synchronized (animatedLights) {
 			animatedLights.remove(light);
 			isLastLight = animatedLights.size() == 0;
@@ -592,7 +588,6 @@ public class LifxAlarmService extends Service {
 			return getString(R.string.notification_text_no_alarm);
 		}
 	}
-
 
 	/**
 	 * A thread handling ringtone animation.

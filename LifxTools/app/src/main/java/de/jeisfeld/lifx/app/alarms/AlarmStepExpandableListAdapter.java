@@ -52,7 +52,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	/**
 	 * The initial expanding status.
 	 */
-	private final Map<Light, Boolean> mInitialExpandingStatus;
+	private Map<Light, Boolean> mInitialExpandingStatus;
 	/**
 	 * Reference to the parent view.
 	 */
@@ -132,14 +132,18 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	@Override
 	public final View getGroupView(final int groupPosition, final boolean isExpanded, final View convertView, final ViewGroup parent) {
 		mParent = new WeakReference<>((ExpandableListView) parent);
-		LightSteps lightSteps = getGroup(groupPosition);
 		View view = convertView;
 		if (convertView == null) {
 			LayoutInflater layoutInflater = (LayoutInflater) mFragment.requireActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			assert layoutInflater != null;
 			view = layoutInflater.inflate(R.layout.list_view_alarm_lights, parent, false);
 		}
+		if (groupPosition >= getGroupCount()) {
+			// Sometimes, after deletion outdated groups are called.
+			return view;
+		}
 
+		LightSteps lightSteps = getGroup(groupPosition);
 		TextView listTitleTextView = (TextView) view.findViewById(R.id.textViewDeviceName);
 		listTitleTextView.setText(lightSteps.getLight().getLabel());
 
@@ -216,6 +220,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	 * @param alarm The new alarm.
 	 */
 	protected void notifyDataSetChanged(final Alarm alarm) {
+		mInitialExpandingStatus = getExpandingStatus();
 		List<Light> newLights = alarm.getLightSteps().stream().map(LightSteps::getLight).collect(Collectors.toList());
 		newLights.removeAll(mLightStepsList.stream().map(LightSteps::getLight).collect(Collectors.toList()));
 		for (Light light : newLights) {
@@ -315,6 +320,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			mAlarm.removeStep(originalStep.getId());
 			AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
 			AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+			mInitialExpandingStatus = getExpandingStatus();
 			notifyDataSetChanged();
 
 			if (mAlarm.getSteps().size() == 0) {

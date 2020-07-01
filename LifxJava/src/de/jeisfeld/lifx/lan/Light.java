@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.util.Date;
+import java.util.Objects;
 
 import de.jeisfeld.lifx.lan.message.LightGet;
 import de.jeisfeld.lifx.lan.message.LightGetInfrared;
@@ -634,6 +635,7 @@ public class Light extends Device implements Serializable {
 					waitForPreviousAnimationEnd();
 				}
 				boolean isInterrupted = false;
+				boolean isPowerChange = false;
 				try {
 					while (!isInterrupted() && mDefinition.getColor(count) != null) {
 						Date givenStartTime = mDefinition.getStartTime(count);
@@ -658,12 +660,15 @@ public class Light extends Device implements Serializable {
 								if (wasOff) {
 									getLight().setColor(color, 0, false);
 									getLight().setPower(true, duration, false);
+									isPowerChange = true;
 								}
 								else if (color.isOff()) {
 									getLight().setPower(false, duration, false);
+									isPowerChange = true;
 								}
 								else {
 									getLight().setColor(color, duration, false);
+									isPowerChange = false;
 								}
 								success = true;
 							}
@@ -685,8 +690,21 @@ public class Light extends Device implements Serializable {
 
 				if (mEndColor == null) {
 					if (isInterrupted) {
-						// stop the previous color transition by sending setWaveform command with no change.
-						getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+						if (isPowerChange) {
+							try {
+								Color color = Objects.requireNonNull(getLight().getColor())
+										.withRelativeBrightness(TypeUtil.toDouble(getLight().getPower().getLevel()));
+								getLight().setColor(color, 200, false); // MAGIC_NUMBER
+								getLight().setPower(true, 200, false); // MAGIC_NUMBER
+							}
+							catch (NullPointerException e) {
+								// ignore
+							}
+						}
+						else {
+							// stop the previous color transition by sending setWaveform command with no change.
+							getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+						}
 					}
 				}
 				else if (mEndColor.getBrightness() == 0) {

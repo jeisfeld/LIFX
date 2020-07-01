@@ -104,7 +104,7 @@ public class Alarm {
 	/**
 	 * Generate a new alarm by adding id.
 	 *
-	 * @param id    The id
+	 * @param id The id
 	 * @param alarm the base alarm.
 	 */
 	protected Alarm(final int id, final Alarm alarm) {
@@ -294,7 +294,6 @@ public class Alarm {
 		return mStopSequence;
 	}
 
-
 	/**
 	 * Get a list of LightSteps from the total list of steps.
 	 *
@@ -417,7 +416,7 @@ public class Alarm {
 	/**
 	 * Create a date out of hour and minute, resulting in the next future date with this time.
 	 *
-	 * @param hour   The hour
+	 * @param hour The hour
 	 * @param minute The minute
 	 * @return The date
 	 */
@@ -534,10 +533,10 @@ public class Alarm {
 		/**
 		 * Generate an alarm step.
 		 *
-		 * @param id            The id for storage
-		 * @param delay         the delay
+		 * @param id The id for storage
+		 * @param delay the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration      the duration
+		 * @param duration the duration
 		 */
 		public Step(final int id, final long delay, final int storedColorId, final long duration) {
 			mId = id;
@@ -549,9 +548,9 @@ public class Alarm {
 		/**
 		 * Generate a new alarm step without id.
 		 *
-		 * @param delay         the delay
+		 * @param delay the delay
 		 * @param storedColorId The stored color id.
-		 * @param duration      the duration
+		 * @param duration the duration
 		 */
 		public Step(final long delay, final int storedColorId, final long duration) {
 			this(-1, delay, storedColorId, duration);
@@ -710,8 +709,30 @@ public class Alarm {
 		 * The dummy light used for ringtones.
 		 */
 		public static final Light RINGTONE_DUMMY_LIGHT =
-				new Light("", null, 0, 0, null, null, 0,
-						Application.getResourceString(R.string.list_entry_ringtone));
+				new Light("RINGTONE", null, -1, 0, null, null, 0,
+						Application.getResourceString(R.string.list_entry_ringtone)) {
+					/**
+					 * The default serial version uid.
+					 */
+					private static final long serialVersionUID = 1L;
+
+					@Override
+					public boolean equals(final Object other) {
+						// ensure that equality is retained after class re-instantiation
+						if (other instanceof Light) {
+							Light otherLight = (Light) other;
+							return getTargetAddress().equals(otherLight.getTargetAddress()) && getPort() == otherLight.getPort();
+						}
+						else {
+							return false;
+						}
+					}
+
+					@Override
+					public int hashCode() {
+						return 0;
+					}
+				};
 
 		/**
 		 * The ringtone Uri.
@@ -725,10 +746,10 @@ public class Alarm {
 		/**
 		 * Generate a ringtone alarm step.
 		 *
-		 * @param id          The id for storage
-		 * @param delay       the delay
+		 * @param id The id for storage
+		 * @param delay the delay
 		 * @param ringtoneUri The ringtone Uri.
-		 * @param duration    the duration
+		 * @param duration the duration
 		 */
 		public RingtoneStep(final int id, final long delay, final Uri ringtoneUri, final long duration) {
 			super(id, delay, 0, duration);
@@ -738,9 +759,9 @@ public class Alarm {
 		/**
 		 * Generate a ringtone alarm step without id.
 		 *
-		 * @param delay       the delay
+		 * @param delay the delay
 		 * @param ringtoneUri The ringtone Uri.
-		 * @param duration    the duration
+		 * @param duration the duration
 		 */
 		public RingtoneStep(final long delay, final Uri ringtoneUri, final long duration) {
 			super(delay, 0, duration);
@@ -750,7 +771,7 @@ public class Alarm {
 		/**
 		 * Retrieve a ringtone step from storage via id.
 		 *
-		 * @param stepId      The id of the alarm step.
+		 * @param stepId The id of the alarm step.
 		 * @param ringtoneUri The ringtone Uri.
 		 */
 		protected RingtoneStep(final int stepId, final Uri ringtoneUri) {
@@ -823,11 +844,11 @@ public class Alarm {
 		/**
 		 * The light.
 		 */
-		private Light mLight;
+		private final Light mLight;
 		/**
 		 * The steps for this light.
 		 */
-		private List<Step> mSteps;
+		private final List<Step> mSteps;
 
 		/**
 		 * Constructor.
@@ -893,7 +914,7 @@ public class Alarm {
 		 * Constructor.
 		 *
 		 * @param buttonResource The button resource.
-		 * @param toastResource  The toat resource.
+		 * @param toastResource The toat resource.
 		 */
 		AlarmType(final int buttonResource, final int toastResource) {
 			mButtonResource = buttonResource;
