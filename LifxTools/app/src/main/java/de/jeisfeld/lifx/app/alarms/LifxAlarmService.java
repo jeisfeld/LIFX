@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.Ringtone;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -31,6 +32,7 @@ import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.AlarmType;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
+import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
@@ -39,7 +41,7 @@ import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
-import de.jeisfeld.lifx.lan.Light.AnimationThread;
+import de.jeisfeld.lifx.lan.Light.BaseAnimationThread;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.MultiZoneLight.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -60,6 +62,10 @@ public class LifxAlarmService extends Service {
 	 * The id for the service.
 	 */
 	private static final int SERVICE_ID = 1;
+	/**
+	 * The duration of the alarm in case of wait for manual stop, if no one stops.
+	 */
+	private static final int STOP_MANUAL_DURATION = (int) TimeUnit.DAYS.toMillis(1);
 	/**
 	 * Action for creating an alarm.
 	 */
@@ -214,7 +220,7 @@ public class LifxAlarmService extends Service {
 		synchronized (ANIMATED_ALARMS) {
 			ANIMATED_ALARMS.add(alarm.getId());
 		}
-		for (AnimationThread animationThread : getAnimationThreads(alarm, alarmDate)) {
+		for (BaseAnimationThread animationThread : getAnimationThreads(alarm, alarmDate)) {
 			animationThread.start();
 		}
 
@@ -229,11 +235,11 @@ public class LifxAlarmService extends Service {
 	 * @param alarmDate The alarm start date
 	 * @return The animation threads
 	 */
-	private List<AnimationThread> getAnimationThreads(final Alarm alarm, final Date alarmDate) {
+	private List<BaseAnimationThread> getAnimationThreads(final Alarm alarm, final Date alarmDate) {
 		final WakeLock wakeLock = acquireWakelock(alarm);
 
 		final List<LightSteps> lightStepsList = alarm.getLightSteps();
-		final List<AnimationThread> animationThreads = new ArrayList<>();
+		final List<BaseAnimationThread> animationThreads = new ArrayList<>();
 		final List<Light> animatedLights = new ArrayList<>();
 
 		for (final LightSteps lightSteps : lightStepsList) {
@@ -244,21 +250,33 @@ public class LifxAlarmService extends Service {
 			final Light light = lightSteps.getLight();
 			animatedLights.add(light);
 
-			AnimationThread animationThread = light.animation(getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
-					.setAnimationCallback(new AnimationCallback() {
-						@Override
-						public void onException(final IOException e) {
-							Logger.debug("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
-							updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
-						}
+			AnimationCallback callback = new AnimationCallback() {
+				@Override
+				public void onException(final IOException e) {
+					Logger.debug("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
+					updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+				}
 
-						@Override
-						public void onAnimationEnd(final boolean isInterrupted) {
-							Logger.debug("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
-							updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
-						}
-					});
-			animationThreads.add(animationThread);
+				@Override
+				public void onAnimationEnd(final boolean isInterrupted) {
+					Logger.debug("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
+					updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+				}
+			};
+
+			if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
+				List<RingtoneStep> steps = new ArrayList<>();
+				for (Step step : lightSteps.getSteps()) {
+					steps.add((RingtoneStep) step);
+				}
+				animationThreads.add(new RingtoneAnimationThread(
+						(RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
+						.setAnimationCallback(callback));
+			}
+			else {
+				animationThreads.add(light.animation(getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
+						.setAnimationCallback(callback));
+			}
 		}
 		return animationThreads;
 	}
@@ -300,7 +318,7 @@ public class LifxAlarmService extends Service {
 				case STOP_MANUALLY:
 					// Maintain max. one day
 					return n < steps.size() ? new Date(alarmDate.getTime() + steps.get(n).getDelay())
-							: new Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
+							: new Date(System.currentTimeMillis() + STOP_MANUAL_DURATION);
 				default:
 					return n >= steps.size() ? null : new Date(alarmDate.getTime() + steps.get(n).getDelay());
 				}
@@ -312,8 +330,40 @@ public class LifxAlarmService extends Service {
 			}
 		};
 
+		if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
+			return new RingtoneAnimationDefinition() {
+				@Override
+				public Ringtone getRingtone(final int n) {
+					if (n < steps.size() || alarm.getAlarmType() == AlarmType.CYCLIC) {
+						return ((RingtoneStep) steps.get(n % steps.size())).getRingtone(LifxAlarmService.this);
+					}
+					else {
+						return null;
+					}
+				}
 
-		if (light instanceof MultiZoneLight) {
+				@Override
+				public Color getColor(final int n) {
+					return null;
+				}
+
+				@Override
+				public int getDuration(final int n) {
+					if (n == steps.size() - 1 && alarm.getAlarmType() == AlarmType.STOP_MANUALLY) {
+						return STOP_MANUAL_DURATION;
+					}
+					else {
+						return baseDefinition.getDuration(n);
+					}
+				}
+
+				@Override
+				public Date getStartTime(final int n) {
+					return baseDefinition.getStartTime(n);
+				}
+			};
+		}
+		else if (light instanceof MultiZoneLight) {
 			return new AnimationDefinition() {
 				@Override
 				public MultizoneColors getColors(final int n) {
@@ -543,4 +593,110 @@ public class LifxAlarmService extends Service {
 		}
 	}
 
+
+	/**
+	 * A thread handling ringtone animation.
+	 */
+	public static class RingtoneAnimationThread extends BaseAnimationThread {
+		/**
+		 * The animation definiation.
+		 */
+		private RingtoneAnimationDefinition mDefinition;
+		/**
+		 * An exception callback called in case of SocketException.
+		 */
+		private AnimationCallback mAnimationCallback = null;
+
+		/**
+		 * Create an animation thread.
+		 *
+		 * @param definition The rules for the animation.
+		 */
+		protected RingtoneAnimationThread(final RingtoneAnimationDefinition definition) {
+			super(RingtoneStep.RINGTONE_DUMMY_LIGHT);
+			setDefinition(definition);
+		}
+
+		/**
+		 * Set the animation definition.
+		 *
+		 * @param definition The rules for the animation.
+		 */
+		protected void setDefinition(final RingtoneAnimationDefinition definition) {
+			mDefinition = definition;
+		}
+
+		/**
+		 * Set the exception callback called in case of Exception.
+		 *
+		 * @param callback The callback.
+		 * @return The updated animation thread.
+		 */
+		public RingtoneAnimationThread setAnimationCallback(final AnimationCallback callback) {
+			mAnimationCallback = callback;
+			return this;
+		}
+
+		// OVERRIDABLE
+		@Override
+		public void run() {
+			int count = 0;
+			if (mDefinition.waitForPreviousAnimationEnd()) {
+				waitForPreviousAnimationEnd();
+			}
+			boolean isInterrupted = false;
+			Ringtone ringtone = null;
+			try {
+				while (!isInterrupted() && mDefinition.getRingtone(count) != null) {
+					ringtone = mDefinition.getRingtone(count);
+					Date givenStartTime = mDefinition.getStartTime(count);
+					final long startTime = givenStartTime == null ? System.currentTimeMillis() : givenStartTime.getTime();
+					if (givenStartTime != null) {
+						long waitTime = givenStartTime.getTime() - System.currentTimeMillis();
+						if (waitTime > 0) {
+							Thread.sleep(waitTime);
+						}
+					}
+
+					ringtone.play();
+					int duration = Math.max(mDefinition.getDuration(count), 0);
+					Thread.sleep(Math.max(0, duration + startTime - System.currentTimeMillis()));
+					ringtone.stop();
+					count++;
+				}
+			}
+			catch (InterruptedException e) {
+				isInterrupted = true;
+				if (ringtone != null) {
+					ringtone.stop();
+				}
+			}
+
+			if (getAnimationCallback() != null) {
+				getAnimationCallback().onAnimationEnd(isInterrupted);
+			}
+		}
+
+		/**
+		 * Get the exception callback.
+		 *
+		 * @return The exception callback.
+		 */
+		protected AnimationCallback getAnimationCallback() {
+			return mAnimationCallback;
+		}
+	}
+
+	/**
+	 * Interface for defining an animation.
+	 */
+	public interface RingtoneAnimationDefinition extends Light.AnimationDefinition {
+		/**
+		 * The n-th ringtone of the animation.
+		 *
+		 * @param n counter starting with 0
+		 * @return The n-th ringtone. Null will end the animation.
+		 */
+		Ringtone getRingtone(int n);
+	}
 }

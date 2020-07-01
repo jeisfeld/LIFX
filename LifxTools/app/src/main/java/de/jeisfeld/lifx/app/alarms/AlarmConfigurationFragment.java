@@ -1,6 +1,10 @@
 package de.jeisfeld.lifx.app.alarms;
 
+import android.app.Activity;
 import android.app.TimePickerDialog;
+import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +36,7 @@ import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.AlarmType;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
+import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
@@ -46,13 +51,17 @@ import de.jeisfeld.lifx.lan.Light;
  */
 public class AlarmConfigurationFragment extends Fragment {
 	/**
+	 * The request code used for selecting a ringtone.
+	 */
+	private static final int REQUEST_CODE_SELECT_RINGTONE = 10;
+	/**
 	 * Parameter to pass the alarmId.
 	 */
 	private static final String PARAM_ALARM_ID = "alarmId";
 	/**
 	 * The default duration of alarm steps.
 	 */
-	private static final long DEFAULT_DURATION = 10000;
+	protected static final long DEFAULT_DURATION = 10000;
 	/**
 	 * The hour.
 	 */
@@ -73,6 +82,14 @@ public class AlarmConfigurationFragment extends Fragment {
 	 * The last number of lights (used to identify if a light is added).
 	 */
 	private Map<Light, Boolean> mInitialExpandingStatus = new HashMap<>();
+	/**
+	 * The next ringtone start time.
+	 */
+	private long mRingtoneStartTime = 0;
+	/**
+	 * The original ringtone step to be changed.
+	 */
+	private RingtoneStep mOriginalRingtoneStep;
 
 	/**
 	 * Navigate to this fragment.
@@ -110,21 +127,28 @@ public class AlarmConfigurationFragment extends Fragment {
 				mInitialExpandingStatus.put(lightSteps.getLight(), true);
 			}
 		}
-		mAdapter = new AlarmStepExpandableListAdapter(getActivity(), mAlarm, mInitialExpandingStatus);
+		mAdapter = new AlarmStepExpandableListAdapter(this, mAlarm, mInitialExpandingStatus);
 		listViewAlarmSteps.setAdapter(mAdapter);
 		mInitialExpandingStatus = new HashMap<>();
 
 		root.findViewById(R.id.imageViewAddAlarmLight).setOnClickListener(v -> {
 			List<Light> lightsWithStoredColors = ColorRegistry.getInstance().getLightsWithStoredColors();
+			lightsWithStoredColors.add(RingtoneStep.RINGTONE_DUMMY_LIGHT);
 			lightsWithStoredColors.removeAll(mAlarm.getLightSteps().stream().map(LightSteps::getLight).collect(Collectors.toSet()));
-			SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(), device ->
+			SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(), device -> {
+						if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(device)) {
+							startRingtoneDialog(0, null);
+						}
+						else {
 							StoredColorsDialogFragment.displayStoredColorsDialog(
 									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true,
 									storedColor -> {
 										mAlarm.getSteps().add(new Step(0, storedColor.getId(), DEFAULT_DURATION));
 										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 										mAdapter.notifyDataSetChanged(mAlarm);
-									}),
+									});
+						}
+					},
 					new ArrayList<>(lightsWithStoredColors));
 		});
 
@@ -214,9 +238,11 @@ public class AlarmConfigurationFragment extends Fragment {
 				if (mAlarm.getStopSequence() == null) {
 					List<Step> alarmSteps = new ArrayList<>();
 					for (LightSteps lightSteps : mAlarm.getLightSteps()) {
-						alarmSteps.add(new Step(0,
-								StoredColor.fromDeviceOff((int) lightSteps.getLight().getParameter(DeviceRegistry.DEVICE_ID)).getId(),
-								DEFAULT_DURATION));
+						if (!RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(lightSteps.getLight())) {
+							alarmSteps.add(new Step(0,
+									StoredColor.fromDeviceOff((int) lightSteps.getLight().getParameter(DeviceRegistry.DEVICE_ID)).getId(),
+									DEFAULT_DURATION));
+						}
 					}
 					Alarm stopSequence = new Alarm(true, new Date(), new HashSet<>(), getString(R.string.alarm_stopsequence_name, mAlarm.getName()),
 							alarmSteps, AlarmType.STOP_SEQUENCE, null);
@@ -361,5 +387,49 @@ public class AlarmConfigurationFragment extends Fragment {
 		Collections.sort(alarm.getSteps());
 
 		return alarm;
+	}
+
+	/**
+	 * Start the dialog for selecting ringtone.
+	 *
+	 * @param startTime    the startTime.
+	 * @param originalStep the existing ringtone.
+	 */
+	protected void startRingtoneDialog(final long startTime, final RingtoneStep originalStep) {
+		Intent intent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.title_dialog_ringtone));
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false);
+		if (originalStep != null) {
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, originalStep.getRingtoneUri());
+		}
+		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM);
+		mRingtoneStartTime = startTime;
+		mOriginalRingtoneStep = originalStep;
+		startActivityForResult(intent, REQUEST_CODE_SELECT_RINGTONE);
+	}
+
+	@Override
+	public final void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+		if (requestCode == REQUEST_CODE_SELECT_RINGTONE) {
+			if (resultCode == Activity.RESULT_OK) {
+				Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+				if (uri != null) {
+					if (mOriginalRingtoneStep == null) {
+						mAlarm.getSteps().add(new RingtoneStep(mRingtoneStartTime, uri, DEFAULT_DURATION));
+						mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+						mAdapter.notifyDataSetChanged(mAlarm);
+					}
+					else {
+						RingtoneStep newStep = new RingtoneStep(mOriginalRingtoneStep.getId(), mOriginalRingtoneStep.getDelay(),
+								uri, mOriginalRingtoneStep.getDuration());
+						mAlarm.getSteps().remove(mOriginalRingtoneStep);
+						mAlarm.getSteps().add(newStep);
+						AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+						mAdapter.notifyDataSetChanged();
+					}
+				}
+			}
+		}
 	}
 }

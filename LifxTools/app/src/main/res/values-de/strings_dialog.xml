@@ -43,6 +43,9 @@
     <string name="button_overwrite">Überschreiben</string>
     <string name="button_import">Importieren</string>
 
+    <string name="list_entry_ringtone">Klingelton</string>
+    <string name="title_dialog_ringtone">Wählen Sie einen Klingelton für den Alarm</string>
+
     <string name="label_alarm_active">Aktiv</string>
     <string name="label_alarm_time">Zeit</string>
     <string name="label_alarm_week_days">Wiederholung</string>

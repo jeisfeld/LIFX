@@ -3,6 +3,7 @@ package de.jeisfeld.lifx.app.alarms;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
@@ -19,11 +20,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
+import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
@@ -37,9 +38,9 @@ import de.jeisfeld.lifx.lan.Light;
  */
 public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	/**
-	 * The context.
+	 * The triggering activity.
 	 */
-	private final FragmentActivity mActivity;
+	private final AlarmConfigurationFragment mFragment;
 	/**
 	 * The alarm.
 	 */
@@ -64,13 +65,13 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	/**
 	 * Constructor.
 	 *
-	 * @param activity               The activity.
+	 * @param fragment               The triggering fragment
 	 * @param alarm                  The alarm (if already saved)
 	 * @param initialExpandingStatus The initial expanding status
 	 */
-	protected AlarmStepExpandableListAdapter(final FragmentActivity activity, final Alarm alarm,
+	protected AlarmStepExpandableListAdapter(final AlarmConfigurationFragment fragment, final Alarm alarm,
 											 final Map<Light, Boolean> initialExpandingStatus) {
-		mActivity = activity;
+		mFragment = fragment;
 		mAlarm = alarm;
 		mLightStepsList = alarm.getLightSteps();
 		mInitialExpandingStatus = initialExpandingStatus;
@@ -134,7 +135,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 		LightSteps lightSteps = getGroup(groupPosition);
 		View view = convertView;
 		if (convertView == null) {
-			LayoutInflater layoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater layoutInflater = (LayoutInflater) mFragment.requireActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			assert layoutInflater != null;
 			view = layoutInflater.inflate(R.layout.list_view_alarm_lights, parent, false);
 		}
@@ -184,14 +185,19 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			imageViewAddStep.setVisibility(View.VISIBLE);
 			final long newStartTime = maxStartTime == maxEndTime ? maxEndTime + TimeUnit.SECONDS.toMillis(1) : maxEndTime;
 			imageViewAddStep.setOnClickListener(v -> {
-				int deviceId = (int) getGroup(groupPosition).getLight().getParameter(DeviceRegistry.DEVICE_ID);
-				StoredColorsDialogFragment.displayStoredColorsDialog(
-						mActivity, deviceId, true,
-						storedColor -> {
-							mAlarm.getSteps().add(new Step((int) newStartTime, storedColor.getId(), 10000)); // MAGIC_NUMBER
-							mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-							notifyDataSetChanged();
-						});
+				Light light = getGroup(groupPosition).getLight();
+				if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(light)) {
+					mFragment.startRingtoneDialog(newStartTime, null);
+				}
+				else {
+					StoredColorsDialogFragment.displayStoredColorsDialog(
+							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), true,
+							storedColor -> {
+								mAlarm.getSteps().add(new Step((int) newStartTime, storedColor.getId(), AlarmConfigurationFragment.DEFAULT_DURATION));
+								mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+								notifyDataSetChanged();
+							});
+				}
 			});
 		}
 
@@ -225,7 +231,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 		final Step originalStep = getChild(groupPosition, childPosition);
 		View view = convertView;
 		if (convertView == null) {
-			LayoutInflater layoutInflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			LayoutInflater layoutInflater = (LayoutInflater) mFragment.requireActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			assert layoutInflater != null;
 			view = layoutInflater.inflate(R.layout.list_view_alarm_steps, parent, false);
 		}
@@ -237,31 +243,38 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 
 		final ImageView imageViewStoredColor = view.findViewById(R.id.imageViewStoredColor);
 		final TextView textViewStoredColorName = view.findViewById(R.id.textViewStoredColorName);
-		imageViewStoredColor.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(mActivity, originalStep.getStoredColor()));
+		imageViewStoredColor.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(mFragment.requireContext(), originalStep.getStoredColor()));
 		textViewStoredColorName.setText(originalStep.getStoredColor().getName());
 
-		imageViewStoredColor.setOnClickListener(v -> {
+		OnClickListener changeColorListener = v -> {
 			final Step step = getChild(groupPosition, childPosition);
-			StoredColorsDialogFragment.displayStoredColorsDialog(
-					mActivity, originalStep.getStoredColor().getDeviceId(), true,
-					storedColor -> {
-						Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
-						mAlarm.getSteps().remove(step);
-						mAlarm.getSteps().add(newStep);
-						AlarmRegistry.getInstance().addOrUpdate(mAlarm);
-						notifyDataSetChanged();
-					});
-		});
+
+			if (step instanceof RingtoneStep) {
+				mFragment.startRingtoneDialog(step.getDelay(), (RingtoneStep) step);
+			}
+			else {
+				StoredColorsDialogFragment.displayStoredColorsDialog(
+						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), true,
+						storedColor -> {
+							Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
+							mAlarm.getSteps().remove(step);
+							mAlarm.getSteps().add(newStep);
+							AlarmRegistry.getInstance().addOrUpdate(mAlarm);
+							notifyDataSetChanged();
+						});
+			}
+		};
+		imageViewStoredColor.setOnClickListener(changeColorListener);
+		textViewStoredColorName.setOnClickListener(changeColorListener);
 
 		textViewStartTime.setOnClickListener(v -> {
 			final Step step = getChild(groupPosition, childPosition);
 			int delaySeconds = (int) (step.getDelay() / TimeUnit.SECONDS.toMillis(1));
 
-			DialogUtil.displayDurationDialog(mActivity, new RequestDurationDialogListener() {
+			DialogUtil.displayDurationDialog(mFragment.requireActivity(), new RequestDurationDialogListener() {
 						@Override
 						public void onDialogPositiveClick(final DialogFragment dialog, final int minutes, final int seconds) {
-							Step newStep = new Step(step.getId(), TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds),
-									step.getStoredColorId(), step.getDuration());
+							Step newStep = step.withDelay(TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds));
 							mAlarm.updateDelay(newStep);
 							AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 							notifyDataSetChanged();
@@ -279,11 +292,10 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			final Step step = getChild(groupPosition, childPosition);
 			int durationSeconds = (int) (step.getDuration() / TimeUnit.SECONDS.toMillis(1));
 
-			DialogUtil.displayDurationDialog(mActivity, new RequestDurationDialogListener() {
+			DialogUtil.displayDurationDialog(mFragment.requireActivity(), new RequestDurationDialogListener() {
 						@Override
 						public void onDialogPositiveClick(final DialogFragment dialog, final int minutes, final int seconds) {
-							Step newStep = new Step(step.getId(), step.getDelay(), step.getStoredColorId(),
-									TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds));
+							Step newStep = step.withDuration(TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds));
 							mAlarm.updateDuration(newStep);
 							AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 							notifyDataSetChanged();
@@ -297,18 +309,18 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 					durationSeconds % SECONDS_PER_MINUTE, R.string.message_dialog_alarm_step_duration);
 		});
 
-		view.findViewById(R.id.imageViewDelete).setOnClickListener(v -> DialogUtil.displayConfirmationMessage(mActivity, dialog -> {
+		view.findViewById(R.id.imageViewDelete).setOnClickListener(v -> DialogUtil.displayConfirmationMessage(mFragment.requireActivity(), dialog -> {
 			// Update duration, so that following steps are shifted
-			mAlarm.updateDuration(new Step(originalStep.getId(), originalStep.getDelay(), originalStep.getStoredColorId(), 0));
+			mAlarm.updateDuration(originalStep.withDuration(0));
 			mAlarm.removeStep(originalStep.getId());
 			AlarmRegistry.getInstance().remove(originalStep, mAlarm.getId());
 			AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 			notifyDataSetChanged();
 
 			if (mAlarm.getSteps().size() == 0) {
-				AlarmReceiver.cancelAlarm(mActivity, mAlarm.getId());
+				AlarmReceiver.cancelAlarm(mFragment.requireContext(), mAlarm.getId());
 				AlarmRegistry.getInstance().remove(mAlarm);
-				NavController navController = Navigation.findNavController(mActivity, R.id.nav_host_fragment);
+				NavController navController = Navigation.findNavController(mFragment.requireActivity(), R.id.nav_host_fragment);
 				navController.navigateUp();
 			}
 		}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm_step));

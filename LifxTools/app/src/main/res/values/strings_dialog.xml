@@ -44,6 +44,9 @@
     <string name="button_overwrite">Overwrite</string>
     <string name="button_import">Import</string>
 
+    <string name="list_entry_ringtone">Ringtone</string>
+    <string name="title_dialog_ringtone">Select a ringtone for the alarm</string>
+
     <string name="label_alarm_active">Active</string>
     <string name="label_alarm_time">Time</string>
     <string name="label_alarm_week_days">Repeat</string>

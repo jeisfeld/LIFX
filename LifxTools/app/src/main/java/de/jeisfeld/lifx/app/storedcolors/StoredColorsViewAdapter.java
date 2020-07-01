@@ -30,6 +30,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -187,6 +188,10 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 * @return The drawable to be used.
 	 */
 	public static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
+		if (RingtoneStep.RINGTONE_DUMMY_LIGHT.equals(storedColor.getLight())) {
+			return context.getResources().getDrawable(R.drawable.ic_alarm_ringtone, context.getTheme());
+		}
+
 		GradientDrawable drawable = new GradientDrawable();
 		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
 		drawable.setShape(GradientDrawable.OVAL);

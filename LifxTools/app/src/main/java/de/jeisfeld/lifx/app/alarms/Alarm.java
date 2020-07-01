@@ -1,6 +1,10 @@
 package de.jeisfeld.lifx.app.alarms;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,6 +22,7 @@ import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * Class holding information about an alarm.
@@ -124,7 +129,13 @@ public class Alarm {
 		mSteps = new ArrayList<>();
 		for (Integer stepId : stepIds) {
 			if (stepId != null) {
-				mSteps.add(new Step(stepId));
+				String uriString = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_alarm_step_ringtone_uri, stepId);
+				if (uriString == null) {
+					mSteps.add(new Step(stepId));
+				}
+				else {
+					mSteps.add(new RingtoneStep(stepId, Uri.parse(uriString)));
+				}
 			}
 		}
 
@@ -329,7 +340,12 @@ public class Alarm {
 	public Alarm clone(final Context context, final String newName) {
 		List<Step> newSteps = new ArrayList<>();
 		for (Step step : getSteps()) {
-			newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
+			if (step instanceof RingtoneStep) {
+				newSteps.add(new RingtoneStep(step.getDelay(), ((RingtoneStep) step).getRingtoneUri(), step.getDuration()));
+			}
+			else {
+				newSteps.add(new Step(step.getDelay(), step.getStoredColorId(), step.getDuration()));
+			}
 		}
 		Alarm newStopSequence = null;
 		if (getStopSequence() != null) {
@@ -436,7 +452,7 @@ public class Alarm {
 						afterUpdatedStep = true;
 					}
 					else if (afterUpdatedStep) {
-						updatedSteps.add(new Step(step.getId(), step.getDelay() + durationDiff, step.getStoredColorId(), step.getDuration()));
+						updatedSteps.add(step.withDelay(step.getDelay() + durationDiff));
 					}
 					else {
 						updatedSteps.add(step);
@@ -478,11 +494,10 @@ public class Alarm {
 						updatedSteps.add(updatedStep);
 						afterUpdatedStep = true;
 						delayDiff = Math.max(0, updatedStep.getDelay() + updatedStep.getDuration() - step.getDelay());
-						updatedSteps.add(new Step(step.getId(), step.getDelay() + delayDiff,
-								step.getStoredColorId(), step.getDuration()));
+						updatedSteps.add(step.withDelay(step.getDelay() + delayDiff));
 					}
 					else {
-						updatedSteps.add(new Step(step.getId(), step.getDelay() + delayDiff, step.getStoredColorId(), step.getDuration()));
+						updatedSteps.add(step.withDelay(step.getDelay() + delayDiff));
 					}
 				}
 			}
@@ -543,16 +558,6 @@ public class Alarm {
 		}
 
 		/**
-		 * Generate a new alarm step by adding id.
-		 *
-		 * @param id   The id
-		 * @param step the base step.
-		 */
-		public Step(final int id, final Step step) {
-			this(id, step.getDelay(), step.getStoredColorId(), step.getDuration());
-		}
-
-		/**
 		 * Retrieve an alarm step from storage via id.
 		 *
 		 * @param stepId The id of the alarm step.
@@ -560,7 +565,7 @@ public class Alarm {
 		protected Step(final int stepId) {
 			mId = stepId;
 			mDelay = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_step_delay, stepId, 0);
-			mStoredColorId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_step_stored_color_id, stepId, -1);
+			mStoredColorId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_alarm_step_stored_color_id, stepId, 0);
 			mDuration = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_alarm_step_duration, stepId, 0);
 		}
 
@@ -575,7 +580,7 @@ public class Alarm {
 			if (getId() < 0) {
 				int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_alarm_step_max_id, 0) + 1;
 				PreferenceUtil.setSharedPreferenceInt(R.string.key_alarm_step_max_id, newId);
-				step = new Step(newId, this);
+				step = new Step(newId, getDelay(), getStoredColorId(), getDuration());
 			}
 
 			List<Integer> stepIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_alarm_step_ids, alarmId);
@@ -675,6 +680,140 @@ public class Alarm {
 				return Long.compare(getDelay(), other.getDelay());
 			}
 		}
+
+		/**
+		 * Update the duration of the step.
+		 *
+		 * @param duration The new duration.
+		 * @return The updated step.
+		 */
+		protected Step withDuration(final long duration) {
+			return new Step(getId(), getDelay(), getStoredColorId(), duration);
+		}
+
+		/**
+		 * Update the delay of the step.
+		 *
+		 * @param delay The new delay.
+		 * @return The updated step.
+		 */
+		protected Step withDelay(final long delay) {
+			return new Step(getId(), delay, getStoredColorId(), getDuration());
+		}
+	}
+
+	/**
+	 * An alarm step representing a ringtone instead of a color.
+	 */
+	public static class RingtoneStep extends Step {
+		/**
+		 * The dummy light used for ringtones.
+		 */
+		public static final Light RINGTONE_DUMMY_LIGHT =
+				new Light("", null, 0, 0, null, null, 0,
+						Application.getResourceString(R.string.list_entry_ringtone));
+
+		/**
+		 * The ringtone Uri.
+		 */
+		private final Uri mRingtoneUri;
+		/**
+		 * The ringtone name.
+		 */
+		private String mRingtoneName = null;
+
+		/**
+		 * Generate a ringtone alarm step.
+		 *
+		 * @param id          The id for storage
+		 * @param delay       the delay
+		 * @param ringtoneUri The ringtone Uri.
+		 * @param duration    the duration
+		 */
+		public RingtoneStep(final int id, final long delay, final Uri ringtoneUri, final long duration) {
+			super(id, delay, 0, duration);
+			mRingtoneUri = ringtoneUri;
+		}
+
+		/**
+		 * Generate a ringtone alarm step without id.
+		 *
+		 * @param delay       the delay
+		 * @param ringtoneUri The ringtone Uri.
+		 * @param duration    the duration
+		 */
+		public RingtoneStep(final long delay, final Uri ringtoneUri, final long duration) {
+			super(delay, 0, duration);
+			mRingtoneUri = ringtoneUri;
+		}
+
+		/**
+		 * Retrieve a ringtone step from storage via id.
+		 *
+		 * @param stepId      The id of the alarm step.
+		 * @param ringtoneUri The ringtone Uri.
+		 */
+		protected RingtoneStep(final int stepId, final Uri ringtoneUri) {
+			super(stepId);
+			mRingtoneUri = ringtoneUri;
+		}
+
+		/**
+		 * Get the ringtone Uri.
+		 *
+		 * @return The ringtone Uri.
+		 */
+		public Uri getRingtoneUri() {
+			return mRingtoneUri;
+		}
+
+		/**
+		 * Get the ringtone.
+		 *
+		 * @param context The context.
+		 * @return The ringtone.
+		 */
+		public Ringtone getRingtone(final Context context) {
+			Ringtone ringtone = RingtoneManager.getRingtone(context, getRingtoneUri());
+			ringtone.setAudioAttributes(new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build());
+			return ringtone;
+		}
+
+		@Override
+		public final Step store(final int alarmId) {
+			Step step = super.store(alarmId);
+			RingtoneStep newStep = new RingtoneStep(step.getId(), step.getDelay(), getRingtoneUri(), step.getDuration());
+			PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_step_ringtone_uri, step.getId(), newStep.getRingtoneUri().toString());
+			return newStep;
+		}
+
+		@Override
+		public final StoredColor getStoredColor() {
+			if (mRingtoneName == null) {
+				try {
+					mRingtoneName = getRingtone(Application.getAppContext()).getTitle(Application.getAppContext());
+				}
+				catch (Exception e) {
+					// ignore
+				}
+			}
+			return new StoredColor(0, Color.OFF, 0, mRingtoneName == null ? "(ERROR)" : mRingtoneName) {
+				@Override
+				public Light getLight() {
+					return RINGTONE_DUMMY_LIGHT;
+				}
+			};
+		}
+
+		@Override
+		protected final RingtoneStep withDuration(final long duration) {
+			return new RingtoneStep(getId(), getDelay(), getRingtoneUri(), duration);
+		}
+
+		@Override
+		protected final RingtoneStep withDelay(final long delay) {
+			return new RingtoneStep(getId(), delay, getRingtoneUri(), getDuration());
+		}
 	}
 
 	/**
@@ -754,7 +893,7 @@ public class Alarm {
 		 * Constructor.
 		 *
 		 * @param buttonResource The button resource.
-		 * @param toastResource The toat resource.
+		 * @param toastResource  The toat resource.
 		 */
 		AlarmType(final int buttonResource, final int toastResource) {
 			mButtonResource = buttonResource;
