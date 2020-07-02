@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/listViewHome"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/listelement_light_height_land"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/list_vertical_margin"
+    android:paddingBottom="@dimen/list_vertical_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/checkboxSelectLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/textViewHome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/buttonPower"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_marginEnd="@dimen/list_horizontal_margin"
+            android:background="@drawable/powerbutton_offline" />
+
+        <Button
+            android:id="@+id/buttonMultiColorPicker"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_marginEnd="@dimen/list_horizontal_margin"
+            android:background="@drawable/ic_button_multizone_colors"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonImage"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_marginEnd="@dimen/list_horizontal_margin"
+            android:background="@drawable/ic_button_image"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonTune"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_marginEnd="@dimen/list_horizontal_margin"
+            android:background="@drawable/ic_button_tune"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_marginEnd="@dimen/list_horizontal_margin"
+            android:background="@drawable/ic_menu_stored_colors" />
+
+        <ToggleButton
+            android:id="@+id/toggleButtonAnimation"
+            android:layout_width="@dimen/medium_button_size"
+            android:layout_height="@dimen/medium_button_size"
+            android:background="@drawable/ic_toggle_animation"
+            android:textOff=""
+            android:textOn="" />
+
+        <SeekBar
+            android:id="@+id/seekBarBrightness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/list_vertical_margin"
+            android:clickable="false"
+            android:max="65534"
+            android:thumb="@drawable/ic_button_brightness"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

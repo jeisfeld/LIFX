@@ -21,4 +21,9 @@
     <style name="NumberPickerText" parent="AppTheme">
         <item name="android:textSize">20sp</item>
     </style>
+
+    <style name="WideDialog" parent="Base.Theme.AppCompat.Dialog">
+        <item name="android:windowMinWidthMajor">90%</item>
+        <item name="android:windowMinWidthMinor">90%</item>
+    </style>
 </resources>
