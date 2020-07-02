@@ -114,9 +114,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @return true if the alarm has been created.
 	 */
 	private static boolean setAlarm(final Context context, final Alarm alarm, final boolean onlyFuture) {
+		cancelAlarm(context, alarm.getId());
 		if (!alarm.isActive()) {
-			// only create active alarms.
-			cancelAlarm(context, alarm.getId());
 			return false;
 		}
 		Date startTime = alarm.getStartTime();
