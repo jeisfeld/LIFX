@@ -9,14 +9,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import java.lang.ref.WeakReference;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -77,10 +81,18 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public final void onBindViewHolder(final MyViewHolder holder, final int position) {
-		final Alarm alarm = mAlarms.get(position);
-		holder.mCheckBoxActive.setChecked(alarm.isActive());
-		holder.mTextViewAlarmName.setText(alarm.getName());
-		holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%1$tH:%1$tM", alarm.getStartTime()));
+		holder.mAlarm = mAlarms.get(position);
+		holder.mCheckBoxActive.setChecked(holder.mAlarm.isActive());
+		holder.mTextViewAlarmName.setText(holder.mAlarm.getName());
+		holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%1$tH:%1$tM", holder.mAlarm.getStartTime()));
+		holder.mLayoutWeekDays.setVisibility(holder.mAlarm.isActive() ? View.VISIBLE : View.GONE);
+		holder.mToggleButtonMonday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.MONDAY));
+		holder.mToggleButtonTuesday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.TUESDAY));
+		holder.mToggleButtonWednesday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.WEDNESDAY));
+		holder.mToggleButtonThursday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.THURSDAY));
+		holder.mToggleButtonFriday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.FRIDAY));
+		holder.mToggleButtonSaturday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.SATURDAY));
+		holder.mToggleButtonSunday.setChecked(holder.mAlarm.getWeekDays().contains(Calendar.SUNDAY));
 
 		holder.mDragHandle.setOnTouchListener((view, event) -> {
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -93,19 +105,11 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 		});
 
 		holder.mCheckBoxActive.setOnClickListener(v -> {
-			Date startTime = mAlarms.get(position).getStartTime();
-			if (alarm.getWeekDays().size() == 0) {
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTime(startTime);
-				startTime = Alarm.getDate(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
-			}
-
-			Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(), startTime, alarm.getWeekDays(), alarm.getName(),
-					alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence(), alarm.isMaximizeVolume());
-			AlarmRegistry.getInstance().addOrUpdate(newAlarm);
+			saveAlarm(holder);
+			holder.mLayoutWeekDays.setVisibility(holder.mAlarm.isActive() ? View.VISIBLE : View.GONE);
 		});
 
-		holder.mTextViewAlarmName.setOnClickListener(v -> AlarmConfigurationFragment.navigate(mFragment.get(), alarm.getId()));
+		holder.mTextViewAlarmName.setOnClickListener(v -> AlarmConfigurationFragment.navigate(mFragment.get(), holder.mAlarm.getId()));
 
 		holder.mTextViewStartTime.setOnClickListener(v -> {
 			Fragment fragment = mFragment.get();
@@ -116,9 +120,10 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 				TimePickerDialog mTimePicker = new TimePickerDialog(activity,
 						(timePicker, selectedHour, selectedMinute) -> {
 							holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
-							Alarm newAlarm = new Alarm(alarm.getId(), holder.mCheckBoxActive.isChecked(), Alarm.getDate(selectedHour, selectedMinute),
-									alarm.getWeekDays(), alarm.getName(), alarm.getSteps(), alarm.getAlarmType(), alarm.getStopSequence(),
-									alarm.isMaximizeVolume());
+							Alarm newAlarm = new Alarm(holder.mAlarm.getId(), holder.mCheckBoxActive.isChecked(),
+									Alarm.getDate(selectedHour, selectedMinute), holder.mAlarm.getWeekDays(), holder.mAlarm.getName(),
+									holder.mAlarm.getSteps(), holder.mAlarm.getAlarmType(), holder.mAlarm.getStopSequence(),
+									holder.mAlarm.isMaximizeVolume());
 							AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 							mAlarms.clear();
 							mAlarms.addAll(AlarmRegistry.getInstance().getAlarms());
@@ -129,20 +134,47 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 			}
 		});
 
+		holder.mToggleButtonMonday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+		holder.mToggleButtonTuesday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+		holder.mToggleButtonWednesday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+		holder.mToggleButtonThursday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+		holder.mToggleButtonFriday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+		holder.mToggleButtonSaturday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+		holder.mToggleButtonSunday.setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(holder));
+
 		holder.mDeleteButton.setOnClickListener(v -> {
 			Fragment fragment = mFragment.get();
 			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
 			if (activity != null) {
 				DialogUtil.displayConfirmationMessage(activity, dialog -> {
-					AlarmReceiver.cancelAlarm(activity, alarm.getId());
-					AlarmRegistry.getInstance().remove(alarm);
+					AlarmReceiver.cancelAlarm(activity, holder.mAlarm.getId());
+					AlarmRegistry.getInstance().remove(holder.mAlarm);
 					mAlarms.remove(position);
 					mAlarmIds.remove(position);
 					notifyItemRemoved(position);
 					notifyItemRangeChanged(position, mAlarms.size() - position);
-				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm, alarm.getName());
+				}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_alarm, holder.mAlarm.getName());
 			}
 		});
+	}
+
+	/**
+	 * Save the alarm.
+	 *
+	 * @param holder the view holder.
+	 */
+	private void saveAlarm(final MyViewHolder holder) {
+		Date startTime = holder.mAlarm.getStartTime();
+		if (holder.mAlarm.getWeekDays().size() == 0) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(startTime);
+			startTime = Alarm.getDate(calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
+		}
+
+		Alarm newAlarm = new Alarm(holder.mAlarm.getId(), holder.mCheckBoxActive.isChecked(), startTime, holder.getSelectecWeekDays(),
+				holder.mTextViewAlarmName.getText().toString(), holder.mAlarm.getSteps(), holder.mAlarm.getAlarmType(),
+				holder.mAlarm.getStopSequence(), holder.mAlarm.isMaximizeVolume());
+		holder.mAlarm = AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 	}
 
 	@Override
@@ -185,6 +217,10 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 	 */
 	public class MyViewHolder extends RecyclerView.ViewHolder {
 		/**
+		 * The alarm.
+		 */
+		private Alarm mAlarm;
+		/**
 		 * The whole item.
 		 */
 		private final View mRowView;
@@ -208,6 +244,38 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 		 * The delete button.
 		 */
 		private final ImageView mDeleteButton;
+		/**
+		 * The layout containing buttons for weekdays.
+		 */
+		private final LinearLayout mLayoutWeekDays;
+		/**
+		 * The toggle button for Monday.
+		 */
+		private final ToggleButton mToggleButtonMonday;
+		/**
+		 * The toggle button for Tuesday.
+		 */
+		private final ToggleButton mToggleButtonTuesday;
+		/**
+		 * The toggle button for Wednesday.
+		 */
+		private final ToggleButton mToggleButtonWednesday;
+		/**
+		 * The toggle button for Thursday.
+		 */
+		private final ToggleButton mToggleButtonThursday;
+		/**
+		 * The toggle button for Friday.
+		 */
+		private final ToggleButton mToggleButtonFriday;
+		/**
+		 * The toggle button for Saturday.
+		 */
+		private final ToggleButton mToggleButtonSaturday;
+		/**
+		 * The toggle button for Sunday.
+		 */
+		private final ToggleButton mToggleButtonSunday;
 
 		/**
 		 * Constructor.
@@ -222,8 +290,49 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 			mTextViewStartTime = itemView.findViewById(R.id.textViewStartTime);
 			mDragHandle = itemView.findViewById(R.id.imageViewDragHandle);
 			mDeleteButton = itemView.findViewById(R.id.imageViewDelete);
+			mLayoutWeekDays = itemView.findViewById(R.id.layoutWeekDays);
+			mToggleButtonMonday = itemView.findViewById(R.id.toggleButtonMonday);
+			mToggleButtonTuesday = itemView.findViewById(R.id.toggleButtonTuesday);
+			mToggleButtonWednesday = itemView.findViewById(R.id.toggleButtonWednesday);
+			mToggleButtonThursday = itemView.findViewById(R.id.toggleButtonThursday);
+			mToggleButtonFriday = itemView.findViewById(R.id.toggleButtonFriday);
+			mToggleButtonSaturday = itemView.findViewById(R.id.toggleButtonSaturday);
+			mToggleButtonSunday = itemView.findViewById(R.id.toggleButtonSunday);
+		}
+
+
+		/**
+		 * Get the selected weekdays.
+		 *
+		 * @return The selected weekdays.
+		 */
+		private Set<Integer> getSelectecWeekDays() {
+			Set<Integer> weekDays = new HashSet<>();
+			if (mToggleButtonMonday.isChecked()) {
+				weekDays.add(Calendar.MONDAY);
+			}
+			if (mToggleButtonTuesday.isChecked()) {
+				weekDays.add(Calendar.TUESDAY);
+			}
+			if (mToggleButtonWednesday.isChecked()) {
+				weekDays.add(Calendar.WEDNESDAY);
+			}
+			if (mToggleButtonThursday.isChecked()) {
+				weekDays.add(Calendar.THURSDAY);
+			}
+			if (mToggleButtonFriday.isChecked()) {
+				weekDays.add(Calendar.FRIDAY);
+			}
+			if (mToggleButtonSaturday.isChecked()) {
+				weekDays.add(Calendar.SATURDAY);
+			}
+			if (mToggleButtonSunday.isChecked()) {
+				weekDays.add(Calendar.SUNDAY);
+			}
+			return weekDays;
 		}
 	}
+
 
 	/**
 	 * A listener for starting the drag.
