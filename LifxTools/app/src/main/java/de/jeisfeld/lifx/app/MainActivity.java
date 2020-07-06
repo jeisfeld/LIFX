@@ -2,7 +2,11 @@ package de.jeisfeld.lifx.app;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
+import android.provider.Settings.Panel;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -14,6 +18,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.AppBarConfiguration.Builder;
 import androidx.navigation.ui.NavigationUI;
 
 /**
@@ -53,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 		NavigationView navigationView = findViewById(R.id.nav_view);
 		// Passing each menu ID as a set of Ids because each
 		// menu should be considered as top level destinations.
-		mAppBarConfiguration = new AppBarConfiguration.Builder(R.id.nav_home, R.id.nav_manage_devices, R.id.nav_stored_colors,
+		mAppBarConfiguration = new Builder(R.id.nav_home, R.id.nav_manage_devices, R.id.nav_stored_colors,
 				R.id.nav_alarms, R.id.nav_settings)
 				.setDrawerLayout(drawer)
 				.build();
@@ -65,6 +70,16 @@ public class MainActivity extends AppCompatActivity {
 		if (navigationPageId >= 0) {
 			navController.popBackStack();
 			navController.navigate(navigationPageId);
+		}
+
+		WifiManager wifiManager = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+		if (wifiManager != null && !wifiManager.isWifiEnabled()) {
+			if (VERSION.SDK_INT >= VERSION_CODES.Q) {
+				startActivity(new Intent(Panel.ACTION_WIFI));
+			}
+			else {
+				wifiManager.setWifiEnabled(true);
+			}
 		}
 	}
 
