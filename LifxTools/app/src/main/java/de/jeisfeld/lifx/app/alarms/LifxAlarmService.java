@@ -121,7 +121,22 @@ public class LifxAlarmService extends Service {
 	 * @param alarmTime the alarm time.
 	 */
 	protected static void triggerAlarmService(final Context context, final String action, final int alarmId, final Date alarmTime) {
-		ContextCompat.startForegroundService(context, createIntent(context, action, alarmId, alarmTime));
+		if (ACTION_CANCEL_ALARM.equals(action) || ACTION_INTERRUPT_ALARM.equals(action)) {
+			context.startService(createIntent(context, action, alarmId, alarmTime));
+		}
+		else {
+			ContextCompat.startForegroundService(context, createIntent(context, action, alarmId, alarmTime));
+		}
+	}
+
+	/**
+	 * Check if the alarm of certain id is pending.
+	 *
+	 * @param alarmId The alarmId
+	 * @return true if this alarm is pending.
+	 */
+	protected static boolean isAlarmPending(final int alarmId) {
+		return PENDING_ALARMS.containsKey(alarmId);
 	}
 
 	/**
@@ -160,21 +175,15 @@ public class LifxAlarmService extends Service {
 		Logger.info("LifxAlarmService start " + action + " - " + alarm.getName() + (alarmDate == null ? "" : " for " + alarmDate));
 
 		if (ACTION_CREATE_ALARM.equals(action)) {
-			synchronized (PENDING_ALARMS) {
+			synchronized (ANIMATED_ALARMS) {
 				PENDING_ALARMS.put(alarmId, alarm);
+				startNotification();
 			}
-			startNotification();
 		}
 		else if (ACTION_CANCEL_ALARM.equals(action)) {
-			synchronized (PENDING_ALARMS) {
+			synchronized (ANIMATED_ALARMS) {
 				PENDING_ALARMS.remove(alarmId);
-				// Still start notification to be safe in case of saving previously inactive alarm.
 				startNotification();
-				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
-					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
-					Logger.info("LifxAlarmService stop after cancel - no alarms left");
-					stopService(serviceIntent);
-				}
 			}
 		}
 		else if (ACTION_TRIGGER_ALARM.equals(action)) {
@@ -220,12 +229,12 @@ public class LifxAlarmService extends Service {
 	private void runAnimations(final Alarm alarm, final Date alarmDate) {
 		synchronized (ANIMATED_ALARMS) {
 			ANIMATED_ALARMS.add(alarm.getId());
+			startNotification();
 		}
 		for (BaseAnimationThread animationThread : getAnimationThreads(alarm, alarmDate)) {
 			animationThread.start();
 		}
 
-		startNotification();
 		startRunningNotification(alarm);
 	}
 
@@ -471,6 +480,12 @@ public class LifxAlarmService extends Service {
 	 * Start the notification.
 	 */
 	private void startNotification() {
+		if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
+			Logger.info("LifxAlarmService stop - no alarms left");
+			stopForeground(true);
+			stopSelf();
+			return;
+		}
 		PendingIntent contentIntent = PendingIntent.getActivity(this, REQUEST_CODE,
 				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
 		String notificationMessage = getRunningAlarmsString();
@@ -482,6 +497,10 @@ public class LifxAlarmService extends Service {
 				.setContentIntent(contentIntent)
 				.build();
 		startForeground(SERVICE_ID, notification);
+		// sometimes update of notification text is not reliable - therefore making explicit update.
+		NotificationManager manager = getSystemService(NotificationManager.class);
+		assert manager != null;
+		manager.notify(SERVICE_ID, notification);
 	}
 
 	/**
@@ -554,13 +573,7 @@ public class LifxAlarmService extends Service {
 			synchronized (ANIMATED_ALARMS) {
 				ANIMATED_ALARMS.remove((Integer) alarm.getId());
 				Logger.debug("LifxAlarmService end (" + ANIMATED_ALARMS.size() + "," + PENDING_ALARMS.size() + ")");
-				if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
-					Intent serviceIntent = new Intent(this, LifxAlarmService.class);
-					stopService(serviceIntent);
-				}
-				else {
-					startNotification();
-				}
+				startNotification();
 				if (!ANIMATED_ALARMS.contains(alarm.getId())) {
 					endRunningNotification(alarm);
 				}

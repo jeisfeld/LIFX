@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import de.jeisfeld.lifx.app.Application;
+import de.jeisfeld.lifx.os.Logger;
 
 /**
  * Receiver for the alarm triggering the update of the image widget.
@@ -114,7 +115,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @return true if the alarm has been created.
 	 */
 	private static boolean setAlarm(final Context context, final Alarm alarm, final boolean onlyFuture) {
-		cancelAlarm(context, alarm.getId());
 		if (!alarm.isActive()) {
 			return false;
 		}
@@ -165,6 +165,10 @@ public class AlarmReceiver extends BroadcastReceiver {
 	 * @param alarmId the alarm id.
 	 */
 	public static void cancelAlarm(final Context context, final int alarmId) {
+		if (!LifxAlarmService.isAlarmPending(alarmId)) {
+			Logger.info("Alarm " + alarmId + " not pending, hence not cancelling");
+			return;
+		}
 		AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		if (alarmMgr != null) {
 			alarmMgr.cancel(createAlarmIntent(context, alarmId, null, false));

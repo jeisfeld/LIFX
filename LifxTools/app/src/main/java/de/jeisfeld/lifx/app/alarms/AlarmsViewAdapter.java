@@ -116,7 +116,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
 			if (activity != null) {
 				final Calendar calendar = Calendar.getInstance();
-				calendar.setTime(mAlarms.get(position).getStartTime());
+				calendar.setTime(holder.mAlarm.getStartTime());
 				TimePickerDialog mTimePicker = new TimePickerDialog(activity,
 						(timePicker, selectedHour, selectedMinute) -> {
 							holder.mTextViewStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", selectedHour, selectedMinute));
@@ -124,9 +124,7 @@ public class AlarmsViewAdapter extends RecyclerView.Adapter<AlarmsViewAdapter.My
 									Alarm.getDate(selectedHour, selectedMinute), holder.mAlarm.getWeekDays(), holder.mAlarm.getName(),
 									holder.mAlarm.getSteps(), holder.mAlarm.getAlarmType(), holder.mAlarm.getStopSequence(),
 									holder.mAlarm.isMaximizeVolume());
-							AlarmRegistry.getInstance().addOrUpdate(newAlarm);
-							mAlarms.clear();
-							mAlarms.addAll(AlarmRegistry.getInstance().getAlarms());
+							holder.mAlarm = AlarmRegistry.getInstance().addOrUpdate(newAlarm);
 						},
 						calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), true);
 				mTimePicker.setTitle(R.string.title_dialog_alarm_time);
