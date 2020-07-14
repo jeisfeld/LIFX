@@ -477,13 +477,17 @@ public class LifxAlarmService extends Service {
 	}
 
 	/**
-	 * Start the notification.
+	 * Start the notification, or stop it if not required any more.
 	 */
 	private void startNotification() {
 		if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
 			Logger.info("LifxAlarmService stop - no alarms left");
 			stopForeground(true);
 			stopSelf();
+			// sometimes deletion of notification is not reliable - therefore making explicit update.
+			NotificationManager manager = getSystemService(NotificationManager.class);
+			assert manager != null;
+			manager.cancel(SERVICE_ID);
 			return;
 		}
 		PendingIntent contentIntent = PendingIntent.getActivity(this, REQUEST_CODE,
@@ -573,10 +577,10 @@ public class LifxAlarmService extends Service {
 			synchronized (ANIMATED_ALARMS) {
 				ANIMATED_ALARMS.remove((Integer) alarm.getId());
 				Logger.debug("LifxAlarmService end (" + ANIMATED_ALARMS.size() + "," + PENDING_ALARMS.size() + ")");
-				startNotification();
 				if (!ANIMATED_ALARMS.contains(alarm.getId())) {
 					endRunningNotification(alarm);
 				}
+				startNotification();
 				if (alarm.getStopSequence() != null && alarm.getStopSequence().isActive()) {
 					triggerAlarmService(this, ACTION_TRIGGER_ALARM, alarm.getStopSequence().getId(), new Date());
 				}
