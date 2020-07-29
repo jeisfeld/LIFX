@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import com.google.android.material.navigation.NavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
@@ -20,6 +21,7 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.AppBarConfiguration.Builder;
 import androidx.navigation.ui.NavigationUI;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 
 /**
  * The main activity of the app.
@@ -54,13 +56,15 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+		AppCompatDelegate.setDefaultNightMode(
+				PreferenceUtil.getSharedPreferenceIntString(R.string.key_pref_night_mode, R.string.pref_default_night_mode));
 		DrawerLayout drawer = findViewById(R.id.drawer_layout);
 		NavigationView navigationView = findViewById(R.id.nav_view);
 		// Passing each menu ID as a set of Ids because each
 		// menu should be considered as top level destinations.
 		mAppBarConfiguration = new Builder(R.id.nav_home, R.id.nav_manage_devices, R.id.nav_stored_colors,
 				R.id.nav_alarms, R.id.nav_settings)
-				.setDrawerLayout(drawer)
+				.setOpenableLayout(drawer)
 				.build();
 		NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 		NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);

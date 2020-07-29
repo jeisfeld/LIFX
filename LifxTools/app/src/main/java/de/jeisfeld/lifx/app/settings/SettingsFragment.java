@@ -13,6 +13,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.DialogFragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -39,10 +40,17 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 	 */
 	private static final String EXPORT_FILENAME_SUFFIX = ".exp";
 
+	private static boolean onPreferenceChange(final Preference preference, final Object newValue) {
+		AppCompatDelegate.setDefaultNightMode(Integer.parseInt((String) newValue));
+		return true;
+	}
+
 	@Override
 	public final void onCreatePreferences(final Bundle savedInstanceState, final String rootKey) {
 		setPreferencesFromResource(R.xml.preferences, rootKey);
 		configureExportImportButtons();
+
+		findPreference(getString(R.string.key_pref_night_mode)).setOnPreferenceChangeListener(SettingsFragment::onPreferenceChange);
 	}
 
 	/**

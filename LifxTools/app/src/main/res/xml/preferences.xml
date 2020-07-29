@@ -11,6 +11,14 @@
         app:iconSpaceReserved="false"
         app:useSimpleSummaryProvider="true" />
     <ListPreference
+        android:defaultValue="@string/pref_default_night_mode"
+        android:entries="@array/pref_list_titles_night_mode"
+        android:entryValues="@array/pref_list_values_night_mode"
+        android:key="@string/key_pref_night_mode"
+        android:title="@string/pref_title_night_mode"
+        app:iconSpaceReserved="false"
+        app:useSimpleSummaryProvider="true" />
+    <ListPreference
         android:defaultValue="@string/pref_default_power_duration"
         android:entries="@array/pref_list_titles_power_duration"
         android:entryValues="@array/pref_list_values_power_duration"

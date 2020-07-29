@@ -113,9 +113,9 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/small_margin"
         android:background="@drawable/ic_toggle_weekday"
+        android:textColor="#000000"
         android:textOff="@string/text_monday"
         android:textOn="@string/text_monday"
-
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
         app:layout_constraintEnd_toStartOf="@id/toggleButtonTuesday"
         app:layout_constraintTop_toTopOf="@id/labelStartTime" />
@@ -126,9 +126,9 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/small_margin"
         android:background="@drawable/ic_toggle_weekday"
+        android:textColor="#000000"
         android:textOff="@string/text_tuesday"
         android:textOn="@string/text_tuesday"
-
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
         app:layout_constraintEnd_toStartOf="@id/toggleButtonWednesday"
         app:layout_constraintTop_toTopOf="@id/labelStartTime" />
@@ -139,7 +139,7 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/small_margin"
         android:background="@drawable/ic_toggle_weekday"
-
+        android:textColor="#000000"
         android:textOff="@string/text_wednesday"
         android:textOn="@string/text_wednesday"
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
@@ -152,9 +152,9 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/small_margin"
         android:background="@drawable/ic_toggle_weekday"
+        android:textColor="#000000"
         android:textOff="@string/text_thursday"
         android:textOn="@string/text_thursday"
-
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
         app:layout_constraintEnd_toStartOf="@id/toggleButtonFriday"
         app:layout_constraintTop_toTopOf="@id/labelStartTime" />
@@ -165,9 +165,9 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/small_margin"
         android:background="@drawable/ic_toggle_weekday"
+        android:textColor="#000000"
         android:textOff="@string/text_friday"
         android:textOn="@string/text_friday"
-
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
         app:layout_constraintEnd_toStartOf="@id/toggleButtonSaturday"
         app:layout_constraintTop_toTopOf="@id/labelStartTime" />
@@ -178,6 +178,7 @@
         android:layout_height="@dimen/small_button_size"
         android:layout_marginEnd="@dimen/small_margin"
         android:background="@drawable/ic_toggle_weekday"
+        android:textColor="#000000"
         android:textOff="@string/text_saturday"
         android:textOn="@string/text_saturday"
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"
@@ -189,6 +190,7 @@
         android:layout_width="@dimen/small_button_size"
         android:layout_height="@dimen/small_button_size"
         android:background="@drawable/ic_toggle_weekday"
+        android:textColor="#000000"
         android:textOff="@string/text_sunday"
         android:textOn="@string/text_sunday"
         app:layout_constraintBottom_toBottomOf="@id/labelStartTime"

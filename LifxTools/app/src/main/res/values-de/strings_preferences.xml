@@ -6,6 +6,7 @@
     <string name="pref_title_color_duration">Farbwechseldauer</string>
     <string name="pref_title_refresh_period">Aktualisierungszeitraum</string>
     <string name="pref_title_use_wakelock">Gerät bei Animation wach halten</string>
+    <string name="pref_title_night_mode">Dunkler Modus</string>
     <string name="pref_title_dummy_export">Alle Einstellungen exportieren</string>
     <string name="pref_title_dummy_import">Alle Einstellungen importieren</string>
 
@@ -33,7 +34,8 @@
         <item>15 Sekunden</item>
         <item>30 Sekunden</item>
         <item>1 Minute</item>
-    </string-array>    <string-array name="pref_list_titles_refresh_period">
+    </string-array>
+    <string-array name="pref_list_titles_refresh_period">
         <item>Nur bei Start</item>
         <item>&#188; Sekunde</item>
         <item>&#189; Sekunde</item>
@@ -42,5 +44,10 @@
         <item>5 Sekunden</item>
         <item>15 Sekunden</item>
         <item>30 Sekunden</item>
+    </string-array>
+    <string-array name="pref_list_titles_night_mode">
+        <item>System</item>
+        <item>Aus</item>
+        <item>An</item>
     </string-array>
 </resources>
