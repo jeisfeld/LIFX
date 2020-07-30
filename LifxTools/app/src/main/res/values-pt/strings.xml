@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">LifxTools</string>
+    <string name="navigation_drawer_open">Abrir barra de navegação</string>
+    <string name="navigation_drawer_close">Fechar barra de navegação</string>
+    <string name="nav_header_title">LIFX Tools</string>
+    <string name="nav_header_subtitle">lifxtools@jeisfeld.de</string>
+    <string name="nav_header_desc">Título da Navegação</string>
+    <string name="action_refresh">Atualizar</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_stored_colors">Cores armazenadas</string>
+    <string name="menu_manage_devices">Gerenciar dispositivos</string>
+    <string name="menu_alarms">Alarmes</string>
+    <string name="menu_alarm_configuration">Configuração de alarme</string>
+    <string name="menu_alarm_step_configuration">Configuração da etapa de alarme</string>
+    <string name="menu_general_settings">Configurações Gerais</string>
+    <string name="menu_settings">Configurações</string>
+
+    <string name="message_searching_devices">Procurando dispositivos LIFX&#8230;</string>
+    <string name="message_no_devices_found">Nenhum dispositivo encontrado.</string>
+
+    <string name="color_off">FORA</string>
+    <string name="default_alarm_name">Alarme %1$d</string>
+    <string name="alarm_stopsequence_name">%1$s (Sequência de parada)</string>
+
+    <string name="notification_channel_animation">Animações LIFX</string>
+    <string name="notification_title_animation">Animação LIFX</string>
+    <string name="notification_text_animation_running">Animação em execução por %1$s</string>
+    <string name="notification_channel_alarm">Alarmes LIFX</string>
+    <string name="notification_channel_alarm_execution">Execução de alarme LIFX</string>
+    <string name="notification_title_alarm">Alarme LIFX</string>
+    <string name="notification_title_alarm_execution">Alarme LIFX %1$s</string>
+    <string name="notification_text_alarm">%2$s: %1$s\n</string>
+    <string name="notification_text_no_alarm">Sem mais alarmes</string>
+    <string name="notification_alarm_action_stop">Pare</string>
+</resources>

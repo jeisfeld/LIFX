@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Titles and defaults of preferences -->
+    <string name="pref_title_language">Idioma</string>
+    <string name="pref_title_power_duration">Duración encender/apagar</string>
+    <string name="pref_title_color_duration">Duración del cambio de color</string>
+    <string name="pref_title_refresh_period">Periodo de actualización</string>
+    <string name="pref_title_use_wakelock">Mantente despierto en la animación</string>
+    <string name="pref_title_night_mode">Modo oscuro</string>
+    <string name="pref_title_dummy_export">Exportar todas las configuraciones</string>
+    <string name="pref_title_dummy_import">Importar todas las configuraciones</string>
+
+    <!-- Arrays for list preferences -->
+    <string-array name="pref_list_titles_language">
+        <item>Idioma del sistema</item>
+        <item>English</item>
+        <item>Deutsch</item>
+        <item>Español</item>
+        <item>Português</item>
+    </string-array>
+    <string-array name="pref_list_titles_power_duration">
+        <item>Inmediato - mantener la luz encendida</item>
+        <item>&#188; segundo</item>
+        <item>&#189; segundo</item>
+        <item>1 segundo</item>
+        <item>2 segundos</item>
+        <item>5 segundos</item>
+    </string-array>
+    <string-array name="pref_list_titles_color_duration">
+        <item>Inmediato</item>
+        <item>&#188; segundo</item>
+        <item>&#189; segundo</item>
+        <item>1 segundo</item>
+        <item>2 segundos</item>
+        <item>5 segundos</item>
+        <item>15 segundos</item>
+        <item>30 segundos</item>
+        <item>1 minuto</item>
+    </string-array>
+    <string-array name="pref_list_titles_refresh_period">
+        <item>Solo al inicio</item>
+        <item>&#188; segundo</item>
+        <item>&#189; segundo</item>
+        <item>1 segundo</item>
+        <item>2 segundos</item>
+        <item>5 segundos</item>
+        <item>15 segundos</item>
+        <item>30 segundos</item>
+    </string-array>
+    <string-array name="pref_list_titles_night_mode">
+        <item>Seguir sistema</item>
+        <item>Brillante</item>
+        <item>Oscuro</item>
+    </string-array>
+</resources>

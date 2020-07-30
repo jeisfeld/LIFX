@@ -71,13 +71,13 @@
     <!-- Titles and defaults of preferences -->
     <string name="pref_title_language">Language</string>
     <string name="pref_default_language" translatable="false">0</string>
-    <string name="pref_title_power_duration">Power duration</string>
+    <string name="pref_title_power_duration">Switch duration</string>
     <string name="pref_default_power_duration" translatable="false">250</string>
     <string name="pref_title_color_duration">Color change duration</string>
     <string name="pref_default_color_duration" translatable="false">250</string>
     <string name="pref_title_refresh_period">Refresh Period</string>
     <string name="pref_default_refresh_period" translatable="false">1000</string>
-    <string name="pref_title_use_wakelock">Use wakelock on animation</string>
+    <string name="pref_title_use_wakelock">Keep awake on animation</string>
     <string name="pref_title_night_mode">Dark Mode</string>
     <string name="pref_default_night_mode" translatable="false">-1</string>
     <string name="pref_title_dummy_export">Export all settings</string>
@@ -88,11 +88,15 @@
         <item>System language</item>
         <item>English</item>
         <item>Deutsch</item>
+        <item>Español</item>
+        <item>Português</item>
     </string-array>
     <string-array name="pref_list_values_language" translatable="false">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
+        <item>4</item>
     </string-array>
     <string-array name="pref_list_titles_power_duration">
         <item>Immediate - keep light on</item>
@@ -154,8 +158,8 @@
     </string-array>
     <string-array name="pref_list_titles_night_mode">
         <item>Follow System</item>
-        <item>Off</item>
-        <item>On</item>
+        <item>Bright</item>
+        <item>Dark</item>
     </string-array>
     <string-array name="pref_list_values_night_mode" translatable="false">
         <item>-1</item>

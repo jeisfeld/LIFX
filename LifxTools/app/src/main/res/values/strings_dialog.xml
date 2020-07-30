@@ -20,15 +20,15 @@
     <string name="message_dialog_alarm_step_duration">Set the duration of the alarm step</string>
 
     <string name="title_no_stored_colors">No stored colors</string>
-    <string name="message_no_stored_colors">There are no stored colors available. You need to store colors before you can use them for alarms.</string>
+    <string name="message_no_stored_colors">There are no stored colors. You need to store colors before you can use them for alarms.</string>
     <string name="title_did_not_save_empty_name">Missing Name</string>
     <string name="message_did_not_save_empty_name">Did not save - name was empty.</string>
 
 
     <string name="title_dialog_export">Export of preferences</string>
-    <string name="message_dialog_export_overwrite">The preference export file %1$s is already existing. Do you want to overwrite it?</string>
-    <string name="title_dialog_import">Import of preferences</string>
-    <string name="message_dialog_import_missing_file">The preferences cannot be imported, because no preferences file was found at %1$s</string>
+    <string name="message_dialog_export_overwrite">The export file %1$s is already existing. Do you want to overwrite it?</string>
+    <string name="title_dialog_import">Import of settings</string>
+    <string name="message_dialog_import_missing_file">The settings cannot be imported, because no settings file was found at %1$s</string>
     <string name="message_dialog_import_overwrite">This will delete all existing settings (devices, stored colors, alarms) and replace them by the imported ones. Do you want to continue?</string>
     <string name="title_dialog_delete_stored_settings">Delete stored settings</string>
     <string name="message_dialog_delete_stored_settings">Do you really want to delete stored settings from %1$s?</string>
@@ -93,11 +93,11 @@
     <string name="message_dialog_save_color_name">Please enter a name for the color.</string>
     <string name="message_confirm_delete_color">Do you want to delete the color “%1$s” from the app?</string>
     <string name="message_confirm_delete_alarm">Do you want to delete the alarm “%1$s” from the app?</string>
-    <string name="message_confirm_delete_alarm_stopsequence">Do you want to delete the stopp sequence of alarm “%1$s” from the app?</string>
+    <string name="message_confirm_delete_alarm_stopsequence">Do you want to delete the stop sequence of alarm “%1$s” from the app?</string>
     <string name="message_confirm_delete_alarm_step">Do you want to delete the alarm step?</string>
     <string name="message_no_device_with_stored_colors">No LIFX device with stored colors available.</string>
 
-    <string name="toast_saved_color">Saved color “%1$s”.</string>
+    <string name="toast_saved_color">Color “%1$s” was saved.</string>
     <string name="toast_connection_failed">Connection to %1$s failed.</string>
     <string name="toast_settings_exported">All settings have been exported to file %1$s</string>
     <string name="toast_settings_export_canceled">The export of settings was canceled</string>

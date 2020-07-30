@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">LifxTools</string>
+    <string name="navigation_drawer_open">Barra de navegación abierta</string>
+    <string name="navigation_drawer_close">Cerrar barra de navegación</string>
+    <string name="nav_header_title">LIFX Tools</string>
+    <string name="nav_header_subtitle">lifxtools@jeisfeld.de</string>
+    <string name="nav_header_desc">Título de navegación</string>
+    <string name="action_refresh">Actualizar</string>
+
+    <string name="menu_home">Inicio</string>
+    <string name="menu_stored_colors">Colores almacenados</string>
+    <string name="menu_manage_devices">Administrar dispositivos</string>
+    <string name="menu_alarms">Alarmas</string>
+    <string name="menu_alarm_configuration">Configuración de alarma</string>
+    <string name="menu_alarm_step_configuration">Configuración de paso de alarma</string>
+    <string name="menu_general_settings">Configuración general</string>
+    <string name="menu_settings">Configuraciones</string>
+
+    <string name="message_searching_devices">Buscar dispositivos LIFX&#8230;</string>
+    <string name="message_no_devices_found">No se encontraron dispositivos.</string>
+
+    <string name="color_off">APAGADA</string>
+    <string name="default_alarm_name">Alarma %1$d</string>
+    <string name="alarm_stopsequence_name">%1$s (Secuencia de parada)</string>
+
+    <string name="notification_channel_animation">Animaciones LIFX</string>
+    <string name="notification_title_animation">Animación LIFX</string>
+    <string name="notification_text_animation_running">Animación corriendo por %1$s</string>
+    <string name="notification_channel_alarm">Alarmas LIFX</string>
+    <string name="notification_channel_alarm_execution">Ejecución de alarma LIFX</string>
+    <string name="notification_title_alarm">Alarme LIFX</string>
+    <string name="notification_title_alarm_execution">Alarme LIFX %1$s</string>
+    <string name="notification_text_alarm">%2$s: %1$s\n</string>
+    <string name="notification_text_no_alarm">No más alarmas</string>
+    <string name="notification_alarm_action_stop">Detener</string>
+</resources>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_dialog_confirmation">Confirmação</string>
+    <string name="title_dialog_select_light">Selecione a luz</string>
+    <string name="title_dialog_select_color">Selecione a cor</string>
+    <string name="title_dialog_save_color">Salvar a cor</string>
+    <string name="title_dialog_image">Adaptar imagem</string>
+    <string name="title_dialog_animation">Configurações de animação</string>
+    <string name="title_dialog_alarm_time">Definir hora do alarme</string>
+    <string name="title_dialog_copy_alarm">Copiar alarme</string>
+    <string name="title_dialog_change_alarm_name">Alterar nome do alarme</string>
+    <string name="title_dialog_change_color_name">Alterar nome da cor</string>
+    <string name="title_dialog_select_date_for_import">Selecione a data das configurações para importação</string>
+    <string name="message_dialog_new_alarm_name">Novo nome de alarme:</string>
+    <string name="message_dialog_new_color_name">Novo nome da cor:</string>
+
+    <string name="title_dialog_alarm_step_delay">Atraso na etapa de alarme</string>
+    <string name="message_dialog_alarm_step_delay">Defina o atraso da etapa de alarme após o início do alarme</string>
+    <string name="title_dialog_alarm_step_duration">Duração do passo do alarme</string>
+    <string name="message_dialog_alarm_step_duration">Defina a duração da etapa de alarme</string>
+
+    <string name="title_no_stored_colors">Sem cores armazenadas</string>
+    <string name="message_no_stored_colors">Não há cores armazenadas. Você precisa armazenar cores antes de poder usá-las para alarmes.</string>
+    <string name="title_did_not_save_empty_name">Nome em falta</string>
+    <string name="message_did_not_save_empty_name">Não foi salvo - o nome estava vazio.</string>
+
+    <string name="title_dialog_export">Exportação de configurações</string>
+    <string name="message_dialog_export_overwrite">O arquivo de exportação %1$s já existe. Você deseja sobrescrever isso?</string>
+    <string name="title_dialog_import">Importação de configurações</string>
+    <string name="message_dialog_import_missing_file">As configurações não podem ser importadas, porque nenhum arquivo de configurações foi encontrado em %1$s</string>
+    <string name="message_dialog_import_overwrite">Isso excluirá todas as configurações existentes (dispositivos, cores armazenadas, alarmes) e as substituirá pelas importadas. Você quer continuar?</string>
+    <string name="title_dialog_delete_stored_settings">Excluir configurações armazenadas</string>
+    <string name="message_dialog_delete_stored_settings">Deseja realmente excluir as configurações armazenadas de %1$s?</string>
+
+    <string name="button_save">Salvar</string>
+    <string name="button_ok">OK</string>
+    <string name="button_start">Iniciar</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="button_delete">Excluir</string>
+    <string name="button_rename">Renomear</string>
+    <string name="button_copy">Criar cópia</string>
+    <string name="button_add_alarm">Adicionar alarme</string>
+    <string name="button_overwrite">Substituir</string>
+    <string name="button_import">Importar</string>
+
+    <string name="list_entry_ringtone">Toque</string>
+    <string name="title_dialog_ringtone">Selecione um toque para o alarme</string>
+
+    <string name="label_alarm_active">Ativo</string>
+    <string name="label_alarm_time">Hora</string>
+    <string name="label_alarm_week_days">Repetir</string>
+    <string name="text_monday">2ª</string>
+    <string name="text_tuesday">3ª</string>
+    <string name="text_wednesday">4ª</string>
+    <string name="text_thursday">5ª</string>
+    <string name="text_friday">6ª</string>
+    <string name="text_saturday">7ª</string>
+    <string name="text_sunday">1ª</string>
+    <string name="label_alarm_step_start">Iniciar</string>
+    <string name="label_alarm_step_end">Fim</string>
+    <string name="hint_select_stored_color">(Selecione a cor armazenada)</string>
+
+    <string name="label_animation_type">Tipo</string>
+    <string name="label_animation_duration">Duração</string>
+    <string name="hint_animation_duration">(segundos)</string>
+    <string name="label_animation_radius">Raio</string>
+    <string name="label_animation_stretch">Alongamento</string>
+    <string name="label_animation_direction">Direção</string>
+    <string name="label_animation_colors">Cores</string>
+    <string name="label_animation_color_regex">Cores (RegEx)</string>
+    <string name="label_animation_adjust_brightness">Ajustar brilho</string>
+
+    <string name="label_minutes">Minutos</string>
+    <string name="label_seconds">Segundos</string>
+
+    <string-array name="values_multizone_animation_direction">
+        <item>frente</item>
+        <item>para trás</item>
+        <item>para fora</item>
+        <item>para dentro</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_type">
+        <item>Mover</item>
+        <item>Transição de imagem</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_direction">
+        <item>para fora</item>
+        <item>para dentro</item>
+    </string-array>
+
+    <string name="message_confirm_delete_light">Deseja excluir o dispositivo «%1$s» do aplicativo? (Será recriado se detectado na LAN.)</string>
+    <string name="message_dialog_save_color_name">Digite um nome para a cor.</string>
+    <string name="message_confirm_delete_color">Deseja excluir a cor «%1$s» do aplicativo?</string>
+    <string name="message_confirm_delete_alarm">Deseja excluir o alarme «%1$s» do aplicativo?</string>
+    <string name="message_confirm_delete_alarm_stopsequence">Deseja excluir a sequência de parada do alarme «%1$s» do aplicativo?</string>
+    <string name="message_confirm_delete_alarm_step">Deseja excluir a etapa do alarme?</string>
+    <string name="message_no_device_with_stored_colors">Nenhum dispositivo LIFX com cores armazenadas disponíveis.</string>
+
+    <string name="toast_saved_color">A cor «%1$s» foi salva</string>
+    <string name="toast_connection_failed">A conexão com %1$s falhou.</string>
+    <string name="toast_settings_exported">Todas as configurações foram exportadas para o arquivo %1$s</string>
+    <string name="toast_settings_export_canceled">A exportação das configurações foi cancelada</string>
+    <string name="toast_settings_import_canceled">A importação de configurações foi cancelada</string>
+    <string name="toast_settings_import_failed">Erro ao importar configurações: %1$s</string>
+    <string name="toast_settings_imported">Todas as configurações foram importadas</string>
+
+    <string name="toast_alarmtype_standard">O alarme termina automaticamente</string>
+    <string name="toast_alarmtype_stopmanual">O alarme aguarda a parada manual</string>
+    <string name="toast_alarmtype_cyclic">O alarme é executado ciclicamente, até que seja parado manualmente</string>
+    <string name="toast_alarmtype_stopsequence">Configuração da sequência de parada que é executada após a interrupção do alarme</string>
+
+</resources>

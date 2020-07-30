@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.app;
 
-import java.util.Locale;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +11,8 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.LocaleList;
 import android.util.Log;
+
+import java.util.Locale;
 
 import de.jeisfeld.lifx.app.alarms.AlarmReceiver;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -75,7 +75,7 @@ public class Application extends android.app.Application {
 	 * Get a resource string.
 	 *
 	 * @param resourceId the id of the resource.
-	 * @param args arguments for the formatting
+	 * @param args       arguments for the formatting
 	 * @return the value of the String resource.
 	 */
 	public static String getResourceString(final int resourceId, final Object... args) {
@@ -138,6 +138,8 @@ public class Application extends android.app.Application {
 			return Locale.GERMAN;
 		case 3: // MAGIC_NUMBER
 			return new Locale("es");
+		case 4: // MAGIC_NUMBER
+			return new Locale("pt");
 		default:
 			return Application.DEFAULT_LOCALE;
 		}

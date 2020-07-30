@@ -29,7 +29,7 @@
     <string name="title_dialog_import">Import der Einstellungen</string>
     <string name="message_dialog_import_missing_file">Die Einstellungen können nicht importiert werden, da keine Einstellungsdatei im Verzeichnis %1$s gefunden wurde.</string>
     <string name="message_dialog_import_overwrite">Dies wird alle vorhandenen Einstellungen (Geräte, gespeicherte Farben, Alarme) löschen und durch die importierten Einstellungen ersetzen. Wollen Sie fortfahren?</string>
-    <string name="title_dialog_delete_stored_settings">Gespeicherte Einstellungen</string>
+    <string name="title_dialog_delete_stored_settings">Gespeicherte Einstellungen löschen</string>
     <string name="message_dialog_delete_stored_settings">Wollen Sie gespeicherten Einstellungen vom %1$s wirklich löschen?</string>
 
     <string name="button_save">Speichern</string>
@@ -48,7 +48,7 @@
 
     <string name="label_alarm_active">Aktiv</string>
     <string name="label_alarm_time">Zeit</string>
-    <string name="label_alarm_week_days">Wiederholung</string>
+    <string name="label_alarm_week_days">Wiederholen</string>
     <string name="text_monday">Mo</string>
     <string name="text_tuesday">Di</string>
     <string name="text_wednesday">Mi</string>
