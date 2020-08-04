@@ -2,33 +2,34 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
-    <item
-        android:id="@+id/nav_home"
-        android:icon="@drawable/ic_menu_home"
-        android:title="@string/menu_home" />
-    <item
-        android:id="@+id/nav_alarms"
-        android:icon="@drawable/ic_menu_alarms"
-        android:title="@string/menu_alarms" />
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_menu_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_alarms"
+            android:icon="@drawable/ic_menu_alarms"
+            android:title="@string/menu_alarms" />
 
-    <item android:title="@string/menu_settings">
-        <menu>
-            <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_manage_devices"
-                    android:icon="@drawable/ic_menu_manage_devices"
-                    android:title="@string/menu_manage_devices" />
-                <item
-                    android:id="@+id/nav_stored_colors"
-                    android:icon="@drawable/ic_menu_stored_colors"
-                    android:title="@string/menu_stored_colors" />
-                <item
-                    android:id="@+id/nav_settings"
-                    android:icon="@drawable/ic_menu_settings"
-                    android:title="@string/menu_general_settings" />
-            </group>
-        </menu>
-    </item>
-
+        <item android:title="@string/menu_settings">
+            <menu>
+                <group android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/nav_manage_devices"
+                        android:icon="@drawable/ic_menu_manage_devices"
+                        android:title="@string/menu_manage_devices" />
+                    <item
+                        android:id="@+id/nav_stored_colors"
+                        android:icon="@drawable/ic_menu_stored_colors"
+                        android:title="@string/menu_stored_colors" />
+                    <item
+                        android:id="@+id/nav_settings"
+                        android:icon="@drawable/ic_menu_settings"
+                        android:title="@string/menu_general_settings" />
+                </group>
+            </menu>
+        </item>
+    </group>
 
 </menu>
