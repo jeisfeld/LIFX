@@ -1,14 +1,12 @@
 package de.jeisfeld.lifx.app.home;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -19,23 +17,11 @@ import de.jeisfeld.lifx.lan.util.TypeUtil;
 /**
  * Class holding data for the display view of a device.
  */
-public class DeviceViewModel extends ViewModel {
-	/**
-	 * The context.
-	 */
-	private final WeakReference<Context> mContext;
+public class DeviceViewModel extends MainViewModel {
 	/**
 	 * The device.
 	 */
 	private final Device mDevice;
-	/**
-	 * The stored power of the device.
-	 */
-	protected final MutableLiveData<Power> mPower; // SUPPRESS_CHECKSTYLE
-	/**
-	 * The flag if the device is selected.
-	 */
-	protected final MutableLiveData<Boolean> mIsSelected; // SUPPRESS_CHECKSTYLE
 	/**
 	 * Brightness when switching off. Used for quick power.
 	 */
@@ -48,38 +34,8 @@ public class DeviceViewModel extends ViewModel {
 	 * @param device The device.
 	 */
 	public DeviceViewModel(final Context context, final Device device) {
-		mContext = new WeakReference<>(context);
+		super(context);
 		mDevice = device;
-		mPower = new MutableLiveData<>();
-		mIsSelected = new MutableLiveData<>();
-		mIsSelected.setValue(false);
-	}
-
-	/**
-	 * Get the last checked power of the device.
-	 *
-	 * @return The power.
-	 */
-	protected LiveData<Power> getPower() {
-		return mPower;
-	}
-
-	/**
-	 * Get the selected flag.
-	 *
-	 * @return The power.
-	 */
-	protected LiveData<Boolean> getIsSelected() {
-		return mIsSelected;
-	}
-
-	/**
-	 * Get the context.
-	 *
-	 * @return the context.
-	 */
-	protected WeakReference<Context> getContext() {
-		return mContext;
 	}
 
 	/**
@@ -98,9 +54,8 @@ public class DeviceViewModel extends ViewModel {
 		new CheckPowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
-	/**
-	 * Refresh the device. If offline, first check if online again.
-	 */
+
+	@Override
 	protected final void refresh() {
 		if (isRefreshAllowed()) {
 			if (mPower.getValue() == null) {
@@ -110,6 +65,11 @@ public class DeviceViewModel extends ViewModel {
 				refreshRemoteData();
 			}
 		}
+	}
+
+	@Override
+	public final String getLabel() {
+		return mDevice.getLabel();
 	}
 
 	/**
@@ -128,10 +88,8 @@ public class DeviceViewModel extends ViewModel {
 		checkPower();
 	}
 
-	/**
-	 * Toggle the power state.
-	 */
-	public void togglePower() {
+	@Override
+	public final void togglePower() {
 		new TogglePowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 

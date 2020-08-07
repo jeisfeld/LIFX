@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -31,9 +33,14 @@ public class Group implements Serializable {
 	private final Date mUpdateTime;
 
 	/**
+	 * Additional parameters which may be stored in the group.
+	 */
+	private final Map<String, Object> mParameters = new HashMap<>();
+
+	/**
 	 * Create a Group. This constructor should be taken only if groupId is well known.
 	 *
-	 * @param groupId the group GUID.
+	 * @param groupId    the group GUID.
 	 * @param groupLabel the group label.
 	 * @param updateTime the last group update time.
 	 */
@@ -132,6 +139,26 @@ public class Group implements Serializable {
 	 */
 	public final Date getUpdateTime() {
 		return mUpdateTime;
+	}
+
+	/**
+	 * Set a parameter on the group.
+	 *
+	 * @param key   The key.
+	 * @param value The value.
+	 */
+	public void setParameter(final String key, final Object value) {
+		mParameters.put(key, value);
+	}
+
+	/**
+	 * Get a parameter from the group.
+	 *
+	 * @param key The key.
+	 * @return The value.
+	 */
+	public Object getParameter(final String key) {
+		return mParameters.get(key);
 	}
 
 	/**

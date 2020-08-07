@@ -156,7 +156,7 @@ public class StoredMultizoneColors extends StoredColor {
 	 */
 	@Override
 	public MultiZoneLight getLight() {
-		return (MultiZoneLight) DeviceRegistry.getInstance().getDeviceById(getDeviceId());
+		return (MultiZoneLight) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
 	}
 
 	@NonNull

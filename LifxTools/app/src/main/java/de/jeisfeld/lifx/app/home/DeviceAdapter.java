@@ -36,6 +36,7 @@ import de.jeisfeld.lifx.app.animation.TileChainAnimationDialogFragment;
 import de.jeisfeld.lifx.app.animation.TileChainAnimationDialogFragment.TileChainAnimationDialogListener;
 import de.jeisfeld.lifx.app.home.HomeFragment.NoDeviceCallback;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
+import de.jeisfeld.lifx.app.managedevices.DeviceHolder;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
@@ -76,11 +77,11 @@ public class DeviceAdapter extends BaseAdapter {
 	/**
 	 * The list of devices.
 	 */
-	private final List<Device> mDevices;
+	private final List<DeviceHolder> mDevices;
 	/**
 	 * The list of view models.
 	 */
-	private final List<DeviceViewModel> mViewModels = new ArrayList<>();
+	private final List<MainViewModel> mViewModels = new ArrayList<>();
 
 	/**
 	 * The context.
@@ -121,7 +122,7 @@ public class DeviceAdapter extends BaseAdapter {
 		mFragment = new WeakReference<>(fragment);
 		mLifeCycleOwner = fragment.getViewLifecycleOwner();
 		mNoDeviceCallback = callback;
-		for (Device device : mDevices) {
+		for (DeviceHolder device : mDevices) {
 			addViewModel(device);
 		}
 
@@ -132,7 +133,7 @@ public class DeviceAdapter extends BaseAdapter {
 					if (mDevices.size() == 0) {
 						mNoDeviceCallback.onChange(true);
 					}
-					addDevice(device);
+					addDevice(new DeviceHolder(device, (int) device.getParameter(DeviceRegistry.DEVICE_ID), true));
 				}
 			}
 
@@ -151,7 +152,7 @@ public class DeviceAdapter extends BaseAdapter {
 	}
 
 	@Override
-	public final DeviceViewModel getItem(final int position) {
+	public final MainViewModel getItem(final int position) {
 		return mViewModels.get(position);
 	}
 
@@ -161,22 +162,28 @@ public class DeviceAdapter extends BaseAdapter {
 	}
 
 	/**
-	 * Add the view model for a device.
+	 * Add the view model for a device or group.
 	 *
-	 * @param device The device.
+	 * @param deviceHolder The device holder.
 	 */
-	private void addViewModel(final Device device) {
-		if (device instanceof MultiZoneLight) {
-			mViewModels.add(new MultizoneViewModel(mContext, (MultiZoneLight) device));
-		}
-		else if (device instanceof TileChain) {
-			mViewModels.add(new TileViewModel(mContext, (TileChain) device));
-		}
-		else if (device instanceof Light) {
-			mViewModels.add(new LightViewModel(mContext, (Light) device));
+	private void addViewModel(final DeviceHolder deviceHolder) {
+		if (deviceHolder.isGroup()) {
+			mViewModels.add(new GroupViewModel(mContext, deviceHolder.getGroup()));
 		}
 		else {
-			mViewModels.add(new DeviceViewModel(mContext, device));
+			Device device = deviceHolder.getDevice();
+			if (device instanceof MultiZoneLight) {
+				mViewModels.add(new MultizoneViewModel(mContext, (MultiZoneLight) device));
+			}
+			else if (device instanceof TileChain) {
+				mViewModels.add(new TileViewModel(mContext, (TileChain) device));
+			}
+			else if (device instanceof Light) {
+				mViewModels.add(new LightViewModel(mContext, (Light) device));
+			}
+			else {
+				mViewModels.add(new DeviceViewModel(mContext, device));
+			}
 		}
 	}
 
@@ -184,7 +191,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Refresh view data for all devices.
 	 */
 	protected void refresh() {
-		for (DeviceViewModel model : mViewModels) {
+		for (MainViewModel model : mViewModels) {
 			model.refresh();
 		}
 	}
@@ -201,12 +208,12 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 		}
 
-		final DeviceViewModel model = getItem(position);
+		final MainViewModel model = getItem(position);
 
 		view = LayoutInflater.from(mContext).inflate(R.layout.list_view_home, parent, false);
 
 		final TextView text = view.findViewById(R.id.textViewHome);
-		text.setText(model.getDevice().getLabel());
+		text.setText(model.getLabel());
 
 		final CheckBox checkBoxSelectLight = view.findViewById(R.id.checkboxSelectLight);
 		if (checkBoxSelectLight != null) {
@@ -239,7 +246,16 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 		}
 
-		model.checkPower();
+		if (model instanceof DeviceViewModel) {
+			((DeviceViewModel) model).checkPower();
+		}
+		if (model instanceof GroupViewModel) {
+			view.findViewById(R.id.toggleButtonAnimation).setVisibility(View.GONE);
+			view.findViewById(R.id.buttonSave).setVisibility(View.GONE);
+			// TODO: handle power check for groups
+
+			// TODO: handle color setting for groups
+		}
 
 		if (model instanceof LightViewModel) {
 			LightViewModel lightModel = (LightViewModel) model;
@@ -292,7 +308,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param powerButton The power button.
 	 * @param model       The device view model.
 	 */
-	private void preparePowerButton(final Button powerButton, final DeviceViewModel model) {
+	private void preparePowerButton(final Button powerButton, final MainViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
 			if (power == null) {
 				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
@@ -724,7 +740,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 *
 	 * @param device The device to be added.
 	 */
-	public void addDevice(final Device device) {
+	public void addDevice(final DeviceHolder device) {
 		mDevices.add(device);
 		addViewModel(device);
 		notifyDataSetChanged();
@@ -736,9 +752,10 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param mac The MAC
 	 * @return the view model
 	 */
-	protected DeviceViewModel getViewModel(final String mac) {
+	protected MainViewModel getViewModel(final String mac) {
 		for (int i = 0; i < mDevices.size(); i++) {
-			if (mac.equals(mDevices.get(i).getTargetAddress())) {
+			DeviceHolder holder = mDevices.get(i);
+			if (!holder.isGroup() && mac.equals(holder.getDevice().getTargetAddress())) {
 				return mViewModels.get(i);
 			}
 		}
@@ -750,9 +767,9 @@ public class DeviceAdapter extends BaseAdapter {
 	 *
 	 * @return The list of checked devices.
 	 */
-	protected List<DeviceViewModel> getCheckedDevices() {
-		List<DeviceViewModel> checkedDevices = new ArrayList<>();
-		for (DeviceViewModel model : mViewModels) {
+	protected List<MainViewModel> getCheckedDevices() {
+		List<MainViewModel> checkedDevices = new ArrayList<>();
+		for (MainViewModel model : mViewModels) {
 			if (Boolean.TRUE.equals(model.getIsSelected().getValue())) {
 				checkedDevices.add(model);
 			}

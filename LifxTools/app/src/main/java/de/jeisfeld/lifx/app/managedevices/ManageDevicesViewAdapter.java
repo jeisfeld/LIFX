@@ -24,7 +24,6 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
-import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 
 /**
@@ -35,7 +34,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 	/**
 	 * The list of devices as view data.
 	 */
-	private final List<Device> mDevices;
+	private final List<DeviceHolder> mDevices;
 	/**
 	 * The listener identifying start of drag.
 	 */
@@ -79,11 +78,11 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
 	public final void onBindViewHolder(final MyViewHolder holder, final int position) {
-		final Device device = mDevices.get(position);
+		final DeviceHolder deviceHolder = mDevices.get(position);
 		Fragment fragment0 = mFragment.get();
 		final Context context = fragment0 == null ? null : fragment0.getContext();
-		holder.mTitle.setText(device.getLabel());
-		holder.mCheckbox.setChecked(!Boolean.FALSE.equals(device.getParameter(DeviceRegistry.DEVICE_PARAMETER_SHOW)));
+		holder.mTitle.setText(deviceHolder.getLabel());
+		holder.mCheckbox.setChecked(!Boolean.FALSE.equals(deviceHolder.isShow()));
 
 		holder.mDragHandle.setOnTouchListener((view, event) -> {
 			if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -95,12 +94,9 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			return false;
 		});
 
-		holder.mCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-			device.setParameter(DeviceRegistry.DEVICE_PARAMETER_SHOW, isChecked);
-			PreferenceUtil.setIndexedSharedPreferenceBoolean(R.string.key_device_show, device.getParameter(DeviceRegistry.DEVICE_ID), isChecked);
-		});
+		holder.mCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> deviceHolder.setShow(isChecked));
 
-		if (AlarmRegistry.getInstance().isUsed(device)) {
+		if (!deviceHolder.isGroup() && AlarmRegistry.getInstance().isUsed(deviceHolder.getDevice())) {
 			holder.mDeleteButton.setVisibility(View.INVISIBLE);
 		}
 		else {
@@ -110,20 +106,20 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 				FragmentActivity activity = fragment == null ? null : fragment.getActivity();
 				if (activity != null) {
 					DialogUtil.displayConfirmationMessage(activity, dialog -> {
-						DeviceRegistry.getInstance().remove(device);
+						DeviceRegistry.getInstance().remove(deviceHolder);
 						mDevices.remove(position);
 						mDeviceIds.remove(position);
 						notifyItemRemoved(position);
 						notifyItemRangeChanged(position, mDevices.size() - position);
-					}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_light, device.getLabel());
+					}, null, R.string.button_cancel, R.string.button_delete, R.string.message_confirm_delete_light, deviceHolder.getLabel());
 				}
 			});
 		}
 
-		holder.mStoredColorsButton.setOnClickListener(v ->
-				StoredColorsFragment.navigate(mFragment.get(), (Integer) device.getParameter(DeviceRegistry.DEVICE_ID)));
+		holder.mStoredColorsButton.setOnClickListener(v -> StoredColorsFragment.navigate(mFragment.get(), deviceHolder.getId()));
 
-		if (device instanceof MultiZoneLight && context != null) {
+		if (!deviceHolder.isGroup() && deviceHolder.getDevice() instanceof MultiZoneLight && context != null) {
+			MultiZoneLight device = (MultiZoneLight) deviceHolder.getDevice();
 			holder.mMultizoneOrientationButton.setVisibility(View.VISIBLE);
 			MultizoneOrientation orientation0 = (MultizoneOrientation) device.getParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION);
 			holder.mMultizoneOrientationButton.setImageDrawable(context.getDrawable(orientation0.getButtonResource()));

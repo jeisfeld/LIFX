@@ -225,7 +225,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 				drawable.setColor(ColorUtil.toAndroidDisplayColor(((TileChainColors.Fixed) colors).getColor()));
 			}
 			else {
-				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId());
+				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId()).getDevice();
 				if (tileChain.getTotalWidth() == 0 || tileChain.getTotalHeight() == 0) {
 					drawable.setShape(GradientDrawable.RECTANGLE);
 					drawable.setColor(Color.GRAY);

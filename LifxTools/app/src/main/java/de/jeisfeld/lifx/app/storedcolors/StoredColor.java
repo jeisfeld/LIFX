@@ -164,7 +164,7 @@ public class StoredColor {
 	 * @return The light for the color.
 	 */
 	public Light getLight() {
-		return (Light) DeviceRegistry.getInstance().getDeviceById(getDeviceId());
+		return (Light) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
 	}
 
 	/**

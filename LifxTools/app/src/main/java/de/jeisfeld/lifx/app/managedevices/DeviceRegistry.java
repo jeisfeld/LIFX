@@ -1,6 +1,7 @@
 package de.jeisfeld.lifx.app.managedevices;
 
 import android.os.AsyncTask;
+import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -20,6 +22,7 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
+import de.jeisfeld.lifx.lan.Group;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
 import de.jeisfeld.lifx.lan.Light;
@@ -47,7 +50,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 */
 	public static final String DEVICE_ID = "deviceId";
 	/**
-	 * Device parameter for "show" flag.
+	 * Device parameter for "show" flag of device.
 	 */
 	public static final String DEVICE_PARAMETER_SHOW = "showDevice";
 	/**
@@ -60,13 +63,17 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 */
 	private static DeviceRegistry mInstance = null;
 	/**
-	 * The devices.
+	 * The devices and groups.
 	 */
-	private final SparseArray<Device> mDevices = new SparseArray<>();
+	private final SparseArray<DeviceHolder> mDevices = new SparseArray<>();
 	/**
 	 * A map from MAC address to device id.
 	 */
 	private final Map<String, Integer> mMacToIdMap = new HashMap<>();
+	/**
+	 * A map from group byte id to group app id.
+	 */
+	private final Map<String, Integer> mByteIdToGroupIdMap = new HashMap<>();
 	/**
 	 * The ringtone dummy light.
 	 */
@@ -112,81 +119,115 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		List<Integer> deviceIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids);
 
 		for (int deviceId : deviceIds) {
-			String mac = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_mac, deviceId);
-			InetAddress inetAddress = null;
-			try {
-				inetAddress = InetAddress.getByAddress(
-						PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_address, deviceId).getBytes(StandardCharsets.ISO_8859_1));
-			}
-			catch (Exception e) {
-				Log.w(Application.TAG, e);
-			}
-			int port = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_port, deviceId, DeviceRegistry.DEFAULT_PORT);
-			String label = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_label, deviceId);
-			if (label == null) {
-				label = "???";
-			}
 			DeviceType type = DeviceType.fromOrdinal(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_type, deviceId, 0));
-			Vendor vendor = Vendor.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_vendor, deviceId, 0));
-			Product product = Product.fromId(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0));
-			int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
-			mMacToIdMap.put(mac, deviceId);
 
-			Device device;
-			if (type == DeviceType.DEVICE) {
-				device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
-			}
-			else if (type == DeviceType.MULTIZONE) {
-				byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
-				MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
-						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
-				long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
-				device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
-				device.setParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION, multizoneOrientation);
-			}
-			else if (type == DeviceType.TILECHAIN) {
-				byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
-				int totalWidth = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, -1);
-				int totalHeight = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, -1);
-
-				List<Integer> tileParameters =
-						PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_device_tile_tileinfo_parameters, deviceId);
-				List<TileInfo> tileInfoList = null;
-				if (tileParameters.size() == 5 * tileCount) { // MAGIC_NUMBER
-					tileInfoList = new ArrayList<>();
-					Iterator<Integer> paramIterator = tileParameters.iterator();
-					for (int i = 0; i < tileCount; i++) {
-						tileInfoList.add(new TileInfo(paramIterator.next().byteValue(), paramIterator.next().byteValue(),
-								paramIterator.next(), paramIterator.next(), Rotation.fromOrdinal(paramIterator.next())));
-
-					}
-				}
-
-				device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label,
-						tileCount, totalWidth, totalHeight, tileInfoList);
+			if (type == DeviceType.GROUP) {
+				addGroup(deviceId);
 			}
 			else {
-				device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+				addDevice(type, deviceId);
 			}
-
-			device.setParameter(DEVICE_ID, deviceId);
-			device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
-			mDevices.put(deviceId, device);
 		}
-
 	}
 
 	/**
-	 * Get the list of known devices.
+	 * Add a device from local storage to the registry during creation.
 	 *
-	 * @param onlyFlagged Get only devices which are flagged.
-	 * @return The list of known devices.
+	 * @param type     The device type.
+	 * @param deviceId The device id.
 	 */
-	public List<Device> getDevices(final boolean onlyFlagged) {
-		List<Device> result = new ArrayList<>();
+	private void addDevice(final DeviceType type, final int deviceId) {
+		String mac = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_mac, deviceId);
+		InetAddress inetAddress = null;
+		try {
+			inetAddress = InetAddress.getByAddress(
+					PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_address, deviceId).getBytes(StandardCharsets.ISO_8859_1));
+		}
+		catch (Exception e) {
+			Log.w(Application.TAG, e);
+		}
+		int port = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_port, deviceId, DeviceRegistry.DEFAULT_PORT);
+		String label = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_label, deviceId);
+		if (label == null) {
+			label = "???";
+		}
+		Vendor vendor = Vendor.fromInt(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_vendor, deviceId, 0));
+		Product product = Product.fromId(PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0));
+		int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
+		mMacToIdMap.put(mac, deviceId);
+
+		Device device;
+		if (type == DeviceType.DEVICE) {
+			device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+		}
+		else if (type == DeviceType.MULTIZONE) {
+			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
+			MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
+					PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
+			long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
+			device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
+			device.setParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION, multizoneOrientation);
+		}
+		else if (type == DeviceType.TILECHAIN) {
+			byte tileCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_count, deviceId, -1);
+			int totalWidth = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalwidth, deviceId, -1);
+			int totalHeight = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_tile_totalheight, deviceId, -1);
+
+			List<Integer> tileParameters =
+					PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_device_tile_tileinfo_parameters, deviceId);
+			List<TileInfo> tileInfoList = null;
+			if (tileParameters.size() == 5 * tileCount) { // MAGIC_NUMBER
+				tileInfoList = new ArrayList<>();
+				Iterator<Integer> paramIterator = tileParameters.iterator();
+				for (int i = 0; i < tileCount; i++) {
+					tileInfoList.add(new TileInfo(paramIterator.next().byteValue(), paramIterator.next().byteValue(),
+							paramIterator.next(), paramIterator.next(), Rotation.fromOrdinal(paramIterator.next())));
+
+				}
+			}
+
+			device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label,
+					tileCount, totalWidth, totalHeight, tileInfoList);
+		}
+		else {
+			device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+		}
+
+		boolean isShow = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true);
+		device.setParameter(DEVICE_ID, deviceId);
+		device.setParameter(DEVICE_PARAMETER_SHOW, isShow);
+		mDevices.put(deviceId, new DeviceHolder(device, deviceId, isShow));
+	}
+
+	/**
+	 * Add a group from local storage to the registry during creation.
+	 *
+	 * @param groupId The group id.
+	 */
+	private void addGroup(final int groupId) {
+		byte[] byteId = PreferenceUtil.getIndexedSharedPreferenceByteArray(R.string.key_group_byte_id, groupId);
+		String label = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_label, groupId);
+		Date updateTime = new Date(PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_group_update_time, groupId, 0));
+		Group group = new Group(byteId, label, updateTime);
+		mByteIdToGroupIdMap.put(Base64.encodeToString(byteId, Base64.DEFAULT), groupId);
+
+		boolean isShow = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, groupId, true);
+		group.setParameter(DEVICE_ID, groupId);
+		group.setParameter(DEVICE_PARAMETER_SHOW, isShow);
+		mDevices.put(groupId, new DeviceHolder(group, groupId, isShow));
+	}
+
+	/**
+	 * Get the list of known devices and groups.
+	 *
+	 * @param onlyFlagged Get only devices and groups which are flagged.
+	 * @return The list of known devices and groups.
+	 */
+	public List<DeviceHolder> getDevices(final boolean onlyFlagged) {
+		List<DeviceHolder> result = new ArrayList<>();
 		for (int deviceId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids)) {
-			Device device = mDevices.get(deviceId);
-			if (device != null && !(onlyFlagged && Boolean.FALSE.equals(device.getParameter(DEVICE_PARAMETER_SHOW)))) {
+			DeviceHolder device = mDevices.get(deviceId);
+			if (device != null && !(onlyFlagged && !device.isShow())) {
 				result.add(device);
 			}
 		}
@@ -195,13 +236,20 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 
 	@Override
 	public List<Device> getDevices() {
-		return getDevices(false);
+		List<Device> result = new ArrayList<>();
+		for (int deviceId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids)) {
+			DeviceHolder device = mDevices.get(deviceId);
+			if (device != null && !device.isGroup()) {
+				result.add(device.getDevice());
+			}
+		}
+		return result;
 	}
 
 	@Override
 	public Device getDeviceByMac(final String mac) {
 		Integer deviceId = mMacToIdMap.get(mac);
-		return deviceId == null ? null : getDeviceById(deviceId);
+		return deviceId == null ? null : getDeviceById(deviceId).getDevice();
 	}
 
 	/**
@@ -210,7 +258,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 * @param id the storage id
 	 * @return The device
 	 */
-	public Device getDeviceById(final int id) {
+	public DeviceHolder getDeviceById(final int id) {
 		return mDevices.get(id);
 	}
 
@@ -257,13 +305,14 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 			}
 		}
 
+		boolean isShow = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true);
 		device.setParameter(DEVICE_ID, deviceId);
-		device.setParameter(DEVICE_PARAMETER_SHOW, PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true));
-		Device otherDevice = mDevices.get(deviceId);
-		if (otherDevice instanceof Light && device instanceof Light) {
-			((Light) device).fetchAnimationThread((Light) otherDevice);
+		device.setParameter(DEVICE_PARAMETER_SHOW, isShow);
+		DeviceHolder otherDevice = mDevices.get(deviceId);
+		if (otherDevice != null && !otherDevice.isGroup() && otherDevice.getDevice() instanceof Light && device instanceof Light) {
+			((Light) device).fetchAnimationThread((Light) otherDevice.getDevice());
 		}
-		mDevices.put(deviceId, device);
+		mDevices.put(deviceId, new DeviceHolder(device, deviceId, isShow));
 
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_mac, deviceId, device.getTargetAddress());
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_address, deviceId,
@@ -304,6 +353,8 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 				PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_device_tile_tileinfo_parameters, deviceId, tileParameters);
 			}
 		}
+
+		addOrUpdate(device.getGroup());
 	}
 
 	/**
@@ -348,6 +399,85 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	}
 
 	/**
+	 * Add or update a group in local store.
+	 *
+	 * @param group the  group
+	 */
+	public void addOrUpdate(final Group group) {
+		if (group == null) {
+			return;
+		}
+		if (!mByteIdToGroupIdMap.containsKey(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT))) {
+			// new group
+			int newId = PreferenceUtil.getSharedPreferenceInt(R.string.key_device_max_id, 0) + 1;
+			PreferenceUtil.setSharedPreferenceInt(R.string.key_device_max_id, newId);
+
+			List<Integer> groupIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids);
+			groupIds.add(newId);
+			PreferenceUtil.setSharedPreferenceIntList(R.string.key_device_ids, groupIds);
+			mByteIdToGroupIdMap.put(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT), newId);
+		}
+		Integer groupId = mByteIdToGroupIdMap.get(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT));
+		if (groupId == null) {
+			return;
+		}
+
+		DeviceHolder oldGroup = mDevices.get(groupId);
+		if (oldGroup != null && oldGroup.isGroup() && !oldGroup.getGroup().getUpdateTime().before(group.getUpdateTime())) {
+			// update only with newer data.
+			return;
+		}
+
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_type, groupId, DeviceType.GROUP.ordinal());
+
+		boolean isShow = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, groupId, true);
+		group.setParameter(DEVICE_ID, groupId);
+		group.setParameter(DEVICE_PARAMETER_SHOW, isShow);
+
+		mDevices.put(groupId, new DeviceHolder(group, groupId, isShow));
+		PreferenceUtil.setIndexedSharedPreferenceByteArray(R.string.key_group_byte_id, groupId, group.getGroupId());
+		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_label, groupId, group.getGroupLabel());
+		PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_group_update_time, groupId, group.getUpdateTime().getTime());
+	}
+
+	/**
+	 * Remove a group from local store.
+	 *
+	 * @param group The group to be deleted.
+	 */
+	public void remove(final Group group) {
+		Integer groupId = mByteIdToGroupIdMap.get(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT));
+		if (groupId == null) {
+			return;
+		}
+		mByteIdToGroupIdMap.remove(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT));
+		mDevices.remove(groupId);
+
+		List<Integer> groupIds = PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids);
+		groupIds.remove(groupId);
+		PreferenceUtil.setSharedPreferenceIntList(R.string.key_device_ids, groupIds);
+
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_group_byte_id, groupId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_label, groupId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_group_update_time, groupId);
+		PreferenceUtil.removeIndexedSharedPreference(R.string.key_device_show, groupId);
+	}
+
+	/**
+	 * Remove a device or group.
+	 *
+	 * @param holder The device holder.
+	 */
+	public void remove(final DeviceHolder holder) {
+		if (holder.isGroup()) {
+			remove(holder.getGroup());
+		}
+		else {
+			remove(holder.getDevice());
+		}
+	}
+
+	/**
 	 * Get the DeviceRegistry as singleton.
 	 *
 	 * @return The DeviceRegistry as singleton.
@@ -387,7 +517,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	/**
 	 * Enumeration of device types.
 	 */
-	public enum DeviceType {
+	private enum DeviceType {
 		/**
 		 * A device which is no light.
 		 */
@@ -403,7 +533,11 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		/**
 		 * A tile chain.
 		 */
-		TILECHAIN;
+		TILECHAIN,
+		/**
+		 * A group of devices.
+		 */
+		GROUP;
 
 		/**
 		 * Get the device type by its ordinal.

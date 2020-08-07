@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.managedevices.DeviceHolder;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
@@ -120,9 +121,12 @@ public final class ColorRegistry {
 	public List<Light> getLightsWithStoredColors() {
 		Set<Device> lightsWithStoredColors = getStoredColors().stream().map(StoredColor::getLight).collect(Collectors.toSet());
 		List<Light> result = new ArrayList<>();
-		for (Device device : DeviceRegistry.getInstance().getDevices(true)) {
-			if (lightsWithStoredColors.contains(device)) {
-				result.add((Light) device);
+		for (DeviceHolder deviceHolder : DeviceRegistry.getInstance().getDevices(true)) {
+			if (!deviceHolder.isGroup()) {
+				Device device = deviceHolder.getDevice();
+				if (lightsWithStoredColors.contains(device)) {
+					result.add((Light) device);
+				}
 			}
 		}
 		return result;

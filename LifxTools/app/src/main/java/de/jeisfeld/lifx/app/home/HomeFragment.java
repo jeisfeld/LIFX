@@ -93,7 +93,7 @@ public class HomeFragment extends ListFragment {
 			@Override
 			public void onReceive(final Context context, final Intent intent) {
 				String mac = intent.getStringExtra(EXTRA_ANIMATION_STOP_MAC);
-				DeviceViewModel viewModel = mAdapter.getViewModel(mac);
+				MainViewModel viewModel = mAdapter.getViewModel(mac);
 				if (viewModel instanceof LightViewModel) {
 					((LightViewModel) viewModel).mAnimationStatus.setValue(false);
 				}
@@ -160,8 +160,8 @@ public class HomeFragment extends ListFragment {
 							DeviceAdapter.progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
 					Color newColor = ColorUtil.convertAndroidColorToColor(color, colorTemperature, false);
 
-					List<DeviceViewModel> checkedDevices = mAdapter.getCheckedDevices();
-					for (DeviceViewModel model : checkedDevices) {
+					List<MainViewModel> checkedDevices = mAdapter.getCheckedDevices();
+					for (MainViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
 							((LightViewModel) model).updateColor(newColor, true);
 						}
@@ -179,8 +179,8 @@ public class HomeFragment extends ListFragment {
 				if (fromUser) {
 					Color newColor = DeviceAdapter.convertBrightnessColorTempPickerColor(color);
 
-					List<DeviceViewModel> checkedDevices = mAdapter.getCheckedDevices();
-					for (DeviceViewModel model : checkedDevices) {
+					List<MainViewModel> checkedDevices = mAdapter.getCheckedDevices();
+					for (MainViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
 							((LightViewModel) model).updateColor(newColor, true);
 						}

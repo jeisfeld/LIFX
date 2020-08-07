@@ -88,7 +88,7 @@ public class StoredTileColors extends StoredColor {
 						tileColors[tileIndex] = TileColors.OFF;
 					}
 				}
-				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(getDeviceId());
+				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
 				tileChainColors = new TileChainColors.PerTile(tileChain, tileColors);
 				break;
 			default:
@@ -157,7 +157,7 @@ public class StoredTileColors extends StoredColor {
 	 */
 	@Override
 	public TileChain getLight() {
-		return (TileChain) DeviceRegistry.getInstance().getDeviceById(getDeviceId());
+		return (TileChain) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
 	}
 
 	@NonNull

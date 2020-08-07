@@ -33,6 +33,8 @@
     <string name="key_device_build_timestamp" translatable="false">device_build_timestamp</string>
     <string name="key_device_show" translatable="false">device_show</string>
     <string name="key_device_selected_brightness" translatable="false">device_selected_brightness</string>
+    <string name="key_group_byte_id" translatable="false">group_byte_id</string>
+    <string name="key_group_update_time" translatable="false">group_update_time</string>
 
     <!-- Keys for saved colors -->
     <string name="key_color_ids" translatable="false">color_ids</string>
