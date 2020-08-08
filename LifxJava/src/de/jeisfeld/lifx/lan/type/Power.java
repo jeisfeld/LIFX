@@ -60,6 +60,15 @@ public class Power {
 		return equals(Power.OFF);
 	}
 
+	/**
+	 * Determine if power is undefined.
+	 *
+	 * @return true if power is undefined.
+	 */
+	public boolean isUndefined() {
+		return equals(Power.UNDEFINED);
+	}
+
 	@Override
 	public final String toString() {
 		return (isOn() ? "ON" : isOff() ? "OFF" : "?") + " (" + TypeUtil.toUnsignedString(mLevel) + ")";

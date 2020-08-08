@@ -165,6 +165,9 @@ public class HomeFragment extends ListFragment {
 						if (model instanceof LightViewModel) {
 							((LightViewModel) model).updateColor(newColor, true);
 						}
+						else if (model instanceof GroupViewModel) {
+							((GroupViewModel) model).updateColor(newColor);
+						}
 					}
 
 					if (brightnessColorTempPickerView != null) {
@@ -183,6 +186,9 @@ public class HomeFragment extends ListFragment {
 					for (MainViewModel model : checkedDevices) {
 						if (model instanceof LightViewModel) {
 							((LightViewModel) model).updateColor(newColor, true);
+						}
+						else if (model instanceof GroupViewModel) {
+							((GroupViewModel) model).updateColor(newColor);
 						}
 					}
 

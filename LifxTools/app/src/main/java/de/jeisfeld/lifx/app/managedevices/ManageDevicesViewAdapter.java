@@ -15,6 +15,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -116,13 +117,18 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			});
 		}
 
-		holder.mStoredColorsButton.setOnClickListener(v -> StoredColorsFragment.navigate(mFragment.get(), deviceHolder.getId()));
+		if (deviceHolder.isGroup()) {
+			holder.mStoredColorsButton.setVisibility(View.GONE);
+		}
+		else {
+			holder.mStoredColorsButton.setOnClickListener(v -> StoredColorsFragment.navigate(mFragment.get(), deviceHolder.getId()));
+		}
 
 		if (!deviceHolder.isGroup() && deviceHolder.getDevice() instanceof MultiZoneLight && context != null) {
 			MultiZoneLight device = (MultiZoneLight) deviceHolder.getDevice();
 			holder.mMultizoneOrientationButton.setVisibility(View.VISIBLE);
 			MultizoneOrientation orientation0 = (MultizoneOrientation) device.getParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION);
-			holder.mMultizoneOrientationButton.setImageDrawable(context.getDrawable(orientation0.getButtonResource()));
+			holder.mMultizoneOrientationButton.setImageDrawable(ContextCompat.getDrawable(context, orientation0.getButtonResource()));
 			holder.mMultizoneOrientationButton.setOnClickListener(v -> {
 				MultizoneOrientation orientation =
 						(MultizoneOrientation) device.getParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION);
@@ -145,7 +151,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 				}
 
 				device.setParameter(DeviceRegistry.DEVICE_PARAMETER_MULTIZONE_ORIENTATION, newOrientation);
-				holder.mMultizoneOrientationButton.setImageDrawable(context.getDrawable(newOrientation.getButtonResource()));
+				holder.mMultizoneOrientationButton.setImageDrawable(ContextCompat.getDrawable(context, newOrientation.getButtonResource()));
 				DeviceRegistry.getInstance().addOrUpdate(device);
 			});
 		}

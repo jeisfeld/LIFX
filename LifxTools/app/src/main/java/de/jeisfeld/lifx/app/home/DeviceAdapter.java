@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -62,6 +63,7 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.MultizoneColors.Interpolated;
+import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
@@ -196,6 +198,12 @@ public class DeviceAdapter extends BaseAdapter {
 		}
 	}
 
+	/**
+	 * Refresh the color for all devices of a group after setting group color.
+	 *
+	 * @param groupId The group id.
+	 * @param color   The color.
+	 */
 	private void refreshGroupColor(final int groupId, final Color color) {
 		for (MainViewModel model : mViewModels) {
 			if (model instanceof LightViewModel) {
@@ -204,6 +212,29 @@ public class DeviceAdapter extends BaseAdapter {
 						&& (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
 					try {
 						((LightViewModel) model).updateColorFromGroup(color);
+					}
+					catch (Exception e) {
+						// ignore NullPointerException in case of call before instantiation
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Refresh the power for all devices of a group after setting group power.
+	 *
+	 * @param groupId The group id.
+	 * @param power   The power.
+	 */
+	private void refreshGroupPower(final int groupId, final Power power) {
+		for (MainViewModel model : mViewModels) {
+			if (model instanceof DeviceViewModel) {
+				Device device = ((DeviceViewModel) model).getDevice();
+				if (device.getParameter(DeviceRegistry.DEVICE_GROUP_ID) != null
+						&& (int) device.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
+					try {
+						((DeviceViewModel) model).updatePowerFromGroup(power);
 					}
 					catch (Exception e) {
 						// ignore NullPointerException in case of call before instantiation
@@ -267,7 +298,10 @@ public class DeviceAdapter extends BaseAdapter {
 
 		if (model instanceof GroupViewModel) {
 			view.findViewById(R.id.toggleButtonAnimation).setVisibility(View.GONE);
-			view.findViewById(R.id.buttonSave).setVisibility(View.GONE);
+			Button saveButton = view.findViewById(R.id.buttonSave);
+			if (saveButton != null) {
+				saveButton.setVisibility(View.GONE);
+			}
 			GroupViewModel groupModel = (GroupViewModel) model;
 
 			Button buttonColorPicker = view.findViewById(R.id.buttonColorPicker);
@@ -336,18 +370,26 @@ public class DeviceAdapter extends BaseAdapter {
 	private void preparePowerButton(final Button powerButton, final MainViewModel model) {
 		model.getPower().observe(mLifeCycleOwner, power -> {
 			if (power == null) {
-				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_offline));
+				powerButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.powerbutton_offline));
 			}
 			else if (power.isOff()) {
-				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_off));
+				powerButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.powerbutton_off));
 			}
 			else if (power.isOn()) {
-				powerButton.setBackground(mContext.getDrawable(R.drawable.powerbutton_on));
+				powerButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.powerbutton_on));
 			}
 			// do not update power button if undefined
 		});
 
-		powerButton.setOnClickListener(v -> model.togglePower());
+		powerButton.setOnClickListener(v -> {
+			if (model instanceof GroupViewModel) {
+				Power oldPower = model.mPower.getValue();
+				if (oldPower != null && !oldPower.isUndefined()) {
+					refreshGroupPower(((GroupViewModel) model).getGroupId(), oldPower.isOn() ? Power.OFF : Power.ON);
+				}
+			}
+			model.togglePower();
+		});
 	}
 
 	/**

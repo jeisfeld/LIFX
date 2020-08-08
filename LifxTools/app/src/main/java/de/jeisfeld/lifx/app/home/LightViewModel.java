@@ -217,7 +217,7 @@ public class LightViewModel extends DeviceViewModel {
 		if (context == null) {
 			return;
 		}
-		mAnimationStatus.setValue(false);
+		mAnimationStatus.postValue(false);
 		LifxAnimationService.stopAnimationForMac(context, getLight().getTargetAddress());
 	}
 
@@ -225,7 +225,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Stop the animation or any alarm on this device.
 	 */
 	protected void stopAnimationOrAlarm() {
-		mAnimationStatus.setValue(false);
+		mAnimationStatus.postValue(false);
 		getLight().endAnimation(false);
 	}
 

@@ -75,7 +75,8 @@ public class DeviceViewModel extends MainViewModel {
 	 * @return true if refresh is allowed.
 	 */
 	protected boolean isRefreshAllowed() {
-		return PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0;
+		return PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0
+				&& PreferenceUtil.getSharedPreferenceIntString(R.string.key_pref_power_duration, R.string.pref_default_power_duration) > 0;
 	}
 
 	/**
@@ -88,6 +89,17 @@ public class DeviceViewModel extends MainViewModel {
 	@Override
 	public final void togglePower() {
 		new TogglePowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	/**
+	 * Update the power in the model after setting power from group.
+	 *
+	 * @param power The power.
+	 */
+	protected void updatePowerFromGroup(final Power power) {
+		if (mPower.getValue() != null && !mPower.getValue().isUndefined()) {
+			mPower.postValue(power);
+		}
 	}
 
 	/**
@@ -220,7 +232,10 @@ public class DeviceViewModel extends MainViewModel {
 								brightness = tileBrightness;
 							}
 						}
-						if (brightness == 0) {
+						if (power.isOff() && brightness > 0) {
+							lightModel.getLight().setPower(true);
+						}
+						else if (brightness == 0) {
 							lightModel.updateBrightness(model.mBrightnessAtSwitchOff);
 						}
 						else {
