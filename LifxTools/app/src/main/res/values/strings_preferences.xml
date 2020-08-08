@@ -32,6 +32,7 @@
     <string name="key_device_tile_tileinfo_parameters" translatable="false">device_tile_tileinfo_parameters</string>
     <string name="key_device_build_timestamp" translatable="false">device_build_timestamp</string>
     <string name="key_device_show" translatable="false">device_show</string>
+    <string name="key_device_group_id" translatable="false">device_group_id</string>
     <string name="key_device_selected_brightness" translatable="false">device_selected_brightness</string>
     <string name="key_group_byte_id" translatable="false">group_byte_id</string>
     <string name="key_group_update_time" translatable="false">group_update_time</string>

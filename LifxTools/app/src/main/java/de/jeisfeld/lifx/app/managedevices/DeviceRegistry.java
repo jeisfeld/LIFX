@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
@@ -53,6 +54,10 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 * Device parameter for "show" flag of device.
 	 */
 	public static final String DEVICE_PARAMETER_SHOW = "showDevice";
+	/**
+	 * Device parameter for the groupId of the device.
+	 */
+	public static final String DEVICE_GROUP_ID = "deviceGroupId";
 	/**
 	 * Device parameter for multizone orientation.
 	 */
@@ -196,6 +201,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		boolean isShow = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true);
 		device.setParameter(DEVICE_ID, deviceId);
 		device.setParameter(DEVICE_PARAMETER_SHOW, isShow);
+		device.setParameter(DEVICE_GROUP_ID, PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_group_id, deviceId, -1));
 		mDevices.put(deviceId, new DeviceHolder(device, deviceId, isShow));
 	}
 
@@ -232,6 +238,19 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Get the devices of a group.
+	 *
+	 * @param groupId     The group id.
+	 * @param onlyFlagged flag indicating if only flagged devices should be returned.
+	 * @return The devices of this group.
+	 */
+	public List<Device> getDevices(final int groupId, final boolean onlyFlagged) {
+		return getDevices(onlyFlagged).stream().filter(holder -> !holder.isGroup()).map(DeviceHolder::getDevice)
+				.filter(device -> device.getParameter(DEVICE_GROUP_ID) != null && (int) device.getParameter(DEVICE_GROUP_ID) == groupId)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -354,7 +373,11 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 			}
 		}
 
-		addOrUpdate(device.getGroup());
+		Integer groupId = addOrUpdate(device.getGroup());
+		if (groupId != null) {
+			device.setParameter(DEVICE_GROUP_ID, groupId);
+			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_group_id, deviceId, groupId);
+		}
 	}
 
 	/**
@@ -402,10 +425,11 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 * Add or update a group in local store.
 	 *
 	 * @param group the  group
+	 * @return the groupId
 	 */
-	public void addOrUpdate(final Group group) {
+	public Integer addOrUpdate(final Group group) {
 		if (group == null) {
-			return;
+			return null;
 		}
 		if (!mByteIdToGroupIdMap.containsKey(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT))) {
 			// new group
@@ -419,13 +443,13 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		}
 		Integer groupId = mByteIdToGroupIdMap.get(Base64.encodeToString(group.getGroupId(), Base64.DEFAULT));
 		if (groupId == null) {
-			return;
+			return null;
 		}
 
 		DeviceHolder oldGroup = mDevices.get(groupId);
 		if (oldGroup != null && oldGroup.isGroup() && !oldGroup.getGroup().getUpdateTime().before(group.getUpdateTime())) {
 			// update only with newer data.
-			return;
+			return groupId;
 		}
 
 		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_device_type, groupId, DeviceType.GROUP.ordinal());
@@ -438,6 +462,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		PreferenceUtil.setIndexedSharedPreferenceByteArray(R.string.key_group_byte_id, groupId, group.getGroupId());
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_device_label, groupId, group.getGroupLabel());
 		PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_group_update_time, groupId, group.getUpdateTime().getTime());
+		return groupId;
 	}
 
 	/**

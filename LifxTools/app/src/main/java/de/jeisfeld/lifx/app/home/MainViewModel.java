@@ -80,6 +80,11 @@ public abstract class MainViewModel extends ViewModel {
 	public abstract CharSequence getLabel();
 
 	/**
+	 * Check the power of the device.
+	 */
+	public abstract void checkPower();
+
+	/**
 	 * Toggle the power state.
 	 */
 	public abstract void togglePower();

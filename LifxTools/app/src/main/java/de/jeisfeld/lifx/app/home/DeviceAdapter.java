@@ -168,7 +168,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 */
 	private void addViewModel(final DeviceHolder deviceHolder) {
 		if (deviceHolder.isGroup()) {
-			mViewModels.add(new GroupViewModel(mContext, deviceHolder.getGroup()));
+			mViewModels.add(new GroupViewModel(mContext, deviceHolder.getGroup(), deviceHolder.getId()));
 		}
 		else {
 			Device device = deviceHolder.getDevice();
@@ -246,16 +246,12 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 		}
 
-		if (model instanceof DeviceViewModel) {
-			((DeviceViewModel) model).checkPower();
-		}
 		if (model instanceof GroupViewModel) {
 			view.findViewById(R.id.toggleButtonAnimation).setVisibility(View.GONE);
 			view.findViewById(R.id.buttonSave).setVisibility(View.GONE);
-			// TODO: handle power check for groups
-
-			// TODO: handle color setting for groups
 		}
+		model.checkPower();
+		// TODO: handle color setting for groups
 
 		if (model instanceof LightViewModel) {
 			LightViewModel lightModel = (LightViewModel) model;

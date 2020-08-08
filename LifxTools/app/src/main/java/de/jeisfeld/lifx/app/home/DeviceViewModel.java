@@ -47,13 +47,10 @@ public class DeviceViewModel extends MainViewModel {
 		return mDevice;
 	}
 
-	/**
-	 * Check the power of the device.
-	 */
-	public void checkPower() {
+	@Override
+	public final void checkPower() {
 		new CheckPowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
-
 
 	@Override
 	protected final void refresh() {
