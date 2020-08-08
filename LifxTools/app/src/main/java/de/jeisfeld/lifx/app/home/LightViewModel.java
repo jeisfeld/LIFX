@@ -45,7 +45,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light The light.
+	 * @param light   The light.
 	 */
 	public LightViewModel(final Context context, final Light light) {
 		super(context, light);
@@ -104,9 +104,9 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param hue the new hue. May be null to keep unchanged.
-	 * @param saturation the new saturation. May be null to keep unchanged.
-	 * @param brightness the new brightness. May be null to keep unchanged.
+	 * @param hue              the new hue. May be null to keep unchanged.
+	 * @param saturation       the new saturation. May be null to keep unchanged.
+	 * @param brightness       the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
 	 */
 	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
@@ -155,7 +155,7 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the color.
 	 *
-	 * @param color the color to be set.
+	 * @param color       the color to be set.
 	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
 	public void updateColor(final Color color, final boolean isImmediate) {
@@ -171,6 +171,16 @@ public class LightViewModel extends DeviceViewModel {
 			}
 		}
 	}
+
+	/**
+	 * Update the color in the model after setting color from group.
+	 *
+	 * @param color The color.
+	 */
+	protected void updateColorFromGroup(final Color color) {
+		mColor.postValue(color);
+	}
+
 
 	/**
 	 * Update from a stored color.
@@ -276,8 +286,8 @@ public class LightViewModel extends DeviceViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
-		 * @param color The color.
+		 * @param model       The underlying model.
+		 * @param color       The color.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		private SetColorTask(final LightViewModel model, final Color color, final boolean isImmediate) {
@@ -325,15 +335,4 @@ public class LightViewModel extends DeviceViewModel {
 			executeOnExecutor(THREAD_POOL_EXECUTOR);
 		}
 	}
-
-	/**
-	 * Interface for an async task.
-	 */
-	protected interface AsyncExecutable {
-		/**
-		 * Execute the task.
-		 */
-		void execute();
-	}
-
 }

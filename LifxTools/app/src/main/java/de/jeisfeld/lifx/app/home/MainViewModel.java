@@ -88,4 +88,14 @@ public abstract class MainViewModel extends ViewModel {
 	 * Toggle the power state.
 	 */
 	public abstract void togglePower();
+
+	/**
+	 * Interface for an async task.
+	 */
+	protected interface AsyncExecutable {
+		/**
+		 * Execute the task.
+		 */
+		void execute();
+	}
 }

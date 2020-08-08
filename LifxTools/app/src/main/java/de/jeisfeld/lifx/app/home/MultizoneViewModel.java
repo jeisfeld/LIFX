@@ -105,6 +105,12 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
+	protected final void updateColorFromGroup(final Color color) {
+		updateStoredColors(new MultizoneColors.Fixed(color), 1);
+		super.updateColorFromGroup(color);
+	}
+
+	@Override
 	public final void updateColor(final Color color, final boolean isImmediate) {
 		updateStoredColors(new MultizoneColors.Fixed(color), 1);
 		super.updateColor(color, isImmediate);

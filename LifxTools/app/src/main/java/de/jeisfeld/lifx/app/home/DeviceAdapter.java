@@ -196,6 +196,23 @@ public class DeviceAdapter extends BaseAdapter {
 		}
 	}
 
+	private void refreshGroupColor(final int groupId, final Color color) {
+		for (MainViewModel model : mViewModels) {
+			if (model instanceof LightViewModel) {
+				Light light = ((LightViewModel) model).getLight();
+				if (light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) != null
+						&& (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
+					try {
+						((LightViewModel) model).updateColorFromGroup(color);
+					}
+					catch (Exception e) {
+						// ignore NullPointerException in case of call before instantiation
+					}
+				}
+			}
+		}
+	}
+
 	@SuppressLint("ViewHolder")
 	@Override
 	public final synchronized View getView(final int position, final View convertView, final ViewGroup parent) {
@@ -246,13 +263,25 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 		}
 
+		model.checkPower();
+
 		if (model instanceof GroupViewModel) {
 			view.findViewById(R.id.toggleButtonAnimation).setVisibility(View.GONE);
 			view.findViewById(R.id.buttonSave).setVisibility(View.GONE);
-		}
-		model.checkPower();
-		// TODO: handle color setting for groups
+			GroupViewModel groupModel = (GroupViewModel) model;
 
+			Button buttonColorPicker = view.findViewById(R.id.buttonColorPicker);
+			if (buttonColorPicker != null) {
+				prepareColorPicker(buttonColorPicker, groupModel);
+			}
+			Button buttonBrightnessColorTemp = view.findViewById(R.id.buttonBrightnessColortemp);
+			if (buttonBrightnessColorTemp != null) {
+				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, groupModel);
+			}
+
+			groupModel.getColor().observe(mLifeCycleOwner, color -> refreshGroupColor(groupModel.getGroupId(), color));
+			groupModel.checkColor();
+		}
 		if (model instanceof LightViewModel) {
 			LightViewModel lightModel = (LightViewModel) model;
 
@@ -327,7 +356,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param colorPickerButton The color picker button.
 	 * @param model             The light view model.
 	 */
-	private void prepareColorPicker(final Button colorPickerButton, final LightViewModel model) {
+	private void prepareColorPicker(final Button colorPickerButton, final MainViewModel model) {
 		colorPickerButton.setVisibility(View.VISIBLE);
 
 		colorPickerButton.setOnClickListener(v -> new Builder(mContext, R.layout.dialog_colorpicker)
@@ -336,7 +365,7 @@ public class DeviceAdapter extends BaseAdapter {
 					if (fromUser) {
 						// Use alpha as color temperature
 						short colorTemperature = progressBarToColorTemperature(android.graphics.Color.alpha(color) * 120 / 255); // MAGIC_NUMBER
-						model.updateColor(ColorUtil.convertAndroidColorToColor(color, colorTemperature, false), true);
+						updateColor(model, ColorUtil.convertAndroidColorToColor(color, colorTemperature, false));
 					}
 				}).show());
 	}
@@ -345,18 +374,33 @@ public class DeviceAdapter extends BaseAdapter {
 	 * Prepare the picker for brightness and color temperature started via button.
 	 *
 	 * @param brightnessColorTempButton The brightness/colortemp picker button.
-	 * @param model                     The light view model.
+	 * @param model                     The group view model.
 	 */
-	private void prepareBrightnessColortempPicker(final Button brightnessColorTempButton, final LightViewModel model) {
+	private void prepareBrightnessColortempPicker(final Button brightnessColorTempButton, final MainViewModel model) {
 		brightnessColorTempButton.setVisibility(View.VISIBLE);
 
 		brightnessColorTempButton.setOnClickListener(v -> new Builder(mContext, R.layout.dialog_brightness_colortemp)
 				.initializeFromBrightnessColorTemp(model)
 				.setColorListener((color, fromUser) -> {
 					if (fromUser) {
-						model.updateColor(convertBrightnessColorTempPickerColor(color), true);
+						updateColor(model, convertBrightnessColorTempPickerColor(color));
 					}
 				}).show());
+	}
+
+	/**
+	 * Update the color via a model.
+	 *
+	 * @param model The model.
+	 * @param color The color.
+	 */
+	private void updateColor(final MainViewModel model, final Color color) {
+		if (model instanceof LightViewModel) {
+			((LightViewModel) model).updateColor(color, true);
+		}
+		else if (model instanceof GroupViewModel) {
+			((GroupViewModel) model).updateColor(color);
+		}
 	}
 
 	/**

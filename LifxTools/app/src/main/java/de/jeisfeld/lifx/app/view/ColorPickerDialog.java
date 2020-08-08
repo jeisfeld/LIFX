@@ -34,7 +34,9 @@ import com.skydoves.colorpickerview.sliders.BrightnessSlideBar;
 import androidx.appcompat.app.AlertDialog;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.DeviceAdapter;
+import de.jeisfeld.lifx.app.home.GroupViewModel;
 import de.jeisfeld.lifx.app.home.LightViewModel;
+import de.jeisfeld.lifx.app.home.MainViewModel;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
@@ -165,9 +167,15 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @param model The light view model.
 		 * @return {@link Builder}.
 		 */
-		public Builder initializeFromLight(final LightViewModel model) {
-			mColorPickerView.getViewTreeObserver()
-					.addOnGlobalLayoutListener(() -> updateColorPickerFromLight(mColorPickerView, model.getColor().getValue()));
+		public Builder initializeFromLight(final MainViewModel model) {
+			if (model instanceof LightViewModel) {
+				mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() ->
+						updateColorPickerFromLight(mColorPickerView, ((LightViewModel) model).getColor().getValue()));
+			}
+			else if (model instanceof GroupViewModel) {
+				mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() ->
+						updateColorPickerFromLight(mColorPickerView, ((GroupViewModel) model).getColor().getValue()));
+			}
 			return this;
 		}
 
@@ -177,9 +185,15 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @param model The light view model.
 		 * @return {@link Builder}.
 		 */
-		public Builder initializeFromBrightnessColorTemp(final LightViewModel model) {
-			mColorPickerView.getViewTreeObserver()
-					.addOnGlobalLayoutListener(() -> updateBrightnessColorTempFromLight(mColorPickerView, model.getColor().getValue()));
+		public Builder initializeFromBrightnessColorTemp(final MainViewModel model) {
+			if (model instanceof LightViewModel) {
+				mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() ->
+						updateBrightnessColorTempFromLight(mColorPickerView, ((LightViewModel) model).getColor().getValue()));
+			}
+			else if (model instanceof GroupViewModel) {
+				mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() ->
+						updateBrightnessColorTempFromLight(mColorPickerView, ((GroupViewModel) model).getColor().getValue()));
+			}
 			return this;
 		}
 
