@@ -34,8 +34,9 @@
 
     <string name="title_dialog_device_info">Informação de dispositivo</string>
     <string name="title_dialog_group_info">Informação do grupo</string>
-    <string name="label_device_name">Nome: %1$s</string>
-    <string name="label_devices_in_group">Dispositivos no grupo:</string>
+    <string name="label_device_name"><![CDATA[<b>Nome:</b> %1$s]]></string>
+    <string name="label_devices_in_group"><![CDATA[<b>Dispositivos no grupo:</b><br>]]></string>
+    <string name="text_please_wait">Por favor, espere…</string>
 
     <string name="button_save">Salvar</string>
     <string name="button_ok">OK</string>

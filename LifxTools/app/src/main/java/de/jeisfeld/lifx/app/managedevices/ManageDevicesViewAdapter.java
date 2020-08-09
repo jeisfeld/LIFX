@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.text.Html;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -137,16 +138,17 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			}
 
 			View view = LayoutInflater.from(activity).inflate(R.layout.dialog_device_info, null);
-			((TextView) view.findViewById(R.id.textViewDeviceName)).setText(activity.getString(R.string.label_device_name, deviceHolder.getLabel()));
+			((TextView) view.findViewById(R.id.textViewDeviceName)).setText(
+					Html.fromHtml(activity.getString(R.string.label_device_name, deviceHolder.getLabel()), Html.FROM_HTML_MODE_COMPACT));
 
 			TextView textViewDetail = view.findViewById(R.id.textViewDetail);
 			textViewDetail.setMovementMethod(new ScrollingMovementMethod());
 			if (deviceHolder.isGroup()) {
-				StringBuilder text = new StringBuilder(activity.getString(R.string.label_devices_in_group)).append("\n");
+				StringBuilder text = new StringBuilder(activity.getString(R.string.label_devices_in_group));
 				for (Device device : DeviceRegistry.getInstance().getDevices(deviceHolder.getId(), false)) {
-					text.append(device.getLabel()).append("\n");
+					text.append(device.getLabel()).append("<br>");
 				}
-				textViewDetail.setText(text);
+				textViewDetail.setText(Html.fromHtml(text.toString(), Html.FROM_HTML_MODE_COMPACT));
 			}
 			else {
 				new GetDeviceInformationTask(textViewDetail).execute(deviceHolder.getDevice());
@@ -323,9 +325,12 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 
 		@Override
 		protected void onPostExecute(final String info) {
+			String boldInfo = info.replaceAll("^(.*?):", "<b>$1:</b>")
+					.replaceAll("\\n(.*?):", "<br><b>$1:</b>");
+
 			TextView textView = mTextView.get();
 			if (textView != null) {
-				textView.setText(info);
+				textView.setText(Html.fromHtml(boldInfo, Html.FROM_HTML_MODE_COMPACT));
 			}
 		}
 	}

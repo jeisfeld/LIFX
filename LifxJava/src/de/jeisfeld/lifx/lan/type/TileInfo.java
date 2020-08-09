@@ -133,7 +133,9 @@ public class TileInfo implements Serializable {
 	@Override
 	public final String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Product=").append(mProduct.getName()).append(" (v").append(mVersion).append("), ");
+		if (mProduct != null) {
+			sb.append("Product=").append(mProduct.getName()).append(" (v").append(mVersion).append("), ");
+		}
 		sb.append("Firmware=").append(mMajorVersion).append(".").append(mMinorVersion).append(", ");
 		sb.append("Size=(").append(mWidth).append(",").append(mHeight).append("), ");
 		sb.append("Position=(").append(mUserX).append(",").append(mUserY).append("),(").append(mMinX).append(",").append(mMinY).append("), ");

@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import de.jeisfeld.lifx.lan.LifxLanConnection.RetryPolicy;
@@ -276,7 +278,7 @@ public class Device implements Serializable {
 	 * @return The device information as String.
 	 */
 	public String getFullInformation(final String indent, final boolean includeVolatileInfo) {
-		StringBuilder result = new StringBuilder(getClass().getSimpleName()).append(":\n");
+		StringBuilder result = new StringBuilder(indent).append("Type: ").append(getClass().getSimpleName()).append("\n");
 		result.append(indent).append("MAC: ").append(mTargetAddress).append("\n");
 		result.append(indent).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
 		result.append(indent).append("Port: ").append(mPort).append("\n");
@@ -285,15 +287,27 @@ public class Device implements Serializable {
 		result.append(indent).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
 		result.append(indent).append("Colored: ").append(getProduct().hasColor()).append("\n");
 		result.append(indent).append("Label: ").append(getLabel()).append("\n");
-		result.append(indent).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
-		result.append(indent).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
-		result.append(indent).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
-		result.append(indent).append("Firmware time: ").append(getFirmwareBuildTime().getTime() / 1000).append("\n"); // MAGIC_NUMBER
-		result.append(indent).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
-		result.append(indent).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
-		ConnectionInfo wifiInfo = getWifiInfo();
-		if (wifiInfo != null) {
-			result.append(indent).append("WiFi Signal Strength: ").append(wifiInfo.getSignalStrength()).append("\n");
+		if (getLocation() != null) {
+			result.append(indent).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
+		}
+		if (getGroup() != null) {
+			result.append(indent).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
+		}
+		if (getHostFirmwareVersion() != null) {
+			result.append(indent).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
+		}
+		if (getFirmwareBuildTime() != null) {
+			result.append(indent).append("Firmware date: ").append(
+					new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(getFirmwareBuildTime())).append("\n");
+		}
+		if (getWifiFirmwareVersion() != null) {
+			result.append(indent).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
+		}
+		if (getUptime() != null) {
+			result.append(indent).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
+		}
+		if (getWifiInfo() != null) {
+			result.append(indent).append("WiFi Signal Strength: ").append(getWifiInfo().getSignalStrength()).append("\n");
 		}
 		if (includeVolatileInfo) {
 			result.append(indent).append("Power: ").append(getPower()).append("\n");
