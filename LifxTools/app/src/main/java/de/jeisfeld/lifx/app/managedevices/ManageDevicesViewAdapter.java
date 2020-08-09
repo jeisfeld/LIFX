@@ -1,8 +1,12 @@
 package de.jeisfeld.lifx.app.managedevices;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.os.AsyncTask;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -25,6 +29,7 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 
 /**
@@ -124,6 +129,39 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			holder.mStoredColorsButton.setOnClickListener(v -> StoredColorsFragment.navigate(mFragment.get(), deviceHolder.getId()));
 		}
 
+		holder.mInfoButton.setOnClickListener(v -> {
+			Fragment fragment = mFragment.get();
+			Activity activity = fragment == null ? null : fragment.getActivity();
+			if (activity == null) {
+				return;
+			}
+
+			View view = LayoutInflater.from(activity).inflate(R.layout.dialog_device_info, null);
+			((TextView) view.findViewById(R.id.textViewDeviceName)).setText(activity.getString(R.string.label_device_name, deviceHolder.getLabel()));
+
+			TextView textViewDetail = view.findViewById(R.id.textViewDetail);
+			textViewDetail.setMovementMethod(new ScrollingMovementMethod());
+			if (deviceHolder.isGroup()) {
+				StringBuilder text = new StringBuilder(activity.getString(R.string.label_devices_in_group)).append("\n");
+				for (Device device : DeviceRegistry.getInstance().getDevices(deviceHolder.getId(), false)) {
+					text.append(device.getLabel()).append("\n");
+				}
+				textViewDetail.setText(text);
+			}
+			else {
+				new GetDeviceInformationTask(textViewDetail).execute(deviceHolder.getDevice());
+			}
+
+			new AlertDialog.Builder(activity)
+					.setTitle(deviceHolder.isGroup() ? R.string.title_dialog_group_info : R.string.title_dialog_device_info)
+					.setView(view)
+					.setPositiveButton(R.string.button_ok, (dialog, which) -> {
+						// do nothing
+					})
+					.create()
+					.show();
+		});
+
 		if (!deviceHolder.isGroup() && deviceHolder.getDevice() instanceof MultiZoneLight && context != null) {
 			MultiZoneLight device = (MultiZoneLight) deviceHolder.getDevice();
 			holder.mMultizoneOrientationButton.setVisibility(View.VISIBLE);
@@ -210,6 +248,10 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 		 */
 		private final ImageView mDragHandle;
 		/**
+		 * The info button.
+		 */
+		private final ImageView mInfoButton;
+		/**
 		 * The delete button.
 		 */
 		private final ImageView mDeleteButton;
@@ -236,6 +278,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			mRowView = itemView;
 			mTitle = itemView.findViewById(R.id.textViewDeviceName);
 			mDragHandle = itemView.findViewById(R.id.imageViewDragHandle);
+			mInfoButton = itemView.findViewById(R.id.imageViewInfo);
 			mDeleteButton = itemView.findViewById(R.id.imageViewDelete);
 			mStoredColorsButton = itemView.findViewById(R.id.imageViewStoredColors);
 			mMultizoneOrientationButton = itemView.findViewById(R.id.imageViewMultizoneOrientation);
@@ -253,5 +296,37 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 		 * @param viewHolder The view Holder.
 		 */
 		void requestDrag(RecyclerView.ViewHolder viewHolder);
+	}
+
+	/**
+	 * An async task for Getting device information.
+	 */
+	private static final class GetDeviceInformationTask extends AsyncTask<Device, String, String> {
+		/**
+		 * The textView where to display device information.
+		 */
+		private final WeakReference<TextView> mTextView;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param textView The textView where to display device information.
+		 */
+		private GetDeviceInformationTask(final TextView textView) {
+			mTextView = new WeakReference<>(textView);
+		}
+
+		@Override
+		protected String doInBackground(final Device... devices) {
+			return devices[0].getFullInformation("", false) + "\n";
+		}
+
+		@Override
+		protected void onPostExecute(final String info) {
+			TextView textView = mTextView.get();
+			if (textView != null) {
+				textView.setText(info);
+			}
+		}
 	}
 }

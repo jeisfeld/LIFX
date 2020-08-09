@@ -27,8 +27,6 @@ import de.jeisfeld.lifx.os.DeviceRegistryFactory;
 import de.jeisfeld.lifx.os.DeviceRegistryInterface;
 import de.jeisfeld.lifx.os.Logger;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 /**
  * Class managing a LIFX light.
  */
@@ -76,12 +74,14 @@ public class Light extends Device implements Serializable {
 
 	// OVERRIDABLE
 	@Override
-	public String getFullInformation() {
-		StringBuilder result = new StringBuilder(super.getFullInformation());
-		if (getProduct().hasInfrared()) {
-			result.append(INDENT).append("Infrared Brightness: ").append(TypeUtil.toUnsignedString(getInfraredBrightness())).append("\n");
+	public String getFullInformation(final String indent, final boolean includeVolatileInfo) {
+		StringBuilder result = new StringBuilder(super.getFullInformation(indent, includeVolatileInfo));
+		if (includeVolatileInfo) {
+			if (getProduct().hasInfrared()) {
+				result.append(indent).append("Infrared Brightness: ").append(TypeUtil.toUnsignedString(getInfraredBrightness())).append("\n");
+			}
+			result.append(indent).append("Color: ").append(getColor()).append("\n");
 		}
-		result.append(INDENT).append("Color: ").append(getColor()).append("\n");
 		return result.toString();
 	}
 
@@ -347,10 +347,10 @@ public class Light extends Device implements Serializable {
 			return;
 		}
 		synchronized (this) {
-			//noinspection SynchronizationOnLocalVariableOrMethodParameter
+			// noinspection SynchronizationOnLocalVariableOrMethodParameter
 			synchronized (other) {
 				if (other.mAnimationThread != null) {
-					this.mAnimationThread = other.mAnimationThread;
+					mAnimationThread = other.mAnimationThread;
 				}
 			}
 		}

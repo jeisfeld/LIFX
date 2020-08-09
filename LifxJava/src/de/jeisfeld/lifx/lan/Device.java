@@ -42,8 +42,6 @@ import de.jeisfeld.lifx.lan.type.Vendor;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 /**
  * Class managing a LIFX device.
  */
@@ -115,9 +113,9 @@ public class Device implements Serializable {
 	 * Constructor.
 	 *
 	 * @param targetAddress The target address.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param sourceId The sourceId.
+	 * @param inetAddress   The internet address.
+	 * @param port          The port.
+	 * @param sourceId      The sourceId.
 	 */
 	public Device(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId) {
 		mTargetAddress = targetAddress;
@@ -130,16 +128,16 @@ public class Device implements Serializable {
 	 * Constructor including version information.
 	 *
 	 * @param targetAddress The target address.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param sourceId The sourceId.
-	 * @param vendor The vendor.
-	 * @param product The product.
-	 * @param version The version.
-	 * @param label The label.
+	 * @param inetAddress   The internet address.
+	 * @param port          The port.
+	 * @param sourceId      The sourceId.
+	 * @param vendor        The vendor.
+	 * @param product       The product.
+	 * @param version       The version.
+	 * @param label         The label.
 	 */
 	public Device(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label) {
+				  final Vendor vendor, final Product product, final int version, final String label) {
 		this(targetAddress, inetAddress, port, sourceId);
 		setVersionInformation(vendor, product, version);
 		mLabel = label;
@@ -202,7 +200,7 @@ public class Device implements Serializable {
 	/**
 	 * Set the version information.
 	 *
-	 * @param vendor The vendor.
+	 * @param vendor  The vendor.
 	 * @param product The product.
 	 * @param version The version.
 	 */
@@ -273,29 +271,33 @@ public class Device implements Serializable {
 	/**
 	 * Get the device information as String.
 	 *
+	 * @param indent              The String used for indentation.
+	 * @param includeVolatileInfo flag indicating if volatile information should be included as well.
 	 * @return The device information as String.
 	 */
-	public String getFullInformation() {
+	public String getFullInformation(final String indent, final boolean includeVolatileInfo) {
 		StringBuilder result = new StringBuilder(getClass().getSimpleName()).append(":\n");
-		result.append(INDENT).append("MAC: ").append(mTargetAddress).append("\n");
-		result.append(INDENT).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
-		result.append(INDENT).append("Port: ").append(mPort).append("\n");
-		result.append(INDENT).append("Vendor: ").append(mVendor).append("\n");
-		result.append(INDENT).append("Product: ").append(getProduct()).append("\n");
-		result.append(INDENT).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
-		result.append(INDENT).append("Colored: ").append(getProduct().hasColor()).append("\n");
-		result.append(INDENT).append("Label: ").append(getLabel()).append("\n");
-		result.append(INDENT).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
-		result.append(INDENT).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
-		result.append(INDENT).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
-		result.append(INDENT).append("Firmware time: ").append(getFirmwareBuildTime().getTime() / 1000).append("\n"); // MAGIC_NUMBER
-		result.append(INDENT).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
-		result.append(INDENT).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
+		result.append(indent).append("MAC: ").append(mTargetAddress).append("\n");
+		result.append(indent).append("IP Address: ").append(mInetAddress.getHostAddress()).append("\n");
+		result.append(indent).append("Port: ").append(mPort).append("\n");
+		result.append(indent).append("Vendor: ").append(mVendor).append("\n");
+		result.append(indent).append("Product: ").append(getProduct()).append("\n");
+		result.append(indent).append("Version: ").append(TypeUtil.toUnsignedString(mVersion)).append("\n");
+		result.append(indent).append("Colored: ").append(getProduct().hasColor()).append("\n");
+		result.append(indent).append("Label: ").append(getLabel()).append("\n");
+		result.append(indent).append("Location: ").append(getLocation().getLocationLabel()).append("\n");
+		result.append(indent).append("Group: ").append(getGroup().getGroupLabel()).append("\n");
+		result.append(indent).append("Host Firmware Version: ").append(getHostFirmwareVersion()).append("\n");
+		result.append(indent).append("Firmware time: ").append(getFirmwareBuildTime().getTime() / 1000).append("\n"); // MAGIC_NUMBER
+		result.append(indent).append("WiFi Firmware Version: ").append(getWifiFirmwareVersion()).append("\n");
+		result.append(indent).append("Uptime: ").append(TypeUtil.toString(getUptime())).append("\n");
 		ConnectionInfo wifiInfo = getWifiInfo();
 		if (wifiInfo != null) {
-			result.append(INDENT).append("WiFi Signal Strength: ").append(wifiInfo.getSignalStrength()).append("\n");
+			result.append(indent).append("WiFi Signal Strength: ").append(wifiInfo.getSignalStrength()).append("\n");
 		}
-		result.append(INDENT).append("Power: ").append(getPower()).append("\n");
+		if (includeVolatileInfo) {
+			result.append(indent).append("Power: ").append(getPower()).append("\n");
+		}
 		return result.toString();
 	}
 
@@ -612,7 +614,7 @@ public class Device implements Serializable {
 	/**
 	 * Set a parameter on the device.
 	 *
-	 * @param key The key.
+	 * @param key   The key.
 	 * @param value The value.
 	 */
 	public void setParameter(final String key, final Object value) {

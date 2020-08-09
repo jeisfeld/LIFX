@@ -12,6 +12,7 @@ import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
+import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
 /**
@@ -49,7 +50,7 @@ public final class Test {
 
 	void test0() throws Exception {
 		for (Device device : LifxLan.getInstance().getDevices()) {
-			System.out.println(device.getFullInformation());
+			System.out.println(device.getFullInformation(TypeUtil.INDENT, true));
 		}
 	}
 
@@ -95,17 +96,17 @@ public final class Test {
 	}
 
 	void test4() throws Exception { // SUPPRESS_CHECKSTYLE
-		System.out.println(Z2.getFullInformation());
+		System.out.println(Z2.getFullInformation(TypeUtil.INDENT, true));
 		Z2.setColors(new MultizoneColors.Fixed(Color.RED).combine(new MultizoneColors.Fixed(Color.GREEN), 0.5) // MAGIC_NUMBER
 				.combine(new MultizoneColors.Fixed(Color.BLUE), 0.75), FIVESECONDS, true); // MAGIC_NUMBER
 		Logger.setLogDetails(true);
 		Z2.setPower(true);
 		Logger.setLogDetails(false);
-		System.out.println(Z2.getFullInformation());
+		System.out.println(Z2.getFullInformation(TypeUtil.INDENT, true));
 	}
 
 	void test5() throws Exception { // SUPPRESS_CHECKSTYLE
-		System.out.println(Z2.getFullInformation());
+		System.out.println(Z2.getFullInformation(TypeUtil.INDENT, true));
 		Z2
 				.rollingAnimation(10000, // MAGIC_NUMBER
 						new MultizoneColors.Interpolated(true, Color.RED, Color.YELLOW, Color.GREEN, Color.BLUE))
@@ -114,7 +115,7 @@ public final class Test {
 	}
 
 	void test6() throws Exception { // SUPPRESS_CHECKSTYLE
-		System.out.println(Z2.getFullInformation());
+		System.out.println(Z2.getFullInformation(TypeUtil.INDENT, true));
 		// Z2.setEffect(MultizoneEffectInfo.OFF);
 		Z2.setEffect(new MultizoneEffectInfo.Move(ONESECOND, false));
 

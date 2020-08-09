@@ -32,6 +32,11 @@
     <string name="title_dialog_delete_stored_settings">Gespeicherte Einstellungen löschen</string>
     <string name="message_dialog_delete_stored_settings">Wollen Sie gespeicherten Einstellungen vom %1$s wirklich löschen?</string>
 
+    <string name="title_dialog_device_info">Geräteinformation</string>
+    <string name="title_dialog_group_info">Gruppeninformationen</string>
+    <string name="label_device_name">Name: %1$s</string>
+    <string name="label_devices_in_group">Geräte in Gruppe:</string>
+
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Starten</string>

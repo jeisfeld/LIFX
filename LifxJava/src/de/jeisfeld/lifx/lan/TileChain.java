@@ -28,8 +28,6 @@ import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 /**
  * Class managing a LIFX Tile Chain.
  */
@@ -74,20 +72,20 @@ public class TileChain extends Light implements Serializable {
 	 * Constructor including version information.
 	 *
 	 * @param targetAddress The target address.
-	 * @param inetAddress The internet address.
-	 * @param port The port.
-	 * @param sourceId The sourceId.
-	 * @param vendor The vendor.
-	 * @param product The product.
-	 * @param version The version.
-	 * @param label The label.
-	 * @param tileCount The number of tiles.
-	 * @param totalWidth The total width of the tile chain.
-	 * @param totalHeight The total height of the tile chain.
+	 * @param inetAddress   The internet address.
+	 * @param port          The port.
+	 * @param sourceId      The sourceId.
+	 * @param vendor        The vendor.
+	 * @param product       The product.
+	 * @param version       The version.
+	 * @param label         The label.
+	 * @param tileCount     The number of tiles.
+	 * @param totalWidth    The total width of the tile chain.
+	 * @param totalHeight   The total height of the tile chain.
 	 */
 	public TileChain(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-			final Vendor vendor, final Product product, final int version, final String label, final byte tileCount, // SUPPRESS_CHECKSTYLE
-			final int totalWidth, final int totalHeight, final List<TileInfo> tileInfoList) { // SUPPRESS_CHECKSTYLE
+					 final Vendor vendor, final Product product, final int version, final String label, final byte tileCount, // SUPPRESS_CHECKSTYLE
+					 final int totalWidth, final int totalHeight, final List<TileInfo> tileInfoList) { // SUPPRESS_CHECKSTYLE
 		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
 		mTileCount = tileCount;
 		mTotalWidth = totalWidth;
@@ -116,17 +114,22 @@ public class TileChain extends Light implements Serializable {
 	}
 
 	@Override
-	public final String getFullInformation() {
-		StringBuilder result = new StringBuilder(super.getFullInformation());
-		result.append(INDENT).append("TileCount: ").append(TypeUtil.toUnsignedString(mTileCount)).append("\n");
-		result.append(INDENT).append("TotalSize: (").append(mTotalWidth).append(",").append(mTotalHeight).append(")\n");
+	public final String getFullInformation(final String indent, final boolean includeVolatileInfo) {
+		StringBuilder result = new StringBuilder(super.getFullInformation(indent, includeVolatileInfo));
+		result.append(indent).append("TileCount: ").append(TypeUtil.toUnsignedString(mTileCount)).append("\n");
+		result.append(indent).append("TotalSize: (").append(mTotalWidth).append(",").append(mTotalHeight).append(")\n");
 		if (mTileInfo != null) {
+			result.append("\n");
 			for (int i = 0; i < mTileInfo.size(); i++) {
-				result.append(INDENT).append("TileInfo[").append(i).append("]: ").append(mTileInfo.get(i)).append("\n");
+				result.append(indent).append("TileInfo[").append(i).append("]: ").append(mTileInfo.get(i)).append("\n");
 			}
-			result.append(INDENT).append("Colors: ").append(getColors()).append("\n");
+			if (includeVolatileInfo) {
+				result.append(indent).append("Colors: ").append(getColors()).append("\n");
+			}
 		}
-		result.append(INDENT).append("Tile Effect: ").append(getEffectInfo());
+		if (includeVolatileInfo) {
+			result.append(indent).append("Tile Effect: ").append(getEffectInfo());
+		}
 		return result.toString();
 	}
 
@@ -194,8 +197,8 @@ public class TileChain extends Light implements Serializable {
 	 * Set the user position of one tile.
 	 *
 	 * @param tileIndex The tile index.
-	 * @param userX The x position of the tile.
-	 * @param userY The y position of the tile.
+	 * @param userX     The x position of the tile.
+	 * @param userY     The y position of the tile.
 	 * @throws IOException Connection issues
 	 */
 	public final void setUserPosition(final byte tileIndex, final float userX, final float userY) throws IOException {
@@ -212,7 +215,7 @@ public class TileChain extends Light implements Serializable {
 		try {
 			return new TileColors.Exact(((TileStateTileState64) getConnection().requestWithResponse(
 					new TileGetTileState64((byte) (mStartIndex + tileIndex), (byte) 1, (byte) 0, (byte) 0, mTileInfo.get(tileIndex).getWidth())))
-							.getColors(),
+					.getColors(),
 					mTileInfo.get(tileIndex).getWidth(), mTileInfo.get(tileIndex).getHeight());
 		}
 		catch (IOException e) {
@@ -232,7 +235,7 @@ public class TileChain extends Light implements Serializable {
 			for (byte tileIndex = 0; tileIndex < mTileCount; tileIndex++) {
 				colors[tileIndex] = new TileColors.Exact(((TileStateTileState64) getConnection().requestWithResponse(
 						new TileGetTileState64((byte) (mStartIndex + tileIndex), (byte) 1, (byte) 0, (byte) 0, mTileInfo.get(tileIndex).getWidth())))
-								.getColors(),
+						.getColors(),
 						mTileInfo.get(tileIndex).getWidth(), mTileInfo.get(tileIndex).getHeight());
 			}
 			return new TileChainColors.PerTile(this, colors);
@@ -262,8 +265,8 @@ public class TileChain extends Light implements Serializable {
 	 * Set the colors for one tile.
 	 *
 	 * @param tileIndex The tile index.
-	 * @param duration The duration of the color change.
-	 * @param colors the colors to be set.
+	 * @param duration  The duration of the color change.
+	 * @param colors    the colors to be set.
 	 * @throws IOException Connection issues
 	 */
 	private void setColors(final byte tileIndex, final int duration, final List<Color> colors) throws IOException {
@@ -275,8 +278,8 @@ public class TileChain extends Light implements Serializable {
 	 * Set the colors for one tile.
 	 *
 	 * @param tileIndex The tile index.
-	 * @param duration The duration of the color change.
-	 * @param colors the colors to be set.
+	 * @param duration  The duration of the color change.
+	 * @param colors    the colors to be set.
 	 * @throws IOException Connection issues
 	 */
 	public final void setColors(final byte tileIndex, final int duration, final TileColors colors) throws IOException {
@@ -286,9 +289,9 @@ public class TileChain extends Light implements Serializable {
 	/**
 	 * Set the colors for all tiles.
 	 *
-	 * @param colors the colors to be set.
+	 * @param colors   the colors to be set.
 	 * @param duration The duration of the color change.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param wait     flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public final void setColors(final TileChainColors colors, final int duration, final boolean wait) throws IOException {
@@ -311,9 +314,9 @@ public class TileChain extends Light implements Serializable {
 	/**
 	 * Set the colors for a subset of tiles.
 	 *
-	 * @param colors the colors to be set. May have null entries.
+	 * @param colors   the colors to be set. May have null entries.
 	 * @param duration The duration of the color change.
-	 * @param wait flag indicating if the method should return only after the final color is reached.
+	 * @param wait     flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public final void setColorsOptional(final TileChainColors colors, final int duration, final boolean wait) throws IOException {
@@ -338,7 +341,7 @@ public class TileChain extends Light implements Serializable {
 	 * Set the tile effect.
 	 *
 	 * @param effectInfo The effect info.
-	 * @param duration the duration of the effect in milliseconds
+	 * @param duration   the duration of the effect in milliseconds
 	 * @throws IOException Connection issues
 	 */
 	public final void setEffect(final TileEffectInfo effectInfo, final long duration) throws IOException {
@@ -380,7 +383,7 @@ public class TileChain extends Light implements Serializable {
 		/**
 		 * Create an animation thread.
 		 *
-		 * @param light the tile chain light.
+		 * @param light      the tile chain light.
 		 * @param definition The rules for the animation.
 		 */
 		private AnimationThread(final TileChain light, final TileChain.AnimationDefinition definition) {
@@ -396,7 +399,7 @@ public class TileChain extends Light implements Serializable {
 		/**
 		 * Set the color that the lamp should get after finishing the cycle.
 		 *
-		 * @param endColors The end colors. List of length 0 turns power off. Null keeps the current color.
+		 * @param endColors         The end colors. List of length 0 turns power off. Null keeps the current color.
 		 * @param endTransitionTime The transition time to the end color.
 		 * @return The updated animation thread.
 		 */

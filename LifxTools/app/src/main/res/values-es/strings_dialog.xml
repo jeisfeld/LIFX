@@ -32,6 +32,11 @@
     <string name="title_dialog_delete_stored_settings">Eliminar configuraciones almacenadas</string>
     <string name="message_dialog_delete_stored_settings">¿Realmente desea eliminar la configuración almacenada de %1$s?</string>
 
+    <string name="title_dialog_device_info">Información del dispositivo</string>
+    <string name="title_dialog_group_info">Información de grupo</string>
+    <string name="label_device_name">Nombre: %1$s</string>
+    <string name="label_devices_in_group">Dispositivos en grupo:</string>
+
     <string name="button_save">Guardar</string>
     <string name="button_ok">OK</string>
     <string name="button_start">Inicio</string>

@@ -24,7 +24,6 @@
     <string name="title_did_not_save_empty_name">Missing Name</string>
     <string name="message_did_not_save_empty_name">Did not save - name was empty.</string>
 
-
     <string name="title_dialog_export">Export of preferences</string>
     <string name="message_dialog_export_overwrite">The export file %1$s is already existing. Do you want to overwrite it?</string>
     <string name="title_dialog_import">Import of settings</string>
@@ -32,6 +31,11 @@
     <string name="message_dialog_import_overwrite">This will delete all existing settings (devices, stored colors, alarms) and replace them by the imported ones. Do you want to continue?</string>
     <string name="title_dialog_delete_stored_settings">Delete stored settings</string>
     <string name="message_dialog_delete_stored_settings">Do you really want to delete stored settings from %1$s?</string>
+
+    <string name="title_dialog_device_info">Device information</string>
+    <string name="title_dialog_group_info">Group information</string>
+    <string name="label_device_name">Name: %1$s</string>
+    <string name="label_devices_in_group">Devices in group:</string>
 
     <string name="button_save">Save</string>
     <string name="button_ok">OK</string>

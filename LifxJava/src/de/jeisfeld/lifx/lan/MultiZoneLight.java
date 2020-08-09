@@ -26,8 +26,6 @@ import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
-import static de.jeisfeld.lifx.lan.util.TypeUtil.INDENT;
-
 /**
  * Class managing a LIFX multizone light.
  */
@@ -230,19 +228,21 @@ public class MultiZoneLight extends Light {
 	}
 
 	@Override
-	public final String getFullInformation() {
-		StringBuilder result = new StringBuilder(super.getFullInformation());
-		result.append(INDENT).append("Zone count: ").append(getZoneCount()).append("\n");
-		if (hasExtendedApi()) {
-			result.append(INDENT).append("Effect type: ").append(getEffectInfo()).append("\n");
-		}
-		List<Color> colors = getColors();
-		for (int bulk = 0; bulk < colors.size() / BULK_SIZE; bulk++) {
-			result.append(INDENT).append("Colors[").append(bulk).append("]: [");
-			for (int i = 0; i < BULK_SIZE && bulk * BULK_SIZE + i < colors.size(); i++) {
-				result.append(colors.get(bulk * BULK_SIZE + i).toString()).append(", ");
+	public final String getFullInformation(final String indent, final boolean includeVolatileInfo) {
+		StringBuilder result = new StringBuilder(super.getFullInformation(indent, includeVolatileInfo));
+		result.append(indent).append("Zone count: ").append(getZoneCount()).append("\n");
+		if (includeVolatileInfo) {
+			if (hasExtendedApi()) {
+				result.append(indent).append("Effect type: ").append(getEffectInfo()).append("\n");
 			}
-			result.replace(result.length() - 2, result.length(), "\n");
+			List<Color> colors = getColors();
+			for (int bulk = 0; bulk < colors.size() / BULK_SIZE; bulk++) {
+				result.append(indent).append("Colors[").append(bulk).append("]: [");
+				for (int i = 0; i < BULK_SIZE && bulk * BULK_SIZE + i < colors.size(); i++) {
+					result.append(colors.get(bulk * BULK_SIZE + i).toString()).append(", ");
+				}
+				result.replace(result.length() - 2, result.length(), "\n");
+			}
 		}
 		return result.toString();
 	}
