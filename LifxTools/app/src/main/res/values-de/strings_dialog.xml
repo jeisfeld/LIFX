@@ -43,6 +43,13 @@
     <string name="message_dialog_new_group_name">Neuer Gruppenname:</string>
     <string name="toast_name_was_changed">Der Name wurde in %1$s geändert</string>
     <string name="toast_failed_to_change_name">Änderung des Namens ist fehlgeschlagen</string>
+    <string name="label_group"><![CDATA[<b>Gruppe:</b> %1$s]]></string>
+    <string name="title_dialog_change_group">Gruppe ändern</string>
+    <string name="message_dialog_new_group">Neue Gruppe:</string>
+    <string name="text_spinner_new_group">Neue Gruppe erstellen</string>
+    <string name="hint_new_group_name">Neuer Gruppenname</string>
+    <string name="toast_group_was_changed">Die Gruppe wurde zu %1$s geändert</string>
+    <string name="toast_failed_to_change_group">Änderung der Gruppe ist fehlgeschlagen</string>
 
     <string name="button_save">Speichern</string>
     <string name="button_ok">OK</string>

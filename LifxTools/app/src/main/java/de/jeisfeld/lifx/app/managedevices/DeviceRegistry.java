@@ -278,6 +278,22 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		return result;
 	}
 
+	/**
+	 * Get all groups.
+	 *
+	 * @return The list of groups.
+	 */
+	public List<Group> getGroups() {
+		List<Group> result = new ArrayList<>();
+		for (int deviceId : PreferenceUtil.getSharedPreferenceIntList(R.string.key_device_ids)) {
+			DeviceHolder device = mDevices.get(deviceId);
+			if (device != null && device.isGroup()) {
+				result.add(device.getGroup());
+			}
+		}
+		return result;
+	}
+
 	@Override
 	public Device getDeviceByMac(final String mac) {
 		Integer deviceId = mMacToIdMap.get(mac);
