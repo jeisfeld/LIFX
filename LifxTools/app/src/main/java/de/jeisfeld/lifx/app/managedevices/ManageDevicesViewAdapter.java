@@ -1,7 +1,6 @@
 package de.jeisfeld.lifx.app.managedevices;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Color;
@@ -16,11 +15,13 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
 
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
@@ -29,6 +30,7 @@ import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
 import de.jeisfeld.lifx.app.util.DialogUtil;
+import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -132,14 +134,32 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 
 		holder.mInfoButton.setOnClickListener(v -> {
 			Fragment fragment = mFragment.get();
-			Activity activity = fragment == null ? null : fragment.getActivity();
+			FragmentActivity activity = fragment == null ? null : fragment.getActivity();
 			if (activity == null) {
 				return;
 			}
 
 			View view = LayoutInflater.from(activity).inflate(R.layout.dialog_device_info, null);
-			((TextView) view.findViewById(R.id.textViewDeviceName)).setText(
+			TextView textViewDeviceName = view.findViewById(R.id.textViewDeviceName);
+			textViewDeviceName.setText(
 					Html.fromHtml(activity.getString(R.string.label_device_name, deviceHolder.getLabel()), Html.FROM_HTML_MODE_COMPACT));
+
+			ImageView editButton = view.findViewById(R.id.imageViewEdit);
+			editButton.setOnClickListener(v1 -> DialogUtil.displayInputDialog(activity, new RequestInputDialogListener() {
+						@Override
+						public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
+							new ChangeLabelTask(activity, deviceHolder, textViewDeviceName).execute(text);
+						}
+
+						@Override
+						public void onDialogNegativeClick(final DialogFragment dialog) {
+							// do nothing
+						}
+					},
+					deviceHolder.isGroup() ? R.string.title_dialog_change_group_name : R.string.title_dialog_change_device_name,
+					R.string.button_rename,
+					deviceHolder.getLabel().toString(),
+					deviceHolder.isGroup() ? R.string.message_dialog_new_group_name : R.string.message_dialog_new_device_name));
 
 			TextView textViewDetail = view.findViewById(R.id.textViewDetail);
 			textViewDetail.setMovementMethod(new ScrollingMovementMethod());
@@ -301,7 +321,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 	}
 
 	/**
-	 * An async task for Getting device information.
+	 * An async task for getting device information.
 	 */
 	private static final class GetDeviceInformationTask extends AsyncTask<Device, String, String> {
 		/**
@@ -331,6 +351,88 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			TextView textView = mTextView.get();
 			if (textView != null) {
 				textView.setText(Html.fromHtml(boldInfo, Html.FROM_HTML_MODE_COMPACT));
+			}
+		}
+	}
+
+	/**
+	 * An async task for changing a device or group label.
+	 */
+	private static final class ChangeLabelTask extends AsyncTask<String, String, String> {
+		/**
+		 * The context.
+		 */
+		private final WeakReference<Context> mContext;
+		/**
+		 * The textView where to display device label.
+		 */
+		private final WeakReference<TextView> mTextView;
+		/**
+		 * The device or group.
+		 */
+		private final DeviceHolder mDeviceHolder;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param context      The context.
+		 * @param deviceHolder The device or group.
+		 * @param textView     The text view for the device name.
+		 */
+		private ChangeLabelTask(final Context context, final DeviceHolder deviceHolder, final TextView textView) {
+			mContext = new WeakReference<>(context);
+			mDeviceHolder = deviceHolder;
+			mTextView = new WeakReference<>(textView);
+		}
+
+		@Override
+		protected String doInBackground(final String... labels) {
+			String label = labels[0];
+			if (mDeviceHolder.isGroup()) {
+				try {
+					mDeviceHolder.getGroup().updateLabel(label);
+					Context context = mContext.get();
+					if (context != null) {
+						DialogUtil.displayToast(context, R.string.toast_name_was_changed, label);
+					}
+					DeviceRegistry.getInstance().addOrUpdate(mDeviceHolder.getGroup());
+					return label;
+				}
+				catch (IOException e) {
+					Context context = mContext.get();
+					if (context != null) {
+						DialogUtil.displayToast(context, R.string.toast_failed_to_change_name);
+					}
+					return null;
+				}
+			}
+			else {
+				try {
+					mDeviceHolder.getDevice().setLabel(label);
+					String changedLabel = mDeviceHolder.getDevice().getLabel();
+					Context context = mContext.get();
+					if (context != null) {
+						DialogUtil.displayToast(context, R.string.toast_name_was_changed, changedLabel);
+					}
+					DeviceRegistry.getInstance().addOrUpdate(mDeviceHolder.getDevice());
+					return changedLabel;
+				}
+				catch (IOException e) {
+					Context context = mContext.get();
+					if (context != null) {
+						DialogUtil.displayToast(context, R.string.toast_failed_to_change_name);
+					}
+					return null;
+				}
+			}
+		}
+
+		@Override
+		protected void onPostExecute(final String label) {
+			TextView textView = mTextView.get();
+			Context context = mContext.get();
+			if (textView != null && context != null) {
+				textView.setText(Html.fromHtml(context.getString(R.string.label_device_name, label), Html.FROM_HTML_MODE_COMPACT));
 			}
 		}
 	}

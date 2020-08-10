@@ -79,14 +79,16 @@ public class TileChain extends Light implements Serializable {
 	 * @param product       The product.
 	 * @param version       The version.
 	 * @param label         The label.
+	 * @param group         The group.
 	 * @param tileCount     The number of tiles.
 	 * @param totalWidth    The total width of the tile chain.
 	 * @param totalHeight   The total height of the tile chain.
+	 * @param tileInfoList  The list of tile infos.
 	 */
 	public TileChain(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-					 final Vendor vendor, final Product product, final int version, final String label, final byte tileCount, // SUPPRESS_CHECKSTYLE
-					 final int totalWidth, final int totalHeight, final List<TileInfo> tileInfoList) { // SUPPRESS_CHECKSTYLE
-		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
+					 final Vendor vendor, final Product product, final int version, final String label, final Group group, // SUPPRESS_CHECKSTYLE
+					 final byte tileCount, final int totalWidth, final int totalHeight, final List<TileInfo> tileInfoList) { // SUPPRESS_CHECKSTYLE
+		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label, group);
 		mTileCount = tileCount;
 		mTotalWidth = totalWidth;
 		mTotalHeight = totalHeight;

@@ -68,13 +68,14 @@ public class MultiZoneLight extends Light {
 	 * @param product                The product.
 	 * @param version                The version.
 	 * @param label                  The label.
+	 * @param group                  The group.
 	 * @param zoneCount              The number of zones.
 	 * @param firmwareBuildTimeStamp The firmware build timestamp
 	 */
 	public MultiZoneLight(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-						  final Vendor vendor, final Product product, final int version, final String label, final byte zoneCount,
-						  final long firmwareBuildTimeStamp) {
-		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
+						  final Vendor vendor, final Product product, final int version, final String label, final Group group,
+						  final byte zoneCount, final long firmwareBuildTimeStamp) {
+		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label, group);
 		mZoneCount = zoneCount;
 		setFirmwareBuildTime(firmwareBuildTimeStamp);
 	}

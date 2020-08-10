@@ -665,7 +665,8 @@ public final class PreferenceUtil {
 	 * @return the corresponding preference value.
 	 */
 	public static byte[] getIndexedSharedPreferenceByteArray(final int preferenceId, final Object index) {
-		return Base64.decode(PreferenceUtil.getIndexedSharedPreferenceString(preferenceId, index), Base64.DEFAULT);
+		String stringValue = PreferenceUtil.getIndexedSharedPreferenceString(preferenceId, index);
+		return stringValue == null ? null : Base64.decode(stringValue, Base64.DEFAULT);
 	}
 
 	/**

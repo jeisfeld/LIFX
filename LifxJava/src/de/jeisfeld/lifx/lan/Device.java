@@ -137,12 +137,14 @@ public class Device implements Serializable {
 	 * @param product       The product.
 	 * @param version       The version.
 	 * @param label         The label.
+	 * @param group         The group.
 	 */
 	public Device(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-				  final Vendor vendor, final Product product, final int version, final String label) {
+				  final Vendor vendor, final Product product, final int version, final String label, final Group group) {
 		this(targetAddress, inetAddress, port, sourceId);
 		setVersionInformation(vendor, product, version);
 		mLabel = label;
+		mGroup = group;
 	}
 
 	/**

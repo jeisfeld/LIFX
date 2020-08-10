@@ -83,7 +83,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 * The ringtone dummy light.
 	 */
 	private final Light mRingtoneDummyLight = new Light("RINGTONE", null, -1, 0, null, null, 0,
-			Application.getResourceString(R.string.list_entry_ringtone)) {
+			Application.getResourceString(R.string.list_entry_ringtone), null) {
 		/**
 		 * The default serial version uid.
 		 */
@@ -161,16 +161,19 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		int version = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_product, deviceId, 0);
 		mMacToIdMap.put(mac, deviceId);
 
+		int groupId = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_group_id, deviceId, -1);
+		Group group = addGroup(groupId);
+
 		Device device;
 		if (type == DeviceType.DEVICE) {
-			device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+			device = new Device(mac, inetAddress, port, mSourceId, vendor, product, version, label, group);
 		}
 		else if (type == DeviceType.MULTIZONE) {
 			byte zoneCount = (byte) PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_zone_count, deviceId, -1);
 			MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
 					PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
 			long buildTimestamp = PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_device_build_timestamp, deviceId, -1);
-			device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, zoneCount, buildTimestamp);
+			device = new MultiZoneLight(mac, inetAddress, port, mSourceId, vendor, product, version, label, group, zoneCount, buildTimestamp);
 			device.setParameter(DEVICE_PARAMETER_MULTIZONE_ORIENTATION, multizoneOrientation);
 		}
 		else if (type == DeviceType.TILECHAIN) {
@@ -191,17 +194,17 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 				}
 			}
 
-			device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label,
+			device = new TileChain(mac, inetAddress, port, mSourceId, vendor, product, version, label, group,
 					tileCount, totalWidth, totalHeight, tileInfoList);
 		}
 		else {
-			device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label);
+			device = new Light(mac, inetAddress, port, mSourceId, vendor, product, version, label, group);
 		}
 
 		boolean isShow = PreferenceUtil.getIndexedSharedPreferenceBoolean(R.string.key_device_show, deviceId, true);
 		device.setParameter(DEVICE_ID, deviceId);
 		device.setParameter(DEVICE_PARAMETER_SHOW, isShow);
-		device.setParameter(DEVICE_GROUP_ID, PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_group_id, deviceId, -1));
+		device.setParameter(DEVICE_GROUP_ID, groupId);
 		mDevices.put(deviceId, new DeviceHolder(device, deviceId, isShow));
 	}
 
@@ -209,10 +212,19 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 	 * Add a group from local storage to the registry during creation.
 	 *
 	 * @param groupId The group id.
+	 * @return the added group.
 	 */
-	private void addGroup(final int groupId) {
-		byte[] byteId = PreferenceUtil.getIndexedSharedPreferenceByteArray(R.string.key_group_byte_id, groupId);
+	private Group addGroup(final int groupId) {
+		DeviceHolder existing = mDevices.get(groupId);
+		if (existing != null && existing.isGroup()) {
+			return existing.getGroup();
+		}
 		String label = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_device_label, groupId);
+		if (label == null) {
+			// not yet stored, hence cannot add group.
+			return null;
+		}
+		byte[] byteId = PreferenceUtil.getIndexedSharedPreferenceByteArray(R.string.key_group_byte_id, groupId);
 		Date updateTime = new Date(PreferenceUtil.getIndexedSharedPreferenceLong(R.string.key_group_update_time, groupId, 0));
 		Group group = new Group(byteId, label, updateTime);
 		mByteIdToGroupIdMap.put(Base64.encodeToString(byteId, Base64.DEFAULT), groupId);
@@ -221,6 +233,7 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 		group.setParameter(DEVICE_ID, groupId);
 		group.setParameter(DEVICE_PARAMETER_SHOW, isShow);
 		mDevices.put(groupId, new DeviceHolder(group, groupId, isShow));
+		return group;
 	}
 
 	/**

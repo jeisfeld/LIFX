@@ -66,10 +66,11 @@ public class Light extends Device implements Serializable {
 	 * @param product       The product.
 	 * @param version       The version.
 	 * @param label         The label.
+	 * @param group         The group.
 	 */
 	public Light(final String targetAddress, final InetAddress inetAddress, final int port, final int sourceId, // SUPPRESS_CHECKSTYLE
-				 final Vendor vendor, final Product product, final int version, final String label) {
-		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label);
+				 final Vendor vendor, final Product product, final int version, final String label, final Group group) {
+		super(targetAddress, inetAddress, port, sourceId, vendor, product, version, label, group);
 	}
 
 	// OVERRIDABLE

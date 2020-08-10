@@ -37,6 +37,12 @@
     <string name="label_device_name"><![CDATA[<b>Nome:</b> %1$s]]></string>
     <string name="label_devices_in_group"><![CDATA[<b>Dispositivos no grupo:</b><br>]]></string>
     <string name="text_please_wait">Por favor, espere…</string>
+    <string name="title_dialog_change_device_name">Alterar nome do dispositivo</string>
+    <string name="title_dialog_change_group_name">Alterar nome do grupo</string>
+    <string name="message_dialog_new_device_name">Novo nome do dispositivo:</string>
+    <string name="message_dialog_new_group_name">Novo nome do grupo:</string>
+    <string name="toast_name_was_changed">O nome foi alterado para %1$s</string>
+    <string name="toast_failed_to_change_name">Falha ao alterar o nome</string>
 
     <string name="button_save">Salvar</string>
     <string name="button_ok">OK</string>
