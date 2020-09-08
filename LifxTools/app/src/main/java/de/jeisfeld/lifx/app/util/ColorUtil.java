@@ -1,12 +1,13 @@
 package de.jeisfeld.lifx.app.util;
 
+import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.GradientDrawable.Orientation;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import android.content.Context;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.GradientDrawable.Orientation;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
@@ -83,7 +84,7 @@ public final class ColorUtil {
 		}
 		return convertAndroidColorToColor(
 				((int) (red * 255.0f + 0.5f) << 16) | ((int) (green * 255.0f + 0.5f) << 8) | (int) (blue * 255.0f + 0.5f), // MAGIC_NUMBER
-				(short) 4000, true).withBrightness(color.getBrightness()); // MAGIC_NUMBER
+				(short) 4000, true).withBrightness(TypeUtil.toDouble(color.getBrightness())); // MAGIC_NUMBER
 	}
 
 	/**
