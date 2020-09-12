@@ -201,7 +201,7 @@ public class LightViewModel extends DeviceViewModel {
 		if (context == null) {
 			return;
 		}
-		mAnimationStatus.setValue(true);
+		mAnimationStatus.postValue(true);
 		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
 		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
 		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, getLight().getLabel());

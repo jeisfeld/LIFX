@@ -345,6 +345,7 @@ public class DeviceAdapter extends BaseAdapter {
 			if (buttonMultiColorPicker != null) {
 				prepareMultiColorPicker(buttonMultiColorPicker, lightModel);
 			}
+			lightModel.checkNativeAnimation();
 		}
 		if (model instanceof TileViewModel) {
 			TileViewModel lightModel = (TileViewModel) model;
@@ -680,10 +681,10 @@ public class DeviceAdapter extends BaseAdapter {
 		model.getAnimationStatus().observe(mLifeCycleOwner, animationButton::setChecked);
 
 		if (model instanceof MultizoneViewModel) {
-			animationButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-				if (isChecked) {
+			animationButton.setOnClickListener(view -> {
+				if (animationButton.isChecked()) {
 					if (model.getPower().getValue() == null || !model.getPower().getValue().isOn()) {
-						buttonView.setChecked(false);
+						animationButton.setChecked(false);
 						return;
 					}
 					Fragment fragment = mFragment.get();
@@ -697,7 +698,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 									@Override
 									public void onDialogNegativeClick(final DialogFragment dialog) {
-										buttonView.setChecked(false);
+										animationButton.setChecked(false);
 									}
 								});
 					}

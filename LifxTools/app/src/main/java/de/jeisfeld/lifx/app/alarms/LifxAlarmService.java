@@ -571,7 +571,7 @@ public class LifxAlarmService extends Service {
 		Logger.debug("LifxAlarmService end (" + alarm.getName() + "," + light.getLabel() + ") (" + animatedLights.size() + ")");
 
 		if (isLastLight) {
-			if (wakeLock != null) {
+			if (wakeLock != null && wakeLock.isHeld()) {
 				wakeLock.release();
 			}
 			synchronized (ANIMATED_ALARMS) {

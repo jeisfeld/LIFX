@@ -1,8 +1,9 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Intent;
+
 import java.io.IOException;
 
-import android.content.Intent;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -35,20 +36,26 @@ public class MultizoneMove extends AnimationData {
 	 * The initial colors.
 	 */
 	private final MultizoneColors mColors;
+	/**
+	 * Flat indicating if the animation is native and is already running.
+	 */
+	private final boolean mIsRunning;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param duration the duration of the move.
-	 * @param stretch the stretch factor.
+	 * @param duration  the duration of the move.
+	 * @param stretch   the stretch factor.
 	 * @param direction the direction of the move.
-	 * @param colors the initial colors.
+	 * @param colors    the initial colors.
+	 * @param isRunning the running flag.
 	 */
-	public MultizoneMove(final int duration, final double stretch, final Direction direction, final MultizoneColors colors) {
+	public MultizoneMove(final int duration, final double stretch, final Direction direction, final MultizoneColors colors, final boolean isRunning) {
 		mDuration = duration;
 		mStretch = stretch;
 		mDirection = direction;
 		mColors = colors;
+		mIsRunning = isRunning;
 	}
 
 	/**
@@ -76,6 +83,7 @@ public class MultizoneMove extends AnimationData {
 		serviceIntent.putExtra(EXTRA_ANIMATION_STRETCH, mStretch);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DIRECTION, mDirection);
 		serviceIntent.putExtra(EXTRA_MULTIZONE_COLORS, mColors);
+		serviceIntent.putExtra(EXTRA_ANIMATION_IS_RUNNING, mIsRunning);
 	}
 
 	@Override
@@ -124,6 +132,11 @@ public class MultizoneMove extends AnimationData {
 	protected final boolean hasNativeImplementation(final Light light) {
 		return ((MultiZoneLight) light).hasExtendedApi() && mStretch == 1
 				&& (getDirection() == Direction.FORWARD || getDirection() == Direction.BACKWARD);
+	}
+
+	@Override
+	public final boolean isRunning() {
+		return mIsRunning;
 	}
 
 	@Override

@@ -61,7 +61,7 @@ public class MultizoneEffectInfo {
 
 	@Override
 	public final String toString() {
-		StringBuilder result = new StringBuilder("Tile Effect[");
+		StringBuilder result = new StringBuilder("Multizone Effect[");
 		result.append("InstanceId=").append(TypeUtil.toUnsignedString(mInstanceId)).append(", ");
 		result.append("EffectType=").append(mType.name()).append(", ");
 		result.append("Speed=").append(TypeUtil.toUnsignedString(mSpeed)).append(", ");

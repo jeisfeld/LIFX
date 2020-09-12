@@ -1,10 +1,11 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Intent;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import android.content.Intent;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -47,9 +48,13 @@ public abstract class AnimationData implements Serializable {
 	 */
 	protected static final String EXTRA_ANIMATION_COLOR_REGEX = "de.jeisfeld.lifx.ANIMATION_COLOR_REGEX";
 	/**
-	 * Key for the animation color regex within the intent.
+	 * Key for the animation brightness adjustment flag within the intent.
 	 */
 	protected static final String EXTRA_ANIMATION_ADJUST_BRIGHTNESS = "de.jeisfeld.lifx.ANIMATION_ADJUST_BRIGHTNESS";
+	/**
+	 * Key for the running flag within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_IS_RUNNING = "de.jeisfeld.lifx.ANIMATION_IS_RUNNING";
 	/**
 	 * Key for the multizone colors within the intent.
 	 */
@@ -75,6 +80,16 @@ public abstract class AnimationData implements Serializable {
 	protected abstract AnimationDefinition getAnimationDefinition(Light light);
 
 	/**
+	 * Get information if the animation is native and is already running.
+	 *
+	 * @return true if the animation is native and is already running.
+	 */
+	// OVERRIDABLE
+	protected boolean isRunning() {
+		return false;
+	}
+
+	/**
 	 * Check if this animation has native implementation on the light.
 	 *
 	 * @param light The light.
@@ -88,7 +103,7 @@ public abstract class AnimationData implements Serializable {
 	/**
 	 * Check if this animation is valid.
 	 *
-	 * @return false if invalie.
+	 * @return false if invalid.
 	 */
 	// OVERRIDABLE
 	public boolean isValid() {
@@ -161,13 +176,13 @@ public abstract class AnimationData implements Serializable {
 			double stretch = intent.getDoubleExtra(EXTRA_ANIMATION_STRETCH, 1);
 			final MultizoneMove.Direction multizoneDirection = (MultizoneMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
 			final MultizoneColors colors = (MultizoneColors) intent.getSerializableExtra(EXTRA_MULTIZONE_COLORS);
-			return new MultizoneMove(duration, stretch, multizoneDirection, colors);
+			final boolean isRunning = intent.getBooleanExtra(EXTRA_ANIMATION_IS_RUNNING, false);
+			return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
 		case TILECHAIN_MOVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
 			final TileChainMove.Direction tilechainDirection = (TileChainMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
-			@SuppressWarnings("unchecked")
-			final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainMove(duration, radius, tilechainDirection, tileColors);
 		case TILECHAIN_IMAGE_TRANSITION:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER

@@ -137,11 +137,13 @@ public class LifxAnimationService extends Service {
 					new BaseAnimationThread(light) {
 						@Override
 						public void run() {
-							try {
-								animationData.getNativeAnimationDefinition(light).startAnimation();
-							}
-							catch (IOException e) {
-								updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+							if (!animationData.isRunning()) {
+								try {
+									animationData.getNativeAnimationDefinition(light).startAnimation();
+								}
+								catch (IOException e) {
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+								}
 							}
 							//noinspection InfiniteLoopStatement
 							while (true) {
@@ -249,7 +251,7 @@ public class LifxAnimationService extends Service {
 	 * @param wakeLock The wakelock on that light.
 	 */
 	private void updateOnEndAnimation(final String mac, final WakeLock wakeLock) {
-		if (wakeLock != null) {
+		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
 		HomeFragment.sendBroadcastStopAnimation(this, mac);
