@@ -357,6 +357,7 @@ public class DeviceAdapter extends BaseAdapter {
 			if (tuneButton != null) {
 				prepareTuneButton(tuneButton, lightModel, position);
 			}
+			lightModel.checkNativeAnimation();
 		}
 
 		return view;

@@ -11,6 +11,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.TileChainFlame;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -18,6 +20,7 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
+import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 
 /**
  * Class holding data for the display view of a tile chain.
@@ -137,6 +140,15 @@ public class TileViewModel extends LightViewModel {
 		new CheckTileChainColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
+	/**
+	 * Check if native animation is running on the device.
+	 */
+	protected final void checkNativeAnimation() {
+		if (mAnimationStatus.getValue() != Boolean.TRUE) {
+			new CheckTileChainAnimationTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+		}
+	}
+
 	@Override
 	protected final boolean isRefreshAllowed() {
 		// Due to tendency for connectivity issues, check Multizone light only if disconnected or if colors have not yet been initialized.
@@ -210,6 +222,49 @@ public class TileViewModel extends LightViewModel {
 			}
 
 			model.updateStoredColors(colors, 1);
+			return null;
+		}
+	}
+
+	/**
+	 * An async task for checking the tile chain animation status.
+	 */
+	private static final class CheckTileChainAnimationTask extends AsyncTask<String, String, TileChainColors> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<TileViewModel> mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model The underlying model.
+		 */
+		private CheckTileChainAnimationTask(final TileViewModel model) {
+			mModel = new WeakReference<>(model);
+		}
+
+		@Override
+		protected TileChainColors doInBackground(final String... strings) {
+			TileViewModel model = mModel.get();
+			if (model == null) {
+				return null;
+			}
+
+			TileEffectInfo effectInfo = model.getLight().getEffectInfo();
+			if (effectInfo != null) {
+				switch (effectInfo.getType()) {
+				case FLAME:
+					AnimationData animationData = new TileChainFlame(effectInfo.getSpeed(), true);
+					model.startAnimation(animationData);
+					break;
+				case MORPH:
+					// TODO
+					break;
+				default:
+					break;
+				}
+			}
 			return null;
 		}
 	}

@@ -101,6 +101,7 @@
     <string-array name="values_tilechain_animation_type">
         <item>Moverse</item>
         <item>Transición de imagen</item>
+        <item>Fuego</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>hacia fuera</item>

@@ -1,9 +1,5 @@
 package de.jeisfeld.lifx.app.animation;
 
-import java.util.ArrayList;
-
-import javax.annotation.Nonnull;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -15,6 +11,11 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+
+import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -117,6 +118,13 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.VISIBLE);
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.VISIBLE);
 					break;
+				case FLAME:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+					break;
 				case MOVE:
 				default:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
@@ -195,6 +203,10 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainImageTransition(duration, colorRegex, adjustBrightness));
 							break;
+						case FLAME:
+							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+									new TileChainFlame(duration, false));
+							break;
 						case MOVE:
 						default:
 							double lightRadius =
@@ -243,13 +255,17 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 */
 	public enum TileChainAnimationType {
 		/**
-		 * Outward movement.
+		 * Movement.
 		 */
 		MOVE,
 		/**
-		 * Inward movement.
+		 * Image transition.
 		 */
-		IMAGE_TRANSITION;
+		IMAGE_TRANSITION,
+		/**
+		 * Flame.
+		 */
+		FLAME;
 
 		/**
 		 * Get TileChainAnimationType from its ordinal value.

@@ -189,6 +189,9 @@ public abstract class AnimationData implements Serializable {
 			String colorRegex = intent.getStringExtra(EXTRA_ANIMATION_COLOR_REGEX);
 			boolean adjustBrightness = intent.getBooleanExtra(EXTRA_ANIMATION_ADJUST_BRIGHTNESS, true);
 			return new TileChainImageTransition(duration, colorRegex, adjustBrightness);
+		case TILECHAIN_FLAME:
+			int speed = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+			return new TileChainFlame(speed, false);
 		default:
 			return null;
 		}
@@ -213,7 +216,11 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain image transition.
 		 */
-		TILECHAIN_IMAGE_TRANSITION;
+		TILECHAIN_IMAGE_TRANSITION,
+		/**
+		 * Tilechain flame.
+		 */
+		TILECHAIN_FLAME;
 
 		/**
 		 * Get Animation Type from its ordinal value.
