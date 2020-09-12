@@ -44,11 +44,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
-	 * @param model the tile view model.
+	 * @param model    the tile view model.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayTileChainAnimationDialog(final FragmentActivity activity, final TileViewModel model,
-			final TileChainAnimationDialogListener listener) {
+													   final TileChainAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
 		TileChainAnimationDialogFragment fragment = new TileChainAnimationDialogFragment();
 		fragment.setListener(listener);
@@ -106,41 +106,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		final CheckBox checkBoxAdjustBrightness = parentView.findViewById(R.id.checkboxAdjustBrightness);
 		final ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
 
-		spinnerAnimationType.setOnItemSelectedListener(new OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position, final long id) {
-				TileChainAnimationType animationType = TileChainAnimationType.fromOrdinal(position);
-				switch (animationType) {
-				case IMAGE_TRANSITION:
-					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.VISIBLE);
-					break;
-				case FLAME:
-					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
-					break;
-				case MOVE:
-				default:
-					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
-					break;
-				}
-			}
-
-			@Override
-			public void onNothingSelected(final AdapterView<?> parent) {
-				// do nothing
-			}
-		});
+		prepareSpinnerListener(parentView, spinnerAnimationType);
 
 		mColors.add(Color.RED);
 		mColors.add(Color.GREEN);
@@ -159,7 +125,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
-						final boolean[] flags) {
+												  final boolean[] flags) {
 					mColors = colors;
 					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
 				}
@@ -207,6 +173,10 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainFlame(duration, false));
 							break;
+						case MORPH:
+							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+									new TileChainMorph(duration, mColors, false));
+							break;
 						case MOVE:
 						default:
 							double lightRadius =
@@ -231,6 +201,58 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 				});
 		return builder.create();
 	}
+
+	/**
+	 * Prepare the listener for the animation type spinner.
+	 *
+	 * @param parentView           The dialog parent view.
+	 * @param spinnerAnimationType The spinner.
+	 */
+	private void prepareSpinnerListener(final View parentView, final Spinner spinnerAnimationType) {
+		spinnerAnimationType.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position, final long id) {
+				TileChainAnimationType animationType = TileChainAnimationType.fromOrdinal(position);
+				switch (animationType) {
+				case IMAGE_TRANSITION:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.VISIBLE);
+					break;
+				case FLAME:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+					break;
+				case MORPH:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+					break;
+				case MOVE:
+				default:
+					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+					break;
+				}
+			}
+
+			@Override
+			public void onNothingSelected(final AdapterView<?> parent) {
+				// do nothing
+			}
+		});
+	}
+
 
 	@Override
 	public final void onCancel(@Nonnull final DialogInterface dialogInterface) {
@@ -265,7 +287,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Flame.
 		 */
-		FLAME;
+		FLAME,
+		/**
+		 * Morph.
+		 */
+		MORPH;
 
 		/**
 		 * Get TileChainAnimationType from its ordinal value.
@@ -290,7 +316,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Callback method for positive click from the confirmation dialog.
 		 *
-		 * @param dialog The confirmation dialog fragment.
+		 * @param dialog        The confirmation dialog fragment.
 		 * @param animationData The animation data.
 		 */
 		void onDialogPositiveClick(DialogFragment dialog, AnimationData animationData);

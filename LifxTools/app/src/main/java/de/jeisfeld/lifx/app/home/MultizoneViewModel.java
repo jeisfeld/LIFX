@@ -124,9 +124,9 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors           the colors to be set.
+	 * @param colors the colors to be set.
 	 * @param brightnessFactor the brightness factor.
-	 * @param isImmediate      Flag indicating if the change should be immediate.
+	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate) {
 		updateStoredColors(colors, brightnessFactor);
@@ -161,7 +161,7 @@ public class MultizoneViewModel extends LightViewModel {
 	 * Check if native animation is running on the device.
 	 */
 	protected final void checkNativeAnimation() {
-		if (mAnimationStatus.getValue() != Boolean.TRUE) {
+		if (!Boolean.TRUE.equals(mAnimationStatus.getValue())) {
 			new CheckMultizoneAnimationTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
 	}
@@ -214,7 +214,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors           The given colors.
+	 * @param colors The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	private void updateStoredColors(final MultizoneColors colors, final double brightnessFactor) {
@@ -336,8 +336,8 @@ public class MultizoneViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model       The underlying model.
-		 * @param colors      The colors.
+		 * @param model The underlying model.
+		 * @param colors The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors, final boolean isImmediate) {
@@ -418,7 +418,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * Constructor.
 		 *
 		 * @param multizoneColors The base multizone colors without flag.
-		 * @param flags           The flags.
+		 * @param flags The flags.
 		 */
 		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);

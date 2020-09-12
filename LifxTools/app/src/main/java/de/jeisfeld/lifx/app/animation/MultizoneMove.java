@@ -37,7 +37,7 @@ public class MultizoneMove extends AnimationData {
 	 */
 	private final MultizoneColors mColors;
 	/**
-	 * Flat indicating if the animation is native and is already running.
+	 * Flag indicating if the animation is native and is already running.
 	 */
 	private final boolean mIsRunning;
 

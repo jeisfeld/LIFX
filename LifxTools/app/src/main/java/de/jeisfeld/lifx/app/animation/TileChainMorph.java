@@ -3,18 +3,21 @@ package de.jeisfeld.lifx.app.animation;
 import android.content.Intent;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo;
-import de.jeisfeld.lifx.lan.type.TileEffectInfo.Flame;
+import de.jeisfeld.lifx.lan.type.TileEffectInfo.Morph;
 
 /**
  * Animation data for flames in a tile chain.
  */
-public class TileChainFlame extends AnimationData {
+public class TileChainMorph extends AnimationData {
 	/**
 	 * The default serial version id.
 	 */
@@ -25,6 +28,10 @@ public class TileChainFlame extends AnimationData {
 	 */
 	private final int mDuration;
 	/**
+	 * The colors to be used.
+	 */
+	private final ArrayList<Color> mColors;
+	/**
 	 * Flag indicating if the animation is native and is already running.
 	 */
 	private final boolean mIsRunning;
@@ -33,10 +40,12 @@ public class TileChainFlame extends AnimationData {
 	 * Constructor.
 	 *
 	 * @param duration  the duration of the flane.
+	 * @param colors    the colors to be used.
 	 * @param isRunning the running flag.
 	 */
-	public TileChainFlame(final int duration, final boolean isRunning) {
+	public TileChainMorph(final int duration, final List<Color> colors, final boolean isRunning) {
 		mDuration = duration;
+		mColors = new ArrayList<>(colors);
 		mIsRunning = isRunning;
 	}
 
@@ -44,12 +53,13 @@ public class TileChainFlame extends AnimationData {
 	public final void addToIntent(final Intent serviceIntent) {
 		super.addToIntent(serviceIntent);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mDuration);
+		serviceIntent.putExtra(EXTRA_COLOR_LIST, mColors);
 		serviceIntent.putExtra(EXTRA_ANIMATION_IS_RUNNING, mIsRunning);
 	}
 
 	@Override
 	protected final AnimationType getType() {
-		return AnimationType.TILECHAIN_FLAME;
+		return AnimationType.TILECHAIN_MORPH;
 	}
 
 	@Override
@@ -75,7 +85,7 @@ public class TileChainFlame extends AnimationData {
 
 	@Override
 	public final boolean isValid() {
-		return mDuration > 0;
+		return mDuration > 0 && mColors.size() > 0;
 	}
 
 	/**
@@ -98,7 +108,7 @@ public class TileChainFlame extends AnimationData {
 		return new NativeAnimationDefinition() {
 			@Override
 			public void startAnimation() throws IOException {
-				tileChain.setEffect(new Flame(mDuration));
+				tileChain.setEffect(new Morph(mDuration, mColors.toArray(new Color[0])));
 			}
 
 			@Override

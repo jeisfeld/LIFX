@@ -1,8 +1,9 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Intent;
+
 import java.util.ArrayList;
 
-import android.content.Intent;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -70,6 +71,11 @@ public class TileChainMove extends AnimationData {
 	 */
 	public final Direction getDirection() {
 		return mDirection;
+	}
+
+	@Override
+	public final boolean isValid() {
+		return mDuration > 0 && mColors.size() > 0;
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.TileChainFlame;
+import de.jeisfeld.lifx.app.animation.TileChainMorph;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -144,7 +145,7 @@ public class TileViewModel extends LightViewModel {
 	 * Check if native animation is running on the device.
 	 */
 	protected final void checkNativeAnimation() {
-		if (mAnimationStatus.getValue() != Boolean.TRUE) {
+		if (!Boolean.TRUE.equals(mAnimationStatus.getValue())) {
 			new CheckTileChainAnimationTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 		}
 	}
@@ -253,13 +254,15 @@ public class TileViewModel extends LightViewModel {
 
 			TileEffectInfo effectInfo = model.getLight().getEffectInfo();
 			if (effectInfo != null) {
+				AnimationData animationData;
 				switch (effectInfo.getType()) {
 				case FLAME:
-					AnimationData animationData = new TileChainFlame(effectInfo.getSpeed(), true);
+					animationData = new TileChainFlame(effectInfo.getSpeed(), true);
 					model.startAnimation(animationData);
 					break;
 				case MORPH:
-					// TODO
+					animationData = new TileChainMorph(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
+					model.startAnimation(animationData);
 					break;
 				default:
 					break;

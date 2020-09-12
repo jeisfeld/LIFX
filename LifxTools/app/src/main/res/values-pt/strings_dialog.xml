@@ -102,6 +102,7 @@
         <item>Mover</item>
         <item>Transição de imagem</item>
         <item>Chama</item>
+        <item>Metamorfose</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>para fora</item>

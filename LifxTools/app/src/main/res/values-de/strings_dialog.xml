@@ -102,6 +102,7 @@
         <item>Bewegung</item>
         <item>Bildübergang</item>
         <item>Flamme</item>
+        <item>Metamorphose</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>auswärts</item>

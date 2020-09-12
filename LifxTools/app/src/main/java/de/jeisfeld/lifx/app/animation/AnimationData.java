@@ -190,8 +190,12 @@ public abstract class AnimationData implements Serializable {
 			boolean adjustBrightness = intent.getBooleanExtra(EXTRA_ANIMATION_ADJUST_BRIGHTNESS, true);
 			return new TileChainImageTransition(duration, colorRegex, adjustBrightness);
 		case TILECHAIN_FLAME:
-			int speed = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
-			return new TileChainFlame(speed, false);
+			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+			return new TileChainFlame(duration, false);
+		case TILECHAIN_MORPH:
+			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
+			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors2 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			return new TileChainMorph(duration, tileColors2, false);
 		default:
 			return null;
 		}
@@ -220,7 +224,11 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain flame.
 		 */
-		TILECHAIN_FLAME;
+		TILECHAIN_FLAME,
+		/**
+		 * Tilechain morph.
+		 */
+		TILECHAIN_MORPH;
 
 		/**
 		 * Get Animation Type from its ordinal value.
