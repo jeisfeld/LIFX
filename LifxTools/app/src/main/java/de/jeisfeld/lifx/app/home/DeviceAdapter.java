@@ -313,7 +313,6 @@ public class DeviceAdapter extends BaseAdapter {
 				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, groupModel);
 			}
 
-			groupModel.getColor().observe(mLifeCycleOwner, color -> refreshGroupColor(groupModel.getGroupId(), color));
 			groupModel.checkColor();
 		}
 		if (model instanceof LightViewModel) {
@@ -345,7 +344,6 @@ public class DeviceAdapter extends BaseAdapter {
 			if (buttonMultiColorPicker != null) {
 				prepareMultiColorPicker(buttonMultiColorPicker, lightModel);
 			}
-			lightModel.checkNativeAnimation();
 		}
 		if (model instanceof TileViewModel) {
 			TileViewModel lightModel = (TileViewModel) model;
@@ -357,7 +355,6 @@ public class DeviceAdapter extends BaseAdapter {
 			if (tuneButton != null) {
 				prepareTuneButton(tuneButton, lightModel, position);
 			}
-			lightModel.checkNativeAnimation();
 		}
 
 		return view;
@@ -710,10 +707,10 @@ public class DeviceAdapter extends BaseAdapter {
 			});
 		}
 		else if (model instanceof TileViewModel) {
-			animationButton.setOnCheckedChangeListener((buttonView, isChecked) -> {
-				if (isChecked) {
+			animationButton.setOnClickListener(view -> {
+				if (animationButton.isChecked()) {
 					if (model.getPower().getValue() == null || !model.getPower().getValue().isOn()) {
-						buttonView.setChecked(false);
+						animationButton.setChecked(false);
 						return;
 					}
 					Fragment fragment = mFragment.get();
@@ -727,7 +724,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 									@Override
 									public void onDialogNegativeClick(final DialogFragment dialog) {
-										buttonView.setChecked(false);
+										animationButton.setChecked(false);
 									}
 								});
 					}

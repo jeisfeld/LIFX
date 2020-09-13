@@ -26,7 +26,7 @@ public class LifxLanConnection {
 	/**
 	 * The default number of attempts.
 	 */
-	private static final int DEFAULT_ATTEMPTS = 2;
+	private static final int DEFAULT_ATTEMPTS = 3;
 	/**
 	 * The buffer size.
 	 */
@@ -267,7 +267,7 @@ public class LifxLanConnection {
 		 * @return The timeout for this attempt.
 		 */
 		default int getTimeout(final int attempt) {
-			return LifxLanConnection.DEFAULT_TIMEOUT;
+			return (attempt + 1) * LifxLanConnection.DEFAULT_TIMEOUT;
 		}
 
 		/**

@@ -51,6 +51,10 @@ public class MultizoneViewModel extends LightViewModel {
 	 * The stored relative brightness of the device.
 	 */
 	private final MutableLiveData<Double> mRelativeBrightness;
+	/**
+	 * Flag indicating if animation status has been checked.
+	 */
+	private boolean mIsAnimationStatusChecked = false;
 
 	/**
 	 * Constructor.
@@ -155,15 +159,6 @@ public class MultizoneViewModel extends LightViewModel {
 	public final void checkColor() {
 		super.checkColor();
 		new CheckMultizoneColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-	}
-
-	/**
-	 * Check if native animation is running on the device.
-	 */
-	protected final void checkNativeAnimation() {
-		if (!Boolean.TRUE.equals(mAnimationStatus.getValue())) {
-			new CheckMultizoneAnimationTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-		}
 	}
 
 	@Override
@@ -272,46 +267,21 @@ public class MultizoneViewModel extends LightViewModel {
 			}
 
 			model.updateStoredColors(fromColors(colors), 1);
-			return null;
-		}
-	}
 
-	/**
-	 * An async task for checking the multizone animation status.
-	 */
-	private static final class CheckMultizoneAnimationTask extends AsyncTask<String, String, MultizoneColors> {
-		/**
-		 * A weak reference to the underlying model.
-		 */
-		private final WeakReference<MultizoneViewModel> mModel;
+			// Check animation status
+			if (!model.mIsAnimationStatusChecked && !Boolean.TRUE.equals(model.mAnimationStatus.getValue())) {
+				MultizoneEffectInfo effectInfo = model.getLight().getEffectInfo();
+				if (effectInfo != null) {
+					model.mIsAnimationStatusChecked = true;
+					if (effectInfo.getType() == MultizoneEffectType.MOVE) {
+						AnimationData animationData = new MultizoneMove(effectInfo.getSpeed(), 1,
+								effectInfo.getParameters()[0] > 0 ? Direction.FORWARD : Direction.BACKWARD,
+								model.getColors().getValue(), true);
+						model.startAnimation(animationData);
+					}
+				}
+			}
 
-		/**
-		 * Constructor.
-		 *
-		 * @param model The underlying model.
-		 */
-		private CheckMultizoneAnimationTask(final MultizoneViewModel model) {
-			mModel = new WeakReference<>(model);
-		}
-
-		@Override
-		protected MultizoneColors doInBackground(final String... strings) {
-			MultizoneViewModel model = mModel.get();
-			if (model == null) {
-				return null;
-			}
-			// Ensure that firmware build time is available.
-			model.getLight().getFirmwareBuildTime();
-			if (!model.getLight().hasExtendedApi()) {
-				return null;
-			}
-			MultizoneEffectInfo effectInfo = model.getLight().getEffectInfo();
-			if (effectInfo != null && effectInfo.getType() == MultizoneEffectType.MOVE) {
-				AnimationData animationData = new MultizoneMove(effectInfo.getSpeed(), 1,
-						effectInfo.getParameters()[0] > 0 ? Direction.FORWARD : Direction.BACKWARD,
-						model.getColors().getValue(), true);
-				model.startAnimation(animationData);
-			}
 			return null;
 		}
 	}

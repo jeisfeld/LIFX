@@ -35,12 +35,16 @@ public class TileViewModel extends LightViewModel {
 	 * The stored relative brightness of the device.
 	 */
 	private final MutableLiveData<Double> mRelativeBrightness;
+	/**
+	 * Flag indicating if animation status has been checked.
+	 */
+	private boolean mIsAnimationStatusChecked = false;
 
 	/**
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param light The light.
+	 * @param light   The light.
 	 */
 	public TileViewModel(final Context context, final TileChain light) {
 		super(context, light);
@@ -108,9 +112,9 @@ public class TileViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors the colors to be set.
+	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
-	 * @param isImmediate Flag indicating if the change should be immediate.
+	 * @param isImmediate      Flag indicating if the change should be immediate.
 	 */
 	public void updateColors(final TileChainColors colors, final double brightnessFactor, final boolean isImmediate) {
 		updateStoredColors(colors, brightnessFactor);
@@ -141,15 +145,6 @@ public class TileViewModel extends LightViewModel {
 		new CheckTileChainColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
-	/**
-	 * Check if native animation is running on the device.
-	 */
-	protected final void checkNativeAnimation() {
-		if (!Boolean.TRUE.equals(mAnimationStatus.getValue())) {
-			new CheckTileChainAnimationTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-		}
-	}
-
 	@Override
 	protected final boolean isRefreshAllowed() {
 		// Due to tendency for connectivity issues, check Multizone light only if disconnected or if colors have not yet been initialized.
@@ -160,7 +155,7 @@ public class TileViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors The given colors.
+	 * @param colors           The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	private void updateStoredColors(final TileChainColors colors, final double brightnessFactor) {
@@ -223,51 +218,28 @@ public class TileViewModel extends LightViewModel {
 			}
 
 			model.updateStoredColors(colors, 1);
-			return null;
-		}
-	}
 
-	/**
-	 * An async task for checking the tile chain animation status.
-	 */
-	private static final class CheckTileChainAnimationTask extends AsyncTask<String, String, TileChainColors> {
-		/**
-		 * A weak reference to the underlying model.
-		 */
-		private final WeakReference<TileViewModel> mModel;
-
-		/**
-		 * Constructor.
-		 *
-		 * @param model The underlying model.
-		 */
-		private CheckTileChainAnimationTask(final TileViewModel model) {
-			mModel = new WeakReference<>(model);
-		}
-
-		@Override
-		protected TileChainColors doInBackground(final String... strings) {
-			TileViewModel model = mModel.get();
-			if (model == null) {
-				return null;
-			}
-
-			TileEffectInfo effectInfo = model.getLight().getEffectInfo();
-			if (effectInfo != null) {
-				AnimationData animationData;
-				switch (effectInfo.getType()) {
-				case FLAME:
-					animationData = new TileChainFlame(effectInfo.getSpeed(), true);
-					model.startAnimation(animationData);
-					break;
-				case MORPH:
-					animationData = new TileChainMorph(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
-					model.startAnimation(animationData);
-					break;
-				default:
-					break;
+			// Check animation status
+			if (!model.mIsAnimationStatusChecked && !Boolean.TRUE.equals(model.mAnimationStatus.getValue())) {
+				TileEffectInfo effectInfo = model.getLight().getEffectInfo();
+				if (effectInfo != null) {
+					model.mIsAnimationStatusChecked = true;
+					AnimationData animationData;
+					switch (effectInfo.getType()) {
+					case FLAME:
+						animationData = new TileChainFlame(effectInfo.getSpeed(), true);
+						model.startAnimation(animationData);
+						break;
+					case MORPH:
+						animationData = new TileChainMorph(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
+						model.startAnimation(animationData);
+						break;
+					default:
+						break;
+					}
 				}
 			}
+
 			return null;
 		}
 	}
@@ -292,8 +264,8 @@ public class TileViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
-		 * @param colors The colors.
+		 * @param model       The underlying model.
+		 * @param colors      The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		private SetTileChainColorsTask(final TileViewModel model, final TileChainColors colors, final boolean isImmediate) {
@@ -312,7 +284,7 @@ public class TileViewModel extends LightViewModel {
 			try {
 				int colorDuration = mIsImmediate ? 0
 						: PreferenceUtil.getSharedPreferenceIntString(
-								R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
 				model.getLight().setColors(mColors, colorDuration, false);
 				return mColors;
 			}
