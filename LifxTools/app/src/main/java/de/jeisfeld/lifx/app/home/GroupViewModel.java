@@ -198,6 +198,7 @@ public class GroupViewModel extends MainViewModel {
 					}
 					else if (devicePower.isOff()) {
 						result = Power.OFF;
+						model.mPower.postValue(Power.OFF);
 					}
 				}
 			}
