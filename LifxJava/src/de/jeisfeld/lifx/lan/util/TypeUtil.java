@@ -88,7 +88,7 @@ public final class TypeUtil {
 	 */
 	public static String toString(final byte[] b) {
 		int size = b.length;
-		while (b[size - 1] == 0) {
+		while (size > 0 && b[size - 1] == 0) {
 			size--;
 		}
 		byte[] realBytes = new byte[size];

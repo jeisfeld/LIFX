@@ -133,7 +133,10 @@ public abstract class TileColors implements Serializable {
 		int maxBrightness = 0;
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(getColor(x, y).getBrightness()));
+				Color color = getColor(x, y);
+				if (color != null) {
+					maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(color.getBrightness()));
+				}
 			}
 		}
 		return maxBrightness;
