@@ -15,7 +15,7 @@
 	<classpathentry kind="lib" path="libs-local/annotation-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/core-1.1.0-rc03.jar"/>
 	<classpathentry kind="lib" path="libs-local/appcompat-1.2.0.jar"/>
-	<classpathentry kind="lib" path="libs-local/constraintlayout-2.0.2.jar"/>
+	<classpathentry kind="lib" path="libs-local/constraintlayout-2.0.4.jar"/>
 	<classpathentry kind="lib" path="libs-local/lifecycle-extensions-2.2.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/material-1.2.1.jar"/>
 	<classpathentry kind="lib" path="libs-local/savedstate-1.0.0.jar"/>
