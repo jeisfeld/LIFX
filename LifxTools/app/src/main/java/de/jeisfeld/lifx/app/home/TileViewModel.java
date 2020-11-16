@@ -116,8 +116,9 @@ public class TileViewModel extends LightViewModel {
 	 */
 	public void updateColors(final TileChainColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
 		updateStoredColors(colors, brightnessFactor);
-
-		stopAnimationOrAlarm();
+		if (stopAnimation) {
+			stopAnimationOrAlarm();
+		}
 		synchronized (mRunningSetColorTasks) {
 			mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
