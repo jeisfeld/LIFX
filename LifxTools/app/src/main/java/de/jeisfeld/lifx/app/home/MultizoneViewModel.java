@@ -14,6 +14,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.animation.MultizoneMove;
 import de.jeisfeld.lifx.app.animation.MultizoneMove.Direction;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
@@ -269,7 +270,7 @@ public class MultizoneViewModel extends LightViewModel {
 			model.updateStoredColors(fromColors(colors), 1);
 
 			// Check animation status
-			if (!LifxAnimationService.hasRunningAnimation(model.getLight().getTargetAddress())) {
+			if (LifxAnimationService.getAnimationStatus(model.getLight().getTargetAddress()) == AnimationStatus.OFF) {
 				MultizoneEffectInfo effectInfo = model.getLight().getEffectInfo();
 				if (effectInfo != null) {
 					if (effectInfo.getType() == MultizoneEffectType.MOVE) {

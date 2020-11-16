@@ -24,7 +24,6 @@ import de.jeisfeld.lifx.lan.type.TileColors;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 import de.jeisfeld.lifx.lan.type.TileInfo;
 import de.jeisfeld.lifx.lan.type.Vendor;
-import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
@@ -488,7 +487,7 @@ public class TileChain extends Light implements Serializable {
 						}
 						else {
 							// stop the previous color transition by sending setWaveform command with no change.
-							getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+							getLight().setBrightness(null);
 						}
 					}
 				}

@@ -45,7 +45,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test9();
+		new Test().test11();
 	}
 
 	void test0() throws Exception {
@@ -209,5 +209,11 @@ public final class Test {
 				return n == 2 ? new Date(System.currentTimeMillis() + 2000) : null; // MAGIC_NUMBER
 			}
 		}).start();
+	}
+
+	void test11() throws Exception { // SUPPRESS_CHECKSTYLE
+		// FARBLAMPE.setWaveform(false, Color.GREEN, 0, 1, Waveform.PULSE, 0.5, false);
+		// FARBLAMPE.setWaveform(false, null, null, 0.1, null, 0, 1, 0.5, Waveform.PULSE, false);
+		FARBLAMPE.setBrightness(0.8);
 	}
 }

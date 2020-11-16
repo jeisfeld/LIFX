@@ -166,9 +166,9 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Set the color.
 	 *
-	 * @param color    the target color.
+	 * @param color the target color.
 	 * @param duration the duration of power change in millis.
-	 * @param wait     flag indicating if the method should return only after the final color is reached.
+	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setColor(final Color color, final int duration, final boolean wait) throws IOException {
@@ -241,10 +241,10 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Set a waveform, transitioning once.
 	 *
-	 * @param color    The target color.
-	 * @param period   the cycle period.
+	 * @param color The target color.
+	 * @param period the cycle period.
 	 * @param waveform the waveform.
-	 * @param wait     flag indicating if the method should return only after the final color is reached.
+	 * @param wait flag indicating if the method should return only after the final color is reached.
 	 * @throws IOException Connection issues
 	 */
 	public void setWaveform(final Color color, final int period, final Waveform waveform, final boolean wait) throws IOException {
@@ -292,6 +292,16 @@ public class Light extends Device implements Serializable {
 	}
 
 	/**
+	 * Set the brightness only.
+	 *
+	 * @param brightness The new brightness.
+	 * @throws IOException Connection issues
+	 */
+	public void setBrightness(final Double brightness) throws IOException {
+		setWaveform(false, null, null, brightness, null, 0, brightness == null ? 0 : 1, 0, Waveform.PULSE, false);
+	}
+
+	/**
 	 * Set the infrared brightness.
 	 *
 	 * @param brightness the infrared brightness.
@@ -304,7 +314,7 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Wait until the color fulfils a certain condition.
 	 *
-	 * @param filter  The filtering condition.
+	 * @param filter The filtering condition.
 	 * @param timeout Max waiting time in millis. No timeout in case of negative values.
 	 */
 	public void waitForColor(final ColorFilter filter, final long timeout) {
@@ -326,7 +336,7 @@ public class Light extends Device implements Serializable {
 	/**
 	 * Wait until the color matches a certain color.
 	 *
-	 * @param color   The matching color.
+	 * @param color The matching color.
 	 * @param timeout Max waiting time in millis. No timeout in case of negative values.
 	 */
 	public void waitForColor(final Color color, final long timeout) {
@@ -460,7 +470,7 @@ public class Light extends Device implements Serializable {
 		/**
 		 * Create a cycle thread.
 		 *
-		 * @param light  the light.
+		 * @param light the light.
 		 * @param colors The colors of the cycle.
 		 */
 		private CycleThread(final Light light, final Color... colors) {
@@ -591,7 +601,7 @@ public class Light extends Device implements Serializable {
 		/**
 		 * Create an animation thread.
 		 *
-		 * @param light      the light.
+		 * @param light the light.
 		 * @param definition The rules for the animation.
 		 */
 		protected AnimationThread(final Light light, final AnimationDefinition definition) {
@@ -611,7 +621,7 @@ public class Light extends Device implements Serializable {
 		/**
 		 * Set the color that the lamp should get after finishing the cycle.
 		 *
-		 * @param endColor          The end color. Brightness 0 switches power off. Null keeps the current color.
+		 * @param endColor The end color. Brightness 0 switches power off. Null keeps the current color.
 		 * @param endTransitionTime The transition time to the end color.
 		 * @return The updated animation thread.
 		 */
@@ -721,7 +731,7 @@ public class Light extends Device implements Serializable {
 						}
 						else {
 							// stop the previous color transition by sending setWaveform command with no change.
-							getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+							getLight().setBrightness(null);
 						}
 					}
 				}

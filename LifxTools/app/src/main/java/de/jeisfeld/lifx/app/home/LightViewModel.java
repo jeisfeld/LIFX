@@ -17,6 +17,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -51,7 +52,7 @@ public class LightViewModel extends DeviceViewModel {
 		super(context, light);
 		mAnimationStatus = new MutableLiveData<>();
 		mColor = new MutableLiveData<>();
-		mAnimationStatus.setValue(LifxAnimationService.hasRunningAnimation(light.getTargetAddress()));
+		mAnimationStatus.setValue(LifxAnimationService.getAnimationStatus(light.getTargetAddress()) != AnimationStatus.OFF);
 	}
 
 	/**
@@ -128,7 +129,7 @@ public class LightViewModel extends DeviceViewModel {
 	 */
 	public final void updateBrightness(final double brightness) {
 		updateSelectedBrightness(brightness);
-		if (!LifxAnimationService.hasRunningNonNativeAnimation(getLight().getTargetAddress())) {
+		if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) != AnimationStatus.CUSTOM) {
 			doUpdateBrightness(brightness);
 		}
 	}

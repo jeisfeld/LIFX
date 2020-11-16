@@ -282,25 +282,20 @@ public class LifxAnimationService extends Service {
 	}
 
 	/**
-	 * Check if there is a running animation for a given MAC.
+	 * Get the animation status for a given MAC.
 	 *
 	 * @param mac the MAC.
-	 * @return true if there is a running animation for this MAC.
+	 * @return the animation status for this MAC.
 	 */
-	public static boolean hasRunningAnimation(final String mac) {
-		return ANIMATED_LIGHTS.containsKey(mac);
-	}
-
-	/**
-	 * Check if there is a running non-native animation for a given MAC.
-	 *
-	 * @param mac the MAC.
-	 * @return true if there is a running non-native animation for this MAC.
-	 */
-	public static boolean hasRunningNonNativeAnimation(final String mac) {
+	public static AnimationStatus getAnimationStatus(final String mac) {
 		AnimationData animationData = ANIMATED_LIGHT_DATA.get(mac);
 		Light light = ANIMATED_LIGHTS.get(mac);
-		return animationData != null && light != null && !animationData.hasNativeImplementation(light);
+		if (animationData == null || light == null) {
+			return AnimationStatus.OFF;
+		}
+		else {
+			return animationData.hasNativeImplementation(light) ? AnimationStatus.NATIVE : AnimationStatus.CUSTOM;
+		}
 	}
 
 	/**
@@ -317,6 +312,24 @@ public class LifxAnimationService extends Service {
 			builder.append(label);
 		}
 		return builder.toString();
+	}
+
+	/**
+	 * The animation status of a light.
+	 */
+	public enum AnimationStatus {
+		/**
+		 * No animation.
+		 */
+		OFF,
+		/**
+		 * Native animation.
+		 */
+		NATIVE,
+		/**
+		 * Custom animation.
+		 */
+		CUSTOM
 	}
 
 }

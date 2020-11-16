@@ -22,7 +22,6 @@ import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.Product;
 import de.jeisfeld.lifx.lan.type.Vendor;
-import de.jeisfeld.lifx.lan.type.Waveform;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
@@ -428,7 +427,7 @@ public class MultiZoneLight extends Light {
 						}
 						else {
 							// stop the previous color transition by sending setWaveform command with no change.
-							getLight().setWaveform(false, null, null, null, null, 0, 0, 0, Waveform.PULSE, false);
+							getLight().setBrightness(null);
 						}
 					}
 				}

@@ -13,6 +13,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.animation.TileChainFlame;
 import de.jeisfeld.lifx.app.animation.TileChainMorph;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
@@ -115,12 +116,18 @@ public class TileViewModel extends LightViewModel {
 	 * @param stopAnimation    Flag indicating if animation should be stopped.
 	 */
 	public void updateColors(final TileChainColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
-		updateStoredColors(colors, brightnessFactor);
 		if (stopAnimation) {
 			stopAnimationOrAlarm();
 		}
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
+			if (colors == null) {
+				mRelativeBrightness.postValue(brightnessFactor);
+				mRunningSetColorTasks.add(new SetTileChainColorsTask(this, brightnessFactor, isImmediate));
+			}
+			else {
+				updateStoredColors(colors, brightnessFactor);
+				mRunningSetColorTasks.add(new SetTileChainColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
+			}
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -134,7 +141,12 @@ public class TileViewModel extends LightViewModel {
 	protected final void doUpdateBrightness(final double brightness) {
 		TileChainColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors, brightness, true, false);
+			if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) == AnimationStatus.NATIVE) {
+				updateColors(null, brightness, true, false);
+			}
+			else {
+				updateColors(oldColors, brightness, true, false);
+			}
 		}
 	}
 
@@ -220,26 +232,26 @@ public class TileViewModel extends LightViewModel {
 			model.updateStoredColors(colors, 1);
 
 			// Check animation status
-			if (!LifxAnimationService.hasRunningNonNativeAnimation(model.getLight().getTargetAddress())) {
-				boolean hasRunningAnimation = LifxAnimationService.hasRunningAnimation(model.getLight().getTargetAddress());
+			AnimationStatus animationStatus = LifxAnimationService.getAnimationStatus(model.getLight().getTargetAddress());
+			if (animationStatus != AnimationStatus.CUSTOM) {
 				TileEffectInfo effectInfo = model.getLight().getEffectInfo();
 				if (effectInfo != null) {
 					AnimationData animationData;
 					switch (effectInfo.getType()) {
 					case FLAME:
-						if (!hasRunningAnimation) {
+						if (animationStatus == AnimationStatus.OFF) {
 							animationData = new TileChainFlame(effectInfo.getSpeed(), true);
 							model.startAnimation(animationData);
 						}
 						break;
 					case MORPH:
-						if (!hasRunningAnimation) {
+						if (animationStatus == AnimationStatus.OFF) {
 							animationData = new TileChainMorph(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
 							model.startAnimation(animationData);
 						}
 						break;
 					case OFF:
-						if (hasRunningAnimation) {
+						if (animationStatus == AnimationStatus.NATIVE) {
 							model.stopAnimation();
 						}
 						break;
@@ -266,6 +278,10 @@ public class TileViewModel extends LightViewModel {
 		 */
 		private final TileChainColors mColors;
 		/**
+		 * The brightness to be set.
+		 */
+		private final Double mBrightness;
+		/**
 		 * Flag indicating if the change should be immediate.
 		 */
 		private final boolean mIsImmediate;
@@ -281,6 +297,15 @@ public class TileViewModel extends LightViewModel {
 		private SetTileChainColorsTask(final TileViewModel model, final TileChainColors colors, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColors = colors;
+			mBrightness = null;
+			mIsImmediate = isImmediate;
+		}
+
+		@SuppressWarnings("deprecation")
+		private SetTileChainColorsTask(final TileViewModel model, final double brightness, final boolean isImmediate) {
+			mModel = new WeakReference<>(model);
+			mColors = null;
+			mBrightness = brightness;
 			mIsImmediate = isImmediate;
 		}
 
@@ -295,7 +320,12 @@ public class TileViewModel extends LightViewModel {
 				int colorDuration = mIsImmediate ? 0
 						: PreferenceUtil.getSharedPreferenceIntString(
 						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				model.getLight().setColors(mColors, colorDuration, false);
+				if (mColors == null) {
+					model.getLight().setBrightness(mBrightness);
+				}
+				else {
+					model.getLight().setColors(mColors, colorDuration, false);
+				}
 				return mColors;
 			}
 			catch (IOException e) {
