@@ -75,6 +75,10 @@ public class LifxAnimationService extends Service {
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
+		if (intent == null) {
+			return START_REDELIVER_INTENT;
+		}
+
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
 		final String label = intent.getStringExtra(EXTRA_DEVICE_LABEL);
 		final AnimationData animationData = AnimationData.fromIntent(intent);
