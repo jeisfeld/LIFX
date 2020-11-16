@@ -10,6 +10,7 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo.Flame;
+import de.jeisfeld.lifx.lan.type.TileEffectType;
 
 /**
  * Animation data for flames in a tile chain.
@@ -103,7 +104,10 @@ public class TileChainFlame extends AnimationData {
 
 			@Override
 			public void stopAnimation() throws IOException {
-				tileChain.setEffect(TileEffectInfo.OFF);
+				TileEffectInfo effectInfo = tileChain.getEffectInfo();
+				if (effectInfo == null || TileEffectType.FLAME == effectInfo.getType()) {
+					tileChain.setEffect(TileEffectInfo.OFF);
+				}
 			}
 		};
 	}

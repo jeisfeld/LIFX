@@ -59,7 +59,7 @@ public class DeviceViewModel extends MainViewModel {
 				new RefreshAfterCheckReachabilityTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 			else {
-				refreshRemoteData(false);
+				refreshRemoteData(true, false);
 			}
 		}
 	}
@@ -82,10 +82,13 @@ public class DeviceViewModel extends MainViewModel {
 	/**
 	 * Refresh the data retrievable from the device.
 	 *
+	 * @param checkPower  Flag indicating if refresh includes check of power
 	 * @param checkColors Flag indicating if refresh includes check of colors
 	 */
-	protected void refreshRemoteData(final boolean checkColors) {
-		checkPower();
+	protected void refreshRemoteData(final boolean checkPower, final boolean checkColors) {
+		if (checkPower) {
+			checkPower();
+		}
 	}
 
 	@Override
@@ -177,7 +180,7 @@ public class DeviceViewModel extends MainViewModel {
 				return;
 			}
 			if (isReachable) {
-				model.refreshRemoteData(true);
+				model.refreshRemoteData(true, true);
 			}
 		}
 	}
@@ -250,8 +253,17 @@ public class DeviceViewModel extends MainViewModel {
 					}
 					else {
 						lightModel.getLight().setPower(!power.isOn(), powerDuration, isMultizone);
-						if (isMultizone && Double.valueOf(0).equals(((MultizoneViewModel) model).getRelativeBrightness().getValue())) {
-							model.refreshRemoteData(true);
+						if (isTileChain || isMultizone && !power.isOn()) {
+							if (power.isOn()) {
+								// When switching off tile chain, after becomes OFF when power is 0
+								try {
+									Thread.sleep(powerDuration);
+								}
+								catch (InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+							model.refreshRemoteData(false, true);
 						}
 					}
 				}

@@ -220,18 +220,28 @@ public class TileViewModel extends LightViewModel {
 			model.updateStoredColors(colors, 1);
 
 			// Check animation status
-			if (!LifxAnimationService.hasRunningAnimation(model.getLight().getTargetAddress())) {
+			if (!LifxAnimationService.hasRunningNonNativeAnimation(model.getLight().getTargetAddress())) {
+				boolean hasRunningAnimation = LifxAnimationService.hasRunningAnimation(model.getLight().getTargetAddress());
 				TileEffectInfo effectInfo = model.getLight().getEffectInfo();
 				if (effectInfo != null) {
 					AnimationData animationData;
 					switch (effectInfo.getType()) {
 					case FLAME:
-						animationData = new TileChainFlame(effectInfo.getSpeed(), true);
-						model.startAnimation(animationData);
+						if (!hasRunningAnimation) {
+							animationData = new TileChainFlame(effectInfo.getSpeed(), true);
+							model.startAnimation(animationData);
+						}
 						break;
 					case MORPH:
-						animationData = new TileChainMorph(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
-						model.startAnimation(animationData);
+						if (!hasRunningAnimation) {
+							animationData = new TileChainMorph(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
+							model.startAnimation(animationData);
+						}
+						break;
+					case OFF:
+						if (hasRunningAnimation) {
+							model.stopAnimation();
+						}
 						break;
 					default:
 						break;

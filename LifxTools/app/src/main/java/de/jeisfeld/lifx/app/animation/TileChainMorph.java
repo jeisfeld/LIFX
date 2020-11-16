@@ -13,6 +13,7 @@ import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo.Morph;
+import de.jeisfeld.lifx.lan.type.TileEffectType;
 
 /**
  * Animation data for flames in a tile chain.
@@ -113,7 +114,10 @@ public class TileChainMorph extends AnimationData {
 
 			@Override
 			public void stopAnimation() throws IOException {
-				tileChain.setEffect(TileEffectInfo.OFF);
+				TileEffectInfo effectInfo = tileChain.getEffectInfo();
+				if (effectInfo == null || TileEffectType.MORPH == effectInfo.getType()) {
+					tileChain.setEffect(TileEffectInfo.OFF);
+				}
 			}
 		};
 	}

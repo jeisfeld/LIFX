@@ -89,8 +89,8 @@ public class LightViewModel extends DeviceViewModel {
 
 	// OVERRIDABLE
 	@Override
-	protected void refreshRemoteData(final boolean checkColors) {
-		super.refreshRemoteData(checkColors);
+	protected void refreshRemoteData(final boolean checkPower, final boolean checkColors) {
+		super.refreshRemoteData(checkPower, checkColors);
 		if (checkColors) {
 			checkColor();
 		}
