@@ -62,6 +62,10 @@ public class LifxAnimationService extends Service {
 	 * Map from MACs to Light labels for all lights with running animations.
 	 */
 	private static final Map<String, String> ANIMATED_LIGHT_LABELS = new HashMap<>();
+	/**
+	 * Map from MACs to animation data for all lights with running animations.
+	 */
+	private static final Map<String, AnimationData> ANIMATED_LIGHT_DATA = new HashMap<>();
 
 	@Override
 	public final void onCreate() {
@@ -125,6 +129,7 @@ public class LifxAnimationService extends Service {
 					}
 					synchronized (ANIMATED_LIGHTS) {
 						ANIMATED_LIGHTS.put(mac, tmpLight);
+						ANIMATED_LIGHT_DATA.put(mac, animationData);
 					}
 				}
 				else {
@@ -260,6 +265,7 @@ public class LifxAnimationService extends Service {
 		synchronized (ANIMATED_LIGHTS) {
 			ANIMATED_LIGHTS.remove(mac);
 			ANIMATED_LIGHT_LABELS.remove(mac);
+			ANIMATED_LIGHT_DATA.remove(mac);
 			Logger.info("LifxAnimationService end (" + ANIMATED_LIGHT_LABELS.size() + ") (" + mac + "," + label + ")");
 			if (ANIMATED_LIGHTS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAnimationService.class);
@@ -279,6 +285,18 @@ public class LifxAnimationService extends Service {
 	 */
 	public static boolean hasRunningAnimation(final String mac) {
 		return ANIMATED_LIGHTS.containsKey(mac);
+	}
+
+	/**
+	 * Check if there is a running non-native animation for a given MAC.
+	 *
+	 * @param mac the MAC.
+	 * @return true if there is a running non-native animation for this MAC.
+	 */
+	public static boolean hasRunningNonNativeAnimation(final String mac) {
+		AnimationData animationData = ANIMATED_LIGHT_DATA.get(mac);
+		Light light = ANIMATED_LIGHTS.get(mac);
+		return animationData != null && light != null && !animationData.hasNativeImplementation(light);
 	}
 
 	/**

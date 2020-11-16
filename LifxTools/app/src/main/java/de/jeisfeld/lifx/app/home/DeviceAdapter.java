@@ -498,13 +498,13 @@ public class DeviceAdapter extends BaseAdapter {
 			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(activity, initialColors, isCyclic, new MultiColorPickerDialogListener() {
 				@Override
 				public void onColorUpdate(final ArrayList<Color> colors, final boolean isCyclic, final boolean[] flags) {
-					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1, true);
+					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1, true, true);
 				}
 
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
 												  final boolean[] flags) {
-					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1, true);
+					model.updateColors(new FlaggedMultizoneColors(new Interpolated(isCyclic, colors), flags), 1, true, true);
 				}
 
 				@Override
@@ -561,19 +561,19 @@ public class DeviceAdapter extends BaseAdapter {
 		PickedImageDialogFragment.displayPickedImageDialog(activity, model, bitmap, new PickedImageDialogListener() {
 			@Override
 			public void onImageUpdate(final TileChainColors colors) {
-				model.updateColors(colors, 1, true);
+				model.updateColors(colors, 1, true, true);
 			}
 
 			@Override
 			public void onDialogPositiveClick(final DialogFragment dialog, final TileChainColors colors) {
 				// Convert anonymous colors to PerTile, so that it is storable.
-				model.updateColors(new TileChainColors.PerTile(model.getLight(), colors), 1, true);
+				model.updateColors(new TileChainColors.PerTile(model.getLight(), colors), 1, true, true);
 			}
 
 			@Override
 			public void onDialogNegativeClick(final DialogFragment dialog) {
 				if (oldColors != null) {
-					model.updateColors(oldColors, oldBrightness == null ? 1 : oldBrightness, true);
+					model.updateColors(oldColors, oldBrightness == null ? 1 : oldBrightness, true, true);
 				}
 			}
 		});
@@ -596,18 +596,18 @@ public class DeviceAdapter extends BaseAdapter {
 				TuneTilesDialogFragment.displayPickedImageDialog(activity, model, new TuneTilesDialogListener() {
 					@Override
 					public void onImageUpdate(final TileChainColors colors) {
-						model.updateColors(colors, 1, true);
+						model.updateColors(colors, 1, true, true);
 					}
 
 					@Override
 					public void onDialogPositiveClick(final DialogFragment dialog, final TileChainColors colors) {
 						// Convert anonymous colors to PerTile, so that it is storable.
-						model.updateColors(new TileChainColors.PerTile(model.getLight(), colors), 1, true);
+						model.updateColors(new TileChainColors.PerTile(model.getLight(), colors), 1, true, true);
 					}
 
 					@Override
 					public void onDialogNegativeClick(final DialogFragment dialog, final TileChainColors initialColors) {
-						model.updateColors(initialColors, 1, true);
+						model.updateColors(initialColors, 1, true, true);
 					}
 				});
 			}

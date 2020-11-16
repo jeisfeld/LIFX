@@ -128,7 +128,7 @@ public class LightViewModel extends DeviceViewModel {
 	 */
 	public final void updateBrightness(final double brightness) {
 		updateSelectedBrightness(brightness);
-		if (!Boolean.TRUE.equals(mAnimationStatus.getValue())) {
+		if (!LifxAnimationService.hasRunningNonNativeAnimation(getLight().getTargetAddress())) {
 			doUpdateBrightness(brightness);
 		}
 	}

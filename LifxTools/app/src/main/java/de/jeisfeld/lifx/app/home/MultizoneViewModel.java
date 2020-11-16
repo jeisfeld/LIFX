@@ -128,11 +128,13 @@ public class MultizoneViewModel extends LightViewModel {
 	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
 	 * @param isImmediate      Flag indicating if the change should be immediate.
+	 * @param stopAnimation    Flag indicating if animation should be stopped.
 	 */
-	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate) {
+	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
 		updateStoredColors(colors, brightnessFactor);
-
-		stopAnimationOrAlarm();
+		if (stopAnimation) {
+			stopAnimationOrAlarm();
+		}
 		synchronized (mRunningSetColorTasks) {
 			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
 			if (mRunningSetColorTasks.size() > 2) {
@@ -148,7 +150,7 @@ public class MultizoneViewModel extends LightViewModel {
 	protected final void doUpdateBrightness(final double brightness) {
 		MultizoneColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors, brightness, true);
+			updateColors(oldColors, brightness, true, false);
 		}
 	}
 
@@ -225,7 +227,7 @@ public class MultizoneViewModel extends LightViewModel {
 	@Override
 	protected final void updateStoredColor(final StoredColor storedColor) {
 		if (storedColor instanceof StoredMultizoneColors) {
-			updateColors(((StoredMultizoneColors) storedColor).getColors(), 1, false);
+			updateColors(((StoredMultizoneColors) storedColor).getColors(), 1, false, true);
 		}
 		else {
 			super.updateStoredColor(storedColor);

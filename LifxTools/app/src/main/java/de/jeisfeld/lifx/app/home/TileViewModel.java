@@ -112,8 +112,9 @@ public class TileViewModel extends LightViewModel {
 	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
 	 * @param isImmediate      Flag indicating if the change should be immediate.
+	 * @param stopAnimation    Flag indicating if animation should be stopped.
 	 */
-	public void updateColors(final TileChainColors colors, final double brightnessFactor, final boolean isImmediate) {
+	public void updateColors(final TileChainColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
 		updateStoredColors(colors, brightnessFactor);
 
 		stopAnimationOrAlarm();
@@ -132,7 +133,7 @@ public class TileViewModel extends LightViewModel {
 	protected final void doUpdateBrightness(final double brightness) {
 		TileChainColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			updateColors(oldColors, brightness, true);
+			updateColors(oldColors, brightness, true, false);
 		}
 	}
 
@@ -171,7 +172,7 @@ public class TileViewModel extends LightViewModel {
 	@Override
 	protected final void updateStoredColor(final StoredColor storedColor) {
 		if (storedColor instanceof StoredTileColors) {
-			updateColors(((StoredTileColors) storedColor).getColors(), 1, false);
+			updateColors(((StoredTileColors) storedColor).getColors(), 1, false, true);
 		}
 		else {
 			super.updateStoredColor(storedColor);
