@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
@@ -116,18 +117,31 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 									R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
 						}
 						else {
-							holder.mTitle.setText(text.trim());
-							StoredColor newColor =
-									new StoredColor(storedColor.getId(), storedColor.getColor(), storedColor.getDeviceId(), text.trim());
+							StoredColor newColor;
+							if (storedColor instanceof StoredMultizoneColors) {
+								newColor = new StoredMultizoneColors(storedColor.getId(), ((StoredMultizoneColors) storedColor).getColors(),
+										storedColor.getDeviceId(), text.trim());
+							}
+							else if (storedColor instanceof StoredTileColors) {
+								newColor = new StoredTileColors(storedColor.getId(), ((StoredTileColors) storedColor).getColors(),
+										storedColor.getDeviceId(), text.trim());
+							}
+							else {
+								newColor = new StoredColor(storedColor.getId(), storedColor.getColor(), storedColor.getDeviceId(), text.trim());
+							}
+
 							ColorRegistry.getInstance().addOrUpdate(newColor);
+							mStoredColors.set(position, newColor);
+							holder.mTitle.setText(text.trim());
 						}
 					}
 
-					@Override
-					public void onDialogNegativeClick(final DialogFragment dialog) {
-						// do nothing
-					}
-				}, R.string.title_dialog_change_color_name, R.string.button_rename, storedColor.getName(), R.string.message_dialog_new_color_name);
+							@Override
+							public void onDialogNegativeClick(final DialogFragment dialog) {
+								// do nothing
+							}
+						}, R.string.title_dialog_change_color_name, R.string.button_rename,
+						holder.mTitle.getText().toString(), R.string.message_dialog_new_color_name);
 			}
 		});
 
@@ -187,7 +201,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	 */
 	public static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
 		if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(storedColor.getLight())) {
-			return context.getResources().getDrawable(R.drawable.ic_alarm_ringtone, context.getTheme());
+			return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_alarm_ringtone, context.getTheme());
 		}
 
 		GradientDrawable drawable = new GradientDrawable();
