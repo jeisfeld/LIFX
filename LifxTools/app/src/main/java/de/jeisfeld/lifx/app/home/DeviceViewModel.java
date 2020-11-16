@@ -59,7 +59,7 @@ public class DeviceViewModel extends MainViewModel {
 				new RefreshAfterCheckReachabilityTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 			else {
-				refreshRemoteData();
+				refreshRemoteData(false);
 			}
 		}
 	}
@@ -81,8 +81,10 @@ public class DeviceViewModel extends MainViewModel {
 
 	/**
 	 * Refresh the data retrievable from the device.
+	 *
+	 * @param checkColors Flag indicating if refresh includes check of colors
 	 */
-	protected void refreshRemoteData() {
+	protected void refreshRemoteData(final boolean checkColors) {
 		checkPower();
 	}
 
@@ -116,6 +118,7 @@ public class DeviceViewModel extends MainViewModel {
 		 *
 		 * @param model The underlying model.
 		 */
+		@SuppressWarnings("deprecation")
 		private CheckPowerTask(final DeviceViewModel model) {
 			mModel = new WeakReference<>(model);
 		}
@@ -153,6 +156,7 @@ public class DeviceViewModel extends MainViewModel {
 		 *
 		 * @param model The underlying model.
 		 */
+		@SuppressWarnings("deprecation")
 		private RefreshAfterCheckReachabilityTask(final DeviceViewModel model) {
 			mModel = new WeakReference<>(model);
 		}
@@ -173,7 +177,7 @@ public class DeviceViewModel extends MainViewModel {
 				return;
 			}
 			if (isReachable) {
-				model.refreshRemoteData();
+				model.refreshRemoteData(true);
 			}
 		}
 	}
@@ -192,6 +196,7 @@ public class DeviceViewModel extends MainViewModel {
 		 *
 		 * @param model The underlying model.
 		 */
+		@SuppressWarnings("deprecation")
 		private TogglePowerTask(final DeviceViewModel model) {
 			mModel = new WeakReference<>(model);
 		}
@@ -246,7 +251,7 @@ public class DeviceViewModel extends MainViewModel {
 					else {
 						lightModel.getLight().setPower(!power.isOn(), powerDuration, isMultizone);
 						if (isMultizone && Double.valueOf(0).equals(((MultizoneViewModel) model).getRelativeBrightness().getValue())) {
-							model.refreshRemoteData();
+							model.refreshRemoteData(true);
 						}
 					}
 				}

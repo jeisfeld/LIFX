@@ -12,6 +12,7 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.TileChainFlame;
 import de.jeisfeld.lifx.app.animation.TileChainMorph;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
@@ -35,10 +36,6 @@ public class TileViewModel extends LightViewModel {
 	 * The stored relative brightness of the device.
 	 */
 	private final MutableLiveData<Double> mRelativeBrightness;
-	/**
-	 * Flag indicating if animation status has been checked.
-	 */
-	private boolean mIsAnimationStatusChecked = false;
 
 	/**
 	 * Constructor.
@@ -195,6 +192,7 @@ public class TileViewModel extends LightViewModel {
 		 *
 		 * @param model The underlying model.
 		 */
+		@SuppressWarnings("deprecation")
 		private CheckTileChainColorsTask(final TileViewModel model) {
 			mModel = new WeakReference<>(model);
 		}
@@ -220,10 +218,9 @@ public class TileViewModel extends LightViewModel {
 			model.updateStoredColors(colors, 1);
 
 			// Check animation status
-			if (!model.mIsAnimationStatusChecked && !Boolean.TRUE.equals(model.mAnimationStatus.getValue())) {
+			if (!LifxAnimationService.hasRunningAnimation(model.getLight().getTargetAddress())) {
 				TileEffectInfo effectInfo = model.getLight().getEffectInfo();
 				if (effectInfo != null) {
-					model.mIsAnimationStatusChecked = true;
 					AnimationData animationData;
 					switch (effectInfo.getType()) {
 					case FLAME:
@@ -268,6 +265,7 @@ public class TileViewModel extends LightViewModel {
 		 * @param colors      The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
+		@SuppressWarnings("deprecation")
 		private SetTileChainColorsTask(final TileViewModel model, final TileChainColors colors, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColors = colors;

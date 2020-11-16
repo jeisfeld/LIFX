@@ -41,9 +41,9 @@ public class Light extends Device implements Serializable {
 	 */
 	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[]{1000, 2000, 5000, 10000, 10000, 10000};
 	/**
-	 * The animation thread.
+	 * A holder for the animation thread.
 	 */
-	private transient BaseAnimationThread mAnimationThread = null;
+	private AnimationThreadHolder mAnimationThreadHolder = new AnimationThreadHolder();
 
 	/**
 	 * Constructor.
@@ -350,9 +350,7 @@ public class Light extends Device implements Serializable {
 		synchronized (this) {
 			// noinspection SynchronizationOnLocalVariableOrMethodParameter
 			synchronized (other) {
-				if (other.mAnimationThread != null) {
-					mAnimationThread = other.mAnimationThread;
-				}
+				mAnimationThreadHolder = other.mAnimationThreadHolder;
 			}
 		}
 	}
@@ -399,9 +397,9 @@ public class Light extends Device implements Serializable {
 	 */
 	public void endAnimation(final boolean waitForEnd) {
 		synchronized (this) {
-			if (mAnimationThread != null) {
-				mAnimationThread.end(waitForEnd);
-				mAnimationThread = null;
+			if (mAnimationThreadHolder.mAnimationThread != null) {
+				mAnimationThreadHolder.mAnimationThread.end(waitForEnd);
+				mAnimationThreadHolder.mAnimationThread = null;
 			}
 		}
 	}
@@ -412,8 +410,8 @@ public class Light extends Device implements Serializable {
 	public void waitForAnimationEnd() {
 		synchronized (this) {
 			try {
-				mAnimationThread.join();
-				mAnimationThread = null;
+				mAnimationThreadHolder.mAnimationThread.join();
+				mAnimationThreadHolder.mAnimationThread = null;
 			}
 			catch (InterruptedException e) {
 				// ignore
@@ -762,8 +760,8 @@ public class Light extends Device implements Serializable {
 		 */
 		protected void cleanAnimationThread(final AnimationThread thread) {
 			synchronized (getLight()) {
-				if (getLight().mAnimationThread == thread) {
-					getLight().mAnimationThread = null;
+				if (getLight().mAnimationThreadHolder.mAnimationThread == thread) {
+					getLight().mAnimationThreadHolder.mAnimationThread = null;
 				}
 			}
 			if (mDeviceRegistry != null) {
@@ -822,11 +820,11 @@ public class Light extends Device implements Serializable {
 		@Override
 		public final void start() {
 			synchronized (mLight) {
-				if (mLight.mAnimationThread != null) {
-					mPreviousAnimationThread = mLight.mAnimationThread;
+				if (mLight.mAnimationThreadHolder.mAnimationThread != null) {
+					mPreviousAnimationThread = mLight.mAnimationThreadHolder.mAnimationThread;
 					mLight.endAnimation(false);
 				}
-				mLight.mAnimationThread = this;
+				mLight.mAnimationThreadHolder.mAnimationThread = this;
 			}
 			super.start();
 		}
@@ -862,6 +860,16 @@ public class Light extends Device implements Serializable {
 				}
 			}
 		}
+	}
+
+	/**
+	 * A holder for animation thread.
+	 */
+	private static class AnimationThreadHolder {
+		/**
+		 * The animation thread.
+		 */
+		private transient BaseAnimationThread mAnimationThread = null;
 	}
 
 	/**

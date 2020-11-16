@@ -13,6 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.MultizoneMove;
 import de.jeisfeld.lifx.app.animation.MultizoneMove.Direction;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
@@ -51,10 +52,6 @@ public class MultizoneViewModel extends LightViewModel {
 	 * The stored relative brightness of the device.
 	 */
 	private final MutableLiveData<Double> mRelativeBrightness;
-	/**
-	 * Flag indicating if animation status has been checked.
-	 */
-	private boolean mIsAnimationStatusChecked = false;
 
 	/**
 	 * Constructor.
@@ -128,9 +125,9 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors the colors to be set.
+	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
-	 * @param isImmediate Flag indicating if the change should be immediate.
+	 * @param isImmediate      Flag indicating if the change should be immediate.
 	 */
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate) {
 		updateStoredColors(colors, brightnessFactor);
@@ -209,7 +206,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors The given colors.
+	 * @param colors           The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	private void updateStoredColors(final MultizoneColors colors, final double brightnessFactor) {
@@ -249,6 +246,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 *
 		 * @param model The underlying model.
 		 */
+		@SuppressWarnings("deprecation")
 		private CheckMultizoneColorsTask(final MultizoneViewModel model) {
 			mModel = new WeakReference<>(model);
 		}
@@ -269,10 +267,9 @@ public class MultizoneViewModel extends LightViewModel {
 			model.updateStoredColors(fromColors(colors), 1);
 
 			// Check animation status
-			if (!model.mIsAnimationStatusChecked && !Boolean.TRUE.equals(model.mAnimationStatus.getValue())) {
+			if (!LifxAnimationService.hasRunningAnimation(model.getLight().getTargetAddress())) {
 				MultizoneEffectInfo effectInfo = model.getLight().getEffectInfo();
 				if (effectInfo != null) {
-					model.mIsAnimationStatusChecked = true;
 					if (effectInfo.getType() == MultizoneEffectType.MOVE) {
 						AnimationData animationData = new MultizoneMove(effectInfo.getSpeed(), 1,
 								effectInfo.getParameters()[0] > 0 ? Direction.FORWARD : Direction.BACKWARD,
@@ -306,10 +303,11 @@ public class MultizoneViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
-		 * @param colors The colors.
+		 * @param model       The underlying model.
+		 * @param colors      The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
+		@SuppressWarnings("deprecation")
 		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColors = colors;
@@ -388,7 +386,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * Constructor.
 		 *
 		 * @param multizoneColors The base multizone colors without flag.
-		 * @param flags The flags.
+		 * @param flags           The flags.
 		 */
 		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);

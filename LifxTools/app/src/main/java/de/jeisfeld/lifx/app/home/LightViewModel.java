@@ -89,9 +89,11 @@ public class LightViewModel extends DeviceViewModel {
 
 	// OVERRIDABLE
 	@Override
-	protected void refreshRemoteData() {
-		super.refreshRemoteData();
-		checkColor();
+	protected void refreshRemoteData(final boolean checkColors) {
+		super.refreshRemoteData(checkColors);
+		if (checkColors) {
+			checkColor();
+		}
 	}
 
 	/**
@@ -243,6 +245,7 @@ public class LightViewModel extends DeviceViewModel {
 		 *
 		 * @param model The underlying model.
 		 */
+		@SuppressWarnings("deprecation")
 		private CheckColorTask(final LightViewModel model) {
 			mModel = new WeakReference<>(model);
 		}
@@ -290,6 +293,7 @@ public class LightViewModel extends DeviceViewModel {
 		 * @param color       The color.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
+		@SuppressWarnings("deprecation")
 		private SetColorTask(final LightViewModel model, final Color color, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColor = color;

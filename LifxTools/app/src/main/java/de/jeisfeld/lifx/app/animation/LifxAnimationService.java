@@ -145,9 +145,9 @@ public class LifxAnimationService extends Service {
 									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
 								}
 							}
-							//noinspection InfiniteLoopStatement
 							while (true) {
 								try {
+									//noinspection BusyWait
 									Thread.sleep(60000); // MAGIC_NUMBER
 								}
 								catch (InterruptedException e) {
@@ -158,6 +158,7 @@ public class LifxAnimationService extends Service {
 										// ignore
 									}
 									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									return;
 								}
 							}
 						}
