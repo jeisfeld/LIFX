@@ -5,6 +5,7 @@
     android:layout_height="wrap_content"
     android:paddingStart="?attr/dialogPreferredPadding"
     android:paddingEnd="?attr/dialogPreferredPadding"
+    android:shrinkColumns="1"
     android:stretchColumns="1">
 
     <TableRow android:id="@+id/tableRowAnimationType">
@@ -71,11 +72,28 @@
             android:spinnerMode="dropdown" />
     </TableRow>
 
+    <TableRow android:id="@+id/tableRowForm">
+
+        <TextView
+            android:text="@string/label_animation_form"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/spinnerForm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/values_tilechain_animation_form"
+            android:minHeight="@dimen/medium_button_size"
+            android:spinnerMode="dropdown" />
+    </TableRow>
+
     <TableRow android:id="@+id/tableRowColors">
 
         <TextView
+            android:paddingEnd="@dimen/small_margin"
             android:text="@string/label_animation_colors"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            tools:ignore="RtlSymmetry" />
 
         <ImageView
             android:id="@+id/imageViewColors"
@@ -86,7 +104,7 @@
 
     <TableRow
         android:id="@+id/tableRowColorRegex"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <TextView
             android:labelFor="@id/editTextColorRegex"

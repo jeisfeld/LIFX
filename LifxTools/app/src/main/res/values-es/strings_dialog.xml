@@ -85,6 +85,7 @@
     <string name="label_animation_radius">Radio</string>
     <string name="label_animation_stretch">Extensión</string>
     <string name="label_animation_direction">Dirección</string>
+    <string name="label_animation_form">Forma</string>
     <string name="label_animation_colors">Colores</string>
     <string name="label_animation_color_regex">Colores (RegEx)</string>
     <string name="label_animation_adjust_brightness">Ajustar el brillo</string>
@@ -99,14 +100,26 @@
         <item>hacia adentro</item>
     </string-array>
     <string-array name="values_tilechain_animation_type">
-        <item>Moverse</item>
-        <item>Transición de imagen</item>
-        <item>Fuego</item>
-        <item>Metamorfosis</item>
+        <item>ola</item>
+        <item>transición de imagen</item>
+        <item>fuego</item>
+        <item>metamorfosis</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>hacia fuera</item>
         <item>hacia adentro</item>
+        <item>desde la izquierda</item>
+        <item>desde la derecha</item>
+        <item>desde abajo</item>
+        <item>desde arriba</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_form">
+        <item>círculo</item>
+        <item>cuadrado</item>
+        <item>diamante</item>
+        <item>corazón</item>
+        <item>vertical</item>
+        <item>horizontal</item>
     </string-array>
 
     <string name="message_confirm_delete_light">¿Desea eliminar el dispositivo «%1$s» de la aplicación? (Se volverá a crear si se detecta en la LAN).</string>

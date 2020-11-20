@@ -102,6 +102,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		final EditText editTextDuration = parentView.findViewById(R.id.editTextDuration);
 		final EditText editTextRadius = parentView.findViewById(R.id.editTextRadius);
 		final Spinner spinnerDirection = parentView.findViewById(R.id.spinnerDirection);
+		final Spinner spinnerForm = parentView.findViewById(R.id.spinnerForm);
 		final EditText editTextColorRegex = parentView.findViewById(R.id.editTextColorRegex);
 		final CheckBox checkBoxAdjustBrightness = parentView.findViewById(R.id.checkboxAdjustBrightness);
 		final ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
@@ -177,7 +178,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainMorph(duration, mColors, false));
 							break;
-						case MOVE:
+						case WAVE:
 						default:
 							double lightRadius =
 									Math.sqrt(light.getTotalHeight() * light.getTotalHeight() + light.getTotalWidth() * light.getTotalWidth()) / 2;
@@ -190,11 +191,14 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 								radius = lightRadius;
 							}
 
-							final TileChainMove.Direction direction =
-									TileChainMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+							final TileChainWave.Direction direction =
+									TileChainWave.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+
+							final TileChainWave.Form form =
+									TileChainWave.Form.fromOrdinal(spinnerForm.getSelectedItemPosition());
 
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-									new TileChainMove(duration, radius, direction, mColors));
+									new TileChainWave(duration, radius, direction, form, mColors));
 							break;
 						}
 					}
@@ -217,6 +221,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 				case IMAGE_TRANSITION:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.VISIBLE);
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.VISIBLE);
@@ -224,6 +229,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 				case FLAME:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowColors).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
@@ -231,14 +237,16 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 				case MORPH:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+					parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
 					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
 					break;
-				case MOVE:
+				case WAVE:
 				default:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
 					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
+					parentView.findViewById(R.id.tableRowForm).setVisibility(View.VISIBLE);
 					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
 					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
@@ -277,9 +285,9 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 */
 	public enum TileChainAnimationType {
 		/**
-		 * Movement.
+		 * Wave.
 		 */
-		MOVE,
+		WAVE,
 		/**
 		 * Image transition.
 		 */
@@ -305,7 +313,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					return animationType;
 				}
 			}
-			return MOVE;
+			return WAVE;
 		}
 	}
 

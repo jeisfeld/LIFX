@@ -85,6 +85,7 @@
     <string name="label_animation_radius">Raio</string>
     <string name="label_animation_stretch">Alongamento</string>
     <string name="label_animation_direction">Direção</string>
+    <string name="label_animation_form">Forma</string>
     <string name="label_animation_colors">Cores</string>
     <string name="label_animation_color_regex">Cores (RegEx)</string>
     <string name="label_animation_adjust_brightness">Ajustar brilho</string>
@@ -99,14 +100,26 @@
         <item>para dentro</item>
     </string-array>
     <string-array name="values_tilechain_animation_type">
-        <item>Mover</item>
-        <item>Transição de imagem</item>
-        <item>Chama</item>
-        <item>Metamorfose</item>
+        <item>onda</item>
+        <item>transição de imagem</item>
+        <item>chama</item>
+        <item>metamorfose</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>para fora</item>
         <item>para dentro</item>
+        <item>da esquerda</item>
+        <item>da direita</item>
+        <item>de baixo</item>
+        <item>de cima</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_form">
+        <item>círculo</item>
+        <item>quadrado</item>
+        <item>diamante</item>
+        <item>coração</item>
+        <item>vertical</item>
+        <item>horizontal</item>
     </string-array>
 
     <string name="message_confirm_delete_light">Deseja excluir o dispositivo «%1$s» do aplicativo? (Será recriado se detectado na LAN.)</string>

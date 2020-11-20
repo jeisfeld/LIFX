@@ -44,6 +44,10 @@ public abstract class AnimationData implements Serializable {
 	 */
 	protected static final String EXTRA_ANIMATION_DIRECTION = "de.jeisfeld.lifx.ANIMATION_DIRECTION";
 	/**
+	 * Key for the animation form within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_FORM = "de.jeisfeld.lifx.ANIMATION_FORM";
+	/**
 	 * Key for the animation color regex within the intent.
 	 */
 	protected static final String EXTRA_ANIMATION_COLOR_REGEX = "de.jeisfeld.lifx.ANIMATION_COLOR_REGEX";
@@ -178,12 +182,13 @@ public abstract class AnimationData implements Serializable {
 			final MultizoneColors colors = (MultizoneColors) intent.getSerializableExtra(EXTRA_MULTIZONE_COLORS);
 			final boolean isRunning = intent.getBooleanExtra(EXTRA_ANIMATION_IS_RUNNING, false);
 			return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
-		case TILECHAIN_MOVE:
+		case TILECHAIN_WAVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
-			final TileChainMove.Direction tilechainDirection = (TileChainMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
+			final TileChainWave.Direction tilechainDirection = (TileChainWave.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
+			final TileChainWave.Form tilechainForm = (TileChainWave.Form) intent.getSerializableExtra(EXTRA_ANIMATION_FORM);
 			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
-			return new TileChainMove(duration, radius, tilechainDirection, tileColors);
+			return new TileChainWave(duration, radius, tilechainDirection, tilechainForm, tileColors);
 		case TILECHAIN_IMAGE_TRANSITION:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			String colorRegex = intent.getStringExtra(EXTRA_ANIMATION_COLOR_REGEX);
@@ -214,9 +219,9 @@ public abstract class AnimationData implements Serializable {
 		 */
 		MULTIZONE_MOVE,
 		/**
-		 * Tilechain move.
+		 * Tilechain wave.
 		 */
-		TILECHAIN_MOVE,
+		TILECHAIN_WAVE,
 		/**
 		 * Tilechain image transition.
 		 */

@@ -85,6 +85,7 @@
     <string name="label_animation_radius">Radius</string>
     <string name="label_animation_stretch">Streckung</string>
     <string name="label_animation_direction">Richtung</string>
+    <string name="label_animation_form">Form</string>
     <string name="label_animation_colors">Farben</string>
     <string name="label_animation_color_regex">Farben (RegEx)</string>
     <string name="label_animation_adjust_brightness">Helligkeit anpassen</string>
@@ -99,7 +100,7 @@
         <item>einwärts</item>
     </string-array>
     <string-array name="values_tilechain_animation_type">
-        <item>Bewegung</item>
+        <item>Welle</item>
         <item>Bildübergang</item>
         <item>Flamme</item>
         <item>Metamorphose</item>
@@ -107,6 +108,18 @@
     <string-array name="values_tilechain_animation_direction">
         <item>auswärts</item>
         <item>einwärts</item>
+        <item>von links</item>
+        <item>von rechts</item>
+        <item>von unten</item>
+        <item>von oben</item>
+    </string-array>
+    <string-array name="values_tilechain_animation_form">
+        <item>Kreis</item>
+        <item>Quadrat</item>
+        <item>Karo</item>
+        <item>Herz</item>
+        <item>vertikal</item>
+        <item>horizontal</item>
     </string-array>
 
     <string name="message_confirm_delete_light">Wollen Sie die Lampe „%1$s“ aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
