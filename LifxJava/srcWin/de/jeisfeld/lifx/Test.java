@@ -7,9 +7,11 @@ import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 import de.jeisfeld.lifx.os.Logger;
 
@@ -35,7 +37,7 @@ public final class Test {
 	// private static final Light SWLAMPE = LifxLan.getInstance().getLightByMac(MAC_SWLAMPE);
 	// private static final MultiZoneLight Z1 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z1);
 	private static final MultiZoneLight Z2 = (MultiZoneLight) LifxLan.getInstance().getLightByMac(MAC_Z2);
-	// private static final TileChain TILE_4 = (TileChain) LifxLan.getInstance().getLightByMac(MAC_TILE_4);
+	private static final TileChain TILE_4 = (TileChain) LifxLan.getInstance().getLightByMac(MAC_TILE_4);
 
 	private static final int ONESECOND = 1000;
 	private static final int TWOSECONDS = 2000;
@@ -186,5 +188,33 @@ public final class Test {
 		// FARBLAMPE.setWaveform(false, Color.GREEN, 0, 1, Waveform.PULSE, 0.5, false);
 		// FARBLAMPE.setWaveform(false, null, null, 0.1, null, 0, 1, 0.5, Waveform.PULSE, false);
 		FARBLAMPE.setBrightness(0.8); // MAGIC_NUMBER
+	}
+
+	void test10() throws Exception { // SUPPRESS_CHECKSTYLE
+		double xCenter = (TILE_4.getTotalWidth() - 1) / 2.0;
+		double yCenter = (TILE_4.getTotalHeight() - 1) / 2.0;
+		for (int i = 0; i < Integer.MAX_VALUE; i++) {
+			final int j = i;
+			TILE_4.setColors(new TileChainColors() {
+				/**
+				 * The default serializable version id.
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public Color getColor(final int x, final int y, final int width, final int height) {
+					double distance = Math.sqrt((x - xCenter) * (x - xCenter) + (y - yCenter) * (y - yCenter));
+					return new Color((int) (1024 * (5 * distance - j)), -1, 10000, 4000); // MAGIC_NUMBER
+				}
+			}, 0, false);
+		}
+
+	}
+
+	void test11() throws Exception { // SUPPRESS_CHECKSTYLE
+		TILE_4.setColors(new TileChainColors.InterpolatedCorners(Color.RED, Color.GREEN, Color.GREEN, Color.RED)
+				.withRelativeBrightness(0.01), 0, false); // MAGIC_NUMBER
+
+		// TILE_4.setEffect(new TileEffectInfo.Morph(10000, Color.RED, Color.WHITE));
 	}
 }
