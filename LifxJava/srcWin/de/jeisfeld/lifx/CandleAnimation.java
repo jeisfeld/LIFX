@@ -165,7 +165,7 @@ public final class CandleAnimation implements TileChain.AnimationDefinition {
 					? new int[] {5 - mCandleBurndown, 11 - mCandleBurndown, 7 - mCandleBurndown, 9 - mCandleBurndown} // MAGIC_NUMBER
 					: new int[] {6 - mCandleBurndown, 12 - mCandleBurndown, 10 - mCandleBurndown, 8 - mCandleBurndown}; // MAGIC_NUMBER
 			mCandleLeft = new int[] {0, 4, 9, 13}; // MAGIC_NUMBER
-			mCandleBottom = mBackground == 3 ? new int[] {2, 1, 4, 2} : new int[] {0, 0, 0, 0}; // MAGIC_NUMBER
+			mCandleBottom = mBackground == 3 ? new int[] {3, 1, 5, 3} : new int[] {0, 0, 0, 0}; // MAGIC_NUMBER
 			break;
 		case 1:
 		default:
@@ -534,51 +534,51 @@ public final class CandleAnimation implements TileChain.AnimationDefinition {
 		/**
 		 * The colors used for the crest.
 		 */
-		private static final Color[] CREST_COLORS = {Color.OFF, Color.OFF, color(19, 30, 17), color(35, 43, 30), color(10, 13, 8), // MAGIC_NUMBER
-				color(15, 20, 10), color(20, 26, 15), color(28, 35, 25), color(25, 31, 19), color(22, 28, 17), color(46, 59, 36), // MAGIC_NUMBER
-				color(43, 56, 35), color(35, 45, 30), color(15, 25, 20), Color.OFF, Color.OFF, // MAGIC_NUMBER
-
-				Color.OFF, color(13, 27, 11), color(27, 34, 21), color(25, 32, 21), color(42, 53, 36), color(50, 60, 44), // MAGIC_NUMBER
-				color(57, 70, 50), color(56, 65, 51), color(45, 54, 37), color(52, 63, 43), color(72, 89, 63), color(41, 52, 34), // MAGIC_NUMBER
-				color(32, 43, 24), color(51, 66, 41), color(54, 71, 42), color(22, 37, 20), // MAGIC_NUMBER
-
-				color(34, 48, 40), color(47, 57, 41), color(38, 48, 32), color(57, 70, 52), color(52, 66, 46), color(58, 73, 50), // MAGIC_NUMBER
-				color(60, 71, 52), color(62, 69, 59), color(54, 62, 49), color(47, 53, 43), color(68, 82, 58), color(58, 72, 51), // MAGIC_NUMBER
-				color(44, 58, 33), color(30, 41, 23), color(55, 76, 40), color(79, 92, 65), // MAGIC_NUMBER
-
-				color(14, 24, 13), color(52, 57, 48), color(68, 79, 59), color(51, 62, 45), color(60, 76, 53), color(47, 59, 38), // MAGIC_NUMBER
-				color(33, 42, 27), color(24, 31, 19), color(7, 20, 5), color(22, 28, 17), color(31, 41, 24), color(40, 50, 32), // MAGIC_NUMBER
-				color(43, 56, 33), color(52, 67, 41), color(67, 81, 58), color(34, 38, 30), // MAGIC_NUMBER
-
-				Color.OFF, Color.OFF, color(11, 11, 11), color(28, 30, 25), color(30, 34, 27), color(39, 43, 36), // MAGIC_NUMBER
-				color(53, 61, 48), color(44, 53, 36), color(53, 61, 48), color(51, 59, 43), color(51, 57, 43), color(59, 66, 55), // MAGIC_NUMBER
-				color(40, 45, 35), color(10, 12, 9), Color.OFF, Color.OFF // MAGIC_NUMBER
+		private static final Color[] CREST_COLORS = {
+				new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600), new Color(23665, 49151, 2052, 3600), new Color(15365, 65535, 3852, 3600),
+				new Color(23830, 65535, 3852, 3600), new Color(24365, 56797, 3852, 3600), new Color(15745, 65535, 4622, 3600),
+				new Color(15029, 65535, 5393, 3600), new Color(23524, 42597, 5136, 3600), new Color(15891, 65535, 5907, 3600),
+				new Color(23665, 65535, 4365, 3600), new Color(24029, 43690, 3852, 3600), new Color(15665, 65535, 2309, 3600),
+				new Color(15485, 65535, 1310, 3600), new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600),
+				new Color(15845, 65535, 1795, 3600), new Color(23301, 54612, 4622, 3600), new Color(22625, 53970, 4365, 3600),
+				new Color(21845, 65535, 2566, 3600), new Color(21845, 65535, 1310, 3600), new Color(21845, 65535, 2052, 3600),
+				new Color(21845, 65535, 2309, 3600), new Color(21845, 65535, 1795, 3600), new Color(21845, 65535, 2566, 3600),
+				new Color(21845, 65535, 2052, 3600), new Color(21845, 65535, 2052, 3600), new Color(21845, 65535, 1310, 3600),
+				new Color(21845, 65535, 1310, 3600), new Color(23058, 65535, 2309, 3600), new Color(23058, 42129, 3594, 3600),
+				new Color(15845, 65535, 2566, 3600),
+				new Color(23130, 46420, 6164, 3600), new Color(21845, 59577, 2823, 3600), new Color(21845, 65535, 1538, 3600),
+				new Color(21845, 65535, 2052, 3600), new Color(21845, 59577, 2823, 3600), new Color(23405, 48288, 4879, 3600),
+				new Color(23665, 56172, 3594, 3600), new Color(21845, 43690, 3852, 3600), new Color(21845, 60493, 3337, 3600),
+				new Color(21845, 65535, 2052, 3600), new Color(21116, 54612, 4622, 3600), new Color(22451, 65535, 4622, 3600),
+				new Color(21845, 65535, 2309, 3600), new Color(21845, 65535, 2052, 3600), new Color(21845, 65535, 1310, 3600),
+				new Color(22625, 48288, 4879, 3600),
+				new Color(15845, 65535, 5393, 3600), new Color(22391, 52428, 6424, 3600), new Color(21845, 65535, 3337, 3600),
+				new Color(21202, 65535, 4365, 3600), new Color(24029, 54612, 3080, 3600), new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600),
+				new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600),
+				new Color(23130, 46420, 6164, 3600), new Color(21845, 65535, 4622, 3600), new Color(22573, 65535, 3852, 3600),
+				new Color(21845, 65535, 3080, 3600), new Color(15625, 65535, 4622, 3600),
+				new Color(21845, 65535, 1310, 3600), new Color(22685, 50115, 4365, 3600), new Color(22391, 56986, 5907, 3600),
+				new Color(21845, 65535, 5136, 3600), new Color(21845, 65535, 3337, 3600), new Color(21845, 65535, 1310, 3600),
+				new Color(21845, 65535, 1310, 3600), new Color(21845, 65535, 1310, 3600), new Color(21845, 65535, 1310, 3600),
+				new Color(21845, 65535, 1310, 3600), new Color(21845, 65535, 2309, 3600), new Color(21845, 65535, 3594, 3600),
+				new Color(22527, 61680, 4365, 3600), new Color(22885, 57343, 6164, 3600), new Color(21845, 48059, 3852, 3600),
+				new Color(0, 0, 0, 3600),
+				new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600), new Color(21845, 65535, 1310, 3600),
+				new Color(22755, 65535, 3080, 3600), new Color(21845, 65535, 2566, 3600), new Color(21845, 65535, 1795, 3600),
+				new Color(21845, 65535, 1538, 3600), new Color(21845, 65535, 1310, 3600), new Color(21845, 65535, 2052, 3600),
+				new Color(21845, 65535, 1795, 3600), new Color(23058, 65535, 2309, 3600), new Color(23405, 50971, 2309, 3600),
+				new Color(21845, 32767, 1310, 3600), new Color(0, 0, 0, 3600), new Color(0, 0, 0, 3600)
 		};
 
 		@Override
 		public Color getColor(final int x, final int y, final int width, final int height) {
-			if (y > 4) { // MAGIC_NUMBER
+			if (y >= CREST_COLORS.length / 16) { // MAGIC_NUMBER
 				return Color.OFF;
 			}
 			else {
 				return CREST_COLORS[x + 16 * y]; // MAGIC_NUMBER
 			}
 		}
-
-		/**
-		 * Get a color from its RGB values.
-		 *
-		 * @param red the red byte
-		 * @param blue the blue byte
-		 * @param green the green byte
-		 * @return The color
-		 */
-		private static Color color(final int red, final int green, final int blue) {
-			Color baseColor = new Color.RGBK((short) (red * 256), (short) (green * 256), (short) (blue * 256), (short) 4500).toHsbk(); // MAGIC_NUMBER
-			return new Color(baseColor.getHue(),
-					TypeUtil.toShort(TypeUtil.toDouble(baseColor.getSaturation()) * 3), baseColor.getBrightness(), 4500); // MAGIC_NUMBER
-		}
-
 	}
 
 }

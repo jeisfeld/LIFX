@@ -57,19 +57,24 @@ public final class ImageUtil {
 	 * @return The orientation.
 	 */
 	public static int getOrientation(final Context context, final Uri photoUri) {
-		Cursor cursor = context.getContentResolver().query(photoUri,
-				new String[] {MediaColumns.ORIENTATION}, null, null, null);
-		if (cursor == null) {
-			return 0;
-		}
-		if (cursor.getCount() != 1) {
+		try {
+			Cursor cursor = context.getContentResolver().query(photoUri,
+					new String[] {MediaColumns.ORIENTATION}, null, null, null);
+			if (cursor == null) {
+				return 0;
+			}
+			if (cursor.getCount() != 1) {
+				cursor.close();
+				return 0;
+			}
+			cursor.moveToFirst();
+			int result = cursor.getInt(0);
 			cursor.close();
+			return result;
+		}
+		catch (Exception e) {
 			return 0;
 		}
-		cursor.moveToFirst();
-		int result = cursor.getInt(0);
-		cursor.close();
-		return result;
 	}
 
 	/**
