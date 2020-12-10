@@ -1,5 +1,7 @@
 package de.jeisfeld.lifx.app.animation;
 
+import javax.annotation.Nonnull;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -7,14 +9,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
-
-import javax.annotation.Nonnull;
-
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel;
+import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition;
 
 /**
  * Dialog for setting up a multizone animation.
@@ -114,8 +114,8 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 							stretch = 1;
 						}
 
-						MultizoneMove.Direction direction =
-								MultizoneMove.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+						MultizoneMoveDefinition.Direction direction =
+								MultizoneMoveDefinition.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
 						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
 								new MultizoneMove(duration, stretch, direction, mModel.getValue().getColors().getValue(), false));

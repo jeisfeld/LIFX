@@ -8,6 +8,7 @@ import de.jeisfeld.lifx.lan.LifxLan;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
+import de.jeisfeld.lifx.lan.animation.CycleAnimationDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
@@ -46,7 +47,7 @@ public final class Test {
 
 	public static void main(final String[] args) throws Exception { // SUPPRESS_CHECKSTYLE
 		Logger.setLogDetails(false);
-		new Test().test0();
+		new Test().test1();
 	}
 
 	void test0() throws Exception {
@@ -56,24 +57,11 @@ public final class Test {
 	}
 
 	void test1() throws Exception { // SUPPRESS_CHECKSTYLE
-		Color endColor = FARBLAMPE.getColor();
-		FARBLAMPE.cycle(Color.CYCLE_RAINBOW_LOW)
-				.setCycleDuration(FIVESECONDS)
-				.setStartTransitionTime(ONESECOND)
-				.setEndColor(endColor, ONESECOND)
-				.setBrightness(1)
-				.setCycleCount(2)
+		FARBLAMPE.animation(new CycleAnimationDefinition(ONESECOND, 2, Color.CYCLE_RAINBOW_LOW))
+				.setEndColor(FARBLAMPE.getColor(), ONESECOND)
 				.start();
 
 		FARBLAMPE.waitForAnimationEnd();
-	}
-
-	void test2() throws Exception { // SUPPRESS_CHECKSTYLE
-		FARBLAMPE.wakeup(HALFMINUTE, null);
-		Z2.wakeup(HALFMINUTE, null);
-
-		FARBLAMPE.waitForAnimationEnd();
-		Z2.waitForAnimationEnd();
 	}
 
 	void test3() throws Exception { // SUPPRESS_CHECKSTYLE

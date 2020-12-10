@@ -1,16 +1,17 @@
 package de.jeisfeld.lifx.app.animation;
 
-import android.content.Intent;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import android.content.Intent;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
+import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition;
+import de.jeisfeld.lifx.lan.animation.TileChainWaveDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 
@@ -178,16 +179,19 @@ public abstract class AnimationData implements Serializable {
 		case MULTIZONE_MOVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			double stretch = intent.getDoubleExtra(EXTRA_ANIMATION_STRETCH, 1);
-			final MultizoneMove.Direction multizoneDirection = (MultizoneMove.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
+			final MultizoneMoveDefinition.Direction multizoneDirection =
+					(MultizoneMoveDefinition.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
 			final MultizoneColors colors = (MultizoneColors) intent.getSerializableExtra(EXTRA_MULTIZONE_COLORS);
 			final boolean isRunning = intent.getBooleanExtra(EXTRA_ANIMATION_IS_RUNNING, false);
 			return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
 		case TILECHAIN_WAVE:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
 			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
-			final TileChainWave.Direction tilechainDirection = (TileChainWave.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
-			final TileChainWave.Form tilechainForm = (TileChainWave.Form) intent.getSerializableExtra(EXTRA_ANIMATION_FORM);
-			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			final TileChainWaveDefinition.Direction tilechainDirection =
+					(TileChainWaveDefinition.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
+			final TileChainWaveDefinition.Form tilechainForm = (TileChainWaveDefinition.Form) intent.getSerializableExtra(EXTRA_ANIMATION_FORM);
+			@SuppressWarnings("unchecked")
+			final ArrayList<Color> tileColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainWave(duration, radius, tilechainDirection, tilechainForm, tileColors);
 		case TILECHAIN_IMAGE_TRANSITION:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
@@ -199,7 +203,8 @@ public abstract class AnimationData implements Serializable {
 			return new TileChainFlame(duration, false);
 		case TILECHAIN_MORPH:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, 10000); // MAGIC_NUMBER
-			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors2 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			@SuppressWarnings("unchecked")
+			final ArrayList<Color> tileColors2 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainMorph(duration, tileColors2, false);
 		default:
 			return null;

@@ -1,12 +1,13 @@
 package de.jeisfeld.lifx.app.animation;
 
-import android.content.Intent;
-
 import java.io.IOException;
 
+import android.content.Intent;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition;
+import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition.Direction;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo.Move;
@@ -44,10 +45,10 @@ public class MultizoneMove extends AnimationData {
 	/**
 	 * Constructor.
 	 *
-	 * @param duration  the duration of the move.
-	 * @param stretch   the stretch factor.
+	 * @param duration the duration of the move.
+	 * @param stretch the stretch factor.
 	 * @param direction the direction of the move.
-	 * @param colors    the initial colors.
+	 * @param colors the initial colors.
 	 * @param isRunning the running flag.
 	 */
 	public MultizoneMove(final int duration, final double stretch, final Direction direction, final MultizoneColors colors, final boolean isRunning) {
@@ -93,39 +94,12 @@ public class MultizoneMove extends AnimationData {
 
 	@Override
 	protected final AnimationDefinition getAnimationDefinition(final Light light) {
-		final MultiZoneLight mMultiZoneLight = (MultiZoneLight) light;
-		final MultizoneColors stretchColors = mColors.stretch(mStretch);
-		switch (getDirection()) {
-		case INWARD:
-		case OUTWARD:
-			final int sgn1 = getDirection() == Direction.INWARD ? -1 : 1;
-			return new MultiZoneLight.AnimationDefinition() {
-				@Override
-				public int getDuration(final int n) {
-					return Math.abs(mDuration) / mMultiZoneLight.getZoneCount() * 2;
-				}
-
-				@Override
-				public MultizoneColors getColors(final int n) {
-					return stretchColors.shift(sgn1 * n).mirror().withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
-				}
-			};
-		case FORWARD:
-		case BACKWARD:
-		default:
-			final int sgn2 = getDirection() == Direction.BACKWARD ? -1 : 1;
-			return new MultiZoneLight.AnimationDefinition() {
-				@Override
-				public int getDuration(final int n) {
-					return Math.abs(mDuration) / mMultiZoneLight.getZoneCount();
-				}
-
-				@Override
-				public MultizoneColors getColors(final int n) {
-					return stretchColors.shift(sgn2 * n).withRelativeBrightness(getSelectedBrightness(mMultiZoneLight));
-				}
-			};
-		}
+		return new MultizoneMoveDefinition((MultiZoneLight) light, mDuration, mStretch, mDirection, mColors) {
+			@Override
+			protected double getSelectedBrightness() {
+				return AnimationData.getSelectedBrightness(light);
+			}
+		};
 	}
 
 	@Override
@@ -159,42 +133,5 @@ public class MultizoneMove extends AnimationData {
 	@Override
 	public final boolean isValid() {
 		return mColors != null;
-	}
-
-	/**
-	 * The direction of the animation.
-	 */
-	public enum Direction {
-		/**
-		 * Forward movement.
-		 */
-		FORWARD,
-		/**
-		 * Backward movement.
-		 */
-		BACKWARD,
-		/**
-		 * Outward movement.
-		 */
-		OUTWARD,
-		/**
-		 * Inward movement.
-		 */
-		INWARD;
-
-		/**
-		 * Get Direction from its ordinal value.
-		 *
-		 * @param ordinal The ordinal value.
-		 * @return The direction.
-		 */
-		protected static Direction fromOrdinal(final int ordinal) {
-			for (Direction direction : values()) {
-				if (ordinal == direction.ordinal()) {
-					return direction;
-				}
-			}
-			return FORWARD;
-		}
 	}
 }

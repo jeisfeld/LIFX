@@ -1,5 +1,9 @@
 package de.jeisfeld.lifx.app.animation;
 
+import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -11,11 +15,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-
-import java.util.ArrayList;
-
-import javax.annotation.Nonnull;
-
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -25,6 +24,7 @@ import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment.MultiColorPickerDialogListener;
 import de.jeisfeld.lifx.lan.TileChain;
+import de.jeisfeld.lifx.lan.animation.TileChainWaveDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 
 /**
@@ -44,11 +44,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
-	 * @param model    the tile view model.
+	 * @param model the tile view model.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayTileChainAnimationDialog(final FragmentActivity activity, final TileViewModel model,
-													   final TileChainAnimationDialogListener listener) {
+			final TileChainAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
 		TileChainAnimationDialogFragment fragment = new TileChainAnimationDialogFragment();
 		fragment.setListener(listener);
@@ -126,7 +126,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
-												  final boolean[] flags) {
+						final boolean[] flags) {
 					mColors = colors;
 					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
 				}
@@ -191,11 +191,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 								radius = lightRadius;
 							}
 
-							final TileChainWave.Direction direction =
-									TileChainWave.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+							final TileChainWaveDefinition.Direction direction =
+									TileChainWaveDefinition.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
 
-							final TileChainWave.Form form =
-									TileChainWave.Form.fromOrdinal(spinnerForm.getSelectedItemPosition());
+							final TileChainWaveDefinition.Form form =
+									TileChainWaveDefinition.Form.fromOrdinal(spinnerForm.getSelectedItemPosition());
 
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainWave(duration, radius, direction, form, mColors));
@@ -209,7 +209,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	/**
 	 * Prepare the listener for the animation type spinner.
 	 *
-	 * @param parentView           The dialog parent view.
+	 * @param parentView The dialog parent view.
 	 * @param spinnerAnimationType The spinner.
 	 */
 	private void prepareSpinnerListener(final View parentView, final Spinner spinnerAnimationType) {
@@ -260,7 +260,6 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 			}
 		});
 	}
-
 
 	@Override
 	public final void onCancel(@Nonnull final DialogInterface dialogInterface) {
@@ -324,7 +323,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Callback method for positive click from the confirmation dialog.
 		 *
-		 * @param dialog        The confirmation dialog fragment.
+		 * @param dialog The confirmation dialog fragment.
 		 * @param animationData The animation data.
 		 */
 		void onDialogPositiveClick(DialogFragment dialog, AnimationData animationData);

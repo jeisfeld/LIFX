@@ -1,13 +1,12 @@
 package de.jeisfeld.lifx.app.home;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
-
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -16,12 +15,12 @@ import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.animation.MultizoneMove;
-import de.jeisfeld.lifx.app.animation.MultizoneMove.Direction;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition.Direction;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
@@ -57,7 +56,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Constructor.
 	 *
-	 * @param context        the context.
+	 * @param context the context.
 	 * @param multiZoneLight The multiZone light.
 	 */
 	public MultizoneViewModel(final Context context, final MultiZoneLight multiZoneLight) {
@@ -126,10 +125,10 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors           the colors to be set.
+	 * @param colors the colors to be set.
 	 * @param brightnessFactor the brightness factor.
-	 * @param isImmediate      Flag indicating if the change should be immediate.
-	 * @param stopAnimation    Flag indicating if animation should be stopped.
+	 * @param isImmediate Flag indicating if the change should be immediate.
+	 * @param stopAnimation Flag indicating if animation should be stopped.
 	 */
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
 		updateStoredColors(colors, brightnessFactor);
@@ -209,7 +208,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors           The given colors.
+	 * @param colors The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
 	private void updateStoredColors(final MultizoneColors colors, final double brightnessFactor) {
@@ -306,8 +305,8 @@ public class MultizoneViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model       The underlying model.
-		 * @param colors      The colors.
+		 * @param model The underlying model.
+		 * @param colors The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		@SuppressWarnings("deprecation")
@@ -327,7 +326,7 @@ public class MultizoneViewModel extends LightViewModel {
 			try {
 				int colorDuration = mIsImmediate ? 0
 						: PreferenceUtil.getSharedPreferenceIntString(
-						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+								R.string.key_pref_color_duration, R.string.pref_default_color_duration);
 				model.getLight().setColors(mColors, colorDuration, false);
 				return mColors;
 			}
@@ -389,7 +388,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * Constructor.
 		 *
 		 * @param multizoneColors The base multizone colors without flag.
-		 * @param flags           The flags.
+		 * @param flags The flags.
 		 */
 		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);
