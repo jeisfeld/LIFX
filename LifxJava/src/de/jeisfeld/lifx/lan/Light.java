@@ -37,9 +37,10 @@ public class Light extends Device implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * The waiting times before retry after error (increasing delays for repeated errors).
+	 * The waiting times before retry after error in animations (increasing delays for repeated errors).
 	 */
-	protected static final int[] WAITING_TIMES_AFTER_ERROR = new int[] {1000, 2000, 5000, 10000, 10000, 10000};
+	protected static final int[] WAITING_TIMES_AFTER_ERROR =
+			new int[] {1000, 2000, 5000, 10000, 15000, 30000, 60000, 120000, 180000, 300000, 600000, 900000, 1800000};
 	/**
 	 * A holder for the animation thread.
 	 */
