@@ -10,6 +10,7 @@
     <string name="key_pref_color_duration" translatable="false">pref_color_duration</string>
     <string name="key_pref_use_wakelock" translatable="false">pref_use_wakelock</string>
     <string name="key_pref_night_mode" translatable="false">pref_night_mode</string>
+    <string name="key_pref_dummy_setting_battery_optimizations" translatable="false">pref_dummy_setting_battery_optimizations</string>
     <string name="key_pref_dummy_export" translatable="false">pref_dummy_export</string>
     <string name="key_pref_dummy_import" translatable="false">pref_dummy_import</string>
 
@@ -83,6 +84,7 @@
     <string name="pref_title_use_wakelock">Keep awake on animation</string>
     <string name="pref_title_night_mode">Dark Mode</string>
     <string name="pref_default_night_mode" translatable="false">-1</string>
+    <string name="pref_title_dummy_setting_battery_optimizations">Configure battery optimizations</string>
     <string name="pref_title_dummy_export">Export all settings</string>
     <string name="pref_title_dummy_import">Import all settings</string>
 

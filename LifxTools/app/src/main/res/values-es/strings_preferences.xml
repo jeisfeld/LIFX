@@ -7,6 +7,7 @@
     <string name="pref_title_refresh_period">Periodo de actualización</string>
     <string name="pref_title_use_wakelock">Mantente despierto en la animación</string>
     <string name="pref_title_night_mode">Modo oscuro</string>
+    <string name="pref_title_dummy_setting_battery_optimizations">Configurar optimizaciones de batería</string>
     <string name="pref_title_dummy_export">Exportar todas las configuraciones</string>
     <string name="pref_title_dummy_import">Importar todas las configuraciones</string>
 

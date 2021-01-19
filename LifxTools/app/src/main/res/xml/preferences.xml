@@ -48,6 +48,10 @@
         android:title="@string/pref_title_use_wakelock"
         app:iconSpaceReserved="false" />
     <Preference
+        android:key="@string/key_pref_dummy_setting_battery_optimizations"
+        android:title="@string/pref_title_dummy_setting_battery_optimizations"
+        app:iconSpaceReserved="false" />
+    <Preference
         android:key="@string/key_pref_dummy_export"
         android:title="@string/pref_title_dummy_export"
         app:iconSpaceReserved="false" />

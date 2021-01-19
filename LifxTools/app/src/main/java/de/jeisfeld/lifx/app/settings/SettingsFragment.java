@@ -1,6 +1,8 @@
 package de.jeisfeld.lifx.app.settings;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.format.DateFormat;
 
 import java.io.File;
@@ -49,8 +51,21 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 	public final void onCreatePreferences(final Bundle savedInstanceState, final String rootKey) {
 		setPreferencesFromResource(R.xml.preferences, rootKey);
 		configureExportImportButtons();
+		configureBatteryOptimizationButton();
 
 		findPreference(getString(R.string.key_pref_night_mode)).setOnPreferenceChangeListener(SettingsFragment::onPreferenceChange);
+	}
+
+	/**
+	 * Configure the button for battery optimization.
+	 */
+	private void configureBatteryOptimizationButton() {
+		Preference batteryOptimizationPreference = findPreference(getString(R.string.key_pref_dummy_setting_battery_optimizations));
+		assert batteryOptimizationPreference != null;
+		batteryOptimizationPreference.setOnPreferenceClickListener(preference -> {
+			startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+			return true;
+		});
 	}
 
 	/**
