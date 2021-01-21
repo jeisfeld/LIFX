@@ -1,7 +1,10 @@
 package de.jeisfeld.lifx.app.settings;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.Settings;
 import android.text.format.DateFormat;
 
@@ -63,7 +66,16 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 		Preference batteryOptimizationPreference = findPreference(getString(R.string.key_pref_dummy_setting_battery_optimizations));
 		assert batteryOptimizationPreference != null;
 		batteryOptimizationPreference.setOnPreferenceClickListener(preference -> {
-			startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+			PowerManager pm = (PowerManager) getContext().getSystemService(Context.POWER_SERVICE);
+			Intent intent = new Intent();
+			if (pm.isIgnoringBatteryOptimizations(getContext().getPackageName())) {
+				intent.setAction(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+			}
+			else {
+				intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+				intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+			}
+			startActivity(intent);
 			return true;
 		});
 	}
