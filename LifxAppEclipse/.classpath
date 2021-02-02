@@ -32,9 +32,9 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="libs-local/customview-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/drawerlayout-1.1.0.jar"/>
-	<classpathentry kind="lib" path="libs-local/navigation-common-2.3.2.jar"/>
-	<classpathentry kind="lib" path="libs-local/navigation-fragment-2.3.2.jar"/>
-	<classpathentry kind="lib" path="libs-local/navigation-runtime-2.3.2.jar"/>
-	<classpathentry kind="lib" path="libs-local/navigation-ui-2.3.2.jar"/>
+	<classpathentry kind="lib" path="libs-local/navigation-common-2.3.3.jar"/>
+	<classpathentry kind="lib" path="libs-local/navigation-fragment-2.3.3.jar"/>
+	<classpathentry kind="lib" path="libs-local/navigation-runtime-2.3.3.jar"/>
+	<classpathentry kind="lib" path="libs-local/navigation-ui-2.3.3.jar"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
