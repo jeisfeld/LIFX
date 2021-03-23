@@ -5,6 +5,7 @@
     <string name="pref_title_power_duration">Duração ligar/desligar</string>
     <string name="pref_title_color_duration">Duração da mudança de cor</string>
     <string name="pref_title_refresh_period">Período de atualização</string>
+    <string name="pref_title_auto_on">Ligue ao selecionar uma cor</string>
     <string name="pref_title_use_wakelock">Mantenha-se acordado com a animação</string>
     <string name="pref_title_night_mode">Modo escuro</string>
     <string name="pref_title_dummy_setting_battery_optimizations">Configurar otimizações de bateria</string>

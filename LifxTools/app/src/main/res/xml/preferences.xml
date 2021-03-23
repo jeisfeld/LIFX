@@ -44,6 +44,11 @@
         app:useSimpleSummaryProvider="true" />
     <CheckBoxPreference
         android:defaultValue="true"
+        android:key="@string/key_pref_auto_on"
+        android:title="@string/pref_title_auto_on"
+        app:iconSpaceReserved="false" />
+    <CheckBoxPreference
+        android:defaultValue="true"
         android:key="@string/key_pref_use_wakelock"
         android:title="@string/pref_title_use_wakelock"
         app:iconSpaceReserved="false" />

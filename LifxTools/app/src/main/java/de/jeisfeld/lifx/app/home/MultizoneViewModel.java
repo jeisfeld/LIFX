@@ -1,12 +1,13 @@
 package de.jeisfeld.lifx.app.home;
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
+
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
-import android.content.Context;
-import android.os.AsyncTask;
-import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -326,8 +327,14 @@ public class MultizoneViewModel extends LightViewModel {
 			try {
 				int colorDuration = mIsImmediate ? 0
 						: PreferenceUtil.getSharedPreferenceIntString(
-								R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				model.getLight().setColors(mColors, colorDuration, false);
+						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
+					model.getLight().setColors(mColors, 0, false);
+					model.getLight().setPower(true, colorDuration, false);
+				}
+				else {
+					model.getLight().setColors(mColors, colorDuration, false);
+				}
 				return mColors;
 			}
 			catch (IOException e) {
@@ -347,6 +354,9 @@ public class MultizoneViewModel extends LightViewModel {
 				if (model.mRunningSetColorTasks.size() > 0) {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
+			}
+			if (isAutoOn()) {
+				model.mPower.postValue(Power.ON);
 			}
 		}
 

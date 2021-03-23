@@ -23,6 +23,7 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
@@ -233,6 +234,15 @@ public class LightViewModel extends DeviceViewModel {
 	}
 
 	/**
+	 * Check if light should be automatically switched on when selecting a stored color.
+	 *
+	 * @return True if light should be automatically switched on.
+	 */
+	protected static boolean isAutoOn() {
+		return PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_auto_on, true);
+	}
+
+	/**
 	 * An async task for checking the color.
 	 */
 	private static final class CheckColorTask extends AsyncTask<String, String, Color> {
@@ -311,7 +321,13 @@ public class LightViewModel extends DeviceViewModel {
 			try {
 				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
 						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				model.getLight().setColor(mColor, colorDuration, false);
+				if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
+					model.getLight().setColor(mColor, 0, false);
+					model.getLight().setPower(true, colorDuration, false);
+				}
+				else {
+					model.getLight().setColor(mColor, colorDuration, false);
+				}
 				return mColor;
 			}
 			catch (IOException e) {
@@ -333,6 +349,9 @@ public class LightViewModel extends DeviceViewModel {
 				}
 			}
 			model.mColor.postValue(color);
+			if (isAutoOn()) {
+				model.mPower.postValue(Power.ON);
+			}
 		}
 
 		@Override

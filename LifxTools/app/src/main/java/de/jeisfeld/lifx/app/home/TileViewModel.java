@@ -324,7 +324,13 @@ public class TileViewModel extends LightViewModel {
 					model.getLight().setBrightness(mBrightness);
 				}
 				else {
-					model.getLight().setColors(mColors, colorDuration, false);
+					if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
+						model.getLight().setColors(mColors, 0, false);
+						model.getLight().setPower(true, colorDuration, false);
+					}
+					else {
+						model.getLight().setColors(mColors, colorDuration, false);
+					}
 				}
 				return mColors;
 			}
@@ -345,6 +351,9 @@ public class TileViewModel extends LightViewModel {
 				if (model.mRunningSetColorTasks.size() > 0) {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
+			}
+			if (isAutoOn()) {
+				model.mPower.postValue(Power.ON);
 			}
 		}
 

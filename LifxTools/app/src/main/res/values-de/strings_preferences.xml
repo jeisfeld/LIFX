@@ -5,6 +5,7 @@
     <string name="pref_title_power_duration">Schaltdauer</string>
     <string name="pref_title_color_duration">Farbwechseldauer</string>
     <string name="pref_title_refresh_period">Aktualisierungszeitraum</string>
+    <string name="pref_title_auto_on">Bei Auswahl einer Farbe einschalten</string>
     <string name="pref_title_use_wakelock">Gerät bei Animation wach halten</string>
     <string name="pref_title_night_mode">Dunkler Modus</string>
     <string name="pref_title_dummy_setting_battery_optimizations">Batterieoptimierungen konfigurieren</string>
