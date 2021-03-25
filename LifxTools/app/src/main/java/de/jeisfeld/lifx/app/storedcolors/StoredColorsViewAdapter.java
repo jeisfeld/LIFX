@@ -32,12 +32,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
+import de.jeisfeld.lifx.app.home.GroupViewModel;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -103,7 +105,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 	@Override
 	public final void onBindViewHolder(@NonNull final MyViewHolder holder, final int position) {
 		final StoredColor storedColor = mStoredColors.get(position);
-		Light light = storedColor.getLight();
 		holder.mTitle.setText(storedColor.getName());
 
 		holder.mTitle.setOnClickListener(v -> {
@@ -145,8 +146,11 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			}
 		});
 
-		if (light != null) {
-			holder.mDeviceName.setText(light.getLabel());
+		if (storedColor.getLight() != null) {
+			holder.mDeviceName.setText(storedColor.getLight().getLabel());
+		}
+		else if (storedColor.getGroup() != null) {
+			holder.mDeviceName.setText(storedColor.getGroup().getGroupLabel());
 		}
 
 		holder.mDragHandle.setOnTouchListener((view, event) -> {
@@ -373,28 +377,41 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		@Override
 		protected StoredColor doInBackground(final StoredColor... storedColors) {
 			StoredColor storedColor = storedColors[0];
-			try {
-				int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
-						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				if (storedColor instanceof StoredMultizoneColors) {
-					((MultiZoneLight) storedColor.getLight()).setColors(((StoredMultizoneColors) storedColor).getColors(), powerDuration, false);
+			if (storedColor.getLight() != null) {
+				try {
+					int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
+							R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+					if (storedColor instanceof StoredMultizoneColors) {
+						((MultiZoneLight) storedColor.getLight()).setColors(((StoredMultizoneColors) storedColor).getColors(), powerDuration, false);
+					}
+					else if (storedColor instanceof StoredTileColors) {
+						((TileChain) storedColor.getLight()).setColors(((StoredTileColors) storedColor).getColors(), powerDuration, false);
+					}
+					else {
+						storedColor.getLight().setColor(storedColor.getColor(), powerDuration, false);
+					}
+					storedColor.getLight().setPower(true);
+					return storedColor;
 				}
-				else if (storedColor instanceof StoredTileColors) {
-					((TileChain) storedColor.getLight()).setColors(((StoredTileColors) storedColor).getColors(), powerDuration, false);
+				catch (IOException e) {
+					Log.w(Application.TAG, e);
+					Light light = storedColor.getLight();
+					Context context = mContext.get();
+					if (context != null) {
+						DialogUtil.displayToast(context, R.string.toast_connection_failed, light == null ? "?" : light.getLabel());
+					}
+					return null;
 				}
-				else {
-					storedColor.getLight().setColor(storedColor.getColor(), powerDuration, false);
+			}
+			else if (storedColor.getGroup() != null) {
+				for (Device device : DeviceRegistry.getInstance().getDevices(storedColor.getDeviceId(), false)) {
+					if (device instanceof Light) {
+						new GroupViewModel.SetColorTask(null, storedColor.getColor(), (Light) device).execute();
+					}
 				}
-				storedColor.getLight().setPower(true);
 				return storedColor;
 			}
-			catch (IOException e) {
-				Log.w(Application.TAG, e);
-				Light light = storedColor.getLight();
-				Context context = mContext.get();
-				if (context != null) {
-					DialogUtil.displayToast(context, R.string.toast_connection_failed, light == null ? "?" : light.getLabel());
-				}
+			else {
 				return null;
 			}
 		}

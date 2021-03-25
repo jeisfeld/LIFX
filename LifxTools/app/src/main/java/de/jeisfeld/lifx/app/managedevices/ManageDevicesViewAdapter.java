@@ -131,12 +131,7 @@ public class ManageDevicesViewAdapter extends RecyclerView.Adapter<ManageDevices
 			});
 		}
 
-		if (deviceHolder.isGroup()) {
-			holder.mStoredColorsButton.setVisibility(View.GONE);
-		}
-		else {
-			holder.mStoredColorsButton.setOnClickListener(v -> StoredColorsFragment.navigate(mFragment.get(), deviceHolder.getId()));
-		}
+		holder.mStoredColorsButton.setOnClickListener(v -> StoredColorsFragment.navigate(mFragment.get(), deviceHolder.getId()));
 
 		configureInfoButton(holder, deviceHolder);
 

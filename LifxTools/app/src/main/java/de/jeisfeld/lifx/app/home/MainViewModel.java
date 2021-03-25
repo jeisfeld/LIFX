@@ -7,6 +7,10 @@ import java.lang.ref.WeakReference;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
 
 /**
@@ -66,6 +70,15 @@ public abstract class MainViewModel extends ViewModel {
 	}
 
 	/**
+	 * Check if light should be automatically switched on when selecting a stored color.
+	 *
+	 * @return True if light should be automatically switched on.
+	 */
+	protected static boolean isAutoOn() {
+		return PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_auto_on, true);
+	}
+
+	/**
 	 * Refresh the device. If offline, first check if online again.
 	 */
 	// OVERRIDABLE
@@ -95,6 +108,24 @@ public abstract class MainViewModel extends ViewModel {
 	 * @param brightness The new brightness.
 	 */
 	protected void updateBrightness(final double brightness) {
+		// to be overridden in subclasses
+	}
+
+	/**
+	 * Get the color.
+	 *
+	 * @return The color.
+	 */
+	public LiveData<Color> getColor() {
+		return null; // to be overridden in subclasses
+	}
+
+	/**
+	 * Update from a stored color.
+	 *
+	 * @param storedColor The stored color.
+	 */
+	protected void updateStoredColor(final StoredColor storedColor) {
 		// to be overridden in subclasses
 	}
 

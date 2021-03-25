@@ -35,6 +35,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 */
 	private static final String PARAM_ONLY_SELECT = "onlySelect";
 	/**
+	 * Parameter to pass information if only selection is supported.
+	 */
+	private static final String PARAM_INCLUDE_OFF = "includeOff";
+	/**
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
 	private static final String PREVENT_RECREATION = "preventRecreation";
@@ -45,17 +49,20 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 * @param activity   the current activity
 	 * @param deviceId   the device id.
 	 * @param onlySelect the flag indicating if only select is possible.
+	 * @param includeOff the flag indicating if option "OFF" should be displayed.
 	 * @param listener   The listener waiting for the response
 	 */
 	public static void displayStoredColorsDialog(final FragmentActivity activity,
 												 final int deviceId,
 												 final boolean onlySelect,
+												 final boolean includeOff,
 												 final StoredColorsDialogListener listener) {
 		Bundle bundle = new Bundle();
 		StoredColorsDialogFragment fragment = new StoredColorsDialogFragment();
 		fragment.setListener(listener);
 		bundle.putInt(PARAM_DEVICE_ID, deviceId);
 		bundle.putBoolean(PARAM_ONLY_SELECT, onlySelect);
+		bundle.putBoolean(PARAM_INCLUDE_OFF, includeOff);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 	}
@@ -80,6 +87,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		assert getArguments() != null;
 		final int deviceId = getArguments().getInt(PARAM_DEVICE_ID);
 		final boolean onlySelect = getArguments().getBoolean(PARAM_ONLY_SELECT);
+		final boolean includeOff = getArguments().getBoolean(PARAM_INCLUDE_OFF);
 
 		// Listeners cannot retain functionality when automatically recreated.
 		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
@@ -97,7 +105,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		view.findViewById(R.id.editTextSaveName).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
 
 		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
-		if (onlySelect) {
+		if (includeOff) {
 			storedColors.add(0, StoredColor.fromDeviceOff(deviceId));
 		}
 

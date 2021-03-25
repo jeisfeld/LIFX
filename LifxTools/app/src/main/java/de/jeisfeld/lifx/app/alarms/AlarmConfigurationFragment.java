@@ -141,7 +141,7 @@ public class AlarmConfigurationFragment extends Fragment {
 						}
 						else {
 							StoredColorsDialogFragment.displayStoredColorsDialog(
-									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true,
+									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true, true,
 									storedColor -> {
 										mAlarm.getSteps().add(new Step(0, storedColor.getId(), DEFAULT_DURATION));
 										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);

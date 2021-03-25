@@ -168,13 +168,9 @@ public class ColorPickerDialog extends AlertDialog {
 		 * @return {@link Builder}.
 		 */
 		public Builder initializeFromLight(final MainViewModel model) {
-			if (model instanceof LightViewModel) {
+			if (model instanceof LightViewModel || model instanceof GroupViewModel) {
 				mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() ->
-						updateColorPickerFromLight(mColorPickerView, ((LightViewModel) model).getColor().getValue()));
-			}
-			else if (model instanceof GroupViewModel) {
-				mColorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(() ->
-						updateColorPickerFromLight(mColorPickerView, ((GroupViewModel) model).getColor().getValue()));
+						updateColorPickerFromLight(mColorPickerView, model.getColor().getValue()));
 			}
 			return this;
 		}

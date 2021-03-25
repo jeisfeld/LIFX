@@ -7,6 +7,7 @@ import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Group;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 
@@ -165,6 +166,15 @@ public class StoredColor {
 	 */
 	public Light getLight() {
 		return (Light) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
+	}
+
+	/**
+	 * Get the group for the color.
+	 *
+	 * @return The group for the color.
+	 */
+	public Group getGroup() {
+		return DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getGroup();
 	}
 
 	/**

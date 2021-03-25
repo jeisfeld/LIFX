@@ -18,6 +18,7 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Group;
@@ -79,12 +80,8 @@ public class GroupViewModel extends MainViewModel {
 		return mGroupId;
 	}
 
-	/**
-	 * Get the color.
-	 *
-	 * @return The color.
-	 */
-	public LiveData<Color> getColor() {
+	@Override
+	public final LiveData<Color> getColor() {
 		return mColor;
 	}
 
@@ -131,6 +128,11 @@ public class GroupViewModel extends MainViewModel {
 	@Override
 	protected final void updateBrightness(final double brightness) {
 		updateColor(null, null, TypeUtil.toShort(brightness), null);
+	}
+
+	@Override
+	protected final void updateStoredColor(final StoredColor storedColor) {
+		updateColor(storedColor.getColor());
 	}
 
 	/**
@@ -330,7 +332,7 @@ public class GroupViewModel extends MainViewModel {
 	/**
 	 * An async task for setting the color on one device.
 	 */
-	private static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
+	public static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
 		/**
 		 * A weak reference to the underlying model.
 		 */
@@ -351,7 +353,7 @@ public class GroupViewModel extends MainViewModel {
 		 * @param color The color.
 		 * @param light The light.
 		 */
-		private SetColorTask(final GroupViewModel model, final Color color, final Light light) {
+		public SetColorTask(final GroupViewModel model, final Color color, final Light light) {
 			mModel = new WeakReference<>(model);
 			mColor = color;
 			mLight = light;
@@ -359,13 +361,11 @@ public class GroupViewModel extends MainViewModel {
 
 		@Override
 		protected Color doInBackground(final Color... colors) {
-			GroupViewModel model = mModel.get();
-			if (model == null) {
-				return null;
-			}
-
 			try {
 				mLight.setColor(mColor, 0, false);
+				if (isAutoOn()) {
+					mLight.setPower(true, 0, false);
+				}
 				return mColor;
 			}
 			catch (IOException e) {
@@ -391,6 +391,9 @@ public class GroupViewModel extends MainViewModel {
 			}
 			if (color != null) {
 				model.mColor.postValue(color);
+			}
+			if (isAutoOn()) {
+				model.mPower.postValue(Power.ON);
 			}
 		}
 

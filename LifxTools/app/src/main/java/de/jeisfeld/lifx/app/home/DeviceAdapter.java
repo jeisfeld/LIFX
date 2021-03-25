@@ -271,13 +271,12 @@ public class DeviceAdapter extends BaseAdapter {
 				if (fragment != null && model instanceof LightViewModel && ((CheckBox) v).isChecked()) {
 					ColorPickerView colorPickerView = fragment.requireView().findViewById(R.id.colorPickerMain);
 					if (colorPickerView != null) {
-						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, ((LightViewModel) model).getColor().getValue());
+						ColorPickerDialog.updateColorPickerFromLight(colorPickerView, model.getColor().getValue());
 					}
 					ColorPickerView brightnessColorTempPickerView =
 							fragment.requireView().findViewById(R.id.colorPickerBrightnessColorTemp);
 					if (brightnessColorTempPickerView != null) {
-						ColorPickerDialog.updateBrightnessColorTempFromLight(brightnessColorTempPickerView,
-								((LightViewModel) model).getColor().getValue());
+						ColorPickerDialog.updateBrightnessColorTempFromLight(brightnessColorTempPickerView, model.getColor().getValue());
 					}
 				}
 			});
@@ -298,10 +297,6 @@ public class DeviceAdapter extends BaseAdapter {
 
 		if (model instanceof GroupViewModel) {
 			view.findViewById(R.id.toggleButtonAnimation).setVisibility(View.GONE);
-			Button saveButton = view.findViewById(R.id.buttonSave);
-			if (saveButton != null) {
-				saveButton.setVisibility(View.GONE);
-			}
 			GroupViewModel groupModel = (GroupViewModel) model;
 
 			Button buttonColorPicker = view.findViewById(R.id.buttonColorPicker);
@@ -311,6 +306,10 @@ public class DeviceAdapter extends BaseAdapter {
 			Button buttonBrightnessColorTemp = view.findViewById(R.id.buttonBrightnessColortemp);
 			if (buttonBrightnessColorTemp != null) {
 				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, groupModel);
+			}
+			Button saveButton = view.findViewById(R.id.buttonSave);
+			if (saveButton != null) {
+				prepareSaveButton(saveButton, model);
 			}
 
 			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), model);
@@ -322,19 +321,19 @@ public class DeviceAdapter extends BaseAdapter {
 			if (lightModel.getDevice().getProduct().hasColor()) {
 				Button buttonColorPicker = view.findViewById(R.id.buttonColorPicker);
 				if (buttonColorPicker != null) {
-					prepareColorPicker(buttonColorPicker, lightModel);
+					prepareColorPicker(buttonColorPicker, model);
 				}
 			}
 			Button buttonBrightnessColorTemp = view.findViewById(R.id.buttonBrightnessColortemp);
 			if (buttonBrightnessColorTemp != null) {
-				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, lightModel);
+				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, model);
 			}
 			Button saveButton = view.findViewById(R.id.buttonSave);
 			if (saveButton != null) {
-				prepareSaveButton(saveButton, lightModel);
+				prepareSaveButton(saveButton, model);
 			}
 
-			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), lightModel);
+			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), model);
 			prepareAnimationButton(view.findViewById(R.id.toggleButtonAnimation), lightModel);
 
 			lightModel.checkColor();
@@ -641,14 +640,14 @@ public class DeviceAdapter extends BaseAdapter {
 			});
 		}
 		else if (model instanceof LightViewModel) {
-			((LightViewModel) model).getColor().observe(mLifeCycleOwner, color -> {
+			model.getColor().observe(mLifeCycleOwner, color -> {
 				if (color != null) {
 					seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
 				}
 			});
 		}
 		else if (model instanceof GroupViewModel) {
-			((GroupViewModel) model).getColor().observe(mLifeCycleOwner, color -> {
+			model.getColor().observe(mLifeCycleOwner, color -> {
 				if (color != null) {
 					if (seekBar.getVisibility() != View.VISIBLE) {
 						seekBar.setVisibility(View.VISIBLE);
@@ -759,11 +758,11 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param saveButton The save button.
 	 * @param model      The light view model.
 	 */
-	private void prepareSaveButton(final Button saveButton, final LightViewModel model) {
+	private void prepareSaveButton(final Button saveButton, final MainViewModel model) {
+		saveButton.setVisibility(View.VISIBLE);
+
 		saveButton.setOnClickListener(v -> {
-			final Fragment fragment = mFragment.get();
 			final Color color = model.getColor().getValue();
-			final Light light = model.getLight();
 			final MultizoneColors multizoneColors;
 			final TileChainColors tileChainColors;
 			if (model instanceof MultizoneViewModel) {
@@ -779,17 +778,33 @@ public class DeviceAdapter extends BaseAdapter {
 				tileChainColors = null;
 			}
 
-			if (fragment == null || (color == null && multizoneColors == null && tileChainColors == null) // BOOLEAN_EXPRESSION_COMPLEXITY
-					|| light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
+			final int deviceId;
+			if (model instanceof LightViewModel) {
+				final Light light = ((LightViewModel) model).getLight();
+				if (light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
+					return;
+				}
+				deviceId = (int) light.getParameter(DeviceRegistry.DEVICE_ID);
+			}
+			else if (model instanceof GroupViewModel) {
+				deviceId = ((GroupViewModel) model).getGroupId();
+			}
+			else {
 				return;
 			}
-			final int deviceId = (int) light.getParameter(DeviceRegistry.DEVICE_ID);
 
+			final Fragment fragment = mFragment.get();
+			if (fragment == null) {
+				return;
+			}
 			FragmentActivity activity = fragment.getActivity();
 			if (activity == null) {
 				return;
 			}
-			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, false, new StoredColorsDialogListener() {
+
+			final boolean onlySelect = color == null && multizoneColors == null && tileChainColors == null;
+
+			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, onlySelect, false, new StoredColorsDialogListener() {
 				/**
 				 * Flag indicating if color was changed during this dialog.
 				 */

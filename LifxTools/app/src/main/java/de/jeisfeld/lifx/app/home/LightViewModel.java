@@ -74,12 +74,8 @@ public class LightViewModel extends DeviceViewModel {
 		return mAnimationStatus;
 	}
 
-	/**
-	 * Get the color.
-	 *
-	 * @return The color.
-	 */
-	public LiveData<Color> getColor() {
+	@Override
+	public final LiveData<Color> getColor() {
 		return mColor;
 	}
 
@@ -108,9 +104,9 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param hue              the new hue. May be null to keep unchanged.
-	 * @param saturation       the new saturation. May be null to keep unchanged.
-	 * @param brightness       the new brightness. May be null to keep unchanged.
+	 * @param hue the new hue. May be null to keep unchanged.
+	 * @param saturation the new saturation. May be null to keep unchanged.
+	 * @param brightness the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
 	 */
 	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
@@ -155,7 +151,7 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the color.
 	 *
-	 * @param color       the color to be set.
+	 * @param color the color to be set.
 	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
 	public void updateColor(final Color color, final boolean isImmediate) {
@@ -181,12 +177,8 @@ public class LightViewModel extends DeviceViewModel {
 		mColor.postValue(color);
 	}
 
-
-	/**
-	 * Update from a stored color.
-	 *
-	 * @param storedColor The stored color.
-	 */
+	// OVERRIDABLE
+	@Override
 	protected void updateStoredColor(final StoredColor storedColor) {
 		updateColor(storedColor.getColor(), false);
 	}
@@ -227,15 +219,6 @@ public class LightViewModel extends DeviceViewModel {
 	protected void stopAnimationOrAlarm() {
 		mAnimationStatus.postValue(false);
 		getLight().endAnimation(false);
-	}
-
-	/**
-	 * Check if light should be automatically switched on when selecting a stored color.
-	 *
-	 * @return True if light should be automatically switched on.
-	 */
-	protected static boolean isAutoOn() {
-		return PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_auto_on, true);
 	}
 
 	/**
@@ -296,8 +279,8 @@ public class LightViewModel extends DeviceViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model       The underlying model.
-		 * @param color       The color.
+		 * @param model The underlying model.
+		 * @param color The color.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		@SuppressWarnings("deprecation")
@@ -315,7 +298,8 @@ public class LightViewModel extends DeviceViewModel {
 			}
 
 			try {
-				int colorDuration = mIsImmediate ? 0 : PreferenceUtil.getSharedPreferenceIntString(
+				int colorDuration = mIsImmediate ? 0
+						: PreferenceUtil.getSharedPreferenceIntString(
 						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
 				if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
 					model.getLight().setColor(mColor, 0, false);
