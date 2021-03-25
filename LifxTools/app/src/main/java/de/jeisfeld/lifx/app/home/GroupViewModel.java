@@ -128,12 +128,8 @@ public class GroupViewModel extends MainViewModel {
 		updateColor(newColor);
 	}
 
-	/**
-	 * Update the brightness on the group.
-	 *
-	 * @param brightness The new brightness.
-	 */
-	protected void updateBrightness(final double brightness) {
+	@Override
+	protected final void updateBrightness(final double brightness) {
 		updateColor(null, null, TypeUtil.toShort(brightness), null);
 	}
 
@@ -303,15 +299,22 @@ public class GroupViewModel extends MainViewModel {
 				return null;
 			}
 
+			Color foundColor = null;
+
 			for (Device device : DeviceRegistry.getInstance().getDevices(model.mGroupId, false)) {
 				if (device instanceof Light) {
 					Color color = ((Light) device).getColor();
 					if (color != null) {
-						return color;
+						if (foundColor == null) {
+							foundColor = color;
+						}
+						else if (foundColor.getBrightness() != color.getBrightness()) {
+							return null;
+						}
 					}
 				}
 			}
-			return null;
+			return foundColor;
 		}
 
 		@Override

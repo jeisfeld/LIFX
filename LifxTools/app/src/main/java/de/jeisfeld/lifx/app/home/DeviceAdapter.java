@@ -313,6 +313,7 @@ public class DeviceAdapter extends BaseAdapter {
 				prepareBrightnessColortempPicker(buttonBrightnessColorTemp, groupModel);
 			}
 
+			prepareBrightnessSeekbar(view.findViewById(R.id.seekBarBrightness), model);
 			groupModel.checkColor();
 		}
 		if (model instanceof LightViewModel) {
@@ -620,8 +621,10 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param seekBar The brightness seekbar.
 	 * @param model   The light view model.
 	 */
-	private void prepareBrightnessSeekbar(final SeekBar seekBar, final LightViewModel model) {
-		seekBar.setVisibility(View.VISIBLE);
+	private void prepareBrightnessSeekbar(final SeekBar seekBar, final MainViewModel model) {
+		if (model instanceof LightViewModel) {
+			seekBar.setVisibility(View.VISIBLE);
+		}
 
 		if (model instanceof MultizoneViewModel) {
 			((MultizoneViewModel) model).getRelativeBrightness().observe(mLifeCycleOwner, relativeBrightness -> {
@@ -637,9 +640,19 @@ public class DeviceAdapter extends BaseAdapter {
 				}
 			});
 		}
-		else {
-			model.getColor().observe(mLifeCycleOwner, color -> {
+		else if (model instanceof LightViewModel) {
+			((LightViewModel) model).getColor().observe(mLifeCycleOwner, color -> {
 				if (color != null) {
+					seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
+				}
+			});
+		}
+		else if (model instanceof GroupViewModel) {
+			((GroupViewModel) model).getColor().observe(mLifeCycleOwner, color -> {
+				if (color != null) {
+					if (seekBar.getVisibility() != View.VISIBLE) {
+						seekBar.setVisibility(View.VISIBLE);
+					}
 					seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
 				}
 			});
@@ -652,8 +665,8 @@ public class DeviceAdapter extends BaseAdapter {
 				if (fromUser) {
 					model.updateBrightness(brightness);
 				}
-				else {
-					model.updateSelectedBrightness(brightness);
+				else if (model instanceof LightViewModel) {
+					((LightViewModel) model).updateSelectedBrightness(brightness);
 				}
 			}
 

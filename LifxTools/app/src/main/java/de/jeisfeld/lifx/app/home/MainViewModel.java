@@ -90,6 +90,15 @@ public abstract class MainViewModel extends ViewModel {
 	public abstract void togglePower();
 
 	/**
+	 * Update the brightness.
+	 *
+	 * @param brightness The new brightness.
+	 */
+	protected void updateBrightness(final double brightness) {
+		// to be overridden in subclasses
+	}
+
+	/**
 	 * Interface for an async task.
 	 */
 	protected interface AsyncExecutable {

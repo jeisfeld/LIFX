@@ -54,6 +54,6 @@
             android:clickable="false"
             android:max="65534"
             android:thumb="@drawable/ic_button_brightness"
-            android:visibility="gone" />
+            android:visibility="invisible" />
     </LinearLayout>
 </LinearLayout>

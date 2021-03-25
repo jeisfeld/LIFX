@@ -123,11 +123,7 @@ public class LightViewModel extends DeviceViewModel {
 		updateColor(newColor, true);
 	}
 
-	/**
-	 * Update the brightness.
-	 *
-	 * @param brightness The new brightness.
-	 */
+	@Override
 	public final void updateBrightness(final double brightness) {
 		updateSelectedBrightness(brightness);
 		if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) != AnimationStatus.CUSTOM) {
