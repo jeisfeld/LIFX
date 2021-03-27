@@ -146,7 +146,8 @@ public class Alarm {
 					mSteps.add(new Step(stepId));
 				}
 				else {
-					mSteps.add(new RingtoneStep(stepId, Uri.parse(uriString)));
+					String ringtoneName = PreferenceUtil.getIndexedSharedPreferenceString(R.string.key_alarm_step_ringtone_name, stepId);
+					mSteps.add(new RingtoneStep(stepId, Uri.parse(uriString), ringtoneName));
 				}
 			}
 		}
@@ -777,12 +778,14 @@ public class Alarm {
 		/**
 		 * Retrieve a ringtone step from storage via id.
 		 *
-		 * @param stepId      The id of the alarm step.
-		 * @param ringtoneUri The ringtone Uri.
+		 * @param stepId       The id of the alarm step.
+		 * @param ringtoneUri  The ringtone Uri.
+		 * @param ringtoneName The ringtone name.
 		 */
-		protected RingtoneStep(final int stepId, final Uri ringtoneUri) {
+		protected RingtoneStep(final int stepId, final Uri ringtoneUri, final String ringtoneName) {
 			super(stepId);
 			mRingtoneUri = ringtoneUri;
+			mRingtoneName = ringtoneName;
 		}
 
 		/**
@@ -815,6 +818,10 @@ public class Alarm {
 			Step step = super.store(alarmId);
 			RingtoneStep newStep = new RingtoneStep(step.getId(), step.getDelay(), getRingtoneUri(), step.getDuration());
 			PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_step_ringtone_uri, step.getId(), newStep.getRingtoneUri().toString());
+			if (mRingtoneName == null) {
+				mRingtoneName = getRingtone(Application.getAppContext()).getTitle(Application.getAppContext());
+			}
+			PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_alarm_step_ringtone_name, step.getId(), mRingtoneName);
 			return newStep;
 		}
 

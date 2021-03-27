@@ -67,6 +67,7 @@
     <string name="key_alarm_step_stored_color_id" translatable="false">alarm_step_stored_color_id</string>
     <string name="key_alarm_step_duration" translatable="false">alarm_step_duration</string>
     <string name="key_alarm_step_ringtone_uri" translatable="false">alarm_step_ringtone_uri</string>
+    <string name="key_alarm_step_ringtone_name" translatable="false">alarm_step_ringtone_name</string>
 
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>
