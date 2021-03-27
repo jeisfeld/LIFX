@@ -77,6 +77,10 @@ public class Color implements Serializable {
 	 * The difference below which colors are considered similar.
 	 */
 	private static final short MIN_DIFFERENCE = 3;
+	/**
+	 * The difference below which color temperatures are considered similar.
+	 */
+	private static final short MIN_COLORTEMP_DIFFERENCE = 399;
 
 	/**
 	 * The hue.
@@ -354,7 +358,7 @@ public class Color implements Serializable {
 	 */
 	public final boolean isSimilarBlackWhite(final Color other) {
 		return Color.areSame(getBrightness(), other.getBrightness(), false)
-				&& Color.areSame(getColorTemperature(), other.getColorTemperature(), false);
+				&& Math.abs(getColorTemperature() - other.getColorTemperature()) <= MIN_COLORTEMP_DIFFERENCE;
 	}
 
 	/**

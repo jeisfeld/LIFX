@@ -170,7 +170,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 */
 	private void addViewModel(final DeviceHolder deviceHolder) {
 		if (deviceHolder.isGroup()) {
-			mViewModels.add(new GroupViewModel(mContext, deviceHolder.getGroup(), deviceHolder.getId()));
+			mViewModels.add(new GroupViewModel(mContext, deviceHolder.getGroup(), deviceHolder.getId(), this));
 		}
 		else {
 			Device device = deviceHolder.getDevice();
@@ -204,7 +204,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param groupId The group id.
 	 * @param color   The color.
 	 */
-	private void refreshGroupColor(final int groupId, final Color color) {
+	protected void refreshGroupColor(final int groupId, final Color color) {
 		for (MainViewModel model : mViewModels) {
 			if (model instanceof LightViewModel) {
 				Light light = ((LightViewModel) model).getLight();
@@ -227,7 +227,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param groupId The group id.
 	 * @param power   The power.
 	 */
-	private void refreshGroupPower(final int groupId, final Power power) {
+	protected void refreshGroupPower(final int groupId, final Power power) {
 		for (MainViewModel model : mViewModels) {
 			if (model instanceof DeviceViewModel) {
 				Device device = ((DeviceViewModel) model).getDevice();
@@ -380,15 +380,7 @@ public class DeviceAdapter extends BaseAdapter {
 			// do not update power button if undefined
 		});
 
-		powerButton.setOnClickListener(v -> {
-			if (model instanceof GroupViewModel) {
-				Power oldPower = model.mPower.getValue();
-				if (oldPower != null && !oldPower.isUndefined()) {
-					refreshGroupPower(((GroupViewModel) model).getGroupId(), oldPower.isOn() ? Power.OFF : Power.ON);
-				}
-			}
-			model.togglePower();
-		});
+		powerButton.setOnClickListener(v -> model.togglePower());
 	}
 
 	/**

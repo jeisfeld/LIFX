@@ -47,6 +47,10 @@ public class GroupViewModel extends MainViewModel {
 	 * A storage to keep track on running setColor tasks.
 	 */
 	protected final Map<Device, List<AsyncExecutable>> mRunningSetColorTasks = new HashMap<>(); // SUPPRESS_CHECKSTYLE
+	/**
+	 * The device adapter referring this model.
+	 */
+	private WeakReference<DeviceAdapter> mAdapter;
 
 	/**
 	 * Constructor.
@@ -54,12 +58,14 @@ public class GroupViewModel extends MainViewModel {
 	 * @param context the context.
 	 * @param group   The group.
 	 * @param groupId The groupId.
+	 * @param adapter The calling device adapter.
 	 */
-	public GroupViewModel(final Context context, final Group group, final int groupId) {
+	public GroupViewModel(final Context context, final Group group, final int groupId, final DeviceAdapter adapter) {
 		super(context);
 		mGroup = group;
 		mGroupId = groupId;
 		mColor = new MutableLiveData<>();
+		mAdapter = new WeakReference<>(adapter);
 	}
 
 	/**
@@ -273,6 +279,11 @@ public class GroupViewModel extends MainViewModel {
 				return;
 			}
 			model.mPower.postValue(power);
+
+			DeviceAdapter adapter = model.mAdapter.get();
+			if (adapter != null) {
+				adapter.refreshGroupPower(model.getGroupId(), power);
+			}
 		}
 	}
 
@@ -310,7 +321,7 @@ public class GroupViewModel extends MainViewModel {
 						if (foundColor == null) {
 							foundColor = color;
 						}
-						else if (foundColor.getBrightness() != color.getBrightness()) {
+						else if (!foundColor.isSimilar(color)) {
 							return null;
 						}
 					}
@@ -394,6 +405,11 @@ public class GroupViewModel extends MainViewModel {
 			}
 			if (isAutoOn()) {
 				model.mPower.postValue(Power.ON);
+				DeviceAdapter adapter = model.mAdapter.get();
+				if (adapter != null) {
+					adapter.refreshGroupPower(model.getGroupId(), Power.ON);
+					adapter.refreshGroupColor(model.getGroupId(), color);
+				}
 			}
 		}
 
