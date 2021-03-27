@@ -25,7 +25,6 @@ import de.jeisfeld.lifx.lan.Group;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
-import de.jeisfeld.lifx.lan.util.TypeUtil;
 
 /**
  * Class holding data for the display view of a group.
@@ -113,27 +112,27 @@ public class GroupViewModel extends MainViewModel {
 		new CheckColorTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
-	/**
-	 * Set the hue, saturation, brightness and/or color temperature.
-	 *
-	 * @param hue              the new hue. May be null to keep unchanged.
-	 * @param saturation       the new saturation. May be null to keep unchanged.
-	 * @param brightness       the new brightness. May be null to keep unchanged.
-	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
-	 */
-	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
-		Color color = mColor.getValue();
-		if (color == null) {
-			return;
-		}
-		Color newColor = new Color(hue == null ? color.getHue() : hue, saturation == null ? color.getSaturation() : saturation,
-				brightness == null ? color.getBrightness() : brightness, colorTemperature == null ? color.getColorTemperature() : colorTemperature);
-		updateColor(newColor);
-	}
-
 	@Override
 	protected final void updateBrightness(final double brightness) {
-		updateColor(null, null, TypeUtil.toShort(brightness), null);
+		synchronized (mRunningSetColorTasks) {
+			for (Device device : DeviceRegistry.getInstance().getDevices(mGroupId, false)) {
+				if (device instanceof Light) {
+					List<AsyncExecutable> tasksForDevice = mRunningSetColorTasks.get(device);
+					if (tasksForDevice == null) {
+						tasksForDevice = new ArrayList<>();
+						mRunningSetColorTasks.put(device, tasksForDevice);
+					}
+					tasksForDevice.add(new SetColorTask(this, brightness, (Light) device));
+
+					if (tasksForDevice.size() > 2) {
+						tasksForDevice.remove(1);
+					}
+					if (tasksForDevice.size() == 1) {
+						tasksForDevice.get(0).execute();
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -356,6 +355,10 @@ public class GroupViewModel extends MainViewModel {
 		 * The light.
 		 */
 		private final Light mLight;
+		/**
+		 * The brightness.
+		 */
+		private final double mBrightness;
 
 		/**
 		 * Constructor.
@@ -368,12 +371,32 @@ public class GroupViewModel extends MainViewModel {
 			mModel = new WeakReference<>(model);
 			mColor = color;
 			mLight = light;
+			mBrightness = 0;
+		}
+
+		/**
+		 * Constructor, passing only brightness.
+		 *
+		 * @param model      The underlying model.
+		 * @param brightness The brightness.
+		 * @param light      The light.
+		 */
+		public SetColorTask(final GroupViewModel model, final double brightness, final Light light) {
+			mModel = new WeakReference<>(model);
+			mColor = null;
+			mLight = light;
+			mBrightness = brightness;
 		}
 
 		@Override
 		protected Color doInBackground(final Color... colors) {
 			try {
-				mLight.setColor(mColor, 0, false);
+				if (mColor == null) {
+					mLight.setBrightness(mBrightness);
+				}
+				else {
+					mLight.setColor(mColor, 0, false);
+				}
 				if (isAutoOn()) {
 					mLight.setPower(true, 0, false);
 				}

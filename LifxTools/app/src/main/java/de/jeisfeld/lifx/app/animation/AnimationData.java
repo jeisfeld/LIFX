@@ -1,10 +1,11 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Intent;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import android.content.Intent;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -67,7 +68,7 @@ public abstract class AnimationData implements Serializable {
 	/**
 	 * Key for a list of colors within the intent.
 	 */
-	protected static final String EXTRA_COLOR_LIST = "de.jeisfeld.lifx.MULTIZONE_COLOR_LIST";
+	protected static final String EXTRA_COLOR_LIST = "de.jeisfeld.lifx.COLOR_LIST";
 
 	/**
 	 * Get the animation type.

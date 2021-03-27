@@ -613,10 +613,6 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param model   The light view model.
 	 */
 	private void prepareBrightnessSeekbar(final SeekBar seekBar, final MainViewModel model) {
-		if (model instanceof LightViewModel) {
-			seekBar.setVisibility(View.VISIBLE);
-		}
-
 		if (model instanceof MultizoneViewModel) {
 			((MultizoneViewModel) model).getRelativeBrightness().observe(mLifeCycleOwner, relativeBrightness -> {
 				if (relativeBrightness != null) {
@@ -641,9 +637,6 @@ public class DeviceAdapter extends BaseAdapter {
 		else if (model instanceof GroupViewModel) {
 			model.getColor().observe(mLifeCycleOwner, color -> {
 				if (color != null) {
-					if (seekBar.getVisibility() != View.VISIBLE) {
-						seekBar.setVisibility(View.VISIBLE);
-					}
 					seekBar.setProgress(TypeUtil.toUnsignedInt(color.getBrightness()));
 				}
 			});

@@ -88,7 +88,6 @@
             android:layout_marginTop="@dimen/list_vertical_margin"
             android:clickable="false"
             android:max="65534"
-            android:thumb="@drawable/ic_button_brightness"
-            android:visibility="invisible" />
+            android:thumb="@drawable/ic_button_brightness" />
     </LinearLayout>
 </LinearLayout>
