@@ -226,7 +226,10 @@ public abstract class MultizoneColors implements Serializable {
 	public int getMaxBrightness(final int zoneCount) {
 		int maxBrightness = 0;
 		for (int i = 0; i < zoneCount; i++) {
-			maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(getColor(i, zoneCount).getBrightness()));
+			Color zoneColor = getColor(i, zoneCount);
+			if (zoneColor != null) {
+				maxBrightness = Math.max(maxBrightness, TypeUtil.toUnsignedInt(zoneColor.getBrightness()));
+			}
 		}
 		return maxBrightness;
 	}

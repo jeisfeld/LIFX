@@ -18,7 +18,6 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
-import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Group;
@@ -135,11 +134,6 @@ public class GroupViewModel extends MainViewModel {
 		}
 	}
 
-	@Override
-	protected final void updateStoredColor(final StoredColor storedColor) {
-		updateColor(storedColor.getColor());
-	}
-
 	/**
 	 * Set the color.
 	 *
@@ -201,7 +195,7 @@ public class GroupViewModel extends MainViewModel {
 					}
 					else if (devicePower.isOff()) {
 						result = Power.OFF;
-						model.mPower.postValue(Power.OFF);
+						model.updatePowerButton(Power.OFF);
 					}
 				}
 			}
@@ -214,7 +208,7 @@ public class GroupViewModel extends MainViewModel {
 			if (model == null) {
 				return;
 			}
-			model.mPower.postValue(power);
+			model.updatePowerButton(power);
 		}
 	}
 
@@ -277,7 +271,7 @@ public class GroupViewModel extends MainViewModel {
 			if (model == null) {
 				return;
 			}
-			model.mPower.postValue(power);
+			model.updatePowerButton(power);
 
 			DeviceAdapter adapter = model.mAdapter.get();
 			if (adapter != null) {
@@ -427,7 +421,7 @@ public class GroupViewModel extends MainViewModel {
 				model.mColor.postValue(color);
 			}
 			if (isAutoOn()) {
-				model.mPower.postValue(Power.ON);
+				model.updatePowerButton(Power.ON);
 				DeviceAdapter adapter = model.mAdapter.get();
 				if (adapter != null) {
 					adapter.refreshGroupPower(model.getGroupId(), Power.ON);

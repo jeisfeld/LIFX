@@ -8,7 +8,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import de.jeisfeld.lifx.app.R;
-import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
@@ -49,15 +48,6 @@ public abstract class MainViewModel extends ViewModel {
 	 */
 	protected WeakReference<Context> getContext() {
 		return mContext;
-	}
-
-	/**
-	 * Get the last checked power of the device.
-	 *
-	 * @return The power.
-	 */
-	protected LiveData<Power> getPower() {
-		return mPower;
 	}
 
 	/**
@@ -103,6 +93,15 @@ public abstract class MainViewModel extends ViewModel {
 	public abstract void togglePower();
 
 	/**
+	 * Update the power button.
+	 *
+	 * @param power The power value.
+	 */
+	public void updatePowerButton(final Power power) {
+		mPower.postValue(power);
+	}
+
+	/**
 	 * Update the brightness.
 	 *
 	 * @param brightness The new brightness.
@@ -118,15 +117,6 @@ public abstract class MainViewModel extends ViewModel {
 	 */
 	public LiveData<Color> getColor() {
 		return null; // to be overridden in subclasses
-	}
-
-	/**
-	 * Update from a stored color.
-	 *
-	 * @param storedColor The stored color.
-	 */
-	protected void updateStoredColor(final StoredColor storedColor) {
-		// to be overridden in subclasses
 	}
 
 	/**

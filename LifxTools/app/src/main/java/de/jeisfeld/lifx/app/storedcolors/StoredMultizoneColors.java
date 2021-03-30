@@ -1,9 +1,11 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
+import java.io.IOException;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.home.MainViewModel;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -163,6 +165,14 @@ public class StoredMultizoneColors extends StoredColor {
 	@Override
 	public final String toString() {
 		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColors());
+	}
+
+	@Override
+	protected final void setColor(final int colorDuration, final MainViewModel model) throws IOException {
+		getLight().setColors(getColors(), colorDuration, false);
+		if (model instanceof MultizoneViewModel) {
+			((MultizoneViewModel) model).updateStoredColors(getColors(), 1);
+		}
 	}
 
 	/**

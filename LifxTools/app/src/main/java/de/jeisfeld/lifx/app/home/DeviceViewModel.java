@@ -103,7 +103,7 @@ public class DeviceViewModel extends MainViewModel {
 	 */
 	protected void updatePowerFromGroup(final Power power) {
 		if (mPower.getValue() != null && !mPower.getValue().isUndefined()) {
-			mPower.postValue(power);
+			updatePowerButton(power);
 		}
 	}
 
@@ -141,7 +141,7 @@ public class DeviceViewModel extends MainViewModel {
 			if (model == null) {
 				return;
 			}
-			model.mPower.postValue(power);
+			model.updatePowerButton(power);
 		}
 	}
 
@@ -284,7 +284,7 @@ public class DeviceViewModel extends MainViewModel {
 			if (model == null) {
 				return;
 			}
-			model.mPower.postValue(power);
+			model.updatePowerButton(power);
 
 			if (model instanceof MultizoneViewModel && ((MultizoneViewModel) model).getColors().getValue() == null) {
 				((MultizoneViewModel) model).checkColor();

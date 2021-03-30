@@ -16,13 +16,12 @@ import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.animation.TileChainFlame;
 import de.jeisfeld.lifx.app.animation.TileChainMorph;
-import de.jeisfeld.lifx.app.storedcolors.StoredColor;
-import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
+import de.jeisfeld.lifx.lan.type.TileChainColors.Fixed;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 
 /**
@@ -96,9 +95,8 @@ public class TileViewModel extends LightViewModel {
 	}
 
 	@Override
-	protected final void updateColorFromGroup(final Color color) {
+	public final void updateStoredColor(final Color color) {
 		updateStoredColors(new TileChainColors.Fixed(color), 1);
-		super.updateColorFromGroup(color);
 	}
 
 	@Override
@@ -152,7 +150,6 @@ public class TileViewModel extends LightViewModel {
 
 	@Override
 	public final void checkColor() {
-		super.checkColor();
 		new CheckTileChainColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
@@ -169,7 +166,7 @@ public class TileViewModel extends LightViewModel {
 	 * @param colors           The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
-	private void updateStoredColors(final TileChainColors colors, final double brightnessFactor) {
+	public void updateStoredColors(final TileChainColors colors, final double brightnessFactor) {
 		int maxBrightness = colors.getMaxBrightness(getLight());
 		if (maxBrightness == 0) {
 			mRelativeBrightness.postValue(0.0);
@@ -180,15 +177,8 @@ public class TileViewModel extends LightViewModel {
 			mRelativeBrightness.postValue(Math.min(1, brightnessFactor * relativeBrightness));
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
-	}
-
-	@Override
-	protected final void updateStoredColor(final StoredColor storedColor) {
-		if (storedColor instanceof StoredTileColors) {
-			updateColors(((StoredTileColors) storedColor).getColors(), 1, false, true);
-		}
-		else {
-			super.updateStoredColor(storedColor);
+		if (colors instanceof TileChainColors.Fixed) {
+			super.updateStoredColor(((Fixed) colors).getColor());
 		}
 	}
 
@@ -353,7 +343,7 @@ public class TileViewModel extends LightViewModel {
 				}
 			}
 			if (isAutoOn()) {
-				model.mPower.postValue(Power.ON);
+				model.updatePowerButton(Power.ON);
 			}
 		}
 

@@ -1,15 +1,27 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
+import android.content.Context;
+import android.os.AsyncTask;
+import android.util.Log;
+
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.home.GroupViewModel;
+import de.jeisfeld.lifx.app.home.LightViewModel;
+import de.jeisfeld.lifx.app.home.MainViewModel;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Group;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.Power;
 
 /**
  * Class holding information about a stored color.
@@ -195,10 +207,113 @@ public class StoredColor {
 		return mId;
 	}
 
+	/**
+	 * Set the stored color.
+	 *
+	 * @param colorDuration The duration of color change.
+	 * @param model         The model from which the change is triggered.
+	 */
+	// OVERRIDABLE
+	protected void setColor(final int colorDuration, final MainViewModel model) throws IOException {
+		getLight().setColor(getColor(), colorDuration, false);
+		if (model instanceof LightViewModel) {
+			((LightViewModel) model).updateStoredColor(getColor());
+		}
+	}
+
+	/**
+	 * Apply the stored color. This includes ending the animation and setting power on (if applicable).
+	 *
+	 * @param model The calling model.
+	 */
+	private void doApply(final MainViewModel model) {
+		if (getLight() != null) {
+			try {
+				int colorDuration = PreferenceUtil.getSharedPreferenceIntString(
+						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
+				getLight().endAnimation(false);
+				setColor(colorDuration, model);
+				if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_auto_on, true)) {
+					getLight().setPower(true);
+					if (model != null) {
+						model.updatePowerButton(Power.ON);
+					}
+				}
+			}
+			catch (IOException e) {
+				Log.w(Application.TAG, e);
+				Light light = getLight();
+				DialogUtil.displayToast(Application.getAppContext(), R.string.toast_connection_failed, light == null ? "?" : light.getLabel());
+			}
+		}
+		else if (getGroup() != null) {
+			for (Device device : DeviceRegistry.getInstance().getDevices(getDeviceId(), false)) {
+				GroupViewModel groupModel = model instanceof GroupViewModel ? (GroupViewModel) model : null;
+				if (device instanceof Light) {
+					new GroupViewModel.SetColorTask(groupModel, getColor(), (Light) device).execute();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Apply the stored color.
+	 *
+	 * @param context The context.
+	 * @param model   the calling model.
+	 */
+	public void apply(final Context context, final MainViewModel model) {
+		new ApplyStoredColorTask(context, model).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this);
+	}
+
 	// OVERRIDABLE
 	@NonNull
 	@Override
 	public String toString() {
 		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColor());
+	}
+
+
+	/**
+	 * An async task for setting the color.
+	 */
+	protected static final class ApplyStoredColorTask extends AsyncTask<StoredColor, String, StoredColor> {
+		/**
+		 * The context.
+		 */
+		private final WeakReference<Context> mContext;
+		/**
+		 * The calling model.
+		 */
+		private final MainViewModel mModel;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param context The context.
+		 * @param model   the calling model.
+		 */
+		protected ApplyStoredColorTask(final Context context, final MainViewModel model) {
+			super();
+			mContext = new WeakReference<>(context);
+			mModel = model;
+		}
+
+		@Override
+		protected StoredColor doInBackground(final StoredColor... storedColors) {
+			StoredColor storedColor = storedColors[0];
+			storedColor.doApply(mModel);
+			return storedColor;
+		}
+	}
+
+	/**
+	 * Callback interface for applying a stored color.
+	 */
+	public interface ApplyStoredColorCallback {
+		/**
+		 * Action to be applied after successful application of stored color.
+		 */
+		void onStoredColorApplied();
 	}
 }

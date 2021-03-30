@@ -19,7 +19,6 @@ import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
-import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -155,7 +154,7 @@ public class LightViewModel extends DeviceViewModel {
 	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
 	public void updateColor(final Color color, final boolean isImmediate) {
-		mColor.postValue(color);
+		updateStoredColor(color);
 		stopAnimationOrAlarm();
 		synchronized (mRunningSetColorTasks) {
 			mRunningSetColorTasks.add(new SetColorTask(this, color, isImmediate));
@@ -169,18 +168,12 @@ public class LightViewModel extends DeviceViewModel {
 	}
 
 	/**
-	 * Update the color in the model after setting color from group.
+	 * Update the color in the model.
 	 *
 	 * @param color The color.
 	 */
-	protected void updateColorFromGroup(final Color color) {
+	public void updateStoredColor(final Color color) {
 		mColor.postValue(color);
-	}
-
-	// OVERRIDABLE
-	@Override
-	protected void updateStoredColor(final StoredColor storedColor) {
-		updateColor(storedColor.getColor(), false);
 	}
 
 	/**
@@ -255,7 +248,7 @@ public class LightViewModel extends DeviceViewModel {
 			if (model == null) {
 				return;
 			}
-			model.mColor.postValue(color);
+			model.updateStoredColor(color);
 		}
 	}
 
@@ -328,9 +321,9 @@ public class LightViewModel extends DeviceViewModel {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
 			}
-			model.mColor.postValue(color);
+			model.updateStoredColor(color);
 			if (isAutoOn()) {
-				model.mPower.postValue(Power.ON);
+				model.updatePowerButton(Power.ON);
 			}
 		}
 

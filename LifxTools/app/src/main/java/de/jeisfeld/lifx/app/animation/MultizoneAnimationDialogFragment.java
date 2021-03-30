@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.app.animation;
 
-import javax.annotation.Nonnull;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -9,6 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -40,6 +41,9 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 		fragment.setModel(model);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
+
+		// Update the stored color of the model, as this is the baseline for the animation.
+		model.checkColor();
 	}
 
 	/**

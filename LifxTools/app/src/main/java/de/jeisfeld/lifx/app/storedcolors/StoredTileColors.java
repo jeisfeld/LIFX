@@ -1,10 +1,13 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.home.MainViewModel;
+import de.jeisfeld.lifx.app.home.TileViewModel;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -157,13 +160,21 @@ public class StoredTileColors extends StoredColor {
 	 */
 	@Override
 	public TileChain getLight() {
-		return (TileChain) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
+		return (TileChain) super.getLight();
 	}
 
 	@NonNull
 	@Override
 	public final String toString() {
 		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColors());
+	}
+
+	@Override
+	protected final void setColor(final int colorDuration, final MainViewModel model) throws IOException {
+		getLight().setColors(getColors(), colorDuration, false);
+		if (model instanceof TileViewModel) {
+			((TileViewModel) model).updateStoredColors(getColors(), 1);
+		}
 	}
 
 	/**

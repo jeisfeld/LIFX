@@ -211,7 +211,7 @@ public class DeviceAdapter extends BaseAdapter {
 				if (light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) != null
 						&& (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
 					try {
-						((LightViewModel) model).updateColorFromGroup(color);
+						((LightViewModel) model).updateStoredColor(color);
 					}
 					catch (Exception e) {
 						// ignore NullPointerException in case of call before instantiation
@@ -367,7 +367,7 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param model       The device view model.
 	 */
 	private void preparePowerButton(final Button powerButton, final MainViewModel model) {
-		model.getPower().observe(mLifeCycleOwner, power -> {
+		model.mPower.observe(mLifeCycleOwner, power -> {
 			if (power == null) {
 				powerButton.setBackground(ContextCompat.getDrawable(mContext, R.drawable.powerbutton_offline));
 			}
@@ -678,7 +678,7 @@ public class DeviceAdapter extends BaseAdapter {
 		if (model instanceof MultizoneViewModel) {
 			animationButton.setOnClickListener(view -> {
 				if (animationButton.isChecked()) {
-					if (model.getPower().getValue() == null || !model.getPower().getValue().isOn()) {
+					if (model.mPower.getValue() == null || !model.mPower.getValue().isOn()) {
 						animationButton.setChecked(false);
 						return;
 					}
@@ -706,7 +706,7 @@ public class DeviceAdapter extends BaseAdapter {
 		else if (model instanceof TileViewModel) {
 			animationButton.setOnClickListener(view -> {
 				if (animationButton.isChecked()) {
-					if (model.getPower().getValue() == null || !model.getPower().getValue().isOn()) {
+					if (model.mPower.getValue() == null || !model.mPower.getValue().isOn()) {
 						animationButton.setChecked(false);
 						return;
 					}
@@ -821,8 +821,8 @@ public class DeviceAdapter extends BaseAdapter {
 				}
 
 				@Override
-				public void onStoredColorClick(final StoredColor storedColor) {
-					model.updateStoredColor(storedColor);
+				public void onStoredColorClick(final DialogFragment dialog, final StoredColor storedColor) {
+					storedColor.apply(mContext, model);
 					mIsColorChanged = true;
 				}
 			});

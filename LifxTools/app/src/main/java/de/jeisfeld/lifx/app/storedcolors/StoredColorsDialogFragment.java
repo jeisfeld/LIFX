@@ -131,7 +131,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 					imageView.setOnClickListener(v -> {
 						StoredColorsDialogListener listener = mListener == null ? null : mListener.getValue();
 						if (listener != null) {
-							listener.onStoredColorClick(storedColor);
+							listener.onStoredColorClick(StoredColorsDialogFragment.this, storedColor);
 							if (onlySelect) {
 								dismiss();
 							}
@@ -208,8 +208,9 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		/**
 		 * Callback method for click on a stored color.
 		 *
+		 * @param dialog      the confirmation dialog fragment.
 		 * @param storedColor The stored color.
 		 */
-		void onStoredColorClick(StoredColor storedColor);
+		void onStoredColorClick(DialogFragment dialog, StoredColor storedColor);
 	}
 }

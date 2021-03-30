@@ -16,14 +16,13 @@ import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.animation.MultizoneMove;
-import de.jeisfeld.lifx.app.storedcolors.StoredColor;
-import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition.Direction;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.MultizoneColors.Fixed;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
 import de.jeisfeld.lifx.lan.type.MultizoneEffectType;
 import de.jeisfeld.lifx.lan.type.Power;
@@ -57,7 +56,7 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Constructor.
 	 *
-	 * @param context the context.
+	 * @param context        the context.
 	 * @param multiZoneLight The multiZone light.
 	 */
 	public MultizoneViewModel(final Context context, final MultiZoneLight multiZoneLight) {
@@ -112,9 +111,8 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
-	protected final void updateColorFromGroup(final Color color) {
+	public final void updateStoredColor(final Color color) {
 		updateStoredColors(new MultizoneColors.Fixed(color), 1);
-		super.updateColorFromGroup(color);
 	}
 
 	@Override
@@ -126,10 +124,10 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Set the colors.
 	 *
-	 * @param colors the colors to be set.
+	 * @param colors           the colors to be set.
 	 * @param brightnessFactor the brightness factor.
-	 * @param isImmediate Flag indicating if the change should be immediate.
-	 * @param stopAnimation Flag indicating if animation should be stopped.
+	 * @param isImmediate      Flag indicating if the change should be immediate.
+	 * @param stopAnimation    Flag indicating if animation should be stopped.
 	 */
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
 		updateStoredColors(colors, brightnessFactor);
@@ -157,7 +155,6 @@ public class MultizoneViewModel extends LightViewModel {
 
 	@Override
 	public final void checkColor() {
-		super.checkColor();
 		new CheckMultizoneColorsTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
 
@@ -209,10 +206,10 @@ public class MultizoneViewModel extends LightViewModel {
 	/**
 	 * Update the stored colors and brightness with the given colors.
 	 *
-	 * @param colors The given colors.
+	 * @param colors           The given colors.
 	 * @param brightnessFactor the brightness factor.
 	 */
-	private void updateStoredColors(final MultizoneColors colors, final double brightnessFactor) {
+	public void updateStoredColors(final MultizoneColors colors, final double brightnessFactor) {
 		int maxBrightness = colors.getMaxBrightness(getLight().getZoneCount());
 		if (maxBrightness == 0) {
 			mRelativeBrightness.postValue(0.0);
@@ -223,15 +220,8 @@ public class MultizoneViewModel extends LightViewModel {
 			mRelativeBrightness.postValue(Math.min(1, brightnessFactor * relativeBrightness));
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
-	}
-
-	@Override
-	protected final void updateStoredColor(final StoredColor storedColor) {
-		if (storedColor instanceof StoredMultizoneColors) {
-			updateColors(((StoredMultizoneColors) storedColor).getColors(), 1, false, true);
-		}
-		else {
-			super.updateStoredColor(storedColor);
+		if (colors instanceof MultizoneColors.Fixed) {
+			super.updateStoredColor(((Fixed) colors).getColor());
 		}
 	}
 
@@ -306,8 +296,8 @@ public class MultizoneViewModel extends LightViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
-		 * @param colors The colors.
+		 * @param model       The underlying model.
+		 * @param colors      The colors.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		@SuppressWarnings("deprecation")
@@ -356,7 +346,7 @@ public class MultizoneViewModel extends LightViewModel {
 				}
 			}
 			if (isAutoOn()) {
-				model.mPower.postValue(Power.ON);
+				model.updatePowerButton(Power.ON);
 			}
 		}
 
@@ -398,7 +388,7 @@ public class MultizoneViewModel extends LightViewModel {
 		 * Constructor.
 		 *
 		 * @param multizoneColors The base multizone colors without flag.
-		 * @param flags The flags.
+		 * @param flags           The flags.
 		 */
 		public FlaggedMultizoneColors(final MultizoneColors multizoneColors, final boolean[] flags) {
 			this(multizoneColors);

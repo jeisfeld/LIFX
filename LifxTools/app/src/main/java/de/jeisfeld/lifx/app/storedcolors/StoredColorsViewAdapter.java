@@ -9,8 +9,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
-import android.os.AsyncTask;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.List;
@@ -32,16 +29,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
-import de.jeisfeld.lifx.app.home.GroupViewModel;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
-import de.jeisfeld.lifx.lan.Device;
-import de.jeisfeld.lifx.lan.Light;
-import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
@@ -111,31 +104,32 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 			FragmentActivity activity = mFragment.get() == null ? null : mFragment.get().getActivity();
 			if (activity != null) {
 				DialogUtil.displayInputDialog(activity, new RequestInputDialogListener() {
-					@Override
-					public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
-						if (text == null || text.trim().isEmpty()) {
-							DialogUtil.displayConfirmationMessage(activity,
-									R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
-						}
-						else {
-							StoredColor newColor;
-							if (storedColor instanceof StoredMultizoneColors) {
-								newColor = new StoredMultizoneColors(storedColor.getId(), ((StoredMultizoneColors) storedColor).getColors(),
-										storedColor.getDeviceId(), text.trim());
-							}
-							else if (storedColor instanceof StoredTileColors) {
-								newColor = new StoredTileColors(storedColor.getId(), ((StoredTileColors) storedColor).getColors(),
-										storedColor.getDeviceId(), text.trim());
-							}
-							else {
-								newColor = new StoredColor(storedColor.getId(), storedColor.getColor(), storedColor.getDeviceId(), text.trim());
-							}
+							@Override
+							public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
+								if (text == null || text.trim().isEmpty()) {
+									DialogUtil.displayConfirmationMessage(activity,
+											R.string.title_did_not_save_empty_name, R.string.message_did_not_save_empty_name);
+								}
+								else {
+									StoredColor newColor;
+									if (storedColor instanceof StoredMultizoneColors) {
+										newColor = new StoredMultizoneColors(storedColor.getId(), ((StoredMultizoneColors) storedColor).getColors(),
+												storedColor.getDeviceId(), text.trim());
+									}
+									else if (storedColor instanceof StoredTileColors) {
+										newColor = new StoredTileColors(storedColor.getId(), ((StoredTileColors) storedColor).getColors(),
+												storedColor.getDeviceId(), text.trim());
+									}
+									else {
+										newColor = new StoredColor(storedColor.getId(), storedColor.getColor(),
+												storedColor.getDeviceId(), text.trim());
+									}
 
-							ColorRegistry.getInstance().addOrUpdate(newColor);
-							mStoredColors.set(position, newColor);
-							holder.mTitle.setText(text.trim());
-						}
-					}
+									ColorRegistry.getInstance().addOrUpdate(newColor);
+									mStoredColors.set(position, newColor);
+									holder.mTitle.setText(text.trim());
+								}
+							}
 
 							@Override
 							public void onDialogNegativeClick(final DialogFragment dialog) {
@@ -185,7 +179,7 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		holder.mApplyColorButton.setOnClickListener(v -> {
 			Fragment fragment = mFragment.get();
 			if (fragment != null) {
-				new SetColorTask(mFragment.get().getContext()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, storedColor);
+				storedColor.apply(mFragment.get().getContext(), null);
 			}
 		});
 
@@ -353,68 +347,6 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		 * @param viewHolder The view Holder.
 		 */
 		void requestDrag(RecyclerView.ViewHolder viewHolder);
-	}
-
-	/**
-	 * An async task for setting the color.
-	 */
-	protected static final class SetColorTask extends AsyncTask<StoredColor, String, StoredColor> {
-		/**
-		 * The context.
-		 */
-		private final WeakReference<Context> mContext;
-
-		/**
-		 * Constructor.
-		 *
-		 * @param context The context.
-		 */
-		protected SetColorTask(final Context context) {
-			super();
-			mContext = new WeakReference<>(context);
-		}
-
-		@Override
-		protected StoredColor doInBackground(final StoredColor... storedColors) {
-			StoredColor storedColor = storedColors[0];
-			if (storedColor.getLight() != null) {
-				try {
-					int powerDuration = PreferenceUtil.getSharedPreferenceIntString(
-							R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-					if (storedColor instanceof StoredMultizoneColors) {
-						((MultiZoneLight) storedColor.getLight()).setColors(((StoredMultizoneColors) storedColor).getColors(), powerDuration, false);
-					}
-					else if (storedColor instanceof StoredTileColors) {
-						((TileChain) storedColor.getLight()).setColors(((StoredTileColors) storedColor).getColors(), powerDuration, false);
-					}
-					else {
-						storedColor.getLight().setColor(storedColor.getColor(), powerDuration, false);
-					}
-					storedColor.getLight().setPower(true);
-					return storedColor;
-				}
-				catch (IOException e) {
-					Log.w(Application.TAG, e);
-					Light light = storedColor.getLight();
-					Context context = mContext.get();
-					if (context != null) {
-						DialogUtil.displayToast(context, R.string.toast_connection_failed, light == null ? "?" : light.getLabel());
-					}
-					return null;
-				}
-			}
-			else if (storedColor.getGroup() != null) {
-				for (Device device : DeviceRegistry.getInstance().getDevices(storedColor.getDeviceId(), false)) {
-					if (device instanceof Light) {
-						new GroupViewModel.SetColorTask(null, storedColor.getColor(), (Light) device).execute();
-					}
-				}
-				return storedColor;
-			}
-			else {
-				return null;
-			}
-		}
 	}
 
 	/**

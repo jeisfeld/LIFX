@@ -210,7 +210,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 				else {
 					StoredColorsDialogFragment.displayStoredColorsDialog(
 							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), true, true,
-							storedColor -> {
+							(dialog, storedColor) -> {
 								mAlarm.getSteps().add(new Step((int) newStartTime, storedColor.getId(), AlarmConfigurationFragment.DEFAULT_DURATION));
 								mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 								notifyDataSetChanged();
@@ -274,7 +274,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			else {
 				StoredColorsDialogFragment.displayStoredColorsDialog(
 						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), true, true,
-						storedColor -> {
+						(dialog, storedColor) -> {
 							Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
 							mAlarm.getSteps().remove(step);
 							mAlarm.getSteps().add(newStep);
