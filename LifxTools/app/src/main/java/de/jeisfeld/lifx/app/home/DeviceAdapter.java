@@ -31,6 +31,7 @@ import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.MultizoneAnimationDialogListener;
 import de.jeisfeld.lifx.app.animation.TileChainAnimationDialogFragment;
@@ -41,8 +42,10 @@ import de.jeisfeld.lifx.app.managedevices.DeviceHolder;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry.DeviceUpdateCallback;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredAnimation;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorType;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
@@ -749,30 +752,40 @@ public class DeviceAdapter extends BaseAdapter {
 		saveButton.setOnClickListener(v -> {
 			final Color color = model.getColor().getValue();
 			final MultizoneColors multizoneColors;
-			final TileChainColors tileChainColors;
 			if (model instanceof MultizoneViewModel) {
 				multizoneColors = ((MultizoneViewModel) model).getColorsWithBrightness();
 			}
 			else {
 				multizoneColors = null;
 			}
+			final TileChainColors tileChainColors;
 			if (model instanceof TileViewModel) {
 				tileChainColors = ((TileViewModel) model).getColorsWithBrightness();
 			}
 			else {
 				tileChainColors = null;
 			}
+			final boolean isAnimationRunning;
+			if (model instanceof LightViewModel) {
+				isAnimationRunning = ((LightViewModel) model).getAnimationStatus().getValue();
+			}
+			else {
+				isAnimationRunning = false;
+			}
 
 			final int deviceId;
+			final String mac;
 			if (model instanceof LightViewModel) {
 				final Light light = ((LightViewModel) model).getLight();
 				if (light == null || light.getParameter(DeviceRegistry.DEVICE_ID) == null) {
 					return;
 				}
 				deviceId = (int) light.getParameter(DeviceRegistry.DEVICE_ID);
+				mac = light.getTargetAddress();
 			}
 			else if (model instanceof GroupViewModel) {
 				deviceId = ((GroupViewModel) model).getGroupId();
+				mac = null;
 			}
 			else {
 				return;
@@ -787,9 +800,18 @@ public class DeviceAdapter extends BaseAdapter {
 				return;
 			}
 
-			final boolean onlySelect = color == null && multizoneColors == null && tileChainColors == null;
+			final StoreColorType storeColorType;
+			if (isAnimationRunning) {
+				storeColorType = StoreColorType.ANIMATION;
+			}
+			else if (color == null && multizoneColors == null && tileChainColors == null) {
+				storeColorType = StoreColorType.ONLYSELECT;
+			}
+			else {
+				storeColorType = StoreColorType.COLOR;
+			}
 
-			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, onlySelect, false, new StoredColorsDialogListener() {
+			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, storeColorType, false, new StoredColorsDialogListener() {
 				/**
 				 * Flag indicating if color was changed during this dialog.
 				 */
@@ -800,7 +822,12 @@ public class DeviceAdapter extends BaseAdapter {
 					if (text != null && !text.trim().isEmpty()) {
 						String name = text.trim();
 						StoredColor storedColor;
-						if (multizoneColors != null) {
+						if (isAnimationRunning) {
+							AnimationData animationData = LifxAnimationService.getAnimationData(mac);
+							double relativeBrightness = AnimationData.getSelectedBrightness(((LightViewModel) model).getLight());
+							storedColor = new StoredAnimation(animationData, relativeBrightness, deviceId, name);
+						}
+						else if (multizoneColors != null) {
 							storedColor = new StoredMultizoneColors(multizoneColors, deviceId, name);
 						}
 						else if (tileChainColors != null) {

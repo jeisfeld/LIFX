@@ -1,8 +1,15 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+
 import java.io.IOException;
 
-import android.content.Intent;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -88,6 +95,15 @@ public class MultizoneMove extends AnimationData {
 	}
 
 	@Override
+	public final void store(final int colorId) {
+		super.store(colorId);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, mDuration);
+		PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_animation_stretch, colorId, mStretch);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_direction, colorId, mDirection.ordinal());
+		StoredMultizoneColors.storeMultizoneColors(colorId, mColors);
+	}
+
+	@Override
 	protected final AnimationType getType() {
 		return AnimationType.MULTIZONE_MOVE;
 	}
@@ -100,6 +116,12 @@ public class MultizoneMove extends AnimationData {
 				return AnimationData.getSelectedBrightness(light);
 			}
 		};
+	}
+
+	@Override
+	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
+		return StoredMultizoneColors.getButtonDrawable(context, mColors.withRelativeBrightness(relativeBrightness),
+				(int) light.getParameter(DeviceRegistry.DEVICE_ID));
 	}
 
 	@Override

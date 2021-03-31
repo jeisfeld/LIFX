@@ -1,8 +1,14 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+
 import java.util.ArrayList;
 
-import android.content.Intent;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -92,17 +98,34 @@ public class TileChainWave extends AnimationData {
 	}
 
 	@Override
+	public final void store(final int colorId) {
+		super.store(colorId);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, mDuration);
+		PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_animation_radius, colorId, mRadius);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_direction, colorId, mDirection.ordinal());
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_form, colorId, mForm.ordinal());
+		PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId, mColors);
+	}
+
+	@Override
 	protected final AnimationType getType() {
 		return AnimationType.TILECHAIN_WAVE;
 	}
 
 	@Override
-	protected final AnimationDefinition getAnimationDefinition(final Light light) {
+	public final AnimationDefinition getAnimationDefinition(final Light light) {
 		return new TileChainWaveDefinition((TileChain) light, mDuration, mRadius, mDirection, mForm, mColors) {
 			@Override
 			protected double getSelectedBrightness() {
 				return AnimationData.getSelectedBrightness(light);
 			}
 		};
+	}
+
+	@Override
+	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
+		TileChainWaveDefinition animationDefinition = (TileChainWaveDefinition) getAnimationDefinition(light);
+		return StoredTileColors.getTileChainDrawable((TileChain) light,
+				animationDefinition.getColors(0).withMinBrightness((short) -1).withRelativeBrightness(relativeBrightness));
 	}
 }

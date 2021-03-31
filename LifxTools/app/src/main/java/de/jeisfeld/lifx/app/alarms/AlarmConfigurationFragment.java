@@ -42,6 +42,7 @@ import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorType;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.lan.Light;
@@ -141,7 +142,7 @@ public class AlarmConfigurationFragment extends Fragment {
 						}
 						else {
 							StoredColorsDialogFragment.displayStoredColorsDialog(
-									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true, true,
+									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
 									(dialog, storedColor) -> {
 										mAlarm.getSteps().add(new Step(0, storedColor.getId(), DEFAULT_DURATION));
 										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);

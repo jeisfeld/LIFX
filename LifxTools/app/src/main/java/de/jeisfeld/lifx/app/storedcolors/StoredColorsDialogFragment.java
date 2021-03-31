@@ -31,9 +31,9 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 */
 	private static final String PARAM_DEVICE_ID = "deviceId";
 	/**
-	 * Parameter to pass information if only selection is supported.
+	 * Parameter to pass information if it is only select or storage of color or storage of animation.
 	 */
-	private static final String PARAM_ONLY_SELECT = "onlySelect";
+	private static final String PARAM_STORE_COLOR_TYPE = "storeColorType";
 	/**
 	 * Parameter to pass information if only selection is supported.
 	 */
@@ -46,22 +46,22 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	/**
 	 * Display a dialog for storing a color or displaying a stored color.
 	 *
-	 * @param activity   the current activity
-	 * @param deviceId   the device id.
-	 * @param onlySelect the flag indicating if only select is possible.
-	 * @param includeOff the flag indicating if option "OFF" should be displayed.
-	 * @param listener   The listener waiting for the response
+	 * @param activity       the current activity
+	 * @param deviceId       the device id.
+	 * @param storeColorType the flag indicating if it is only select or storage of color or storage of animation.
+	 * @param includeOff     the flag indicating if option "OFF" should be displayed.
+	 * @param listener       The listener waiting for the response
 	 */
 	public static void displayStoredColorsDialog(final FragmentActivity activity,
 												 final int deviceId,
-												 final boolean onlySelect,
+												 final StoreColorType storeColorType,
 												 final boolean includeOff,
 												 final StoredColorsDialogListener listener) {
 		Bundle bundle = new Bundle();
 		StoredColorsDialogFragment fragment = new StoredColorsDialogFragment();
 		fragment.setListener(listener);
 		bundle.putInt(PARAM_DEVICE_ID, deviceId);
-		bundle.putBoolean(PARAM_ONLY_SELECT, onlySelect);
+		bundle.putSerializable(PARAM_STORE_COLOR_TYPE, storeColorType);
 		bundle.putBoolean(PARAM_INCLUDE_OFF, includeOff);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
@@ -86,7 +86,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
 		assert getArguments() != null;
 		final int deviceId = getArguments().getInt(PARAM_DEVICE_ID);
-		final boolean onlySelect = getArguments().getBoolean(PARAM_ONLY_SELECT);
+		final StoreColorType storeColorType = (StoreColorType) getArguments().getSerializable(PARAM_STORE_COLOR_TYPE);
 		final boolean includeOff = getArguments().getBoolean(PARAM_INCLUDE_OFF);
 
 		// Listeners cannot retain functionality when automatically recreated.
@@ -100,9 +100,13 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		}
 
 		final View view = View.inflate(requireActivity(), R.layout.dialog_stored_colors, null);
-		view.findViewById(R.id.dialog_title_save).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
-		view.findViewById(R.id.messageTextSaveName).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
-		view.findViewById(R.id.editTextSaveName).setVisibility(onlySelect ? View.GONE : View.VISIBLE);
+		view.findViewById(R.id.dialog_title_save).setVisibility(storeColorType == StoreColorType.ONLYSELECT ? View.GONE : View.VISIBLE);
+		view.findViewById(R.id.messageTextSaveName).setVisibility(storeColorType == StoreColorType.ONLYSELECT ? View.GONE : View.VISIBLE);
+		view.findViewById(R.id.editTextSaveName).setVisibility(storeColorType == StoreColorType.ONLYSELECT ? View.GONE : View.VISIBLE);
+		if (storeColorType == StoreColorType.ANIMATION) {
+			((TextView) view.findViewById(R.id.dialog_title_save)).setText(R.string.title_dialog_save_animation);
+			((TextView) view.findViewById(R.id.messageTextSaveName)).setText(R.string.message_dialog_save_animation_name);
+		}
 
 		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
 		if (includeOff) {
@@ -127,12 +131,12 @@ public class StoredColorsDialogFragment extends DialogFragment {
 					final StoredColor storedColor = storedColors.get(position);
 					((TextView) newView.findViewById(R.id.textViewColorName)).setText(storedColor.getName());
 					ImageView imageView = newView.findViewById(R.id.imageViewApplyColor);
-					imageView.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(getContext(), storedColor));
+					imageView.setImageDrawable(storedColor.getButtonDrawable(getContext()));
 					imageView.setOnClickListener(v -> {
 						StoredColorsDialogListener listener = mListener == null ? null : mListener.getValue();
 						if (listener != null) {
 							listener.onStoredColorClick(StoredColorsDialogFragment.this, storedColor);
-							if (onlySelect) {
+							if (storeColorType == StoreColorType.ONLYSELECT) {
 								dismiss();
 							}
 						}
@@ -146,7 +150,7 @@ public class StoredColorsDialogFragment extends DialogFragment {
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
 		builder.setView(view);
-		if (!onlySelect) {
+		if (storeColorType != StoreColorType.ONLYSELECT) {
 			builder.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 				// Send the positive button event back to the host activity
 				if (mListener != null && mListener.getValue() != null) {
@@ -212,5 +216,23 @@ public class StoredColorsDialogFragment extends DialogFragment {
 		 * @param storedColor The stored color.
 		 */
 		void onStoredColorClick(DialogFragment dialog, StoredColor storedColor);
+	}
+
+	/**
+	 * The type of color storing.
+	 */
+	public enum StoreColorType {
+		/**
+		 * No storing, only select color.
+		 */
+		ONLYSELECT,
+		/**
+		 * Allow to store color.
+		 */
+		COLOR,
+		/**
+		 * Allow to store animation.
+		 */
+		ANIMATION
 	}
 }

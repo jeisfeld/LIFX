@@ -1,14 +1,23 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
+import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.MainViewModel;
 import de.jeisfeld.lifx.app.home.TileViewModel;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -28,10 +37,10 @@ public class StoredTileColors extends StoredColor {
 	/**
 	 * Generate stored colors.
 	 *
-	 * @param id The id for storage
-	 * @param colors The tile chain colors
+	 * @param id       The id for storage
+	 * @param colors   The tile chain colors
 	 * @param deviceId The device id
-	 * @param name The name
+	 * @param name     The name
 	 */
 	public StoredTileColors(final int id, final TileChainColors colors, final int deviceId, final String name) {
 		super(id, null, deviceId, name);
@@ -41,9 +50,9 @@ public class StoredTileColors extends StoredColor {
 	/**
 	 * Generate new stored colors without id.
 	 *
-	 * @param colors The tile chain colors
+	 * @param colors   The tile chain colors
 	 * @param deviceId The device id
-	 * @param name The name
+	 * @param name     The name
 	 */
 	public StoredTileColors(final TileChainColors colors, final int deviceId, final String name) {
 		this(-1, colors, deviceId, name);
@@ -52,7 +61,7 @@ public class StoredTileColors extends StoredColor {
 	/**
 	 * Generate new stored colors by adding id.
 	 *
-	 * @param id The id
+	 * @param id           The id
 	 * @param storedColors the base stored colors.
 	 */
 	public StoredTileColors(final int id, final StoredTileColors storedColors) {
@@ -167,6 +176,48 @@ public class StoredTileColors extends StoredColor {
 	@Override
 	public final String toString() {
 		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColors());
+	}
+
+	@Override
+	public final Drawable getButtonDrawable(final Context context) {
+		Drawable baseDrawable = super.getButtonDrawable(context);
+		if (!(baseDrawable instanceof GradientDrawable)) {
+			return baseDrawable;
+		}
+		GradientDrawable drawable = (GradientDrawable) baseDrawable;
+		TileChainColors colors = getColors();
+		if (colors instanceof TileChainColors.Fixed) {
+			drawable.setColor(ColorUtil.toAndroidDisplayColor(((TileChainColors.Fixed) colors).getColor()));
+		}
+		else {
+			TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
+			if (tileChain.getTotalWidth() == 0 || tileChain.getTotalHeight() == 0) {
+				drawable.setShape(GradientDrawable.RECTANGLE);
+				drawable.setColor(android.graphics.Color.GRAY);
+			}
+			else {
+				return getTileChainDrawable(tileChain, colors);
+			}
+		}
+		return drawable;
+	}
+
+	/**
+	 * Get the drawable showing tile chain colors.
+	 *
+	 * @param tileChain       The tile chain.
+	 * @param tileChainColors The tile chain colors.
+	 * @return The drawable.
+	 */
+	public static Drawable getTileChainDrawable(final TileChain tileChain, final TileChainColors tileChainColors) {
+		Bitmap bitmap = Bitmap.createBitmap(tileChain.getTotalWidth(), tileChain.getTotalHeight(), Config.ARGB_8888);
+		for (int y = 0; y < tileChain.getTotalHeight(); y++) {
+			for (int x = 0; x < tileChain.getTotalWidth(); x++) {
+				bitmap.setPixel(x, tileChain.getTotalHeight() - 1 - y,
+						ColorUtil.toAndroidDisplayColor(tileChainColors.getColor(x, y, tileChain.getTotalWidth(), tileChain.getTotalHeight())));
+			}
+		}
+		return new BitmapDrawable(Application.getAppContext().getResources(), bitmap);
 	}
 
 	@Override

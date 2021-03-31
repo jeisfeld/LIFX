@@ -21,6 +21,7 @@ import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorType;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.lan.Light;
 
@@ -68,7 +69,7 @@ public class AlarmsFragment extends Fragment {
 					SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(),
 							device ->
 									StoredColorsDialogFragment.displayStoredColorsDialog(
-											requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), true, true,
+											requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
 											(dialog, storedColor) -> {
 												List<Step> steps = new ArrayList<>();
 												steps.add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER

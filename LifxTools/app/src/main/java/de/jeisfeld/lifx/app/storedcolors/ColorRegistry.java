@@ -163,6 +163,18 @@ public final class ColorRegistry {
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_multizone_flags, colorId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_tilechain_type, colorId);
 		PreferenceUtil.removeIndexedSharedPreference(R.string.key_color_tilechain_sizes, colorId);
+
+		if (storedColor instanceof StoredAnimation) {
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_type, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_duration, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_radius, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_stretch, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_direction, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_form, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_color_regex, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_adjust_brightness, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_color_list, colorId);
+		}
 	}
 
 	/**

@@ -125,7 +125,7 @@ public class TileChainWaveDefinition implements AnimationDefinition {
 
 	@Override
 	public final TileChainColors getColors(final int n) {
-		return new TileChainMoveColors(mXCenter, mYCenter, mRadius, mRadiusFactor * n, mColors, mForm, getSelectedBrightness());
+		return new TileChainWaveColors(mXCenter, mYCenter, mRadius, mRadiusFactor * n, mColors, mForm, getSelectedBrightness());
 	}
 
 	@Override
@@ -134,9 +134,9 @@ public class TileChainWaveDefinition implements AnimationDefinition {
 	}
 
 	/**
-	 * Colors for displaying animated circles.
+	 * Colors for displaying animated wave.
 	 */
-	private static final class TileChainMoveColors extends TileChainColors {
+	private static final class TileChainWaveColors extends TileChainColors {
 		/**
 		 * The x center.
 		 */
@@ -177,7 +177,7 @@ public class TileChainWaveDefinition implements AnimationDefinition {
 		 * @param form       The from of the wave.
 		 * @param brightness The brightness.
 		 */
-		private TileChainMoveColors(final double xCenter, final double yCenter, final double radius,
+		private TileChainWaveColors(final double xCenter, final double yCenter, final double radius,
 									final double offset, final ArrayList<Color> colors, final Form form, final double brightness) {
 			mXCenter = xCenter;
 			mYCenter = yCenter;

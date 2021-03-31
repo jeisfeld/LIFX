@@ -1,5 +1,9 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -8,7 +12,8 @@ import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.MainViewModel;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter.MultizoneOrientation;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -30,10 +35,10 @@ public class StoredMultizoneColors extends StoredColor {
 	/**
 	 * Generate stored colors.
 	 *
-	 * @param id The id for storage
-	 * @param colors The multizone colors
+	 * @param id       The id for storage
+	 * @param colors   The multizone colors
 	 * @param deviceId The device id
-	 * @param name The name
+	 * @param name     The name
 	 */
 	public StoredMultizoneColors(final int id, final MultizoneColors colors, final int deviceId, final String name) {
 		super(id, null, deviceId, name);
@@ -43,9 +48,9 @@ public class StoredMultizoneColors extends StoredColor {
 	/**
 	 * Generate new stored colors without id.
 	 *
-	 * @param colors The multizone colors
+	 * @param colors   The multizone colors
 	 * @param deviceId The device id
-	 * @param name The name
+	 * @param name     The name
 	 */
 	public StoredMultizoneColors(final MultizoneColors colors, final int deviceId, final String name) {
 		this(-1, colors, deviceId, name);
@@ -54,7 +59,7 @@ public class StoredMultizoneColors extends StoredColor {
 	/**
 	 * Generate new stored colors by adding id.
 	 *
-	 * @param id The id
+	 * @param id           The id
 	 * @param storedColors the base stored colors.
 	 */
 	public StoredMultizoneColors(final int id, final StoredMultizoneColors storedColors) {
@@ -66,7 +71,7 @@ public class StoredMultizoneColors extends StoredColor {
 	 *
 	 * @param colorId The id.
 	 */
-	protected StoredMultizoneColors(final int colorId) {
+	public StoredMultizoneColors(final int colorId) {
 		super(colorId);
 		StoreType storeType = StoreType.fromOrdinal(
 				PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, 0));
@@ -121,25 +126,36 @@ public class StoredMultizoneColors extends StoredColor {
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_color_name, colorId, storedColors.getName());
 
 		MultizoneColors colors = storedColors.getColors();
+		storeMultizoneColors(colorId, colors);
+		return storedColors;
+	}
+
+	/**
+	 * Store multizone color details on a certain color id.
+	 *
+	 * @param colorId The id.
+	 * @param colors  The colors to be stored.
+	 */
+	public static void storeMultizoneColors(final int colorId, final MultizoneColors colors) {
+		MultizoneColors baseColors = colors;
 		if (colors instanceof MultizoneViewModel.FlaggedMultizoneColors) {
 			long flags = TypeUtil.toLong(((FlaggedMultizoneColors) colors).getFlags());
 			PreferenceUtil.setIndexedSharedPreferenceLong(R.string.key_color_multizone_flags, colorId, flags);
-			colors = ((FlaggedMultizoneColors) colors).getBaseColors();
+			baseColors = ((FlaggedMultizoneColors) colors).getBaseColors();
 		}
-		if (colors instanceof MultizoneColors.Fixed) {
+		if (baseColors instanceof MultizoneColors.Fixed) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, StoreType.FIXED.ordinal());
-			PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_color_color, colorId, ((Fixed) colors).getColor());
+			PreferenceUtil.setIndexedSharedPreferenceColor(R.string.key_color_color, colorId, ((Fixed) baseColors).getColor());
 		}
-		else if (colors instanceof MultizoneColors.Exact) {
+		else if (baseColors instanceof MultizoneColors.Exact) {
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, StoreType.EXACT.ordinal());
-			PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_color_colors, colorId, ((Exact) colors).getColors());
+			PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_color_colors, colorId, ((Exact) baseColors).getColors());
 		}
-		else if (colors instanceof MultizoneColors.Interpolated) {
-			StoreType storeType = ((Interpolated) colors).isCyclic() ? StoreType.INTERPOLATED_CYCLIC : StoreType.INTERPOLATED;
+		else if (baseColors instanceof MultizoneColors.Interpolated) {
+			StoreType storeType = ((Interpolated) baseColors).isCyclic() ? StoreType.INTERPOLATED_CYCLIC : StoreType.INTERPOLATED;
 			PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, storeType.ordinal());
-			PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_color_colors, colorId, ((Interpolated) colors).getColors());
+			PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_color_colors, colorId, ((Interpolated) baseColors).getColors());
 		}
-		return storedColors;
 	}
 
 	/**
@@ -158,13 +174,51 @@ public class StoredMultizoneColors extends StoredColor {
 	 */
 	@Override
 	public MultiZoneLight getLight() {
-		return (MultiZoneLight) DeviceRegistry.getInstance().getDeviceById(getDeviceId()).getDevice();
+		return (MultiZoneLight) super.getLight();
 	}
 
 	@NonNull
 	@Override
 	public final String toString() {
 		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColors());
+	}
+
+	@Override
+	public final Drawable getButtonDrawable(final Context context) {
+		return getButtonDrawable(context, getColors(), getDeviceId());
+	}
+
+	/**
+	 * Get a button drawable for Multizone colors.
+	 *
+	 * @param context  The context.
+	 * @param colors   The multizone colors.
+	 * @param deviceId The device id.
+	 * @return The button drawable.
+	 */
+	public static Drawable getButtonDrawable(final Context context, final MultizoneColors colors, final int deviceId) {
+		GradientDrawable drawable = new GradientDrawable();
+		MultizoneColors baseColors = colors;
+		if (baseColors instanceof FlaggedMultizoneColors) {
+			baseColors = ((FlaggedMultizoneColors) baseColors).getBaseColors();
+		}
+		if (baseColors instanceof MultizoneColors.Fixed) {
+			drawable.setShape(GradientDrawable.OVAL);
+			drawable.setColor(ColorUtil.toAndroidDisplayColor(((MultizoneColors.Fixed) baseColors).getColor()));
+		}
+		else {
+			drawable.setShape(GradientDrawable.RECTANGLE);
+			if (baseColors instanceof MultizoneColors.Interpolated) {
+				drawable = ColorUtil.getButtonDrawable(context, ((MultizoneColors.Interpolated) baseColors).getColors());
+			}
+			else if (baseColors instanceof MultizoneColors.Exact) {
+				drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Exact) baseColors).getColors()));
+			}
+			MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
+					PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, deviceId, 0));
+			drawable.setOrientation(multizoneOrientation.getGradientOrientation());
+		}
+		return drawable;
 	}
 
 	@Override

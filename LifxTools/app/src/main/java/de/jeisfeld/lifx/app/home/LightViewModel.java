@@ -1,7 +1,6 @@
 package de.jeisfeld.lifx.app.home;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -10,7 +9,6 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
@@ -181,17 +179,13 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param animationData Data for the animation.
 	 */
-	protected void startAnimation(final AnimationData animationData) {
+	public void startAnimation(final AnimationData animationData) {
 		Context context = getContext().get();
 		if (context == null) {
 			return;
 		}
 		mAnimationStatus.postValue(true);
-		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
-		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, getLight().getTargetAddress());
-		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, getLight().getLabel());
-		animationData.addToIntent(serviceIntent);
-		ContextCompat.startForegroundService(context, serviceIntent);
+		LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
 	}
 
 	/**

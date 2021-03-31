@@ -2,12 +2,6 @@ package de.jeisfeld.lifx.app.storedcolors;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
-import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.GradientDrawable.Orientation;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -21,23 +15,15 @@ import java.util.Collections;
 import java.util.List;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
-import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.alarms.AlarmRegistry;
-import de.jeisfeld.lifx.app.home.MultizoneViewModel.FlaggedMultizoneColors;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
-import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestInputDialogFragment.RequestInputDialogListener;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
-import de.jeisfeld.lifx.lan.TileChain;
-import de.jeisfeld.lifx.lan.type.MultizoneColors;
-import de.jeisfeld.lifx.lan.type.TileChainColors;
 
 /**
  * Adapter for the RecyclerView that allows to sort devices.
@@ -186,75 +172,8 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 		Fragment fragment = mFragment.get();
 		Context context = fragment == null ? null : fragment.getContext();
 		if (context != null) {
-			holder.mApplyColorButton.setImageDrawable(getButtonDrawable(context, storedColor));
+			holder.mApplyColorButton.setImageDrawable(storedColor.getButtonDrawable(context));
 		}
-	}
-
-	/**
-	 * Get the drawable to be used for display of the stored color.
-	 *
-	 * @param context     The context.
-	 * @param storedColor The stored color.
-	 * @return The drawable to be used.
-	 */
-	public static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
-		if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(storedColor.getLight())) {
-			return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_alarm_ringtone, context.getTheme());
-		}
-
-		GradientDrawable drawable = new GradientDrawable();
-		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
-		drawable.setShape(GradientDrawable.OVAL);
-		if (storedColor.getColor() != null) {
-			drawable.setColor(ColorUtil.toAndroidDisplayColor(storedColor.getColor()));
-		}
-
-		if (storedColor instanceof StoredMultizoneColors) {
-			MultizoneColors colors = ((StoredMultizoneColors) storedColor).getColors();
-			if (colors instanceof FlaggedMultizoneColors) {
-				colors = ((FlaggedMultizoneColors) colors).getBaseColors();
-			}
-			if (colors instanceof MultizoneColors.Fixed) {
-				drawable.setColor(ColorUtil.toAndroidDisplayColor(((MultizoneColors.Fixed) colors).getColor()));
-			}
-			else {
-				drawable.setShape(GradientDrawable.RECTANGLE);
-				if (colors instanceof MultizoneColors.Interpolated) {
-					drawable = ColorUtil.getButtonDrawable(context, ((MultizoneColors.Interpolated) colors).getColors());
-				}
-				else if (colors instanceof MultizoneColors.Exact) {
-					drawable.setColors(ColorUtil.toAndroidDisplayColors(((MultizoneColors.Exact) colors).getColors()));
-				}
-				MultizoneOrientation multizoneOrientation = MultizoneOrientation.fromOrdinal(
-						PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_device_multizone_orientation, storedColor.getDeviceId(), 0));
-				drawable.setOrientation(multizoneOrientation.getGradientOrientation());
-			}
-		}
-
-		else if (storedColor instanceof StoredTileColors) {
-			TileChainColors colors = ((StoredTileColors) storedColor).getColors();
-			if (colors instanceof TileChainColors.Fixed) {
-				drawable.setColor(ColorUtil.toAndroidDisplayColor(((TileChainColors.Fixed) colors).getColor()));
-			}
-			else {
-				TileChain tileChain = (TileChain) DeviceRegistry.getInstance().getDeviceById(storedColor.getDeviceId()).getDevice();
-				if (tileChain.getTotalWidth() == 0 || tileChain.getTotalHeight() == 0) {
-					drawable.setShape(GradientDrawable.RECTANGLE);
-					drawable.setColor(Color.GRAY);
-				}
-				else {
-					Bitmap bitmap = Bitmap.createBitmap(tileChain.getTotalWidth(), tileChain.getTotalHeight(), Config.ARGB_8888);
-					for (int y = 0; y < tileChain.getTotalHeight(); y++) {
-						for (int x = 0; x < tileChain.getTotalWidth(); x++) {
-							bitmap.setPixel(x, tileChain.getTotalHeight() - 1 - y,
-									ColorUtil.toAndroidDisplayColor(colors.getColor(x, y, tileChain.getTotalWidth(), tileChain.getTotalHeight())));
-						}
-					}
-					return new BitmapDrawable(Application.getAppContext().getResources(), bitmap);
-				}
-			}
-		}
-		return drawable;
 	}
 
 	@Override

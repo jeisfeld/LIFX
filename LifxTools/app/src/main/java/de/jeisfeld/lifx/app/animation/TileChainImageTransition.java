@@ -1,14 +1,20 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import android.content.Intent;
+import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -68,6 +74,14 @@ public class TileChainImageTransition extends AnimationData {
 	}
 
 	@Override
+	public final void store(final int colorId) {
+		super.store(colorId);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, mDuration);
+		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_animation_color_regex, colorId, mColorRegex);
+		PreferenceUtil.setIndexedSharedPreferenceBoolean(R.string.key_animation_adjust_brightness, colorId, mAdjustBrightness);
+	}
+
+	@Override
 	protected final AnimationType getType() {
 		return AnimationType.TILECHAIN_IMAGE_TRANSITION;
 	}
@@ -107,5 +121,17 @@ public class TileChainImageTransition extends AnimationData {
 				return n == 0 ? 0 : mDuration;
 			}
 		};
+	}
+
+	@Override
+	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
+		final List<StoredColor> storedColorsList = ColorRegistry.getInstance().getStoredColors((int) light.getParameter(DeviceRegistry.DEVICE_ID))
+				.stream().filter(storedColor -> storedColor.getName().matches(mColorRegex)).collect(Collectors.toList());
+		if (storedColorsList.size() == 0) {
+			return new GradientDrawable();
+		}
+		else {
+			return StoredTileColors.getTileChainDrawable((TileChain) light, ((StoredTileColors) storedColorsList.get(0)).getColors());
+		}
 	}
 }

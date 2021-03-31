@@ -3,7 +3,8 @@
     <string name="title_dialog_confirmation">Confirmação</string>
     <string name="title_dialog_select_light">Selecione a luz</string>
     <string name="title_dialog_select_color">Selecione a cor</string>
-    <string name="title_dialog_save_color">Salvar a cor</string>
+    <string name="title_dialog_save_color">Salvar cor</string>
+    <string name="title_dialog_save_animation">Salvar animação</string>
     <string name="title_dialog_image">Adaptar imagem</string>
     <string name="title_dialog_animation">Configurações de animação</string>
     <string name="title_dialog_alarm_time">Definir hora do alarme</string>
@@ -124,6 +125,7 @@
 
     <string name="message_confirm_delete_light">Deseja excluir o dispositivo «%1$s» do aplicativo? (Será recriado se detectado na LAN.)</string>
     <string name="message_dialog_save_color_name">Digite um nome para a cor.</string>
+    <string name="message_dialog_save_animation_name">Insira um nome para a animação.</string>
     <string name="message_confirm_delete_color">Deseja excluir a cor «%1$s» do aplicativo?</string>
     <string name="message_confirm_delete_alarm">Deseja excluir o alarme «%1$s» do aplicativo?</string>
     <string name="message_confirm_delete_alarm_stopsequence">Deseja excluir a sequência de parada do alarme «%1$s» do aplicativo?</string>

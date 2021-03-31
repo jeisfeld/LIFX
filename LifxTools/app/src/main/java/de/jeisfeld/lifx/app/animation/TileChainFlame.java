@@ -1,9 +1,14 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 
 import java.io.IOException;
 
+import androidx.core.content.ContextCompat;
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -46,6 +51,12 @@ public class TileChainFlame extends AnimationData {
 		super.addToIntent(serviceIntent);
 		serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mDuration);
 		serviceIntent.putExtra(EXTRA_ANIMATION_IS_RUNNING, mIsRunning);
+	}
+
+	@Override
+	public final void store(final int colorId) {
+		super.store(colorId);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, mDuration);
 	}
 
 	@Override
@@ -110,5 +121,10 @@ public class TileChainFlame extends AnimationData {
 				}
 			}
 		};
+	}
+
+	@Override
+	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
+		return ContextCompat.getDrawable(context, R.drawable.flame);
 	}
 }

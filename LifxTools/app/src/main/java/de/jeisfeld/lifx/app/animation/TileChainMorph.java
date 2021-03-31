@@ -1,11 +1,17 @@
 package de.jeisfeld.lifx.app.animation;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.ColorUtil;
+import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.TileChain;
@@ -56,6 +62,13 @@ public class TileChainMorph extends AnimationData {
 		serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mDuration);
 		serviceIntent.putExtra(EXTRA_COLOR_LIST, mColors);
 		serviceIntent.putExtra(EXTRA_ANIMATION_IS_RUNNING, mIsRunning);
+	}
+
+	@Override
+	public final void store(final int colorId) {
+		super.store(colorId);
+		PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, mDuration);
+		PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId, mColors);
 	}
 
 	@Override
@@ -120,5 +133,11 @@ public class TileChainMorph extends AnimationData {
 				}
 			}
 		};
+	}
+
+	@Override
+	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
+		return ColorUtil.getButtonDrawable(context,
+				mColors.stream().map(color -> color.withRelativeBrightness(relativeBrightness)).collect(Collectors.toList()));
 	}
 }

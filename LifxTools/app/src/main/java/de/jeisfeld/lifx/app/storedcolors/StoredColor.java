@@ -1,6 +1,8 @@
 package de.jeisfeld.lifx.app.storedcolors;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -15,6 +17,7 @@ import de.jeisfeld.lifx.app.home.GroupViewModel;
 import de.jeisfeld.lifx.app.home.LightViewModel;
 import de.jeisfeld.lifx.app.home.MainViewModel;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
@@ -107,10 +110,14 @@ public class StoredColor {
 	 * @return The stored color.
 	 */
 	public static StoredColor fromId(final int colorId) {
+		boolean isAnimation = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_type, colorId, -1) >= 0;
 		boolean isMultiZone = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_multizone_type, colorId, -1) >= 0;
 		boolean isTileChain = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_color_tilechain_type, colorId, -1) >= 0;
 
-		if (isMultiZone) {
+		if (isAnimation) {
+			return new StoredAnimation(colorId);
+		}
+		else if (isMultiZone) {
 			return new StoredMultizoneColors(colorId);
 		}
 		else if (isTileChain) {
@@ -273,6 +280,22 @@ public class StoredColor {
 		return "[" + getId() + "](" + getName() + ")(" + (getLight() == null ? getDeviceId() : getLight().getLabel() + ")-" + getColor());
 	}
 
+	/**
+	 * Get the drawable displayed on storedColor buttons.
+	 *
+	 * @param context The context.
+	 * @return The drawable.
+	 */
+	// OVERRIDABLE
+	public Drawable getButtonDrawable(final Context context) {
+		GradientDrawable drawable = new GradientDrawable();
+		drawable.setStroke((int) context.getResources().getDimension(R.dimen.power_button_stroke_size), android.graphics.Color.BLACK);
+		drawable.setShape(GradientDrawable.OVAL);
+		if (getColor() != null) {
+			drawable.setColor(ColorUtil.toAndroidDisplayColor(getColor()));
+		}
+		return drawable;
+	}
 
 	/**
 	 * An async task for setting the color.

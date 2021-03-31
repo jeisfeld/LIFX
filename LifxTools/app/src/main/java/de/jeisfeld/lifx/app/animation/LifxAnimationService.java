@@ -14,10 +14,13 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.HomeFragment;
@@ -65,7 +68,22 @@ public class LifxAnimationService extends Service {
 	/**
 	 * Map from MACs to animation data for all lights with running animations.
 	 */
-	private static final Map<String, AnimationData> ANIMATED_LIGHT_DATA = new HashMap<>();
+	private static final Map<String, List<AnimationData>> ANIMATED_LIGHT_DATA = new HashMap<>();
+
+	/**
+	 * Trigger the animation service.
+	 *
+	 * @param context       The context.
+	 * @param light         The light.
+	 * @param animationData The animation data.
+	 */
+	public static void triggerAnimationService(final Context context, final Light light, final AnimationData animationData) {
+		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, light.getTargetAddress());
+		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, light.getLabel());
+		animationData.addToIntent(serviceIntent);
+		ContextCompat.startForegroundService(context, serviceIntent);
+	}
 
 	@Override
 	public final void onCreate() {
@@ -118,28 +136,34 @@ public class LifxAnimationService extends Service {
 			@Override
 			public void run() {
 				if (!animationData.isValid()) {
-					updateOnEndAnimation(mac, null);
+					updateOnEndAnimation(mac, null, animationData);
 					return;
 				}
-				Light tmpLight = ANIMATED_LIGHTS.get(mac);
-				if (tmpLight == null) {
-					tmpLight = DeviceRegistry.getInstance().getLightByMac(mac);
+				final Light light;
+				synchronized (ANIMATED_LIGHTS) {
+					Light tmpLight = ANIMATED_LIGHTS.get(mac);
 					if (tmpLight == null) {
-						tmpLight = LifxLan.getInstance().getLightByMac(mac);
-					}
-					if (tmpLight == null || tmpLight.getTargetAddress() == null || !mac.equals(tmpLight.getTargetAddress())) {
-						updateOnEndAnimation(mac, null);
-						return;
-					}
-					synchronized (ANIMATED_LIGHTS) {
+						tmpLight = DeviceRegistry.getInstance().getLightByMac(mac);
+						if (tmpLight == null) {
+							tmpLight = LifxLan.getInstance().getLightByMac(mac);
+						}
+						if (tmpLight == null || tmpLight.getTargetAddress() == null || !mac.equals(tmpLight.getTargetAddress())) {
+							updateOnEndAnimation(mac, null, animationData);
+							return;
+						}
 						ANIMATED_LIGHTS.put(mac, tmpLight);
-						ANIMATED_LIGHT_DATA.put(mac, animationData);
+						List<AnimationData> animationDataList = new ArrayList<>();
+						animationDataList.add(animationData);
+						// Repeating notification, just in case it has been stopped right now
+						startNotification();
+						ANIMATED_LIGHT_DATA.put(mac, animationDataList);
 					}
+					else {
+						ANIMATED_LIGHT_DATA.get(mac).add(animationData);
+						tmpLight.endAnimation(false);
+					}
+					light = tmpLight;
 				}
-				else {
-					tmpLight.endAnimation(false);
-				}
-				final Light light = tmpLight;
 				final WakeLock wakeLock = acquireWakelock(light);
 
 				if (animationData.hasNativeImplementation(light)) {
@@ -151,7 +175,7 @@ public class LifxAnimationService extends Service {
 									animationData.getNativeAnimationDefinition(light).startAnimation();
 								}
 								catch (IOException e) {
-									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
 								}
 							}
 							while (true) {
@@ -166,7 +190,7 @@ public class LifxAnimationService extends Service {
 									catch (IOException ex) {
 										// ignore
 									}
-									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
 									return;
 								}
 							}
@@ -178,12 +202,12 @@ public class LifxAnimationService extends Service {
 							.setAnimationCallback(new AnimationCallback() {
 								@Override
 								public void onException(final IOException e) {
-									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
 								}
 
 								@Override
 								public void onAnimationEnd(final boolean isInterrupted) {
-									updateOnEndAnimation(light.getTargetAddress(), wakeLock);
+									updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
 								}
 							})
 							.start();
@@ -257,19 +281,28 @@ public class LifxAnimationService extends Service {
 	/**
 	 * Update the service after the animation has ended.
 	 *
-	 * @param mac      the MAC.
-	 * @param wakeLock The wakelock on that light.
+	 * @param mac           the MAC.
+	 * @param wakeLock      The wakelock on that light.
+	 * @param animationData The instance of animationData which is ended.
 	 */
-	private void updateOnEndAnimation(final String mac, final WakeLock wakeLock) {
+	private void updateOnEndAnimation(final String mac, final WakeLock wakeLock, final AnimationData animationData) {
 		if (wakeLock != null && wakeLock.isHeld()) {
 			wakeLock.release();
 		}
-		HomeFragment.sendBroadcastStopAnimation(this, mac);
 		final String label = ANIMATED_LIGHT_LABELS.get(mac);
 		synchronized (ANIMATED_LIGHTS) {
-			ANIMATED_LIGHTS.remove(mac);
-			ANIMATED_LIGHT_LABELS.remove(mac);
-			ANIMATED_LIGHT_DATA.remove(mac);
+			List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+			if (animationDataList == null) {
+				animationDataList = new ArrayList<>();
+			}
+			animationDataList.remove(animationData);
+			if (animationDataList.size() == 0) {
+				ANIMATED_LIGHTS.remove(mac);
+				ANIMATED_LIGHT_LABELS.remove(mac);
+				ANIMATED_LIGHT_DATA.remove(mac);
+				HomeFragment.sendBroadcastStopAnimation(this, mac);
+			}
+
 			Logger.info("LifxAnimationService end (" + ANIMATED_LIGHT_LABELS.size() + ") (" + mac + "," + label + ")");
 			if (ANIMATED_LIGHTS.size() == 0) {
 				Intent serviceIntent = new Intent(this, LifxAnimationService.class);
@@ -288,13 +321,31 @@ public class LifxAnimationService extends Service {
 	 * @return the animation status for this MAC.
 	 */
 	public static AnimationStatus getAnimationStatus(final String mac) {
-		AnimationData animationData = ANIMATED_LIGHT_DATA.get(mac);
+		AnimationData animationData = getAnimationData(mac);
 		Light light = ANIMATED_LIGHTS.get(mac);
 		if (animationData == null || light == null) {
 			return AnimationStatus.OFF;
 		}
 		else {
 			return animationData.hasNativeImplementation(light) ? AnimationStatus.NATIVE : AnimationStatus.CUSTOM;
+			}
+	}
+
+	/**
+	 * Get the animation data for a given MAC.
+	 *
+	 * @param mac the MAC.
+	 * @return The animation data for this MAC.
+	 */
+	public static AnimationData getAnimationData(final String mac) {
+		synchronized (ANIMATED_LIGHTS) {
+			List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+			if (animationDataList == null || animationDataList.size() == 0) {
+				return null;
+			}
+			else {
+				return animationDataList.get(animationDataList.size() - 1);
+			}
 		}
 	}
 

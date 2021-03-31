@@ -1,6 +1,7 @@
 package de.jeisfeld.lifx.app.alarms;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -27,8 +29,9 @@ import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
-import de.jeisfeld.lifx.app.storedcolors.StoredColorsViewAdapter;
+import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorType;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestDurationDialogFragment.RequestDurationDialogListener;
 import de.jeisfeld.lifx.lan.Light;
@@ -209,7 +212,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 				}
 				else {
 					StoredColorsDialogFragment.displayStoredColorsDialog(
-							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), true, true,
+							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
 							(dialog, storedColor) -> {
 								mAlarm.getSteps().add(new Step((int) newStartTime, storedColor.getId(), AlarmConfigurationFragment.DEFAULT_DURATION));
 								mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
@@ -262,7 +265,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 
 		final ImageView imageViewStoredColor = view.findViewById(R.id.imageViewStoredColor);
 		final TextView textViewStoredColorName = view.findViewById(R.id.textViewStoredColorName);
-		imageViewStoredColor.setImageDrawable(StoredColorsViewAdapter.getButtonDrawable(mFragment.requireContext(), originalStep.getStoredColor()));
+		imageViewStoredColor.setImageDrawable(getButtonDrawable(mFragment.requireContext(), originalStep.getStoredColor()));
 		textViewStoredColorName.setText(originalStep.getStoredColor().getName());
 
 		OnClickListener changeColorListener = v -> {
@@ -273,7 +276,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			}
 			else {
 				StoredColorsDialogFragment.displayStoredColorsDialog(
-						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), true, true,
+						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true,
 						(dialog, storedColor) -> {
 							Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
 							mAlarm.getSteps().remove(step);
@@ -361,5 +364,20 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 	 */
 	protected static String getDelayString(final long delay) {
 		return delay == 3600000 ? "60:00" : String.format(Locale.getDefault(), "%1$tM:%1$tS", new Date(delay)); // MAGIC_NUMBER
+	}
+
+	/**
+	 * Get the drawable to be used for display of the stored color.
+	 *
+	 * @param context     The context.
+	 * @param storedColor The stored color.
+	 * @return The drawable to be used.
+	 */
+	private static Drawable getButtonDrawable(final Context context, final StoredColor storedColor) {
+		if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(storedColor.getLight())) {
+			return ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_alarm_ringtone, context.getTheme());
+		}
+
+		return storedColor.getButtonDrawable(context);
 	}
 }

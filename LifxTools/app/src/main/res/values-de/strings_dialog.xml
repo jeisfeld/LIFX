@@ -4,6 +4,7 @@
     <string name="title_dialog_select_light">Licht wählen</string>
     <string name="title_dialog_select_color">Farbe wählen</string>
     <string name="title_dialog_save_color">Farbe speichern</string>
+    <string name="title_dialog_save_animation">Animation speichern</string>
     <string name="title_dialog_image">Bild anpassen</string>
     <string name="title_dialog_animation">Animationseinstellungen</string>
     <string name="title_dialog_alarm_time">Alarmzeit festlegen</string>
@@ -124,6 +125,7 @@
 
     <string name="message_confirm_delete_light">Wollen Sie die Lampe „%1$s“ aus der App entfernen? (Sie wird neu angelegt, wenn sie im LAN gefunden wird.)</string>
     <string name="message_dialog_save_color_name">Bitte geben Sie einen Namen für die Farbe ein.</string>
+    <string name="message_dialog_save_animation_name">Bitte geben Sie einen Namen für die Animation ein.</string>
     <string name="message_confirm_delete_color">Wollen Sie die Farbe „%1$s“ aus der App entfernen?</string>
     <string name="message_confirm_delete_alarm">Wollen Sie den Alarm „%1$s“ aus der App entfernen?</string>
     <string name="message_confirm_delete_alarm_stopsequence">Wollen Sie die Stoppsequenz des Alarms „%1$s“ aus der App entfernen?</string>
