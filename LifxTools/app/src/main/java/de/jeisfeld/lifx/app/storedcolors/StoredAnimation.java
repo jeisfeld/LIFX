@@ -136,6 +136,7 @@ public class StoredAnimation extends StoredColor {
 		if (model instanceof LightViewModel) {
 			((LightViewModel) model).updateBrightness(mRelativeBrightness);
 			((LightViewModel) model).startAnimation(mAnimationData);
+			((LightViewModel) model).updateSelectedBrightness(mRelativeBrightness);
 		}
 		else {
 			PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_device_selected_brightness, getDeviceId(), getRelativeBrightness());

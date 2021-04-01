@@ -174,6 +174,7 @@ public final class ColorRegistry {
 			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_color_regex, colorId);
 			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_adjust_brightness, colorId);
 			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_color_list, colorId);
+			PreferenceUtil.removeIndexedSharedPreference(R.string.key_animation_relative_brightness, colorId);
 		}
 	}
 

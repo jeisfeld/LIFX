@@ -138,7 +138,8 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param brightness The brightness.
 	 */
-	protected void updateSelectedBrightness(final double brightness) {
+	// OVERRIDABLE
+	public void updateSelectedBrightness(final double brightness) {
 		Integer deviceId = (Integer) getLight().getParameter(DeviceRegistry.DEVICE_ID);
 		if (deviceId != null) {
 			PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_device_selected_brightness, deviceId, brightness);

@@ -652,9 +652,6 @@ public class DeviceAdapter extends BaseAdapter {
 				if (fromUser) {
 					model.updateBrightness(brightness);
 				}
-				else if (model instanceof LightViewModel) {
-					((LightViewModel) model).updateSelectedBrightness(brightness);
-				}
 			}
 
 			@Override

@@ -96,6 +96,7 @@ public class TileViewModel extends LightViewModel {
 
 	@Override
 	public final void updateStoredColor(final Color color) {
+		super.updateStoredColor(color);
 		updateStoredColors(new TileChainColors.Fixed(color), 1);
 	}
 
@@ -103,6 +104,23 @@ public class TileViewModel extends LightViewModel {
 	public final void updateColor(final Color color, final boolean isImmediate) {
 		updateStoredColors(new TileChainColors.Fixed(color), 1);
 		super.updateColor(color, isImmediate);
+	}
+
+	@Override
+	public final void updateSelectedBrightness(final double brightness) {
+		super.updateSelectedBrightness(brightness);
+		mRelativeBrightness.postValue(brightness);
+	}
+
+	/**
+	 * Update the main color for color pickers.
+	 *
+	 * @param color The color for update.
+	 */
+	private void updateStoredMainColor(final Color color) {
+		if (color != null) {
+			super.updateStoredColor(color);
+		}
 	}
 
 	/**
@@ -178,7 +196,7 @@ public class TileViewModel extends LightViewModel {
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
 		if (colors instanceof TileChainColors.Fixed) {
-			super.updateStoredColor(((Fixed) colors).getColor());
+			super.updateStoredColor(((Fixed) colors).getColor().withRelativeBrightness(brightnessFactor));
 		}
 	}
 
@@ -219,6 +237,7 @@ public class TileViewModel extends LightViewModel {
 				return null;
 			}
 
+			model.updateStoredMainColor(model.getLight().getColor());
 			model.updateStoredColors(colors, 1);
 
 			// Check animation status
