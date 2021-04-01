@@ -159,8 +159,19 @@ public class LifxAnimationService extends Service {
 						ANIMATED_LIGHT_DATA.put(mac, animationDataList);
 					}
 					else {
-						ANIMATED_LIGHT_DATA.get(mac).add(animationData);
+						List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+						animationDataList.add(animationData);
 						tmpLight.endAnimation(false);
+						try {
+							// ideally, wait with new animation until old animation has ended
+							//noinspection SynchronizationOnLocalVariableOrMethodParameter
+							synchronized (animationDataList) {
+								animationDataList.wait(2000); // MAGIC_NUMBER
+							}
+						}
+						catch (InterruptedException e) {
+							// ignore
+						}
 					}
 					light = tmpLight;
 				}
@@ -185,7 +196,14 @@ public class LifxAnimationService extends Service {
 								}
 								catch (InterruptedException e) {
 									try {
-										animationData.getNativeAnimationDefinition(light).stopAnimation();
+										List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+										if (animationDataList == null || animationDataList.size() < 2
+												|| !animationDataList.get(0).hasNativeImplementation(light)
+												|| !animationDataList.get(1).hasNativeImplementation(light)) {
+											// If there is another native animation in the queue, do not sent OFF
+											// as setEffect will not work shortly after OFF
+											animationData.getNativeAnimationDefinition(light).stopAnimation();
+										}
 									}
 									catch (IOException ex) {
 										// ignore
@@ -290,8 +308,18 @@ public class LifxAnimationService extends Service {
 			wakeLock.release();
 		}
 		final String label = ANIMATED_LIGHT_LABELS.get(mac);
+
+		List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+		if (animationDataList != null) {
+			//noinspection SynchronizationOnLocalVariableOrMethodParameter
+			synchronized (animationDataList) {
+				// Notify animation that is waiting for this one to finish
+				animationDataList.notifyAll();
+			}
+		}
+
 		synchronized (ANIMATED_LIGHTS) {
-			List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+			animationDataList = ANIMATED_LIGHT_DATA.get(mac);
 			if (animationDataList == null) {
 				animationDataList = new ArrayList<>();
 			}
@@ -328,7 +356,7 @@ public class LifxAnimationService extends Service {
 		}
 		else {
 			return animationData.hasNativeImplementation(light) ? AnimationStatus.NATIVE : AnimationStatus.CUSTOM;
-			}
+		}
 	}
 
 	/**

@@ -238,7 +238,10 @@ public class StoredColor {
 			try {
 				int colorDuration = PreferenceUtil.getSharedPreferenceIntString(
 						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				getLight().endAnimation(false);
+				if (!(this instanceof StoredAnimation)) {
+					// End prior animation, except if this is stored animation - here LifxAnimationService will care about prior animation.
+					getLight().endAnimation(false);
+				}
 				setColor(colorDuration, model);
 				if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_auto_on, true)) {
 					getLight().setPower(true);

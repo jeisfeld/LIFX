@@ -134,7 +134,6 @@ public class StoredAnimation extends StoredColor {
 	@Override
 	protected final void setColor(final int colorDuration, final MainViewModel model) {
 		if (model instanceof LightViewModel) {
-			((LightViewModel) model).updateBrightness(mRelativeBrightness);
 			((LightViewModel) model).startAnimation(mAnimationData);
 			((LightViewModel) model).updateSelectedBrightness(mRelativeBrightness);
 		}
