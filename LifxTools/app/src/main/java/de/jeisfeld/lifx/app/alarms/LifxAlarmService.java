@@ -166,6 +166,9 @@ public class LifxAlarmService extends Service {
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
+		if (intent == null) {
+			return START_NOT_STICKY;
+		}
 		final String action = intent.getAction();
 		final int alarmId = intent.getIntExtra(AlarmReceiver.EXTRA_ALARM_ID, -1);
 		final Date alarmDate = (Date) intent.getSerializableExtra(AlarmReceiver.EXTRA_ALARM_TIME);

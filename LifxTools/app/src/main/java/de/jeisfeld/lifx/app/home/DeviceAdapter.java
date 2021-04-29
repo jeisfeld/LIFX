@@ -289,7 +289,12 @@ public class DeviceAdapter extends BaseAdapter {
 
 		synchronized (mViews) {
 			if (mViews.size() > position) {
-				mViews.set(position, view);
+				try {
+					mViews.set(position, view);
+				}
+				catch (ArrayIndexOutOfBoundsException e) {
+					mViews.add(position, view);
+				}
 			}
 			else {
 				mViews.add(position, view);

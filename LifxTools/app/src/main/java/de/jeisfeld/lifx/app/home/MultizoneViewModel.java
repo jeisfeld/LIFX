@@ -239,7 +239,10 @@ public class MultizoneViewModel extends LightViewModel {
 			mColors.postValue(colors.withRelativeBrightness(1 / relativeBrightness));
 		}
 		if (colors instanceof MultizoneColors.Fixed) {
-			super.updateStoredColor(((Fixed) colors).getColor().withRelativeBrightness(brightnessFactor));
+			Color color = ((Fixed) colors).getColor();
+			if (color != null) {
+				super.updateStoredColor(color.withRelativeBrightness(brightnessFactor));
+			}
 		}
 	}
 

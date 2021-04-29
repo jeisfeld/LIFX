@@ -1,7 +1,5 @@
 package de.jeisfeld.lifx.app.view;
 
-import javax.annotation.Nonnull;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -10,6 +8,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -265,6 +266,9 @@ public class TuneTilesDialogFragment extends DialogFragment {
 
 				@Override
 				public Color getColor(final int x, final int y, final int width, final int height) {
+					if (mBaseColors == null) {
+						return null;
+					}
 					Color baseColor = mBaseColors.getColor(x, y, width, height);
 					double oldBrightness = TypeUtil.toDouble(baseColor.getBrightness());
 					return new Color(baseColor.getHue() + hueDiff,
