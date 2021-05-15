@@ -1,9 +1,5 @@
 package de.jeisfeld.lifx.app.animation;
 
-import java.util.ArrayList;
-
-import javax.annotation.Nonnull;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -15,6 +11,11 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
+
+import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -118,7 +119,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 			if (getActivity() == null) {
 				return;
 			}
-			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(getActivity(), mColors, true, new MultiColorPickerDialogListener() {
+			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(getActivity(), mColors, null, new MultiColorPickerDialogListener() {
 				@Override
 				public void onColorUpdate(final ArrayList<Color> colors, final boolean isCyclic, final boolean[] flags) {
 					// do nothing
@@ -126,7 +127,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 				@Override
 				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
-						final boolean[] flags) {
+												  final boolean[] flags) {
 					mColors = colors;
 					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
 				}

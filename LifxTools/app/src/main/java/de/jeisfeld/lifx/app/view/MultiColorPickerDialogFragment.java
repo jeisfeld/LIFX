@@ -1,12 +1,5 @@
 package de.jeisfeld.lifx.app.view;
 
-import java.util.ArrayList;
-
-import javax.annotation.Nonnull;
-
-import com.skydoves.colorpickerview.ColorPickerView;
-import com.skydoves.colorpickerview.listeners.ColorListener;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -14,6 +7,14 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ToggleButton;
+
+import com.skydoves.colorpickerview.ColorPickerView;
+import com.skydoves.colorpickerview.listeners.ColorListener;
+
+import java.util.ArrayList;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -43,6 +44,10 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	 */
 	private static final String PARAM_INITIAL_COLORS = "initialColors";
 	/**
+	 * Parameter to pass information if there should be a cyclic flag.
+	 */
+	private static final String PARAM_HAS_CYCLIC = "hasCyclic";
+	/**
 	 * Parameter to pass the cyclic flag.
 	 */
 	private static final String PARAM_CYCLIC = "isCyclic";
@@ -68,15 +73,16 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayMultiColorPickerDialog(final FragmentActivity activity,
-			final ArrayList<Color> initialColors,
-			final boolean isCyclic,
-			final MultiColorPickerDialogListener listener) {
+													 final ArrayList<Color> initialColors,
+													 final Boolean isCyclic,
+													 final MultiColorPickerDialogListener listener) {
 		Bundle bundle = new Bundle();
 		MultiColorPickerDialogFragment fragment = new MultiColorPickerDialogFragment();
 		fragment.setListener(listener);
 
 		bundle.putSerializable(PARAM_INITIAL_COLORS, initialColors);
-		bundle.putBoolean(PARAM_CYCLIC, isCyclic);
+		bundle.putBoolean(PARAM_HAS_CYCLIC, isCyclic != null);
+		bundle.putBoolean(PARAM_CYCLIC, isCyclic == null || isCyclic);
 		fragment.setArguments(bundle);
 		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 	}
@@ -128,10 +134,15 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 
 		mToggleButtonCyclic.setChecked(mFlags[CYCLIC_FLAG_INDEX]);
 
-		mToggleButtonCyclic.setOnCheckedChangeListener((buttonView, isChecked) -> {
-			mFlags[CYCLIC_FLAG_INDEX] = isChecked;
-			updateColorsOnListener();
-		});
+		if (getArguments().getBoolean(PARAM_HAS_CYCLIC)) {
+			mToggleButtonCyclic.setOnCheckedChangeListener((buttonView, isChecked) -> {
+				mFlags[CYCLIC_FLAG_INDEX] = isChecked;
+				updateColorsOnListener();
+			});
+		}
+		else {
+			mToggleButtonCyclic.setVisibility(View.GONE);
+		}
 
 		prepareMultiColorPickerView(view, R.id.colorPicker1, mColors[0], 0);
 		prepareMultiColorPickerView(view, R.id.colorPicker2, mColors[1], 1);
