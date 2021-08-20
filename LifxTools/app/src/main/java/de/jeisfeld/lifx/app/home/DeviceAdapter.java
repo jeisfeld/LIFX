@@ -509,7 +509,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 				@Override
 				public void onDialogNegativeClick(final DialogFragment dialog) {
-
+					model.updateColors(colors, relativeBrightness, true, false);
 				}
 			});
 		});
@@ -769,7 +769,7 @@ public class DeviceAdapter extends BaseAdapter {
 			}
 			final boolean isAnimationRunning;
 			if (model instanceof LightViewModel) {
-				isAnimationRunning = ((LightViewModel) model).getAnimationStatus().getValue();
+				isAnimationRunning = Boolean.TRUE.equals(((LightViewModel) model).getAnimationStatus().getValue());
 			}
 			else {
 				isAnimationRunning = false;

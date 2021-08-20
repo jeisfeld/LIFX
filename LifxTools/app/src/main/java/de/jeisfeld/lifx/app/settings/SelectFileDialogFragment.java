@@ -31,10 +31,6 @@ import de.jeisfeld.lifx.app.util.DialogUtil;
  */
 public class SelectFileDialogFragment extends DialogFragment {
 	/**
-	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
-	 */
-	private static final String PREVENT_RECREATION = "preventRecreation";
-	/**
 	 * Parameter to pass the resource for the dialog title.
 	 */
 	private static final String PARAM_DIALOG_TITLE = "dialogTitle";
@@ -88,16 +84,6 @@ public class SelectFileDialogFragment extends DialogFragment {
 	@Override
 	@Nonnull
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
-		// Listeners cannot retain functionality when automatically recreated.
-		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
-		boolean preventRecreation = false;
-		if (savedInstanceState != null) {
-			preventRecreation = savedInstanceState.getBoolean(PREVENT_RECREATION);
-		}
-		if (preventRecreation) {
-			dismiss();
-		}
-
 		final View view = View.inflate(requireActivity(), R.layout.dialog_select_file, null);
 		assert getArguments() != null;
 
@@ -150,13 +136,10 @@ public class SelectFileDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public final void onSaveInstanceState(@Nonnull final Bundle outState) {
-		if (mListener != null) {
-			// Typically cannot serialize the listener due to its reference to the activity.
-			mListener = null;
-			outState.putBoolean(PREVENT_RECREATION, true);
-		}
-		super.onSaveInstanceState(outState);
+	public final void onPause() {
+		super.onPause();
+		// this dialog does not support onPause as it has serialization issues in colors.
+		dismiss();
 	}
 
 	/**

@@ -33,10 +33,6 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	 * Parameter to pass the picked bitmap to the DialogFragment.
 	 */
 	private static final String PARAM_INITIAL_BRIGHTNESS = "initialBrightness";
-	/**
-	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
-	 */
-	private static final String PREVENT_RECREATION = "preventRecreation";
 
 	/**
 	 * Display a dialog for handling a picked image for a tile chain.
@@ -111,17 +107,6 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	@Override
 	@Nonnull
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
-		// Listeners cannot retain functionality when automatically recreated.
-		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
-		boolean preventRecreation = false;
-		if (savedInstanceState != null) {
-			preventRecreation = savedInstanceState.getBoolean(PREVENT_RECREATION);
-		}
-		if (preventRecreation) {
-			dismiss();
-			return super.onCreateDialog(savedInstanceState);
-		}
-
 		assert getArguments() != null;
 		mBaseColors = (TileChainColors) getArguments().getSerializable(PARAM_COLORS);
 		double initialBrightness = getArguments().getDouble(PARAM_INITIAL_BRIGHTNESS);
@@ -178,13 +163,13 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public final void onSaveInstanceState(@Nonnull final Bundle outState) {
-		if (mListener != null) {
-			// Typically cannot serialize the listener due to its reference to the activity.
-			mListener = null;
-			outState.putBoolean(PREVENT_RECREATION, true);
+	public final void onPause() {
+		super.onPause();
+		// this dialog does not support onPause as it has serialization issues in colors.
+		if (mListener != null && mListener.getValue() != null) {
+			mListener.getValue().onDialogNegativeClick(TuneTilesDialogFragment.this, mInitialColors);
 		}
-		super.onSaveInstanceState(outState);
+		dismiss();
 	}
 
 	/**

@@ -1,10 +1,5 @@
 package de.jeisfeld.lifx.app.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nonnull;
-
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -18,6 +13,12 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.ToggleButton;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
@@ -37,10 +38,6 @@ public class PickedImageDialogFragment extends DialogFragment {
 	 * Parameter to pass the picked bitmap to the DialogFragment.
 	 */
 	private static final String PARAM_BITMAP = "bitmap";
-	/**
-	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
-	 */
-	private static final String PREVENT_RECREATION = "preventRecreation";
 	/**
 	 * The scale factor when clicking on the image.
 	 */
@@ -131,17 +128,6 @@ public class PickedImageDialogFragment extends DialogFragment {
 	@Override
 	@Nonnull
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
-		// Listeners cannot retain functionality when automatically recreated.
-		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
-		boolean preventRecreation = false;
-		if (savedInstanceState != null) {
-			preventRecreation = savedInstanceState.getBoolean(PREVENT_RECREATION);
-		}
-		if (preventRecreation) {
-			dismiss();
-			return super.onCreateDialog(savedInstanceState);
-		}
-
 		assert getArguments() != null;
 		mBitmap = getArguments().getParcelable(PARAM_BITMAP);
 		mScaledBitmap = mBitmap;
@@ -241,13 +227,13 @@ public class PickedImageDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public final void onSaveInstanceState(@Nonnull final Bundle outState) {
-		if (mListener != null) {
-			// Typically cannot serialize the listener due to its reference to the activity.
-			mListener = null;
-			outState.putBoolean(PREVENT_RECREATION, true);
+	public final void onPause() {
+		super.onPause();
+		// this dialog does not support onPause as it has serialization issues in colors.
+		if (mListener != null && mListener.getValue() != null) {
+			mListener.getValue().onDialogNegativeClick(PickedImageDialogFragment.this);
 		}
-		super.onSaveInstanceState(outState);
+		dismiss();
 	}
 
 	/**

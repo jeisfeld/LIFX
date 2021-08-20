@@ -36,10 +36,6 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	public static final int CYCLIC_FLAG_INDEX = MULTIZONE_PICKER_COUNT;
 
 	/**
-	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
-	 */
-	private static final String PREVENT_RECREATION = "preventRecreation";
-	/**
 	 * Parameter to pass the initial colors to the DialogFragment.
 	 */
 	private static final String PARAM_INITIAL_COLORS = "initialColors";
@@ -63,14 +59,18 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	 * The flags indicating which color pickers are active.
 	 */
 	private final boolean[] mFlags = new boolean[MULTIZONE_PICKER_COUNT + 1];
+	/**
+	 * Flag storing if the dialog is completed via button press.
+	 */
+	private boolean mIsButtonPressed = false;
 
 	/**
 	 * Display a dialog for handling a picked image for a tile chain.
 	 *
-	 * @param activity the current activity
+	 * @param activity      the current activity
 	 * @param initialColors The initial colors.
-	 * @param isCyclic status of cyclic button
-	 * @param listener The listener waiting for the response
+	 * @param isCyclic      status of cyclic button
+	 * @param listener      The listener waiting for the response
 	 */
 	public static void displayMultiColorPickerDialog(final FragmentActivity activity,
 													 final ArrayList<Color> initialColors,
@@ -105,17 +105,6 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	@Override
 	@Nonnull
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
-		// Listeners cannot retain functionality when automatically recreated.
-		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
-		boolean preventRecreation = false;
-		if (savedInstanceState != null) {
-			preventRecreation = savedInstanceState.getBoolean(PREVENT_RECREATION);
-		}
-		if (preventRecreation) {
-			dismiss();
-			return super.onCreateDialog(savedInstanceState);
-		}
-
 		assert getArguments() != null;
 		@SuppressWarnings("unchecked")
 		ArrayList<Color> initialColors = (ArrayList<Color>) getArguments().getSerializable(PARAM_INITIAL_COLORS);
@@ -158,6 +147,7 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogNegativeClick(MultiColorPickerDialogFragment.this);
 					}
+					mIsButtonPressed = true;
 				}) //
 				.setPositiveButton(R.string.button_ok, (dialog, id) -> {
 					// Send the negative button event back to the host activity
@@ -165,6 +155,7 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 						mListener.getValue().onDialogPositiveClick(MultiColorPickerDialogFragment.this, getSelectedColors(),
 								mToggleButtonCyclic.isChecked(), mFlags);
 					}
+					mIsButtonPressed = true;
 				});
 		return builder.create();
 	}
@@ -253,13 +244,13 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public final void onSaveInstanceState(@Nonnull final Bundle outState) {
-		if (mListener != null) {
-			// Typically cannot serialize the listener due to its reference to the activity.
-			mListener = null;
-			outState.putBoolean(PREVENT_RECREATION, true);
+	public final void onPause() {
+		super.onPause();
+		// this dialog does not support onPause as it has serialization issues in colors.
+		if (!mIsButtonPressed && mListener != null && mListener.getValue() != null) {
+			mListener.getValue().onDialogNegativeClick(MultiColorPickerDialogFragment.this);
 		}
-		super.onSaveInstanceState(outState);
+		dismiss();
 	}
 
 	/**

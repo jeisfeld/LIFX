@@ -180,7 +180,6 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	public final void onSaveInstanceState(@Nonnull final Bundle outState) {
 		if (mListener != null) {
 			// Typically cannot serialize the listener due to its reference to the activity.
-			mListener = null;
 			outState.putBoolean(PREVENT_RECREATION, true);
 		}
 		super.onSaveInstanceState(outState);

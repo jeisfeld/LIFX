@@ -26,10 +26,6 @@ import de.jeisfeld.lifx.lan.Device;
  */
 public class SelectDeviceDialogFragment extends DialogFragment {
 	/**
-	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
-	 */
-	private static final String PREVENT_RECREATION = "preventRecreation";
-	/**
 	 * Parameter to pass the list of devices to the fragment.
 	 */
 	private static final String PARAM_LIST_OF_DEVICES = "listOfDevices";
@@ -69,16 +65,6 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 	@Override
 	@Nonnull
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
-		// Listeners cannot retain functionality when automatically recreated.
-		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
-		boolean preventRecreation = false;
-		if (savedInstanceState != null) {
-			preventRecreation = savedInstanceState.getBoolean(PREVENT_RECREATION);
-		}
-		if (preventRecreation) {
-			dismiss();
-		}
-
 		final View view = View.inflate(requireActivity(), R.layout.dialog_select_device, null);
 		assert getArguments() != null;
 		@SuppressWarnings("unchecked")
@@ -119,13 +105,10 @@ public class SelectDeviceDialogFragment extends DialogFragment {
 	}
 
 	@Override
-	public final void onSaveInstanceState(@Nonnull final Bundle outState) {
-		if (mListener != null) {
-			// Typically cannot serialize the listener due to its reference to the activity.
-			mListener = null;
-			outState.putBoolean(PREVENT_RECREATION, true);
-		}
-		super.onSaveInstanceState(outState);
+	public final void onPause() {
+		super.onPause();
+		// this dialog does not support onPause as it has serialization issues in colors.
+		dismiss();
 	}
 
 	/**
