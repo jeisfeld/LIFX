@@ -5,6 +5,14 @@
       <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Git/LIFX/LifxTools/app/src/main/res/drawable/ic_action_refresh.xml" value="0.4027777777777778" />
+        <entry key="..\:/Git/LIFX/LifxTools/app/src/main/res/menu/main.xml" value="0.15185185185185185" />
+      </map>
+    </option>
+  </component>
   <component name="NullableNotNullManager">
     <option name="myDefaultNullable" value="org.jetbrains.annotations.Nullable" />
     <option name="myDefaultNotNull" value="android.annotation.NonNull" />

@@ -98,9 +98,8 @@ public class MainActivity extends AppCompatActivity {
 	public final boolean onOptionsItemSelected(final MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.action_refresh:
-			Intent intent = getIntent();
 			finish();
-			startActivity(intent);
+			startActivity(new Intent(this, MainActivity.class));
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
