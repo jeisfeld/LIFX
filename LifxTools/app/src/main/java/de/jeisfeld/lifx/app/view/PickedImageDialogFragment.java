@@ -46,13 +46,17 @@ public class PickedImageDialogFragment extends DialogFragment {
 	 * The overhead size taken when prescaling the image before setting contrast and saturation.
 	 */
 	private static final int PRESCALE_OVERHEAD_FACTOR = 4;
+	/**
+	 * Flag indicating if ok has been pressed.
+	 */
+	private boolean isOkPressed = false;
 
 	/**
 	 * Display a dialog for handling a picked image for a tile chain.
 	 *
 	 * @param activity the current activity
-	 * @param model the light model.
-	 * @param bitmap the picked image.
+	 * @param model    the light model.
+	 * @param bitmap   the picked image.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayPickedImageDialog(final FragmentActivity activity,
@@ -204,13 +208,14 @@ public class PickedImageDialogFragment extends DialogFragment {
 		builder.setTitle(R.string.title_dialog_image)
 				.setView(view) //
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
-					// Send the positive button event back to the host activity
+					// Send the negative button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogNegativeClick(PickedImageDialogFragment.this);
 					}
 				}) //
 				.setPositiveButton(R.string.button_ok, (dialog, id) -> {
-					// Send the negative button event back to the host activity
+					// Send the positive button event back to the host activity
+					isOkPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogPositiveClick(PickedImageDialogFragment.this, mCurrentColors);
 					}
@@ -229,8 +234,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 	@Override
 	public final void onPause() {
 		super.onPause();
-		// this dialog does not support onPause as it has serialization issues in colors.
-		if (mListener != null && mListener.getValue() != null) {
+		if (mListener != null && mListener.getValue() != null && !isOkPressed) {
 			mListener.getValue().onDialogNegativeClick(PickedImageDialogFragment.this);
 		}
 		dismiss();
