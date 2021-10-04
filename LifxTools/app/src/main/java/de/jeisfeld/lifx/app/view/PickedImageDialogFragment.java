@@ -47,9 +47,9 @@ public class PickedImageDialogFragment extends DialogFragment {
 	 */
 	private static final int PRESCALE_OVERHEAD_FACTOR = 4;
 	/**
-	 * Flag indicating if ok has been pressed.
+	 * Flag storing if the dialog is completed via button press.
 	 */
-	private boolean isOkPressed = false;
+	private boolean isButtonPressed = false;
 
 	/**
 	 * Display a dialog for handling a picked image for a tile chain.
@@ -209,13 +209,14 @@ public class PickedImageDialogFragment extends DialogFragment {
 				.setView(view) //
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 					// Send the negative button event back to the host activity
+					isButtonPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogNegativeClick(PickedImageDialogFragment.this);
 					}
 				}) //
 				.setPositiveButton(R.string.button_ok, (dialog, id) -> {
 					// Send the positive button event back to the host activity
-					isOkPressed = true;
+					isButtonPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogPositiveClick(PickedImageDialogFragment.this, mCurrentColors);
 					}
@@ -234,7 +235,7 @@ public class PickedImageDialogFragment extends DialogFragment {
 	@Override
 	public final void onPause() {
 		super.onPause();
-		if (mListener != null && mListener.getValue() != null && !isOkPressed) {
+		if (mListener != null && mListener.getValue() != null && !isButtonPressed) {
 			mListener.getValue().onDialogNegativeClick(PickedImageDialogFragment.this);
 		}
 		dismiss();

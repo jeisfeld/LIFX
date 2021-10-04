@@ -33,16 +33,20 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	 * Parameter to pass the picked bitmap to the DialogFragment.
 	 */
 	private static final String PARAM_INITIAL_BRIGHTNESS = "initialBrightness";
+	/**
+	 * Flag storing if the dialog is completed via button press.
+	 */
+	private boolean isButtonPressed = false;
 
 	/**
 	 * Display a dialog for handling a picked image for a tile chain.
 	 *
 	 * @param activity the current activity
-	 * @param model the light model.
+	 * @param model    the light model.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayPickedImageDialog(final FragmentActivity activity,
-			final TileViewModel model,
+												final TileViewModel model,
 			final TuneTilesDialogListener listener) {
 		TuneTilesDialogFragment fragment = new TuneTilesDialogFragment();
 		fragment.setListener(listener);
@@ -140,13 +144,15 @@ public class TuneTilesDialogFragment extends DialogFragment {
 		builder.setTitle(R.string.title_dialog_image)
 				.setView(view) //
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
-					// Send the positive button event back to the host activity
+					// Send the negative button event back to the host activity
+					isButtonPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogNegativeClick(TuneTilesDialogFragment.this, mInitialColors);
 					}
 				}) //
 				.setPositiveButton(R.string.button_ok, (dialog, id) -> {
-					// Send the negative button event back to the host activity
+					// Send the positive button event back to the host activity
+					isButtonPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogPositiveClick(TuneTilesDialogFragment.this, mCurrentColors);
 					}
@@ -166,7 +172,7 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	public final void onPause() {
 		super.onPause();
 		// this dialog does not support onPause as it has serialization issues in colors.
-		if (mListener != null && mListener.getValue() != null) {
+		if (mListener != null && mListener.getValue() != null && !isButtonPressed) {
 			mListener.getValue().onDialogNegativeClick(TuneTilesDialogFragment.this, mInitialColors);
 		}
 		dismiss();

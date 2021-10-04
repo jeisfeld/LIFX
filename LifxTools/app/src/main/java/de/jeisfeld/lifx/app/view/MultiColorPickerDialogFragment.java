@@ -143,14 +143,14 @@ public class MultiColorPickerDialogFragment extends DialogFragment {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setView(view) //
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
-					// Send the positive button event back to the host activity
+					// Send the negative button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogNegativeClick(MultiColorPickerDialogFragment.this);
 					}
 					mIsButtonPressed = true;
 				}) //
 				.setPositiveButton(R.string.button_ok, (dialog, id) -> {
-					// Send the negative button event back to the host activity
+					// Send the positive button event back to the host activity
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogPositiveClick(MultiColorPickerDialogFragment.this, getSelectedColors(),
 								mToggleButtonCyclic.isChecked(), mFlags);
