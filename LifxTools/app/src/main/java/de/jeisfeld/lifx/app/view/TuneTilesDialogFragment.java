@@ -36,7 +36,7 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	/**
 	 * Flag storing if the dialog is completed via button press.
 	 */
-	private boolean isButtonPressed = false;
+	private boolean mIsButtonPressed = false;
 
 	/**
 	 * Display a dialog for handling a picked image for a tile chain.
@@ -145,14 +145,14 @@ public class TuneTilesDialogFragment extends DialogFragment {
 				.setView(view) //
 				.setNegativeButton(R.string.button_cancel, (dialog, id) -> {
 					// Send the negative button event back to the host activity
-					isButtonPressed = true;
+					mIsButtonPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogNegativeClick(TuneTilesDialogFragment.this, mInitialColors);
 					}
 				}) //
 				.setPositiveButton(R.string.button_ok, (dialog, id) -> {
 					// Send the positive button event back to the host activity
-					isButtonPressed = true;
+					mIsButtonPressed = true;
 					if (mListener != null && mListener.getValue() != null) {
 						mListener.getValue().onDialogPositiveClick(TuneTilesDialogFragment.this, mCurrentColors);
 					}
@@ -172,7 +172,7 @@ public class TuneTilesDialogFragment extends DialogFragment {
 	public final void onPause() {
 		super.onPause();
 		// this dialog does not support onPause as it has serialization issues in colors.
-		if (mListener != null && mListener.getValue() != null && !isButtonPressed) {
+		if (mListener != null && mListener.getValue() != null && !mIsButtonPressed) {
 			mListener.getValue().onDialogNegativeClick(TuneTilesDialogFragment.this, mInitialColors);
 		}
 		dismiss();
