@@ -36,14 +36,12 @@
             android:name="de.jeisfeld.lifx.app.animation.LifxAnimationService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice"
-            android:process=":de.jeisfeld.lifx.app.animation.LifxAnimationService" />
+            android:foregroundServiceType="connectedDevice" />
         <service
             android:name="de.jeisfeld.lifx.app.alarms.LifxAlarmService"
             android:enabled="true"
             android:exported="false"
-            android:foregroundServiceType="connectedDevice"
-            android:process=":de.jeisfeld.lifx.app.alarms.LifxAlarmService" />
+            android:foregroundServiceType="connectedDevice" />
 
         <receiver
             android:name="de.jeisfeld.lifx.app.alarms.BootReceiver"
