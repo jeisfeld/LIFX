@@ -192,7 +192,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 			intent.putExtra(EXTRA_ALARM_TIME, alarmTime);
 		}
 		return PendingIntent.getBroadcast(context, alarmId, intent,
-				isNew ? PendingIntent.FLAG_CANCEL_CURRENT : PendingIntent.FLAG_UPDATE_CURRENT);
+				isNew ? PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE
+						: PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 	}
 
 	/**

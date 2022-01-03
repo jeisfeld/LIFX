@@ -273,7 +273,7 @@ public class LifxAnimationService extends Service {
 	private void startNotification() {
 		Intent notificationIntent = new Intent(this, MainActivity.class);
 		PendingIntent pendingIntent = PendingIntent.getActivity(this,
-				REQUEST_CODE, notificationIntent, 0);
+				REQUEST_CODE, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
 		Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_animation))
 				.setContentText(getString(R.string.notification_text_animation_running, getAnimatedDevicesString()))

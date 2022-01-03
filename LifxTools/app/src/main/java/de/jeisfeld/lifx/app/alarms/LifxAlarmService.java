@@ -18,6 +18,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -494,7 +495,8 @@ public class LifxAlarmService extends Service {
 			return;
 		}
 		PendingIntent contentIntent = PendingIntent.getActivity(this, REQUEST_CODE,
-				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_CANCEL_CURRENT);
+				MainActivity.createIntent(this, R.id.nav_alarms),
+				PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 		String notificationMessage = getRunningAlarmsString();
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
 				.setContentTitle(getString(R.string.notification_title_alarm))
@@ -600,7 +602,7 @@ public class LifxAlarmService extends Service {
 		StringBuilder builder = new StringBuilder();
 		if (PENDING_ALARMS.size() > 0) {
 			List<Alarm> pendingAlarms = new ArrayList<>(PENDING_ALARMS.values());
-			pendingAlarms.sort((o1, o2) -> o1.getStartTime().compareTo(o2.getStartTime()));
+			pendingAlarms.sort(Comparator.comparing(Alarm::getStartTime));
 			String dateFormat = DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEHHmm");
 			for (Alarm alarm : pendingAlarms) {
 				DateFormat.format(dateFormat, alarm.getStartTime());

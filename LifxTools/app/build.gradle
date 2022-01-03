@@ -6,7 +6,7 @@ android {
     defaultConfig {
         applicationId "de.jeisfeld.lifx.app"
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 31
         versionCode 23
         versionName "0.4.14"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
