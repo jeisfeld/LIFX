@@ -194,10 +194,12 @@ public class DeviceAdapter extends BaseAdapter {
 
 	/**
 	 * Refresh view data for all devices.
+	 *
+	 * @param isHighPriority flag indicating if this is high priority refresh.
 	 */
-	protected void refresh() {
+	protected void refresh(final boolean isHighPriority) {
 		for (MainViewModel model : mViewModels) {
-			model.refresh();
+			model.refresh(isHighPriority);
 		}
 	}
 

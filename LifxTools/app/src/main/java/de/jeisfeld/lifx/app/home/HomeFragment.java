@@ -21,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.ListFragment;
 import de.jeisfeld.lifx.app.Application;
@@ -56,6 +57,10 @@ public class HomeFragment extends ListFragment {
 	 * The adapter used.
 	 */
 	private DeviceAdapter mAdapter;
+	/**
+	 * The view creation time.
+	 */
+	private long mViewCreationTime;
 
 	/**
 	 * Send broadcast to home fragment informing about the end of an animation.
@@ -75,8 +80,8 @@ public class HomeFragment extends ListFragment {
 	}
 
 	@Override
-	public final void onActivityCreated(final Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
+	public final void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
 		if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
 			getListView().setVisibility(View.GONE);
@@ -99,6 +104,8 @@ public class HomeFragment extends ListFragment {
 				}
 			}
 		};
+
+		mViewCreationTime = System.currentTimeMillis();
 	}
 
 	@Override
@@ -108,10 +115,13 @@ public class HomeFragment extends ListFragment {
 		requireActivity().registerReceiver(mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT));
 
 		mExecutor = Executors.newScheduledThreadPool(1);
-		if (PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0) {
-			mExecutor.scheduleAtFixedRate(() -> mAdapter.refresh(), 0,
-					PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period),
-					TimeUnit.MILLISECONDS);
+		long refreshDelay = PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period);
+		// Avoid duplication of refresh immediately after creation of fragment, but refresh when bringing to foreground again
+		if (System.currentTimeMillis() - mViewCreationTime > TimeUnit.SECONDS.toMillis(1)) {
+			mAdapter.refresh(true);
+		}
+		if (refreshDelay > 0) {
+			mExecutor.scheduleAtFixedRate(() -> mAdapter.refresh(false), refreshDelay, refreshDelay, TimeUnit.MILLISECONDS);
 		}
 	}
 

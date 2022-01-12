@@ -100,6 +100,13 @@ public class GroupViewModel extends MainViewModel {
 	}
 
 	@Override
+	protected final void refresh(final boolean isHighPriority) {
+		if (isHighPriority) {
+			checkPower();
+		}
+	}
+
+	@Override
 	public final void togglePower() {
 		new TogglePowerTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 	}
@@ -116,11 +123,7 @@ public class GroupViewModel extends MainViewModel {
 		synchronized (mRunningSetColorTasks) {
 			for (Device device : DeviceRegistry.getInstance().getDevices(mGroupId, false)) {
 				if (device instanceof Light) {
-					List<AsyncExecutable> tasksForDevice = mRunningSetColorTasks.get(device);
-					if (tasksForDevice == null) {
-						tasksForDevice = new ArrayList<>();
-						mRunningSetColorTasks.put(device, tasksForDevice);
-					}
+					List<AsyncExecutable> tasksForDevice = mRunningSetColorTasks.computeIfAbsent(device, k -> new ArrayList<>());
 					tasksForDevice.add(new SetColorTask(this, brightness, (Light) device));
 
 					if (tasksForDevice.size() > 2) {
@@ -144,11 +147,7 @@ public class GroupViewModel extends MainViewModel {
 		synchronized (mRunningSetColorTasks) {
 			for (Device device : DeviceRegistry.getInstance().getDevices(mGroupId, false)) {
 				if (device instanceof Light) {
-					List<AsyncExecutable> tasksForDevice = mRunningSetColorTasks.get(device);
-					if (tasksForDevice == null) {
-						tasksForDevice = new ArrayList<>();
-						mRunningSetColorTasks.put(device, tasksForDevice);
-					}
+					List<AsyncExecutable> tasksForDevice = mRunningSetColorTasks.computeIfAbsent(device, k -> new ArrayList<>());
 					tasksForDevice.add(new SetColorTask(this, color, (Light) device));
 
 					if (tasksForDevice.size() > 2) {

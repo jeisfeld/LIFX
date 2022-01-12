@@ -177,9 +177,9 @@ public class MultizoneViewModel extends LightViewModel {
 	}
 
 	@Override
-	protected final boolean isRefreshAllowed() {
+	protected final boolean isRefreshColorsAllowed() {
 		// Due to tendency for connectivity issues, check Multizone light only if disconnected or if colors have not yet been initialized.
-		return super.isRefreshAllowed()
+		return super.isRefreshColorsAllowed()
 				&& (mColors.getValue() == null || (!Power.ON.equals(mPower.getValue()) && !Power.OFF.equals(mPower.getValue())));
 	}
 

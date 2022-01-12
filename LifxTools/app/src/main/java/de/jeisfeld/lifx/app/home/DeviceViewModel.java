@@ -31,7 +31,7 @@ public class DeviceViewModel extends MainViewModel {
 	 * Constructor.
 	 *
 	 * @param context the context.
-	 * @param device The device.
+	 * @param device  The device.
 	 */
 	public DeviceViewModel(final Context context, final Device device) {
 		super(context);
@@ -53,13 +53,13 @@ public class DeviceViewModel extends MainViewModel {
 	}
 
 	@Override
-	protected final void refresh() {
-		if (isRefreshAllowed()) {
+	protected final void refresh(final boolean isHighPriority) {
+		if (isRefreshPowerAllowed()) {
 			if (mPower.getValue() == null) {
 				new RefreshAfterCheckReachabilityTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 			}
 			else {
-				refreshRemoteData(true, false);
+				refreshRemoteData(true, isHighPriority || isRefreshColorsAllowed());
 			}
 		}
 	}
@@ -70,13 +70,22 @@ public class DeviceViewModel extends MainViewModel {
 	}
 
 	/**
-	 * Check if refresh is allowed.
+	 * Check if refresh of colors is allowed.
 	 *
-	 * @return true if refresh is allowed.
+	 * @return true if refresh of colors is allowed.
 	 */
-	protected boolean isRefreshAllowed() {
-		return PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period) > 0
-				&& PreferenceUtil.getSharedPreferenceIntString(R.string.key_pref_power_duration, R.string.pref_default_power_duration) > 0;
+	// OVERRIDABLE
+	protected boolean isRefreshColorsAllowed() {
+		return true;
+	}
+
+	/**
+	 * Check if refresh of power is allowed.
+	 *
+	 * @return true if refresh of power is allowed.
+	 */
+	private boolean isRefreshPowerAllowed() {
+		return PreferenceUtil.getSharedPreferenceIntString(R.string.key_pref_power_duration, R.string.pref_default_power_duration) > 0;
 	}
 
 	/**
@@ -180,7 +189,7 @@ public class DeviceViewModel extends MainViewModel {
 				return;
 			}
 			if (isReachable) {
-				model.refreshRemoteData(true, true);
+				model.refreshRemoteData(true, model.isRefreshColorsAllowed());
 			}
 		}
 	}

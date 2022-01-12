@@ -70,9 +70,11 @@ public abstract class MainViewModel extends ViewModel {
 
 	/**
 	 * Refresh the device. If offline, first check if online again.
+	 *
+	 * @param isHighPriority flag indicating if this is high priority refresh.
 	 */
 	// OVERRIDABLE
-	protected void refresh() {
+	protected void refresh(final boolean isHighPriority) {
 	}
 
 	/**
