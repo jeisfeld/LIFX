@@ -143,6 +143,6 @@
     <string name="toast_alarmtype_standard">O alarme termina automaticamente</string>
     <string name="toast_alarmtype_stopmanual">O alarme aguarda a parada manual</string>
     <string name="toast_alarmtype_cyclic">O alarme é executado ciclicamente, até que seja parado manualmente</string>
-    <string name="toast_alarmtype_stopsequence">Configuração da sequência de parada que é executada após a interrupção do alarme</string>
+    <string name="toast_alarmtype_stopsequence">Sequência de parada executada após a interrupção do alarme</string>
 
 </resources>

@@ -143,6 +143,6 @@
     <string name="toast_alarmtype_standard">Alarm endet automatisch</string>
     <string name="toast_alarmtype_stopmanual">Alarm wartet auf manuelle Beendigung</string>
     <string name="toast_alarmtype_cyclic">Alarm läuft zyklisch, bis er manuell beendet wird</string>
-    <string name="toast_alarmtype_stopsequence">Konfiguration der Stoppsequenz, die nach Beendigung des Alarms ausgeführt wird</string>
+    <string name="toast_alarmtype_stopsequence">Stoppsequenz, die nach Ende des Alarms ausgeführt wird</string>
 
 </resources>
