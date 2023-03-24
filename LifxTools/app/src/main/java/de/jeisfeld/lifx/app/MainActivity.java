@@ -1,8 +1,11 @@
 package de.jeisfeld.lifx.app;
 
+import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
@@ -15,6 +18,8 @@ import com.google.android.material.navigation.NavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -27,6 +32,10 @@ import de.jeisfeld.lifx.app.util.PreferenceUtil;
  * The main activity of the app.
  */
 public class MainActivity extends AppCompatActivity {
+	/**
+	 * The request code used to query for permission.
+	 */
+	protected static final int REQUEST_CODE_PERMISSION = 1;
 	/**
 	 * The resource key for the navigation page.
 	 */
@@ -76,6 +85,12 @@ public class MainActivity extends AppCompatActivity {
 			navController.navigate(navigationPageId);
 		}
 
+		if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+			if (ContextCompat.checkSelfPermission(this, permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+				ActivityCompat.requestPermissions(this, new String[]{permission.POST_NOTIFICATIONS}, REQUEST_CODE_PERMISSION);
+			}
+		}
+
 		WifiManager wifiManager = (WifiManager) this.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 		if (wifiManager != null && !wifiManager.isWifiEnabled()) {
 			if (VERSION.SDK_INT >= VERSION_CODES.Q) {
@@ -96,14 +111,12 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public final boolean onOptionsItemSelected(final MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_refresh:
+		if (item.getItemId() == R.id.action_refresh) {
 			finish();
 			startActivity(new Intent(this, MainActivity.class));
 			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override
