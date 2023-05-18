@@ -16,18 +16,18 @@
 	<classpathentry kind="lib" path="libs-local/core-1.9.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/appcompat-1.6.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/constraintlayout-2.1.4.jar"/>
-	<classpathentry kind="lib" path="libs-local/material-1.8.0.jar"/>
+	<classpathentry kind="lib" path="libs-local/material-1.9.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/savedstate-1.2.0.jar"/>
-	<classpathentry kind="lib" path="libs-local/lifecycle-viewmodel-2.5.1.jar"/>
-	<classpathentry kind="lib" path="libs-local/lifecycle-livedata-core-2.5.1.jar"/>
-	<classpathentry kind="lib" path="libs-local/lifecycle-common-2.5.1.jar"/>
-	<classpathentry kind="lib" path="libs-local/activity-1.6.1.jar"/>
+	<classpathentry kind="lib" path="libs-local/lifecycle-viewmodel-2.6.1.jar"/>
+	<classpathentry kind="lib" path="libs-local/lifecycle-livedata-core-2.6.1.jar"/>
+	<classpathentry kind="lib" path="libs-local/lifecycle-common-2.6.1.jar"/>
+	<classpathentry kind="lib" path="libs-local/activity-1.7.1.jar"/>
 	<classpathentry kind="lib" path="libs-local/localbroadcastmanager-1.1.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/preference-1.2.0.jar"/>
 	<classpathentry kind="lib" path="libs-local/colorpickerview-2.2.1.jar"/>
 	<classpathentry kind="lib" path="libs-local/recyclerview-1.2.1.jar"/>
 	<classpathentry kind="lib" path="libs-local/R.jar"/>
-	<classpathentry kind="lib" path="libs-local/fragment-1.5.5.jar"/>
+	<classpathentry kind="lib" path="libs-local/fragment-1.5.7.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
