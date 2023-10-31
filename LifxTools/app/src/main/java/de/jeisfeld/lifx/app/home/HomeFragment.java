@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.ListFragment;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
@@ -112,7 +113,7 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
-		requireActivity().registerReceiver(mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT));
+		ContextCompat.registerReceiver(requireActivity(), mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT), ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		mExecutor = Executors.newScheduledThreadPool(1);
 		long refreshDelay = PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period);
