@@ -7,8 +7,8 @@ android {
         applicationId "de.jeisfeld.lifx.app"
         minSdk 24
         targetSdk 35
-        versionCode 29
-        versionName "0.4.19"
+        versionCode 30
+        versionName "0.4.20"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -29,12 +29,12 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'androidx.navigation:navigation-fragment:2.8.9'
-    implementation 'androidx.navigation:navigation-ui:2.8.9'
-    implementation 'androidx.fragment:fragment:1.8.6'
+    implementation 'androidx.navigation:navigation-fragment:2.9.0'
+    implementation 'androidx.navigation:navigation-ui:2.9.0'
+    implementation 'androidx.fragment:fragment:1.8.8'
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
     implementation 'com.github.skydoves:colorpickerview:2.2.1'
