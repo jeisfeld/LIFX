@@ -42,7 +42,7 @@ public class TileStateTileEffect extends ResponseMessage {
 	/**
 	 * The effect parameters.
 	 */
-	private int[] mParameters;
+	private byte[] mParameters;
 	/**
 	 * The palette size.
 	 */
@@ -76,9 +76,9 @@ public class TileStateTileEffect extends ResponseMessage {
 		mSpeed = byteBuffer.getInt();
 		mDuration = byteBuffer.getLong();
 		byteBuffer.getLong();
-		mParameters = new int[TileEffectInfo.TILE_EFFECT_PARAMETER_COUNT];
+		mParameters = new byte[TileEffectInfo.TILE_EFFECT_PARAMETER_COUNT];
 		for (int i = 0; i < TileEffectInfo.TILE_EFFECT_PARAMETER_COUNT; i++) {
-			mParameters[i] = byteBuffer.getInt();
+			mParameters[i] = byteBuffer.get();
 		}
 		mPaletteCount = byteBuffer.get();
 		mPaletteColors = new Color[PALETTE_COUNT_IN_MESSAGE];

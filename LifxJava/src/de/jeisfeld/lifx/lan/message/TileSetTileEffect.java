@@ -42,7 +42,7 @@ public class TileSetTileEffect extends RequestMessage {
 		byteBuffer.putLong(mDuration);
 		byteBuffer.putLong(0);
 		for (int i = 0; i < TileEffectInfo.TILE_EFFECT_PARAMETER_COUNT; i++) {
-			byteBuffer.putInt(mTileEffectInfo.getParameters()[i]);
+			byteBuffer.put(mTileEffectInfo.getParameters()[i]);
 		}
 		byteBuffer.put((byte) mTileEffectInfo.getPaletteColors().size());
 		for (Color color : mTileEffectInfo.getPaletteColors()) {

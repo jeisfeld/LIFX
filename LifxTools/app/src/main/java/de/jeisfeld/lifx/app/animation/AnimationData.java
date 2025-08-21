@@ -222,6 +222,10 @@ public abstract class AnimationData implements Serializable {
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
 			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors2 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainMorph(duration, tileColors2, false);
+		case TILECHAIN_SKY:
+			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
+			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors3 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			return new TileChainSky(duration, tileColors3, false);
 		default:
 			return null;
 		}
@@ -271,6 +275,10 @@ public abstract class AnimationData implements Serializable {
 			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
 			ArrayList<Color> tileColors2 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
 			return new TileChainMorph(duration, tileColors2, false);
+		case TILECHAIN_SKY:
+			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
+			ArrayList<Color> tileColors3 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
+			return new TileChainSky(duration, tileColors3, false);
 		default:
 			return null;
 		}
@@ -313,7 +321,11 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain morph.
 		 */
-		TILECHAIN_MORPH;
+		TILECHAIN_MORPH,
+		/**
+		 * Tileshain sky.
+		 */
+		TILECHAIN_SKY;
 
 		/**
 		 * Get Animation Type from its ordinal value.

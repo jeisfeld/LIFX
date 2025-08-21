@@ -8,7 +8,9 @@ public enum TileEffectType {
 	OFF,
 	UNKNOWN,
 	MORPH,
-	FLAME;
+	FLAME,
+	UNKNOWN2,
+	SKY;
 	// JAVADOC:ON
 
 	/**

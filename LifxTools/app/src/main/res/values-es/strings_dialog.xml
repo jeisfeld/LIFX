@@ -105,6 +105,7 @@
         <item>transición de imagen</item>
         <item>fuego</item>
         <item>metamorfosis</item>
+        <item>cielo</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>hacia fuera</item>

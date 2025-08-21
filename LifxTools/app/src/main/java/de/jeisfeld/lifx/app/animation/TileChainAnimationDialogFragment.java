@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
@@ -108,6 +110,19 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		final CheckBox checkBoxAdjustBrightness = parentView.findViewById(R.id.checkboxAdjustBrightness);
 		final ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
 
+		if (mModel != null && mModel.getValue() != null && mModel.getValue().getLight() != null
+				&& mModel.getValue().getLight().getProduct().isChain()) {
+			ArrayList<String> items = new ArrayList<>(Arrays.asList(
+					getResources().getStringArray(R.array.values_tilechain_animation_type)));
+			if (items.size() > TileChainAnimationType.SKY.ordinal()) {
+				items.remove(TileChainAnimationType.SKY.ordinal());
+			}
+			ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
+					android.R.layout.simple_spinner_item, items);
+			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+			spinnerAnimationType.setAdapter(adapter);
+		}
+
 		prepareSpinnerListener(parentView, spinnerAnimationType);
 
 		mColors.add(Color.RED);
@@ -179,6 +194,10 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainMorph(duration, mColors, false));
 							break;
+						case SKY:
+							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+									new TileChainSky(duration, mColors, false));
+							break;
 						case WAVE:
 						default:
 							double lightRadius =
@@ -236,6 +255,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
 					break;
 				case MORPH:
+				case SKY:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
@@ -298,7 +318,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Morph.
 		 */
-		MORPH;
+		MORPH,
+		/**
+		 * Sky.
+		 */
+		SKY;
 
 		/**
 		 * Get TileChainAnimationType from its ordinal value.
@@ -306,7 +330,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		 * @param ordinal The ordinal value.
 		 * @return The TileChainAnimationType.
 		 */
-		protected static TileChainAnimationType fromOrdinal(final int ordinal) {
+		private static TileChainAnimationType fromOrdinal(final int ordinal) {
 			for (TileChainAnimationType animationType : values()) {
 				if (ordinal == animationType.ordinal()) {
 					return animationType;

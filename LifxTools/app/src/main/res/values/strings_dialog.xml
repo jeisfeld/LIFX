@@ -105,6 +105,7 @@
         <item>image transition</item>
         <item>flame</item>
         <item>morph</item>
+        <item>sky</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>outward</item>
