@@ -87,6 +87,25 @@
             android:spinnerMode="dropdown" />
     </TableRow>
 
+    <TableRow
+        android:id="@+id/tableRowCloudSaturation"
+        android:visibility="gone">
+
+        <TextView
+            android:labelFor="@id/editTextCloudSaturation"
+            android:text="@string/label_animation_cloud_saturation"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <EditText
+            android:id="@+id/editTextCloudSaturation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autofillHints=""
+            android:inputType="number"
+            android:text="50"
+            tools:ignore="HardcodedText" />
+    </TableRow>
+
     <TableRow android:id="@+id/tableRowColors">
 
         <TextView

@@ -13,11 +13,11 @@ public class TileEffectInfo {
 	/**
 	 * The number of parameters.
 	 */
-	public static final int TILE_EFFECT_PARAMETER_COUNT = 8;
+	public static final int TILE_EFFECT_PARAMETER_COUNT = 32;
 	/**
 	 * Empty parameter set.
 	 */
-	private static final int[] EMPTY_PARAMETERS = new int[TILE_EFFECT_PARAMETER_COUNT];
+	private static final byte[] EMPTY_PARAMETERS = new byte[TILE_EFFECT_PARAMETER_COUNT];
 	/**
 	 * The instance id used by these classes.
 	 */
@@ -42,7 +42,7 @@ public class TileEffectInfo {
 	/**
 	 * The effect parameters.
 	 */
-	private final int[] mParameters;
+	private final byte[] mParameters;
 	/**
 	 * The palette colors.
 	 */
@@ -51,14 +51,14 @@ public class TileEffectInfo {
 	/**
 	 * Constructor.
 	 *
-	 * @param instanceId The instance id.
-	 * @param type The effect type.
-	 * @param speed The effect speed.
-	 * @param parameters The effect parameters.
+	 * @param instanceId    The instance id.
+	 * @param type          The effect type.
+	 * @param speed         The effect speed.
+	 * @param parameters    The effect parameters.
 	 * @param paletteColors The palette colors.
 	 */
-	public TileEffectInfo(final int instanceId, final TileEffectType type, final int speed, final int[] parameters,
-			final List<Color> paletteColors) {
+	public TileEffectInfo(final int instanceId, final TileEffectType type, final int speed, final byte[] parameters,
+						  final List<Color> paletteColors) {
 		mInstanceId = instanceId;
 		mType = type;
 		mSpeed = speed;
@@ -74,11 +74,11 @@ public class TileEffectInfo {
 		result.append("Speed=").append(TypeUtil.toUnsignedString(mSpeed)).append(", ");
 
 		StringBuilder parameterString = new StringBuilder("[");
-		for (int parameter : mParameters) {
+		for (byte parameter : mParameters) {
 			parameterString.append(TypeUtil.toUnsignedString(parameter)).append(", ");
 		}
 		parameterString.replace(parameterString.length() - 2, parameterString.length(), "]");
-		result.append("Parameters=").append(parameterString.toString()).append(", ");
+		result.append("Parameters=").append(parameterString).append(", ");
 
 		result.append("Colors=").append(mPaletteColors.toString());
 		return result.toString();
@@ -116,7 +116,7 @@ public class TileEffectInfo {
 	 *
 	 * @return the effect parameters
 	 */
-	public final int[] getParameters() {
+	public final byte[] getParameters() {
 		return mParameters;
 	}
 
@@ -162,7 +162,7 @@ public class TileEffectInfo {
 		/**
 		 * Create Morph info.
 		 *
-		 * @param speed The speed
+		 * @param speed  The speed
 		 * @param colors The palette colors.
 		 */
 		public Morph(final int speed, final Color... colors) {
@@ -170,4 +170,37 @@ public class TileEffectInfo {
 		}
 	}
 
+        /**
+         * Tile effect info for Clouds.
+         */
+        public static class Clouds extends TileEffectInfo {
+                /**
+                 * Create Flame info.
+                 *
+                 * @param speed              The speed
+                 * @param cloudsType        The clouds type
+                 * @param cloudSaturationMin The minimum cloud saturation
+                 * @param colors             The palette colors.
+                 */
+                public Clouds(final int speed, final TileEffectCloudsType cloudsType, final byte cloudSaturationMin,
+                                final Color... colors) {
+                        super(INSTANCE_ID, TileEffectType.CLOUDS, speed,
+                                        TileEffectInfo.getCloudsParameters(cloudsType, cloudSaturationMin),
+                                        Arrays.asList(colors));
+                }
+        }
+
+        /**
+         * Get clouds parameters for request.
+         *
+         * @param cloudsType        The clouds type
+         * @param cloudSaturationMin The minimum cloud saturation
+         * @return The clouds parameters
+         */
+        private static byte[] getCloudsParameters(final TileEffectCloudsType cloudsType, final byte cloudSaturationMin) {
+                byte[] cloudsParameters = new byte[TILE_EFFECT_PARAMETER_COUNT];
+                cloudsParameters[0] = (byte) cloudsType.ordinal();
+                cloudsParameters[4] = cloudSaturationMin;
+                return cloudsParameters;
+        }
 }

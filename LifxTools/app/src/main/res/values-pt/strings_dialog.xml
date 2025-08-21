@@ -88,6 +88,7 @@
     <string name="label_animation_direction">Direção</string>
     <string name="label_animation_form">Forma</string>
     <string name="label_animation_colors">Cores</string>
+    <string name="label_animation_cloud_saturation">Saturação das nuvens</string>
     <string name="label_animation_color_regex">Cores (RegEx)</string>
     <string name="label_animation_adjust_brightness">Ajustar brilho</string>
 
@@ -105,6 +106,7 @@
         <item>transição de imagem</item>
         <item>chama</item>
         <item>metamorfose</item>
+        <item>nuvens</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>para fora</item>

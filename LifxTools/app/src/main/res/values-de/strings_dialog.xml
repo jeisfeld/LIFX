@@ -88,6 +88,7 @@
     <string name="label_animation_direction">Richtung</string>
     <string name="label_animation_form">Form</string>
     <string name="label_animation_colors">Farben</string>
+    <string name="label_animation_cloud_saturation">Wolkensättigung</string>
     <string name="label_animation_color_regex">Farben (RegEx)</string>
     <string name="label_animation_adjust_brightness">Helligkeit anpassen</string>
 
@@ -105,6 +106,7 @@
         <item>Bildübergang</item>
         <item>Flamme</item>
         <item>Metamorphose</item>
+        <item>Wolken</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>auswärts</item>
