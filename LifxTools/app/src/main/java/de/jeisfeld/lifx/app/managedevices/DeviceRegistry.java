@@ -189,7 +189,8 @@ public final class DeviceRegistry implements DeviceRegistryInterface {
 				Iterator<Integer> paramIterator = tileParameters.iterator();
 				for (int i = 0; i < tileCount; i++) {
 					tileInfoList.add(new TileInfo(paramIterator.next().byteValue(), paramIterator.next().byteValue(),
-							paramIterator.next(), paramIterator.next(), Rotation.fromOrdinal(paramIterator.next())));
+							paramIterator.next(), paramIterator.next(),
+							product.isChain() ? Rotation.fromOrdinal(paramIterator.next()) : Rotation.UPRIGHT));
 
 				}
 			}

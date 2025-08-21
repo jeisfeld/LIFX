@@ -104,6 +104,9 @@ public class TileInfo implements Serializable {
 		tileInfo.mMinorVersion = byteBuffer.getShort();
 		tileInfo.mMajorVersion = byteBuffer.getShort();
 		byteBuffer.getInt();
+		if (!tileInfo.mProduct.isChain()) {
+			tileInfo.mRotation = Rotation.UPRIGHT;
+		}
 		return tileInfo;
 	}
 

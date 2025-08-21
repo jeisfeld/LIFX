@@ -165,7 +165,7 @@ public class Device implements Serializable {
 	public Device getDeviceProduct() throws IOException {
 		retrieveVersionInformation();
 		Device device = this;
-		if (mProduct.isChain()) {
+		if (mProduct.isMatrix()) {
 			device = new TileChain(this);
 		}
 		else if (mProduct.isMultizone()) {

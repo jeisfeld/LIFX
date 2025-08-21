@@ -88,10 +88,18 @@ public class TileSetTileState64 extends RequestMessage {
 		byteBuffer.put(mWidth);
 		byteBuffer.putInt(mDuration);
 		for (Color color : mColors) {
-			byteBuffer.putShort(color.getHue());
-			byteBuffer.putShort(color.getSaturation());
-			byteBuffer.putShort(color.getBrightness());
-			byteBuffer.putShort(color.getColorTemperature());
+			if (color == null) {
+				byteBuffer.putShort((short) 0);
+				byteBuffer.putShort((short) 0);
+				byteBuffer.putShort((short) 0);
+				byteBuffer.putShort((short) 0);
+			}
+			else {
+				byteBuffer.putShort(color.getHue());
+				byteBuffer.putShort(color.getSaturation());
+				byteBuffer.putShort(color.getBrightness());
+				byteBuffer.putShort(color.getColorTemperature());
+			}
 		}
 		return byteBuffer.array();
 	}
