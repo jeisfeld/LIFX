@@ -126,16 +126,26 @@ public final class ColorUtil {
 	 */
 	public static GradientDrawable getButtonDrawable(final Context context, final List<Color> colors) {
 		List<Color> enhancedColors = new ArrayList<>();
-		Iterator<Color> colorIterator = colors.iterator();
-		Color color = colorIterator.next();
-		enhancedColors.add(color);
-		while (colorIterator.hasNext()) {
-			Color newColor = colorIterator.next();
-			enhancedColors.add(color.add(newColor, 0.25)); // MAGIC_NUMBER
-			enhancedColors.add(color.add(newColor, 0.5)); // MAGIC_NUMBER
-			enhancedColors.add(color.add(newColor, 0.75)); // MAGIC_NUMBER
-			enhancedColors.add(newColor);
-			color = newColor;
+		if (colors.size() == 0) {
+			enhancedColors.add(Color.OFF);
+			enhancedColors.add(Color.OFF);
+		}
+		else if (colors.size() == 1) {
+			enhancedColors.add(colors.get(0));
+			enhancedColors.add(colors.get(0));
+		}
+		else {
+			Iterator<Color> colorIterator = colors.iterator();
+			Color color = colorIterator.next();
+			enhancedColors.add(color);
+			while (colorIterator.hasNext()) {
+				Color newColor = colorIterator.next();
+				enhancedColors.add(color.add(newColor, 0.25)); // MAGIC_NUMBER
+				enhancedColors.add(color.add(newColor, 0.5)); // MAGIC_NUMBER
+				enhancedColors.add(color.add(newColor, 0.75)); // MAGIC_NUMBER
+				enhancedColors.add(newColor);
+				color = newColor;
+			}
 		}
 
 		GradientDrawable drawable = new GradientDrawable();

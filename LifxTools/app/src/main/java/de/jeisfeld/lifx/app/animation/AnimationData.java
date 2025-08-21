@@ -65,6 +65,10 @@ public abstract class AnimationData implements Serializable {
 	 */
 	protected static final String EXTRA_ANIMATION_IS_RUNNING = "de.jeisfeld.lifx.ANIMATION_IS_RUNNING";
 	/**
+	 * Key for the animation cloud saturation within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_CLOUD_SATURATION = "de.jeisfeld.lifx.ANIMATION_CLOUD_SATURATION";
+	/**
 	 * Key for the multizone colors within the intent.
 	 */
 	protected static final String EXTRA_MULTIZONE_COLORS = "de.jeisfeld.lifx.MULTIZONE_COLORS";
@@ -222,6 +226,11 @@ public abstract class AnimationData implements Serializable {
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
 			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors2 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainMorph(duration, tileColors2, false);
+		case TILECHAIN_CLOUDS:
+			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
+			final int cloudSaturation = intent.getIntExtra(EXTRA_ANIMATION_CLOUD_SATURATION, (byte) 50);
+			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors3 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
 		default:
 			return null;
 		}
@@ -271,6 +280,11 @@ public abstract class AnimationData implements Serializable {
 			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
 			ArrayList<Color> tileColors2 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
 			return new TileChainMorph(duration, tileColors2, false);
+		case TILECHAIN_CLOUDS:
+			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
+			final int cloudSaturation = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_cloud_saturation, colorId, 50);
+			ArrayList<Color> tileColors3 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
+			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
 		default:
 			return null;
 		}
@@ -313,7 +327,11 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain morph.
 		 */
-		TILECHAIN_MORPH;
+		TILECHAIN_MORPH,
+		/**
+		 * Tilechain clouds.
+		 */
+		TILECHAIN_CLOUDS;
 
 		/**
 		 * Get Animation Type from its ordinal value.
@@ -321,7 +339,7 @@ public abstract class AnimationData implements Serializable {
 		 * @param ordinal The ordinal value.
 		 * @return The animationType.
 		 */
-		protected static AnimationType fromOrdinal(final int ordinal) {
+		private static AnimationType fromOrdinal(final int ordinal) {
 			for (AnimationType animationType : values()) {
 				if (ordinal == animationType.ordinal()) {
 					return animationType;

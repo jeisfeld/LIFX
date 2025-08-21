@@ -14,6 +14,7 @@ import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
+import de.jeisfeld.lifx.app.animation.TileChainClouds;
 import de.jeisfeld.lifx.app.animation.TileChainFlame;
 import de.jeisfeld.lifx.app.animation.TileChainMorph;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -157,7 +158,7 @@ public class TileViewModel extends LightViewModel {
 	protected final void doUpdateBrightness(final double brightness) {
 		TileChainColors oldColors = mColors.getValue();
 		if (oldColors != null) {
-			if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) == AnimationStatus.NATIVE) {
+			if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) == AnimationStatus.NATIVE && getDevice().getProduct().isChain()) {
 				updateColors(null, brightness, true, false);
 			}
 			else {
@@ -225,7 +226,7 @@ public class TileViewModel extends LightViewModel {
 			if (model == null) {
 				return null;
 			}
-			if (model.getLight().getTileInfo() == null || model.getLight().getTileInfo().size() == 0
+			if (model.getLight().getTileInfo() == null || model.getLight().getTileInfo().isEmpty()
 					|| model.getLight().getTileInfo().get(0).getAccelerationX() == 0) {
 				model.getLight().refreshTileInfo();
 				if (model.getLight().getTileInfo() == null) {
@@ -259,6 +260,14 @@ public class TileViewModel extends LightViewModel {
 							model.startAnimation(animationData);
 						}
 						break;
+                                        case CLOUDS:
+                                                if (animationStatus == AnimationStatus.OFF) {
+													animationData = new TileChainClouds(effectInfo.getSpeed(),
+															effectInfo.getParameters()[4],
+															effectInfo.getPaletteColors(), true);
+                                                        model.startAnimation(animationData);
+                                                }
+                                                break;
 					case OFF:
 						if (animationStatus == AnimationStatus.NATIVE) {
 							model.stopAnimation();
@@ -357,7 +366,7 @@ public class TileViewModel extends LightViewModel {
 			}
 			synchronized (model.mRunningSetColorTasks) {
 				model.mRunningSetColorTasks.remove(this);
-				if (model.mRunningSetColorTasks.size() > 0) {
+				if (!model.mRunningSetColorTasks.isEmpty()) {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
 			}
