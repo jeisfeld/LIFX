@@ -16,7 +16,7 @@ import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.animation.TileChainFlame;
 import de.jeisfeld.lifx.app.animation.TileChainMorph;
-import de.jeisfeld.lifx.app.animation.TileChainSky;
+import de.jeisfeld.lifx.app.animation.TileChainClouds;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
@@ -260,12 +260,12 @@ public class TileViewModel extends LightViewModel {
 							model.startAnimation(animationData);
 						}
 						break;
-					case SKY:
-						if (animationStatus == AnimationStatus.OFF) {
-							animationData = new TileChainSky(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
-							model.startAnimation(animationData);
-						}
-						break;
+                                        case CLOUDS:
+                                                if (animationStatus == AnimationStatus.OFF) {
+                                                        animationData = new TileChainClouds(effectInfo.getSpeed(), effectInfo.getPaletteColors(), true);
+                                                        model.startAnimation(animationData);
+                                                }
+                                                break;
 					case OFF:
 						if (animationStatus == AnimationStatus.NATIVE) {
 							model.stopAnimation();

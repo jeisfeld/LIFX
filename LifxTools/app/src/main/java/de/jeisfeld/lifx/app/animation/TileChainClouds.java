@@ -17,23 +17,23 @@ import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
 import de.jeisfeld.lifx.lan.type.TileEffectInfo;
-import de.jeisfeld.lifx.lan.type.TileEffectInfo.Sky;
-import de.jeisfeld.lifx.lan.type.TileEffectSkyType;
+import de.jeisfeld.lifx.lan.type.TileEffectInfo.Clouds;
+import de.jeisfeld.lifx.lan.type.TileEffectCloudsType;
 import de.jeisfeld.lifx.lan.type.TileEffectType;
 
 /**
- * Animation data for flames in a tile chain.
+ * Animation data for clouds in a tile chain.
  */
-public class TileChainSky extends AnimationData {
+public class TileChainClouds extends AnimationData {
 	/**
 	 * The default serial version id.
 	 */
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * The duration of the flame.
-	 */
-	private final int mDuration;
+        /**
+         * The duration of the effect.
+         */
+        private final int mDuration;
 	/**
 	 * The colors to be used.
 	 */
@@ -44,12 +44,13 @@ public class TileChainSky extends AnimationData {
 	private final boolean mIsRunning;
 
 	/**
-	 * Constructor.
-	 *
-	 * @param duration  the duration of the flane.
-	 * @param isRunning the running flag.
-	 */
-	public TileChainSky(final int duration, final List<Color> colors, final boolean isRunning) {
+         * Constructor.
+         *
+         * @param duration  the duration of the effect.
+         * @param colors    the colors to be used.
+         * @param isRunning the running flag.
+         */
+        public TileChainClouds(final int duration, final List<Color> colors, final boolean isRunning) {
 		mDuration = duration;
 		mColors = new ArrayList<>(colors);
 		mIsRunning = isRunning;
@@ -71,9 +72,9 @@ public class TileChainSky extends AnimationData {
 	}
 
 	@Override
-	protected final AnimationType getType() {
-		return AnimationType.TILECHAIN_SKY;
-	}
+        protected final AnimationType getType() {
+                return AnimationType.TILECHAIN_CLOUDS;
+        }
 
 	@Override
 	protected final AnimationDefinition getAnimationDefinition(final Light light) {
@@ -121,15 +122,15 @@ public class TileChainSky extends AnimationData {
 		return new NativeAnimationDefinition() {
 			@Override
 			public void startAnimation() throws IOException {
-				tileChain.setEffect(new Sky(mDuration, TileEffectSkyType.CLOUDS, (byte) 50, mColors.toArray(new Color[0])));
+                                tileChain.setEffect(new Clouds(mDuration, TileEffectCloudsType.CLOUDS, (byte) 50, mColors.toArray(new Color[0])));
 			}
 
 			@Override
 			public void stopAnimation() throws IOException {
 				TileEffectInfo effectInfo = tileChain.getEffectInfo();
-				if (effectInfo == null || TileEffectType.SKY == effectInfo.getType()) {
-					tileChain.setEffect(TileEffectInfo.OFF);
-				}
+                                if (effectInfo == null || TileEffectType.CLOUDS == effectInfo.getType()) {
+                                        tileChain.setEffect(TileEffectInfo.OFF);
+                                }
 			}
 		};
 	}

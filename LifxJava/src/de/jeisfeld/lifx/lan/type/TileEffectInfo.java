@@ -170,36 +170,37 @@ public class TileEffectInfo {
 		}
 	}
 
-	/**
-	 * Tile effect info for Sky.
-	 */
-	public static class Sky extends TileEffectInfo {
-		/**
-		 * Create Flame info.
-		 *
-		 * @param speed              The speed
-		 * @param skyType            The sky type
-		 * @param cloudSaturationMin The minimum cloud saturation
-		 * @param colors             The palette colors.
-		 */
-		public Sky(final int speed, final TileEffectSkyType skyType, final byte cloudSaturationMin, final Color... colors) {
-			super(INSTANCE_ID, TileEffectType.SKY, speed,
-					TileEffectInfo.getSkyParameters(skyType, cloudSaturationMin),
-					Arrays.asList(colors));
-		}
-	}
+        /**
+         * Tile effect info for Clouds.
+         */
+        public static class Clouds extends TileEffectInfo {
+                /**
+                 * Create Flame info.
+                 *
+                 * @param speed              The speed
+                 * @param cloudsType        The clouds type
+                 * @param cloudSaturationMin The minimum cloud saturation
+                 * @param colors             The palette colors.
+                 */
+                public Clouds(final int speed, final TileEffectCloudsType cloudsType, final byte cloudSaturationMin,
+                                final Color... colors) {
+                        super(INSTANCE_ID, TileEffectType.CLOUDS, speed,
+                                        TileEffectInfo.getCloudsParameters(cloudsType, cloudSaturationMin),
+                                        Arrays.asList(colors));
+                }
+        }
 
-	/**
-	 * Get sky parameters for request.
-	 *
-	 * @param skyType            The sky type
-	 * @param cloudSaturationMin The minimum cloud saturation
-	 * @return The sky parameters
-	 */
-	private static byte[] getSkyParameters(final TileEffectSkyType skyType, final byte cloudSaturationMin) {
-		byte[] skyParameters = new byte[TILE_EFFECT_PARAMETER_COUNT];
-		skyParameters[0] = (byte) skyType.ordinal();
-		skyParameters[4] = cloudSaturationMin;
-		return skyParameters;
-	}
+        /**
+         * Get clouds parameters for request.
+         *
+         * @param cloudsType        The clouds type
+         * @param cloudSaturationMin The minimum cloud saturation
+         * @return The clouds parameters
+         */
+        private static byte[] getCloudsParameters(final TileEffectCloudsType cloudsType, final byte cloudSaturationMin) {
+                byte[] cloudsParameters = new byte[TILE_EFFECT_PARAMETER_COUNT];
+                cloudsParameters[0] = (byte) cloudsType.ordinal();
+                cloudsParameters[4] = cloudSaturationMin;
+                return cloudsParameters;
+        }
 }

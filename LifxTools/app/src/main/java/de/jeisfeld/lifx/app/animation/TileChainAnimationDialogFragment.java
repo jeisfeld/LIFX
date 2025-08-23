@@ -114,9 +114,9 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 				&& mModel.getValue().getLight().getProduct().isChain()) {
 			ArrayList<String> items = new ArrayList<>(Arrays.asList(
 					getResources().getStringArray(R.array.values_tilechain_animation_type)));
-			if (items.size() > TileChainAnimationType.SKY.ordinal()) {
-				items.remove(TileChainAnimationType.SKY.ordinal());
-			}
+                        if (items.size() > TileChainAnimationType.CLOUDS.ordinal()) {
+                                items.remove(TileChainAnimationType.CLOUDS.ordinal());
+                        }
 			ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
 					android.R.layout.simple_spinner_item, items);
 			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -194,10 +194,10 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainMorph(duration, mColors, false));
 							break;
-						case SKY:
-							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-									new TileChainSky(duration, mColors, false));
-							break;
+                                                case CLOUDS:
+                                                        mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+                                                                        new TileChainClouds(duration, mColors, false));
+                                                        break;
 						case WAVE:
 						default:
 							double lightRadius =
@@ -254,8 +254,8 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
 					break;
-				case MORPH:
-				case SKY:
+                                case MORPH:
+                                case CLOUDS:
 					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
 					parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
@@ -302,7 +302,7 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	/**
 	 * The direction of the animation.
 	 */
-	public enum TileChainAnimationType {
+        public enum TileChainAnimationType {
 		/**
 		 * Wave.
 		 */
@@ -319,10 +319,10 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		 * Morph.
 		 */
 		MORPH,
-		/**
-		 * Sky.
-		 */
-		SKY;
+                /**
+                 * Clouds.
+                 */
+                CLOUDS;
 
 		/**
 		 * Get TileChainAnimationType from its ordinal value.
