@@ -24,11 +24,14 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.TileViewModel;
 import de.jeisfeld.lifx.app.util.ColorUtil;
+import de.jeisfeld.lifx.app.view.ColorPickerDialog;
+import de.jeisfeld.lifx.app.view.ColorPickerDialog.Builder;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment;
 import de.jeisfeld.lifx.app.view.MultiColorPickerDialogFragment.MultiColorPickerDialogListener;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.animation.TileChainWaveDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
+import com.skydoves.colorpickerview.ColorPickerView;
 
 /**
  * Dialog for setting up a multizone animation.
@@ -105,10 +108,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		final EditText editTextDuration = parentView.findViewById(R.id.editTextDuration);
 		final EditText editTextRadius = parentView.findViewById(R.id.editTextRadius);
 		final Spinner spinnerDirection = parentView.findViewById(R.id.spinnerDirection);
-		final Spinner spinnerForm = parentView.findViewById(R.id.spinnerForm);
-		final EditText editTextColorRegex = parentView.findViewById(R.id.editTextColorRegex);
-		final CheckBox checkBoxAdjustBrightness = parentView.findViewById(R.id.checkboxAdjustBrightness);
-		final ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
+                final Spinner spinnerForm = parentView.findViewById(R.id.spinnerForm);
+                final EditText editTextColorRegex = parentView.findViewById(R.id.editTextColorRegex);
+                final CheckBox checkBoxAdjustBrightness = parentView.findViewById(R.id.checkboxAdjustBrightness);
+                final EditText editTextCloudSaturation = parentView.findViewById(R.id.editTextCloudSaturation);
+                final ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
 
 		if (mModel != null && mModel.getValue() != null && mModel.getValue().getLight() != null
 				&& mModel.getValue().getLight().getProduct().isChain()) {
@@ -130,29 +134,46 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		mColors.add(Color.BLUE);
 		imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
 
-		imageViewColors.setOnClickListener(v -> {
-			if (getActivity() == null) {
-				return;
-			}
-			MultiColorPickerDialogFragment.displayMultiColorPickerDialog(getActivity(), mColors, null, new MultiColorPickerDialogListener() {
-				@Override
-				public void onColorUpdate(final ArrayList<Color> colors, final boolean isCyclic, final boolean[] flags) {
-					// do nothing
-				}
+                imageViewColors.setOnClickListener(v -> {
+                        if (getActivity() == null) {
+                                return;
+                        }
+                        TileChainAnimationType selectedType = TileChainAnimationType.fromOrdinal(spinnerAnimationType.getSelectedItemPosition());
+                        if (selectedType == TileChainAnimationType.CLOUDS) {
+                                Color initialColor = mColors.isEmpty() ? Color.CYAN : mColors.get(0);
+                                Builder builder = new Builder(getContext(), R.layout.dialog_colorpicker);
+                                ColorPickerView colorPickerView = builder.getColorPickerView();
+                                colorPickerView.getViewTreeObserver().addOnGlobalLayoutListener(
+                                                () -> ColorPickerDialog.updateColorPickerFromLight(colorPickerView, initialColor));
+                                builder.setColorListener((color, fromUser) -> {
+                                        if (fromUser) {
+                                                mColors = new ArrayList<>();
+                                                mColors.add(ColorUtil.convertAndroidColorToColor(color, Color.WHITE_TEMPERATURE, true));
+                                                imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
+                                        }
+                                }).show();
+                        }
+                        else {
+                                MultiColorPickerDialogFragment.displayMultiColorPickerDialog(getActivity(), mColors, null, new MultiColorPickerDialogListener() {
+                                        @Override
+                                        public void onColorUpdate(final ArrayList<Color> colors, final boolean isCyclic, final boolean[] flags) {
+                                                // do nothing
+                                        }
 
-				@Override
-				public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
-												  final boolean[] flags) {
-					mColors = colors;
-					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
-				}
+                                        @Override
+                                        public void onDialogPositiveClick(final DialogFragment dialog, final ArrayList<Color> colors, final boolean isCyclic,
+                                                                                                          final boolean[] flags) {
+                                                mColors = colors;
+                                                imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
+                                        }
 
-				@Override
-				public void onDialogNegativeClick(final DialogFragment dialog) {
-					// do nothing
-				}
-			});
-		});
+                                        @Override
+                                        public void onDialogNegativeClick(final DialogFragment dialog) {
+                                                // do nothing
+                                        }
+                                });
+                        }
+                });
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.title_dialog_animation)
@@ -194,9 +215,17 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
 									new TileChainMorph(duration, mColors, false));
 							break;
-                                                case CLOUDS:
+                                               case CLOUDS:
+                                                        int cloudSaturation;
+                                                        try {
+                                                                cloudSaturation = Integer.parseInt(editTextCloudSaturation.getText().toString());
+                                                        }
+                                                        catch (Exception e) {
+                                                                cloudSaturation = 50;
+                                                        }
+                                                        cloudSaturation = Math.max(1, Math.min(255, cloudSaturation));
                                                         mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-																new TileChainClouds(duration, 50, mColors, false));
+                                                                        new TileChainClouds(duration, cloudSaturation, mColors, false));
                                                         break;
 						case WAVE:
 						default:
@@ -255,24 +284,38 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
 					break;
                                 case MORPH:
+                                        parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowCloudSaturation).setVisibility(View.GONE);
+                                        break;
                                 case CLOUDS:
-					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
-					break;
-				case WAVE:
-				default:
-					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowForm).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
-					break;
-				}
+                                        parentView.findViewById(R.id.tableRowRadius).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowDirection).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowForm).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowCloudSaturation).setVisibility(View.VISIBLE);
+                                        mColors.clear();
+                                        mColors.add(Color.CYAN);
+                                        ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
+                                        imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
+                                        break;
+                                case WAVE:
+                                default:
+                                        parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowForm).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowCloudSaturation).setVisibility(View.GONE);
+                                        break;
+                                }
 			}
 
 			@Override
