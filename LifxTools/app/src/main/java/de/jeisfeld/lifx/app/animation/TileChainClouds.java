@@ -3,13 +3,15 @@ package de.jeisfeld.lifx.app.animation;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
@@ -145,6 +147,30 @@ public class TileChainClouds extends AnimationData {
 
 	@Override
 	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
-		return ContextCompat.getDrawable(context, R.drawable.flame);
+		int size = (int) context.getResources().getDimension(R.dimen.power_button_size);
+		int strokeSize = (int) context.getResources().getDimension(R.dimen.power_button_stroke_size);
+
+		Color baseColor = mColors.get(0).withRelativeBrightness(relativeBrightness);
+
+		GradientDrawable base = new GradientDrawable();
+		base.setShape(GradientDrawable.RECTANGLE);
+		base.setColor(ColorUtil.toAndroidDisplayColor(baseColor));
+		base.setStroke(strokeSize, android.graphics.Color.BLACK);
+		base.setSize(size, size);
+
+		Color cloudColor = baseColor.add(Color.COLD_WHITE, relativeBrightness / 2 + 0.2);
+		GradientDrawable cloud1 = new GradientDrawable();
+		cloud1.setShape(GradientDrawable.OVAL);
+		cloud1.setColor(ColorUtil.toAndroidDisplayColor(cloudColor));
+
+		GradientDrawable cloud2 = new GradientDrawable();
+		cloud2.setShape(GradientDrawable.OVAL);
+		cloud2.setColor(ColorUtil.toAndroidDisplayColor(cloudColor));
+
+		LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{base, cloud1, cloud2});
+		layerDrawable.setLayerInset(1, size / 8, size / 4, size / 2, size / 2);
+		layerDrawable.setLayerInset(2, size / 2, size / 2, size / 6, size / 6);
+
+		return layerDrawable;
 	}
 }

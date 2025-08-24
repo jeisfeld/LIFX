@@ -2,6 +2,8 @@ package de.jeisfeld.lifx.app.animation;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.drawable.Drawable;
 
 import java.io.IOException;
@@ -125,6 +127,11 @@ public class TileChainFlame extends AnimationData {
 
 	@Override
 	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
-		return ContextCompat.getDrawable(context, R.drawable.flame);
+		Drawable drawable = ContextCompat.getDrawable(context, R.drawable.flame).mutate();
+		float brightness = (float) (relativeBrightness * 0.7 + 0.3);
+		ColorMatrix colorMatrix = new ColorMatrix();
+		colorMatrix.setScale(brightness, brightness, brightness, 1f);
+		drawable.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
+		return drawable;
 	}
 }
