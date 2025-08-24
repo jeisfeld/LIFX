@@ -101,9 +101,9 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the hue, saturation, brightness and/or color temperature.
 	 *
-	 * @param hue the new hue. May be null to keep unchanged.
-	 * @param saturation the new saturation. May be null to keep unchanged.
-	 * @param brightness the new brightness. May be null to keep unchanged.
+	 * @param hue              the new hue. May be null to keep unchanged.
+	 * @param saturation       the new saturation. May be null to keep unchanged.
+	 * @param brightness       the new brightness. May be null to keep unchanged.
 	 * @param colorTemperature the new color temperature. May be null to keep unchanged.
 	 */
 	public void updateColor(final Short hue, final Short saturation, final Short brightness, final Short colorTemperature) {
@@ -149,7 +149,7 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * Set the color.
 	 *
-	 * @param color the color to be set.
+	 * @param color       the color to be set.
 	 * @param isImmediate Flag indicating if the change should be immediate.
 	 */
 	public void updateColor(final Color color, final boolean isImmediate) {
@@ -185,6 +185,7 @@ public class LightViewModel extends DeviceViewModel {
 		if (context == null) {
 			return;
 		}
+		updateBrightness(AnimationData.getSelectedBrightness(getLight()));
 		mAnimationStatus.postValue(true);
 		LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
 	}
@@ -267,8 +268,8 @@ public class LightViewModel extends DeviceViewModel {
 		/**
 		 * Constructor.
 		 *
-		 * @param model The underlying model.
-		 * @param color The color.
+		 * @param model       The underlying model.
+		 * @param color       The color.
 		 * @param isImmediate Flag indicating if the change should be immediate.
 		 */
 		@SuppressWarnings("deprecation")
@@ -312,7 +313,7 @@ public class LightViewModel extends DeviceViewModel {
 			}
 			synchronized (model.mRunningSetColorTasks) {
 				model.mRunningSetColorTasks.remove(this);
-				if (model.mRunningSetColorTasks.size() > 0) {
+				if (!model.mRunningSetColorTasks.isEmpty()) {
 					model.mRunningSetColorTasks.get(0).execute();
 				}
 			}
