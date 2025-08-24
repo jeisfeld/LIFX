@@ -131,16 +131,20 @@ public class StoredAnimation extends StoredColor {
 				new Drawable[]{getAnimationData().getBaseButtonDrawable(context, getLight(), getRelativeBrightness()), animationDrawable});
 	}
 
-	@Override
-	protected final void setColor(final int colorDuration, final MainViewModel model) {
-		if (model instanceof LightViewModel) {
-			((LightViewModel) model).startAnimation(mAnimationData);
-			((LightViewModel) model).updateSelectedBrightness(mRelativeBrightness);
-		}
-		else {
-			PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_device_selected_brightness, getDeviceId(), getRelativeBrightness());
-			LifxAnimationService.triggerAnimationService(Application.getAppContext(), getLight(), mAnimationData);
-		}
-	}
+        @Override
+        protected final void setColor(final int colorDuration, final MainViewModel model) {
+                if (model instanceof LightViewModel) {
+                        // Ensure that the desired brightness is stored and applied before
+                        // the animation starts.  Updating the selected brightness first
+                        // allows the model's startAnimation call to pick up the new value
+                        // and transmit the full color information if necessary.
+                        ((LightViewModel) model).updateSelectedBrightness(mRelativeBrightness);
+                        ((LightViewModel) model).startAnimation(mAnimationData);
+                }
+                else {
+                        PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_device_selected_brightness, getDeviceId(), getRelativeBrightness());
+                        LifxAnimationService.triggerAnimationService(Application.getAppContext(), getLight(), mAnimationData);
+                }
+        }
 
 }

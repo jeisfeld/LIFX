@@ -180,14 +180,22 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @param animationData Data for the animation.
 	 */
-	public void startAnimation(final AnimationData animationData) {
-		Context context = getContext().get();
-		if (context == null) {
-			return;
-		}
-		mAnimationStatus.postValue(true);
-		LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
-	}
+        public void startAnimation(final AnimationData animationData) {
+                Context context = getContext().get();
+                if (context == null) {
+                        return;
+                }
+                // Make sure the brightness of the light matches the currently selected
+                // brightness before starting the animation.  For some lights (e.g. tiles
+                // without chain support) the device does not properly apply brightness
+                // changes while an effect is running unless the full color information is
+                // sent ahead of time.  Calling updateBrightness here ensures that the
+                // brightness is set accordingly for native effects.
+                updateBrightness(AnimationData.getSelectedBrightness(getLight()));
+
+                mAnimationStatus.postValue(true);
+                LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
+        }
 
 	/**
 	 * Stop the animation.
