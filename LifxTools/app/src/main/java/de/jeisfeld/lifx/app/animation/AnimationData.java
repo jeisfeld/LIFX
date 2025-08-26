@@ -144,19 +144,60 @@ public abstract class AnimationData implements Serializable {
 	 * @return The native definition.
 	 */
 	// OVERRIDABLE
-	protected NativeAnimationDefinition getNativeAnimationDefinition(final Light light) {
-		return new NativeAnimationDefinition() {
-			@Override
-			public void startAnimation() {
-				// do nothing
-			}
+        protected NativeAnimationDefinition getNativeAnimationDefinition(final Light light) {
+                return new NativeAnimationDefinition() {
+                        @Override
+                        public void startAnimation() {
+                                // do nothing
+                        }
 
 			@Override
 			public void stopAnimation() {
 				// do nothing
-			}
-		};
-	}
+                        }
+                };
+        }
+
+       /**
+        * Create an animation thread for this animation on a certain light.
+        *
+        * @param light The light.
+        * @return The animation thread handling this animation.
+        */
+       public Light.BaseAnimationThread getAnimationThread(final Light light) {
+               if (hasNativeImplementation(light)) {
+                       final NativeAnimationDefinition definition = getNativeAnimationDefinition(light);
+                       return new Light.BaseAnimationThread(light) {
+                               @Override
+                               public void run() {
+                                       try {
+                                               definition.startAnimation();
+                                               while (true) {
+                                                       try {
+                                                               //noinspection BusyWait
+                                                               Thread.sleep(60000); // MAGIC_NUMBER
+                                                       }
+                                                       catch (InterruptedException e) {
+                                                               try {
+                                                                       definition.stopAnimation();
+                                                               }
+                                                               catch (IOException ex) {
+                                                                       // ignore
+                                                               }
+                                                               return;
+                                                       }
+                                               }
+                                       }
+                                       catch (IOException e) {
+                                               // ignore
+                                       }
+                               }
+                       };
+               }
+               else {
+                       return light.animation(getAnimationDefinition(light));
+               }
+       }
 
 	/**
 	 * Get the selected brightness for a light.

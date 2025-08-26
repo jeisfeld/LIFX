@@ -751,16 +751,12 @@ public class LifxAlarmService extends Service {
                        Light light = getLight();
                        if (storedColor instanceof StoredAnimation) {
                                AnimationData data = ((StoredAnimation) storedColor).getAnimationData();
-                               if (data.hasNativeImplementation(light)) {
-                                       AnimationData.NativeAnimationDefinition def = data.getNativeAnimationDefinition(light);
-                                       def.startAnimation();
+                               BaseAnimationThread thread = data.getAnimationThread(light);
+                               thread.start();
+                               try {
                                        Thread.sleep(duration);
-                                       def.stopAnimation();
                                }
-                               else {
-                                       BaseAnimationThread thread = light.animation(data.getAnimationDefinition(light));
-                                       thread.start();
-                                       Thread.sleep(duration);
+                               finally {
                                        thread.end(true);
                                }
                        }
