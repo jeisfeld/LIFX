@@ -56,7 +56,7 @@ public class AlarmsFragment extends Fragment {
 	}
 
 	private void createNewAlarm() {
-		if (ColorRegistry.getInstance().getLightsWithStoredColors().size() == 0) {
+		if (ColorRegistry.getInstance().getLightsWithStoredColors().isEmpty()) {
 			DialogUtil.displayConfirmationMessage(requireActivity(), R.string.title_no_stored_colors, R.string.message_no_stored_colors);
 			return;
 		}
@@ -69,7 +69,7 @@ public class AlarmsFragment extends Fragment {
 					SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(),
 							device ->
 									StoredColorsDialogFragment.displayStoredColorsDialog(
-											requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
+											requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
 											(dialog, storedColor) -> {
 												List<Step> steps = new ArrayList<>();
 												steps.add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER

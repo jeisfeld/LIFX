@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
@@ -124,9 +123,7 @@ public class AlarmConfigurationFragment extends Fragment {
 		((Switch) root.findViewById(R.id.switchAlarmActive)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
 
 		for (LightSteps lightSteps : mAlarm.getLightSteps()) {
-			if (mInitialExpandingStatus.get(lightSteps.getLight()) == null) {
-				mInitialExpandingStatus.put(lightSteps.getLight(), true);
-			}
+			mInitialExpandingStatus.putIfAbsent(lightSteps.getLight(), true);
 		}
 		mAdapter = new AlarmStepExpandableListAdapter(this, mAlarm, mInitialExpandingStatus);
 		listViewAlarmSteps.setAdapter(mAdapter);
@@ -142,7 +139,7 @@ public class AlarmConfigurationFragment extends Fragment {
 						}
 						else {
 							StoredColorsDialogFragment.displayStoredColorsDialog(
-									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
+									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
 									(dialog, storedColor) -> {
 										mAlarm.getSteps().add(new Step(0, storedColor.getId(), DEFAULT_DURATION));
 										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
@@ -213,7 +210,7 @@ public class AlarmConfigurationFragment extends Fragment {
 				DialogUtil.displayToast(getContext(), mAlarm.getAlarmType().getToastResource());
 			});
 
-			((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setOnClickListener(v ->
+			root.findViewById(R.id.imageViewCopyAlarm).setOnClickListener(v ->
 					DialogUtil.displayInputDialog(requireActivity(), new RequestInputDialogListener() {
 						@Override
 						public void onDialogPositiveClick(final DialogFragment dialog, final String text) {
@@ -235,7 +232,7 @@ public class AlarmConfigurationFragment extends Fragment {
 					}, R.string.title_dialog_copy_alarm, R.string.button_save, mAlarm.getName(), R.string.message_dialog_new_alarm_name));
 
 			ImageView imageViewStopSequence = root.findViewById(R.id.imageViewStopSequence);
-			imageViewStopSequence.setOnClickListener((OnClickListener) v -> {
+			imageViewStopSequence.setOnClickListener(v -> {
 				if (mAlarm.getStopSequence() == null) {
 					List<Step> alarmSteps = new ArrayList<>();
 					for (LightSteps lightSteps : mAlarm.getLightSteps()) {
@@ -264,22 +261,22 @@ public class AlarmConfigurationFragment extends Fragment {
 			((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setOnCheckedChangeListener((buttonView, isChecked) -> saveAlarm(root));
 		}
 		else {
-			((TextView) root.findViewById(R.id.labelStartTime)).setVisibility(View.GONE);
+			root.findViewById(R.id.labelStartTime).setVisibility(View.GONE);
 			TextView labelWeekDays = root.findViewById(R.id.labelWeekDays);
 			if (labelWeekDays != null) {
 				labelWeekDays.setVisibility(View.GONE);
 			}
-			((TextView) root.findViewById(R.id.textViewStartTime)).setVisibility(View.GONE);
-			((ImageView) root.findViewById(R.id.imageViewCopyAlarm)).setVisibility(View.GONE);
-			((ImageView) root.findViewById(R.id.imageViewAlarmType)).setVisibility(View.GONE);
-			((ImageView) root.findViewById(R.id.imageViewStopSequence)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonMonday)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonTuesday)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonWednesday)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonThursday)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonFriday)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonSaturday)).setVisibility(View.GONE);
-			((ToggleButton) root.findViewById(R.id.toggleButtonSunday)).setVisibility(View.GONE);
+			root.findViewById(R.id.textViewStartTime).setVisibility(View.GONE);
+			root.findViewById(R.id.imageViewCopyAlarm).setVisibility(View.GONE);
+			root.findViewById(R.id.imageViewAlarmType).setVisibility(View.GONE);
+			root.findViewById(R.id.imageViewStopSequence).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonMonday).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonTuesday).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonWednesday).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonThursday).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonFriday).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonSaturday).setVisibility(View.GONE);
+			root.findViewById(R.id.toggleButtonSunday).setVisibility(View.GONE);
 
 			final Alarm parentAlarm = mAlarm.getParent();
 			if (parentAlarm != null) {

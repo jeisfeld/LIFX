@@ -135,7 +135,7 @@ public class DeviceAdapter extends BaseAdapter {
 			@Override
 			public void onDeviceUpdated(final Device device, final boolean isNew, final boolean isMissing) {
 				if (device != null && isNew) {
-					if (mDevices.size() == 0) {
+					if (mDevices.isEmpty()) {
 						mNoDeviceCallback.onChange(true);
 					}
 					addDevice(new DeviceHolder(device, (int) device.getParameter(DeviceRegistry.DEVICE_ID), true));
@@ -144,7 +144,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 			@Override
 			public void onNoDevicesFound() {
-				if (mDevices.size() == 0) {
+				if (mDevices.isEmpty()) {
 					mNoDeviceCallback.onChange(false);
 				}
 			}
@@ -815,7 +815,7 @@ public class DeviceAdapter extends BaseAdapter {
 				storeColorType = StoreColorType.COLOR;
 			}
 
-			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, storeColorType, false, new StoredColorsDialogListener() {
+			StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, storeColorType, false, true, new StoredColorsDialogListener() {
 				/**
 				 * Flag indicating if color was changed during this dialog.
 				 */

@@ -147,7 +147,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 		}
 
 		LightSteps lightSteps = getGroup(groupPosition);
-		TextView listTitleTextView = (TextView) view.findViewById(R.id.textViewDeviceName);
+		TextView listTitleTextView = view.findViewById(R.id.textViewDeviceName);
 		listTitleTextView.setText(lightSteps.getLight().getLabel());
 
 		boolean isCollapsed = !isExpanded;
@@ -212,7 +212,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 				}
 				else {
 					StoredColorsDialogFragment.displayStoredColorsDialog(
-							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
+							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
 							(dialog, storedColor) -> {
 								mAlarm.getSteps().add(new Step((int) newStartTime, storedColor.getId(), AlarmConfigurationFragment.DEFAULT_DURATION));
 								mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
@@ -276,7 +276,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			}
 			else {
 				StoredColorsDialogFragment.displayStoredColorsDialog(
-						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true,
+						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true, false,
 						(dialog, storedColor) -> {
 							Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
 							mAlarm.getSteps().remove(step);
@@ -340,7 +340,7 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 			mInitialExpandingStatus = getExpandingStatus();
 			notifyDataSetChanged();
 
-			if (mAlarm.getSteps().size() == 0) {
+			if (mAlarm.getSteps().isEmpty()) {
 				AlarmReceiver.cancelAlarm(mFragment.requireContext(), mAlarm.getId());
 				AlarmRegistry.getInstance().remove(mAlarm);
 				NavController navController = Navigation.findNavController(mFragment.requireActivity(), R.id.nav_host_fragment);
