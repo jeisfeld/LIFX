@@ -37,7 +37,9 @@ import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.storedcolors.StoredAnimation;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.ImageUtil;
@@ -288,32 +290,107 @@ public class LifxAlarmService extends Service {
 				}
 			}
 
-			AnimationCallback callback = new AnimationCallback() {
-				@Override
-				public void onException(final IOException e) {
-					Logger.debug("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
-					updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
-				}
+                        boolean hasStoredAnimation = false;
+                        for (Step step : lightSteps.getSteps()) {
+                                if (step.getStoredColor() instanceof StoredAnimation) {
+                                        hasStoredAnimation = true;
+                                        break;
+                                }
+                        }
 
-				@Override
-				public void onAnimationEnd(final boolean isInterrupted) {
-					Logger.debug("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
-					updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
-				}
-			};
+                        if (hasStoredAnimation) {
+                                BaseAnimationThread animationThread = new BaseAnimationThread(light) {
+                                        @Override
+                                        public void run() {
+                                                waitForPreviousAnimationEnd();
+                                                try {
+                                                        for (Step step : lightSteps.getSteps()) {
+                                                                long start = alarmDate.getTime() + step.getDelay();
+                                                                long waitTime = start - System.currentTimeMillis();
+                                                                if (waitTime > 0) {
+                                                                        try {
+                                                                                Thread.sleep(waitTime);
+                                                                        }
+                                                                        catch (InterruptedException e) {
+                                                                                Thread.currentThread().interrupt();
+                                                                                break;
+                                                                        }
+                                                                }
 
-			if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
-				animationThreads.add(new RingtoneAnimationThread(
-						(RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
-						.setAnimationCallback(callback));
-			}
-			else {
-				animationThreads.add(light.animation(getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
-						.setAnimationCallback(callback));
-			}
-		}
-		return animationThreads;
-	}
+                                                                StoredColor storedColor = step.getStoredColor();
+                                                                if (storedColor instanceof StoredAnimation) {
+                                                                        StoredAnimation storedAnimation = (StoredAnimation) storedColor;
+                                                                        LifxAnimationService.triggerAnimationService(LifxAlarmService.this, light,
+                                                                                        storedAnimation.getAnimationData());
+                                                                        try {
+                                                                                Thread.sleep(step.getDuration());
+                                                                        }
+                                                                        catch (InterruptedException e) {
+                                                                                Thread.currentThread().interrupt();
+                                                                        }
+                                                                        LifxAnimationService.stopAnimationForMac(LifxAlarmService.this,
+                                                                                        light.getTargetAddress());
+                                                                }
+                                                                else {
+                                                                        Color color = storedColor.getColor();
+                                                                        try {
+                                                                                if (color.isOff()) {
+                                                                                        light.setPower(false, (int) step.getDuration(), false);
+                                                                                }
+                                                                                else {
+                                                                                        light.setColor(color, (int) step.getDuration(), false);
+                                                                                }
+                                                                        }
+                                                                        catch (IOException e) {
+                                                                                Logger.debug("Finished alarm threads on " + light.getLabel()
+                                                                                                + " with Exception " + e.getMessage());
+                                                                                break;
+                                                                        }
+                                                                        try {
+                                                                                Thread.sleep(step.getDuration());
+                                                                        }
+                                                                        catch (InterruptedException e) {
+                                                                                Thread.currentThread().interrupt();
+                                                                                break;
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                                finally {
+                                                        updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+                                                }
+                                        }
+                                };
+                                animationThreads.add(animationThread);
+                        }
+                        else {
+                                AnimationCallback callback = new AnimationCallback() {
+                                        @Override
+                                        public void onException(final IOException e) {
+                                                Logger.debug("Finished alarm threads on " + light.getLabel() + " with Exception " + e.getMessage());
+                                                updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(final boolean isInterrupted) {
+                                                Logger.debug("Finished alarm threads on " + light.getLabel() + (isInterrupted ? " with interruption" : ""));
+                                                updateOnEndAnimation(alarm, wakeLock, light, animatedLights);
+                                        }
+                                };
+
+                                if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
+                                        animationThreads.add(new RingtoneAnimationThread(
+                                                        (RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
+                                                        .setAnimationCallback(callback));
+                                }
+                                else {
+                                        animationThreads.add(light.animation(getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
+                                                        .setAnimationCallback(callback));
+                                }
+                        }
+                }
+                return animationThreads;
+        }
 
 	/**
 	 * Create the animation definition for a certain light.
