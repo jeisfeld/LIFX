@@ -141,9 +141,9 @@ public class AlarmConfigurationFragment extends Fragment {
 							startRingtoneDialog(0, null);
 						}
 						else {
-							StoredColorsDialogFragment.displayStoredColorsDialog(
-									requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
-									(dialog, storedColor) -> {
+                                                        StoredColorsDialogFragment.displayStoredColorsDialog(
+                                                                        requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
+                                                                        (dialog, storedColor) -> {
 										mAlarm.getSteps().add(new Step(0, storedColor.getId(), DEFAULT_DURATION));
 										mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
 										mAdapter.notifyDataSetChanged(mAlarm);

@@ -12,6 +12,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -37,7 +38,11 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	/**
 	 * Parameter to pass information if only selection is supported.
 	 */
-	private static final String PARAM_INCLUDE_OFF = "includeOff";
+        private static final String PARAM_INCLUDE_OFF = "includeOff";
+        /**
+         * Parameter to pass information if animations should be included.
+         */
+        private static final String PARAM_INCLUDE_ANIMATIONS = "includeAnimations";
 	/**
 	 * Instance state flag indicating if a dialog should not be recreated after orientation change.
 	 */
@@ -52,20 +57,40 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	 * @param includeOff     the flag indicating if option "OFF" should be displayed.
 	 * @param listener       The listener waiting for the response
 	 */
-	public static void displayStoredColorsDialog(final FragmentActivity activity,
-												 final int deviceId,
-												 final StoreColorType storeColorType,
-												 final boolean includeOff,
-												 final StoredColorsDialogListener listener) {
-		Bundle bundle = new Bundle();
-		StoredColorsDialogFragment fragment = new StoredColorsDialogFragment();
-		fragment.setListener(listener);
-		bundle.putInt(PARAM_DEVICE_ID, deviceId);
-		bundle.putSerializable(PARAM_STORE_COLOR_TYPE, storeColorType);
-		bundle.putBoolean(PARAM_INCLUDE_OFF, includeOff);
-		fragment.setArguments(bundle);
-		fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
-	}
+        public static void displayStoredColorsDialog(final FragmentActivity activity,
+                                                                                                 final int deviceId,
+                                                                                                 final StoreColorType storeColorType,
+                                                                                                 final boolean includeOff,
+                                                                                                 final StoredColorsDialogListener listener) {
+                displayStoredColorsDialog(activity, deviceId, storeColorType, includeOff, true, listener);
+        }
+
+        /**
+         * Display a dialog for storing a color or displaying a stored color.
+         *
+         * @param activity          the current activity
+         * @param deviceId          the device id.
+         * @param storeColorType    the flag indicating if it is only select or storage of color or storage of animation.
+         * @param includeOff        the flag indicating if option "OFF" should be displayed.
+         * @param includeAnimations the flag indicating if animations should be listed.
+         * @param listener          The listener waiting for the response
+         */
+        public static void displayStoredColorsDialog(final FragmentActivity activity,
+                                                                                                 final int deviceId,
+                                                                                                 final StoreColorType storeColorType,
+                                                                                                 final boolean includeOff,
+                                                                                                 final boolean includeAnimations,
+                                                                                                 final StoredColorsDialogListener listener) {
+                Bundle bundle = new Bundle();
+                StoredColorsDialogFragment fragment = new StoredColorsDialogFragment();
+                fragment.setListener(listener);
+                bundle.putInt(PARAM_DEVICE_ID, deviceId);
+                bundle.putSerializable(PARAM_STORE_COLOR_TYPE, storeColorType);
+                bundle.putBoolean(PARAM_INCLUDE_OFF, includeOff);
+                bundle.putBoolean(PARAM_INCLUDE_ANIMATIONS, includeAnimations);
+                fragment.setArguments(bundle);
+                fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
+        }
 
 	/**
 	 * The listener called when the dialog is ended.
@@ -85,9 +110,10 @@ public class StoredColorsDialogFragment extends DialogFragment {
 	@Nonnull
 	public final Dialog onCreateDialog(final Bundle savedInstanceState) {
 		assert getArguments() != null;
-		final int deviceId = getArguments().getInt(PARAM_DEVICE_ID);
-		final StoreColorType storeColorType = (StoreColorType) getArguments().getSerializable(PARAM_STORE_COLOR_TYPE);
-		final boolean includeOff = getArguments().getBoolean(PARAM_INCLUDE_OFF);
+                final int deviceId = getArguments().getInt(PARAM_DEVICE_ID);
+                final StoreColorType storeColorType = (StoreColorType) getArguments().getSerializable(PARAM_STORE_COLOR_TYPE);
+                final boolean includeOff = getArguments().getBoolean(PARAM_INCLUDE_OFF);
+                final boolean includeAnimations = getArguments().getBoolean(PARAM_INCLUDE_ANIMATIONS);
 
 		// Listeners cannot retain functionality when automatically recreated.
 		// Therefore, dialogs with listeners must be re-created by the activity on orientation change.
@@ -108,10 +134,13 @@ public class StoredColorsDialogFragment extends DialogFragment {
 			((TextView) view.findViewById(R.id.messageTextSaveName)).setText(R.string.message_dialog_save_animation_name);
 		}
 
-		List<StoredColor> storedColors = ColorRegistry.getInstance().getStoredColors(deviceId);
-		if (includeOff) {
-			storedColors.add(0, StoredColor.fromDeviceOff(deviceId));
-		}
+                List<StoredColor> storedColors = new ArrayList<>(ColorRegistry.getInstance().getStoredColors(deviceId));
+                if (!includeAnimations) {
+                        storedColors.removeIf(storedColor -> storedColor instanceof StoredAnimation);
+                }
+                if (includeOff) {
+                        storedColors.add(0, StoredColor.fromDeviceOff(deviceId));
+                }
 
 		if (storedColors.size() > 0 && getContext() != null) {
 			view.findViewById(R.id.gridViewStoredColors).setVisibility(View.VISIBLE);

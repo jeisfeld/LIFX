@@ -68,9 +68,9 @@ public class AlarmsFragment extends Fragment {
 					List<Light> lightsWithStoredColors = ColorRegistry.getInstance().getLightsWithStoredColors();
 					SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(),
 							device ->
-									StoredColorsDialogFragment.displayStoredColorsDialog(
-											requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true,
-											(dialog, storedColor) -> {
+                                                                        StoredColorsDialogFragment.displayStoredColorsDialog(
+                                                                                        requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
+                                                                                        (dialog, storedColor) -> {
 												List<Step> steps = new ArrayList<>();
 												steps.add(new Step(0, storedColor.getId(), 10000)); // MAGIC_NUMBER
 												Alarm alarm = new Alarm(true, startDate, new HashSet<>(),
