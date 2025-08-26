@@ -49,7 +49,9 @@ import de.jeisfeld.lifx.lan.MultiZoneLight;
 import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.MultizoneEffectInfo;
 import de.jeisfeld.lifx.lan.type.TileChainColors;
+import de.jeisfeld.lifx.lan.type.TileEffectInfo;
 import de.jeisfeld.lifx.os.Logger;
 
 /**
@@ -257,12 +259,34 @@ public class LifxAlarmService extends Service {
 		final List<Light> animatedLights = new ArrayList<>();
 
 		for (final LightSteps lightSteps : lightStepsList) {
-			if (lightSteps.getSteps().size() == 0) {
+			if (lightSteps.getSteps().isEmpty()) {
 				continue;
 			}
 
 			final Light light = lightSteps.getLight();
 			animatedLights.add(light);
+			if (light instanceof TileChain || light instanceof MultiZoneLight) {
+				Thread disableEffectThread = new Thread(() -> {
+					try {
+						if (light instanceof TileChain) {
+							((TileChain) light).setEffect(TileEffectInfo.OFF);
+						}
+						else {
+							((MultiZoneLight) light).setEffect(MultizoneEffectInfo.OFF);
+						}
+					}
+					catch (IOException e) {
+						Log.w(Application.TAG, e);
+					}
+				});
+				disableEffectThread.start();
+				try {
+					disableEffectThread.join();
+				}
+				catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
 
 			AnimationCallback callback = new AnimationCallback() {
 				@Override
@@ -484,7 +508,7 @@ public class LifxAlarmService extends Service {
 	 * Start the notification, or stop it if not required any more.
 	 */
 	private void startNotification() {
-		if (ANIMATED_ALARMS.size() == 0 && PENDING_ALARMS.size() == 0) {
+		if (ANIMATED_ALARMS.isEmpty() && PENDING_ALARMS.isEmpty()) {
 			Logger.info("LifxAlarmService stop - no alarms left");
 			stopForeground(true);
 			stopSelf();
@@ -571,7 +595,7 @@ public class LifxAlarmService extends Service {
 		// noinspection SynchronizationOnLocalVariableOrMethodParameter
 		synchronized (animatedLights) {
 			animatedLights.remove(light);
-			isLastLight = animatedLights.size() == 0;
+			isLastLight = animatedLights.isEmpty();
 		}
 		Logger.debug("LifxAlarmService end (" + alarm.getName() + "," + light.getLabel() + ") (" + animatedLights.size() + ")");
 
@@ -600,7 +624,7 @@ public class LifxAlarmService extends Service {
 	 */
 	public String getRunningAlarmsString() {
 		StringBuilder builder = new StringBuilder();
-		if (PENDING_ALARMS.size() > 0) {
+		if (!PENDING_ALARMS.isEmpty()) {
 			List<Alarm> pendingAlarms = new ArrayList<>(PENDING_ALARMS.values());
 			pendingAlarms.sort(Comparator.comparing(Alarm::getStartTime));
 			String dateFormat = DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEHHmm");

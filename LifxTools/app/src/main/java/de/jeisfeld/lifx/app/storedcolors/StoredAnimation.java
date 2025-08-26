@@ -96,7 +96,9 @@ public class StoredAnimation extends StoredColor {
 		PreferenceUtil.setIndexedSharedPreferenceString(R.string.key_color_name, colorId, storedAnimation.getName());
 		PreferenceUtil.setIndexedSharedPreferenceDouble(R.string.key_animation_relative_brightness, colorId, mRelativeBrightness);
 
-		mAnimationData.store(colorId);
+		if (mAnimationData != null) {
+			mAnimationData.store(colorId);
+		}
 		return storedAnimation;
 	}
 
@@ -127,7 +129,8 @@ public class StoredAnimation extends StoredColor {
 	@Override
 	public final Drawable getButtonDrawable(final Context context) {
 		Drawable animationDrawable = ResourcesCompat.getDrawable(context.getResources(), R.drawable.ic_toggle_animation_play, context.getTheme());
-		return new LayerDrawable(
+		AnimationData animationData = getAnimationData();
+		return animationData == null ? null : new LayerDrawable(
 				new Drawable[]{getAnimationData().getBaseButtonDrawable(context, getLight(), getRelativeBrightness()), animationDrawable});
 	}
 
