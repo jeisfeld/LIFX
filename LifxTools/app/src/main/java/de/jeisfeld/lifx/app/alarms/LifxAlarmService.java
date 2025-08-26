@@ -38,10 +38,12 @@ import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.storedcolors.StoredAnimation;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
 import de.jeisfeld.lifx.lan.Light.BaseAnimationThread;
@@ -302,15 +304,24 @@ public class LifxAlarmService extends Service {
 				}
 			};
 
-			if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
-				animationThreads.add(new RingtoneAnimationThread(
-						(RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
-						.setAnimationCallback(callback));
-			}
-			else {
-				animationThreads.add(light.animation(getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
-						.setAnimationCallback(callback));
-			}
+                        if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
+                                animationThreads.add(new RingtoneAnimationThread(
+                                                (RingtoneAnimationDefinition) getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
+                                                .setAnimationCallback(callback));
+                        }
+                        else {
+                                boolean hasAnimation = lightSteps.getSteps().stream()
+                                                .anyMatch(step -> step.getStoredColor() instanceof StoredAnimation);
+                                if (hasAnimation) {
+                                        animationThreads.add(new AlarmLightAnimationThread(light, alarm, alarmDate,
+                                                        lightSteps.getSteps()).setAnimationCallback(callback));
+                                }
+                                else {
+                                        animationThreads.add(light.animation(
+                                                        getAnimationDefiniton(alarm, alarmDate, light, lightSteps.getSteps()))
+                                                        .setAnimationCallback(callback));
+                                }
+                        }
 		}
 		return animationThreads;
 	}
@@ -622,11 +633,11 @@ public class LifxAlarmService extends Service {
 	 *
 	 * @return a display String for all animated devices.
 	 */
-	public String getRunningAlarmsString() {
-		StringBuilder builder = new StringBuilder();
-		if (!PENDING_ALARMS.isEmpty()) {
-			List<Alarm> pendingAlarms = new ArrayList<>(PENDING_ALARMS.values());
-			pendingAlarms.sort(Comparator.comparing(Alarm::getStartTime));
+        public String getRunningAlarmsString() {
+                StringBuilder builder = new StringBuilder();
+                if (!PENDING_ALARMS.isEmpty()) {
+                        List<Alarm> pendingAlarms = new ArrayList<>(PENDING_ALARMS.values());
+                        pendingAlarms.sort(Comparator.comparing(Alarm::getStartTime));
 			String dateFormat = DateFormat.getBestDateTimePattern(Locale.getDefault(), "EEEHHmm");
 			for (Alarm alarm : pendingAlarms) {
 				DateFormat.format(dateFormat, alarm.getStartTime());
@@ -636,15 +647,142 @@ public class LifxAlarmService extends Service {
 			builder.deleteCharAt(builder.length() - 1);
 			return builder.toString();
 		}
-		else {
-			return getString(R.string.notification_text_no_alarm);
-		}
-	}
+                else {
+                        return getString(R.string.notification_text_no_alarm);
+                }
+        }
 
-	/**
-	 * A thread handling ringtone animation.
-	 */
-	public class RingtoneAnimationThread extends BaseAnimationThread {
+       /**
+        * Thread executing alarm steps for lights including animations.
+        */
+       public class AlarmLightAnimationThread extends BaseAnimationThread {
+               /**
+                * The alarm.
+                */
+               private final Alarm mAlarm;
+               /**
+                * The alarm start date.
+                */
+               private final Date mAlarmDate;
+               /**
+                * The steps for this light.
+                */
+               private final List<Step> mSteps;
+               /**
+                * The callback.
+                */
+               private AnimationCallback mAnimationCallback;
+
+               /**
+                * Constructor.
+                *
+                * @param light     The light.
+                * @param alarm     The alarm.
+                * @param alarmDate The alarm start date.
+                * @param steps     The steps.
+                */
+               protected AlarmLightAnimationThread(final Light light, final Alarm alarm,
+                               final Date alarmDate, final List<Step> steps) {
+                       super(light);
+                       mAlarm = alarm;
+                       mAlarmDate = alarmDate;
+                       mSteps = steps;
+               }
+
+               /**
+                * Set the animation callback.
+                *
+                * @param callback The callback.
+                * @return The thread.
+                */
+               public AlarmLightAnimationThread setAnimationCallback(final AnimationCallback callback) {
+                       mAnimationCallback = callback;
+                       return this;
+               }
+
+               @Override
+               public void run() {
+                       boolean interrupted = false;
+                       try {
+                               int cycle = 0;
+                               while (!isInterrupted() && (cycle == 0 || mAlarm.getAlarmType() == AlarmType.CYCLIC)) {
+                                       for (Step step : mSteps) {
+                                               long start = mAlarmDate.getTime() + step.getDelay()
+                                                               + cycle * mAlarm.getDuration();
+                                               long wait = start - System.currentTimeMillis();
+                                               if (wait > 0) {
+                                                       Thread.sleep(wait);
+                                               }
+                                               executeStep(step);
+                                       }
+                                       cycle++;
+                               }
+                               if (!isInterrupted() && mAlarm.getAlarmType() == AlarmType.STOP_MANUALLY && !mSteps.isEmpty()) {
+                                       Step lastStep = mSteps.get(mSteps.size() - 1);
+                                       while (!isInterrupted()) {
+                                               executeStep(lastStep);
+                                       }
+                               }
+                       }
+                       catch (InterruptedException e) {
+                               interrupted = true;
+                               Thread.currentThread().interrupt();
+                       }
+                       catch (IOException e) {
+                               if (mAnimationCallback != null) {
+                                       mAnimationCallback.onException(e);
+                               }
+                       }
+                       if (mAnimationCallback != null) {
+                               mAnimationCallback.onAnimationEnd(interrupted || isInterrupted());
+                       }
+               }
+
+               /**
+                * Execute one step.
+                *
+                * @param step The step.
+                * @throws IOException          Connection issues.
+                * @throws InterruptedException the thread was interrupted.
+                */
+               private void executeStep(final Step step) throws IOException, InterruptedException {
+                       StoredColor storedColor = step.getStoredColor();
+                       long duration = step.getDuration();
+                       Light light = getLight();
+                       if (storedColor instanceof StoredAnimation) {
+                               AnimationData data = ((StoredAnimation) storedColor).getAnimationData();
+                               if (data.hasNativeImplementation(light)) {
+                                       AnimationData.NativeAnimationDefinition def = data.getNativeAnimationDefinition(light);
+                                       def.startAnimation();
+                                       Thread.sleep(duration);
+                                       def.stopAnimation();
+                               }
+                               else {
+                                       BaseAnimationThread thread = light.animation(data.getAnimationDefinition(light));
+                                       thread.start();
+                                       Thread.sleep(duration);
+                                       thread.end(true);
+                               }
+                       }
+                       else if (light instanceof MultiZoneLight && storedColor instanceof StoredMultizoneColors) {
+                               ((MultiZoneLight) light).setColors(((StoredMultizoneColors) storedColor).getColors(), (int) duration, false);
+                               Thread.sleep(duration);
+                       }
+                       else if (light instanceof TileChain && storedColor instanceof StoredTileColors) {
+                               ((TileChain) light).setColors(((StoredTileColors) storedColor).getColors(), (int) duration, false);
+                               Thread.sleep(duration);
+                       }
+                       else {
+                               light.setColor(storedColor.getColor(), (int) duration, false);
+                               Thread.sleep(duration);
+                       }
+               }
+       }
+
+        /**
+         * A thread handling ringtone animation.
+         */
+        public class RingtoneAnimationThread extends BaseAnimationThread {
 		/**
 		 * The animation definiation.
 		 */
