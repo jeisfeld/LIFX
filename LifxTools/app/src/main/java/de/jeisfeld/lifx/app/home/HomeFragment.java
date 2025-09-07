@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Button;
 
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorListener;
@@ -28,6 +29,8 @@ import androidx.fragment.app.ListFragment;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.scenes.SceneRegistry;
+import de.jeisfeld.lifx.app.scenes.ScenesDialogFragment;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -57,11 +60,15 @@ public class HomeFragment extends ListFragment {
 	/**
 	 * The adapter used.
 	 */
-	private DeviceAdapter mAdapter;
-	/**
-	 * The view creation time.
-	 */
-	private long mViewCreationTime;
+        private DeviceAdapter mAdapter;
+        /**
+         * The view creation time.
+         */
+        private long mViewCreationTime;
+        /**
+         * Header view for scenes selection.
+         */
+        private View mScenesHeaderView;
 
 	/**
 	 * Send broadcast to home fragment informing about the end of an animation.
@@ -81,15 +88,21 @@ public class HomeFragment extends ListFragment {
 	}
 
 	@Override
-	public final void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+        public final void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
+                super.onViewCreated(view, savedInstanceState);
 
-		if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
-			getListView().setVisibility(View.GONE);
-			requireView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
-		}
-		mAdapter = new DeviceAdapter(this, new NoDeviceCallback());
-		setListAdapter(mAdapter);
+                mScenesHeaderView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_home_scene, getListView(), false);
+                Button buttonScenes = mScenesHeaderView.findViewById(R.id.buttonScenes);
+                buttonScenes.setOnClickListener(v -> ScenesDialogFragment.displayScenesDialog(requireActivity()));
+                getListView().addHeaderView(mScenesHeaderView, null, false);
+
+                if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
+                        getListView().setVisibility(View.GONE);
+                        requireView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
+                }
+                mAdapter = new DeviceAdapter(this, new NoDeviceCallback());
+                setListAdapter(mAdapter);
+                updateScenesHeaderVisibility();
 
 		ConstraintLayout layoutColorPicker = requireView().findViewById(R.id.layoutColorPicker);
 		ConstraintLayout layoutBrightnessColorTempPicker = requireView().findViewById(R.id.layoutBrightnessColorTempPicker);
@@ -110,10 +123,12 @@ public class HomeFragment extends ListFragment {
 	}
 
 	@Override
-	public final void onResume() {
-		super.onResume();
+        public final void onResume() {
+                super.onResume();
 
-		ContextCompat.registerReceiver(requireActivity(), mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT), ContextCompat.RECEIVER_NOT_EXPORTED);
+                updateScenesHeaderVisibility();
+
+                ContextCompat.registerReceiver(requireActivity(), mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT), ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		mExecutor = Executors.newScheduledThreadPool(1);
 		long refreshDelay = PreferenceUtil.getSharedPreferenceLongString(R.string.key_pref_refresh_period, R.string.pref_default_refresh_period);
@@ -127,13 +142,23 @@ public class HomeFragment extends ListFragment {
 	}
 
 	@Override
-	public final void onPause() {
-		super.onPause();
-		mExecutor.shutdown();
-		mExecutor = null;
+        public final void onPause() {
+                super.onPause();
+                mExecutor.shutdown();
+                mExecutor = null;
 
-		requireActivity().unregisterReceiver(mReceiver);
-	}
+                requireActivity().unregisterReceiver(mReceiver);
+        }
+
+        /**
+         * Update visibility of the scenes header depending on stored scenes.
+         */
+        private void updateScenesHeaderVisibility() {
+                if (mScenesHeaderView != null) {
+                        mScenesHeaderView.setVisibility(SceneRegistry.getInstance().getScenes().isEmpty()
+                                        ? View.GONE : View.VISIBLE);
+                }
+        }
 
 	/**
 	 * Prepare the color pickers shown in landscape view.
