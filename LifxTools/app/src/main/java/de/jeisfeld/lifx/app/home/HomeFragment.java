@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.skydoves.colorpickerview.ColorPickerView;
@@ -28,6 +29,8 @@ import androidx.fragment.app.ListFragment;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.scenes.SceneRegistry;
+import de.jeisfeld.lifx.app.scenes.ScenesDialogFragment;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -62,6 +65,10 @@ public class HomeFragment extends ListFragment {
 	 * The view creation time.
 	 */
 	private long mViewCreationTime;
+	/**
+	 * Header view for scenes selection.
+	 */
+	private View mScenesHeaderView;
 
 	/**
 	 * Send broadcast to home fragment informing about the end of an animation.
@@ -84,11 +91,16 @@ public class HomeFragment extends ListFragment {
 	public final void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		mScenesHeaderView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_home_scene, getListView(), false);
+		Button buttonScenes = mScenesHeaderView.findViewById(R.id.buttonScenes);
+		buttonScenes.setOnClickListener(v -> ScenesDialogFragment.displayScenesDialog(requireActivity()));
+
 		if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
 			getListView().setVisibility(View.GONE);
 			requireView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}
 		mAdapter = new DeviceAdapter(this, new NoDeviceCallback());
+		updateScenesHeaderVisibility();
 		setListAdapter(mAdapter);
 
 		ConstraintLayout layoutColorPicker = requireView().findViewById(R.id.layoutColorPicker);
@@ -113,6 +125,8 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
+		updateScenesHeaderVisibility();
+
 		ContextCompat.registerReceiver(requireActivity(), mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT), ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		mExecutor = Executors.newScheduledThreadPool(1);
@@ -133,6 +147,26 @@ public class HomeFragment extends ListFragment {
 		mExecutor = null;
 
 		requireActivity().unregisterReceiver(mReceiver);
+	}
+
+	/**
+	 * Update visibility of the scenes header depending on stored scenes.
+	 */
+	private void updateScenesHeaderVisibility() {
+		if (mScenesHeaderView != null) {
+			boolean hasScenes = !SceneRegistry.getInstance().getScenes().isEmpty();
+			if (hasScenes) {
+				if (mScenesHeaderView.getParent() == null) {
+					getListView().addHeaderView(mScenesHeaderView, null, false);
+					if (getListView().getAdapter() != null) {
+						setListAdapter(mAdapter);
+					}
+				}
+			}
+			else if (mScenesHeaderView.getParent() != null) {
+				getListView().removeHeaderView(mScenesHeaderView);
+			}
+		}
 	}
 
 	/**
