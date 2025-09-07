@@ -11,7 +11,9 @@
     <string name="menu_stored_colors">Stored colors</string>
     <string name="menu_manage_devices">Manage devices</string>
     <string name="menu_alarms">Alarms</string>
+    <string name="menu_scenes">Scenes</string>
     <string name="menu_alarm_configuration">Alarm Configuration</string>
+    <string name="menu_scene_configuration">Scene Configuration</string>
     <string name="menu_alarm_step_configuration">Alarm Step Configuration</string>
     <string name="menu_general_settings">General Settings</string>
     <string name="menu_settings">Settings</string>
@@ -21,6 +23,7 @@
 
     <string name="color_off">OFF</string>
     <string name="default_alarm_name">Alarm %1$d</string>
+    <string name="default_scene_name">Scene %1$d</string>
     <string name="alarm_stopsequence_name">%1$s (Stop Sequence)</string>
 
     <string name="notification_channel_animation">LIFX Animations</string>

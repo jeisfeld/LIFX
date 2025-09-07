@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationCompat.BigTextStyle;
@@ -37,6 +39,8 @@ import de.jeisfeld.lifx.app.alarms.Alarm.LightSteps;
 import de.jeisfeld.lifx.app.alarms.Alarm.RingtoneStep;
 import de.jeisfeld.lifx.app.alarms.Alarm.Step;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.scenes.Scene;
+import de.jeisfeld.lifx.app.scenes.SceneRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
@@ -91,6 +95,10 @@ public class LifxAlarmService extends Service {
 	 */
 	protected static final String ACTION_TEST_ALARM = "de.jeisfeld.lifx.app.ACTION_TEST_ALARM";
 	/**
+	 * Action for testing a scene.
+	 */
+	public static final String ACTION_TEST_SCENE = "de.jeisfeld.lifx.app.ACTION_TEST_SCENE";
+	/**
 	 * Action for interrupting an alarm.
 	 */
 	protected static final String ACTION_INTERRUPT_ALARM = "de.jeisfeld.lifx.app.ACTION_INTERRUPT_ALARM";
@@ -123,7 +131,7 @@ public class LifxAlarmService extends Service {
 	 * @param alarmId   the alarm id.
 	 * @param alarmTime the alarm time.
 	 */
-	protected static void triggerAlarmService(final Context context, final String action, final int alarmId, final Date alarmTime) {
+	public static void triggerAlarmService(final Context context, final String action, final int alarmId, final Date alarmTime) {
 		if (ACTION_CANCEL_ALARM.equals(action) || ACTION_INTERRUPT_ALARM.equals(action)) {
 			context.startService(createIntent(context, action, alarmId, alarmTime));
 		}
@@ -205,6 +213,14 @@ public class LifxAlarmService extends Service {
 		}
 		else if (ACTION_TEST_ALARM.equals(action)) {
 			runAnimations(alarm, alarmDate);
+		}
+		else if (ACTION_TEST_SCENE.equals(action)) {
+			Scene scene = SceneRegistry.getInstance().getScene(alarmId);
+			Alarm sceneAlarm = new Alarm(scene.getId(), true, alarmDate,
+					new HashSet<>(), scene.getName(),
+					scene.getSteps().stream().map(s -> new Step(s.getId(), s.getDelay(), s.getStoredColorId(), s.getDuration())).collect(Collectors.toList()),
+					AlarmType.STANDARD, null, false);
+			runAnimations(sceneAlarm, alarmDate);
 		}
 		else if (ACTION_INTERRUPT_ALARM.equals(action)) {
 			interruptAlarm(alarm);
