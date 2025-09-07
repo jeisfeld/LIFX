@@ -3,6 +3,7 @@
     <string name="title_dialog_confirmation">Bestätigung</string>
     <string name="title_dialog_select_light">Licht wählen</string>
     <string name="title_dialog_select_color">Farbe wählen</string>
+    <string name="title_dialog_select_scene">Szene wählen</string>
     <string name="title_dialog_save_color">Farbe speichern</string>
     <string name="title_dialog_save_animation">Animation speichern</string>
     <string name="title_dialog_image">Bild anpassen</string>

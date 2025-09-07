@@ -50,6 +50,8 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoredColors
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.ColorUtil;
+import de.jeisfeld.lifx.app.scenes.SceneRegistry;
+import de.jeisfeld.lifx.app.scenes.ScenesDialogFragment;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.view.ColorPickerDialog;
 import de.jeisfeld.lifx.app.view.ColorPickerDialog.Builder;
@@ -127,7 +129,10 @@ public class DeviceAdapter extends BaseAdapter {
 		mFragment = new WeakReference<>(fragment);
 		mLifeCycleOwner = fragment.getViewLifecycleOwner();
 		mNoDeviceCallback = callback;
-		for (DeviceHolder device : mDevices) {
+                if (!SceneRegistry.getInstance().getScenes().isEmpty()) {
+                        mViewModels.add(0, new ScenesViewModel(mContext));
+                }
+                for (DeviceHolder device : mDevices) {
 			addViewModel(device);
 		}
 
@@ -153,7 +158,7 @@ public class DeviceAdapter extends BaseAdapter {
 
 	@Override
 	public final int getCount() {
-		return mDevices.size();
+		return mViewModels.size();
 	}
 
 	@Override
@@ -302,6 +307,32 @@ public class DeviceAdapter extends BaseAdapter {
 				mViews.add(position, view);
 			}
 		}
+
+                if (model instanceof ScenesViewModel) {
+                        if (checkBoxSelectLight != null) {
+                                checkBoxSelectLight.setVisibility(View.GONE);
+                        }
+                        view.findViewById(R.id.buttonPower).setVisibility(View.GONE);
+                        view.findViewById(R.id.buttonBrightnessColortemp).setVisibility(View.GONE);
+                        view.findViewById(R.id.buttonColorPicker).setVisibility(View.GONE);
+                        view.findViewById(R.id.buttonMultiColorPicker).setVisibility(View.GONE);
+                        view.findViewById(R.id.buttonImage).setVisibility(View.GONE);
+                        view.findViewById(R.id.buttonTune).setVisibility(View.GONE);
+                        view.findViewById(R.id.toggleButtonAnimation).setVisibility(View.GONE);
+                        view.findViewById(R.id.seekBarBrightness).setVisibility(View.GONE);
+                        Button saveButton = view.findViewById(R.id.buttonSave);
+                        if (saveButton != null) {
+                                saveButton.setVisibility(View.VISIBLE);
+                                Fragment fragment = mFragment.get();
+                                FragmentActivity activity = fragment == null ? null : fragment.getActivity();
+                                saveButton.setOnClickListener(v -> {
+                                        if (activity != null) {
+                                                ScenesDialogFragment.displayScenesDialog(activity);
+                                        }
+                                });
+                        }
+                        return view;
+                }
 
 		model.checkPower();
 
@@ -878,14 +909,15 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @return the view model
 	 */
 	protected MainViewModel getViewModel(final String mac) {
-		for (int i = 0; i < mDevices.size(); i++) {
-			DeviceHolder holder = mDevices.get(i);
-			if (!holder.isGroup() && mac.equals(holder.getDevice().getTargetAddress())) {
-				return mViewModels.get(i);
-			}
-		}
-		return null;
-	}
+                int offset = mViewModels.size() - mDevices.size();
+                for (int i = 0; i < mDevices.size(); i++) {
+                        DeviceHolder holder = mDevices.get(i);
+                        if (!holder.isGroup() && mac.equals(holder.getDevice().getTargetAddress())) {
+                                return mViewModels.get(i + offset);
+                        }
+                }
+                return null;
+        }
 
 	/**
 	 * Get all checked devices.

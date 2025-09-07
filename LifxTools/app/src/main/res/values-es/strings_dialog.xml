@@ -3,6 +3,7 @@
     <string name="title_dialog_confirmation">Confirmación</string>
     <string name="title_dialog_select_light">Selecciona la luz</string>
     <string name="title_dialog_select_color">Selecciona el color</string>
+    <string name="title_dialog_select_scene">Seleccionar escena</string>
     <string name="title_dialog_save_color">Guardar color</string>
     <string name="title_dialog_save_animation">Guardar animación</string>
     <string name="title_dialog_image">Adaptar imagen</string>
