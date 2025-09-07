@@ -79,6 +79,16 @@
     <string name="label_alarm_step_start">Iniciar</string>
     <string name="label_alarm_step_end">Fim</string>
     <string name="hint_select_stored_color">(Selecione a cor armazenada)</string>
+    <string name="title_dialog_select_scene">Selecionar cena</string>
+    <string name="title_dialog_change_scene_name">Alterar nome da cena</string>
+    <string name="message_dialog_new_scene_name">Novo nome da cena:</string>
+    <string name="title_dialog_scene_step_delay">Atraso do passo da cena</string>
+    <string name="message_dialog_scene_step_delay">Defina o atraso do passo da cena após o início</string>
+    <string name="title_dialog_scene_step_duration">Duração do passo da cena</string>
+    <string name="message_dialog_scene_step_duration">Defina a duração do passo da cena</string>
+    <string name="button_add_scene">Adicionar cena</string>
+    <string name="message_confirm_delete_scene">Deseja excluir a cena "%1$s" do aplicativo?</string>
+    <string name="message_confirm_delete_scene_step">Deseja excluir o passo da cena?</string>
 
     <string name="label_animation_type">Tipo</string>
     <string name="label_animation_duration">Duração</string>

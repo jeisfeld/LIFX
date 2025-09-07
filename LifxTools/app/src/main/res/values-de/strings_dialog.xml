@@ -80,6 +80,17 @@
     <string name="label_alarm_step_end">Ende</string>
     <string name="hint_select_stored_color">(Gespeicherte Farbe wählen)</string>
 
+    <string name="title_dialog_select_scene">Szene auswählen</string>
+    <string name="title_dialog_change_scene_name">Szenennamen ändern</string>
+    <string name="message_dialog_new_scene_name">Neuer Szenenname:</string>
+    <string name="title_dialog_scene_step_delay">Verzögerung des Szenenschritts</string>
+    <string name="message_dialog_scene_step_delay">Legen Sie die Verzögerung des Szenenschritts nach dem Start fest</string>
+    <string name="title_dialog_scene_step_duration">Dauer des Szenenschritts</string>
+    <string name="message_dialog_scene_step_duration">Legen Sie die Dauer des Szenenschritts fest</string>
+    <string name="button_add_scene">Szene hinzufügen</string>
+    <string name="message_confirm_delete_scene">Möchten Sie die Szene "%1$s" aus der App löschen?</string>
+    <string name="message_confirm_delete_scene_step">Möchten Sie den Szenenschritt löschen?</string>
+
     <string name="label_animation_type">Typ</string>
     <string name="label_animation_duration">Dauer</string>
     <string name="hint_animation_duration">(Sekunden)</string>
