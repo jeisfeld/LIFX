@@ -10,15 +10,21 @@
     <string name="title_dialog_alarm_time">Set Alarm Time</string>
     <string name="title_dialog_copy_alarm">Copy Alarm</string>
     <string name="title_dialog_change_alarm_name">Change Alarm Name</string>
+    <string name="title_dialog_change_scene_name">Change Scene Name</string>
     <string name="title_dialog_change_color_name">Change Color Name</string>
     <string name="title_dialog_select_date_for_import">Select date of settings for import</string>
     <string name="message_dialog_new_alarm_name">New Alarm Name:</string>
+    <string name="message_dialog_new_scene_name">New Scene Name:</string>
     <string name="message_dialog_new_color_name">New Color Name:</string>
 
     <string name="title_dialog_alarm_step_delay">Alarm step delay</string>
     <string name="message_dialog_alarm_step_delay">Set the delay of the alarm step after alarm start</string>
     <string name="title_dialog_alarm_step_duration">Alarm step duration</string>
     <string name="message_dialog_alarm_step_duration">Set the duration of the alarm step</string>
+    <string name="title_dialog_scene_step_delay">Scene step delay</string>
+    <string name="message_dialog_scene_step_delay">Set the delay of the scene step after start</string>
+    <string name="title_dialog_scene_step_duration">Scene step duration</string>
+    <string name="message_dialog_scene_step_duration">Set the duration of the scene step</string>
 
     <string name="title_no_stored_colors">No stored colors</string>
     <string name="message_no_stored_colors">There are no stored colors. You need to store colors before you can use them for alarms.</string>
@@ -60,6 +66,7 @@
     <string name="button_rename">Rename</string>
     <string name="button_copy">Create copy</string>
     <string name="button_add_alarm">Add alarm</string>
+    <string name="button_add_scene">Add scene</string>
     <string name="button_overwrite">Overwrite</string>
     <string name="button_import">Import</string>
 
@@ -132,6 +139,8 @@
     <string name="message_confirm_delete_alarm">Do you want to delete the alarm “%1$s” from the app?</string>
     <string name="message_confirm_delete_alarm_stopsequence">Do you want to delete the stop sequence of alarm “%1$s” from the app?</string>
     <string name="message_confirm_delete_alarm_step">Do you want to delete the alarm step?</string>
+    <string name="message_confirm_delete_scene">Do you want to delete the scene “%1$s” from the app?</string>
+    <string name="message_confirm_delete_scene_step">Do you want to delete the scene step?</string>
     <string name="message_no_device_with_stored_colors">No LIFX device with stored colors available.</string>
 
     <string name="toast_saved_color">Color “%1$s” was saved.</string>

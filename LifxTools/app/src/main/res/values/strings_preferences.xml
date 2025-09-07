@@ -82,6 +82,16 @@
     <string name="key_alarm_step_ringtone_uri" translatable="false">alarm_step_ringtone_uri</string>
     <string name="key_alarm_step_ringtone_name" translatable="false">alarm_step_ringtone_name</string>
 
+    <!-- Keys for scenes -->
+    <string name="key_scene_ids" translatable="false">scene_ids</string>
+    <string name="key_scene_max_id" translatable="false">scene_max_id</string>
+    <string name="key_scene_step_max_id" translatable="false">scene_step_max_id</string>
+    <string name="key_scene_name" translatable="false">scene_name</string>
+    <string name="key_scene_step_ids" translatable="false">scene_step_ids</string>
+    <string name="key_scene_step_delay" translatable="false">scene_step_delay</string>
+    <string name="key_scene_step_stored_color_id" translatable="false">scene_step_stored_color_id</string>
+    <string name="key_scene_step_duration" translatable="false">scene_step_duration</string>
+
     <!-- Keys for statistics -->
     <string name="key_statistics_initialversion" translatable="false">statistics_initialversion</string>
     <string name="key_statistics_firststarttime" translatable="false">statistics_firststarttime</string>
