@@ -79,6 +79,16 @@
     <string name="label_alarm_step_start">Inicio</string>
     <string name="label_alarm_step_end">Fin</string>
     <string name="hint_select_stored_color">(Seleccionar color almacenado)</string>
+    <string name="title_dialog_select_scene">Seleccionar escena</string>
+    <string name="title_dialog_change_scene_name">Cambiar nombre de la escena</string>
+    <string name="message_dialog_new_scene_name">Nuevo nombre de la escena:</string>
+    <string name="title_dialog_scene_step_delay">Retraso del paso de escena</string>
+    <string name="message_dialog_scene_step_delay">Establece el retraso del paso de la escena después de comenzar</string>
+    <string name="title_dialog_scene_step_duration">Duración del paso de escena</string>
+    <string name="message_dialog_scene_step_duration">Establece la duración del paso de la escena</string>
+    <string name="button_add_scene">Agregar escena</string>
+    <string name="message_confirm_delete_scene">¿Desea eliminar la escena "%1$s" de la aplicación?</string>
+    <string name="message_confirm_delete_scene_step">¿Desea eliminar el paso de escena?</string>
 
     <string name="label_animation_type">Tipo</string>
     <string name="label_animation_duration">Duración</string>

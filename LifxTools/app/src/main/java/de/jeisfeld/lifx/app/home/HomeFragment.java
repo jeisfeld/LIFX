@@ -94,15 +94,14 @@ public class HomeFragment extends ListFragment {
                 mScenesHeaderView = LayoutInflater.from(getContext()).inflate(R.layout.list_view_home_scene, getListView(), false);
                 Button buttonScenes = mScenesHeaderView.findViewById(R.id.buttonScenes);
                 buttonScenes.setOnClickListener(v -> ScenesDialogFragment.displayScenesDialog(requireActivity()));
-                getListView().addHeaderView(mScenesHeaderView, null, false);
 
                 if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
                         getListView().setVisibility(View.GONE);
                         requireView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
                 }
                 mAdapter = new DeviceAdapter(this, new NoDeviceCallback());
-                setListAdapter(mAdapter);
                 updateScenesHeaderVisibility();
+                setListAdapter(mAdapter);
 
 		ConstraintLayout layoutColorPicker = requireView().findViewById(R.id.layoutColorPicker);
 		ConstraintLayout layoutBrightnessColorTempPicker = requireView().findViewById(R.id.layoutBrightnessColorTempPicker);
@@ -155,8 +154,18 @@ public class HomeFragment extends ListFragment {
          */
         private void updateScenesHeaderVisibility() {
                 if (mScenesHeaderView != null) {
-                        mScenesHeaderView.setVisibility(SceneRegistry.getInstance().getScenes().isEmpty()
-                                        ? View.GONE : View.VISIBLE);
+                        boolean hasScenes = !SceneRegistry.getInstance().getScenes().isEmpty();
+                        if (hasScenes) {
+                                if (mScenesHeaderView.getParent() == null) {
+                                        getListView().addHeaderView(mScenesHeaderView, null, false);
+                                        if (getListView().getAdapter() != null) {
+                                                setListAdapter(mAdapter);
+                                        }
+                                }
+                        }
+                        else if (mScenesHeaderView.getParent() != null) {
+                                getListView().removeHeaderView(mScenesHeaderView);
+                        }
                 }
         }
 
