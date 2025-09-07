@@ -267,6 +267,12 @@ public class SceneStepExpandableListAdapter extends BaseExpandableListAdapter {
                 return false;
         }
 
+        @Override
+        public final void notifyDataSetChanged() {
+                mLightStepsList = mScene.getLightSteps();
+                super.notifyDataSetChanged();
+        }
+
         protected void notifyDataSetChanged(final Scene scene) {
                 mScene = scene;
                 mLightStepsList = scene.getLightSteps();

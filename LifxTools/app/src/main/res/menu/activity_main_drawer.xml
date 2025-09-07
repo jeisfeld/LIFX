@@ -13,7 +13,7 @@
             android:title="@string/menu_alarms" />
         <item
             android:id="@+id/nav_scenes"
-            android:icon="@drawable/ic_menu_alarms"
+            android:icon="@drawable/ic_menu_scenes"
             android:title="@string/menu_scenes" />
 
         <item android:title="@string/menu_settings">

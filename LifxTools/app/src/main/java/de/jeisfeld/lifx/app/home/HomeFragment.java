@@ -11,11 +11,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.skydoves.colorpickerview.ColorPickerView;
 import com.skydoves.colorpickerview.listeners.ColorListener;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,7 +31,11 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.ListFragment;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.alarms.LifxAlarmService;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.scenes.Scene;
+import de.jeisfeld.lifx.app.scenes.SceneRegistry;
+import de.jeisfeld.lifx.app.scenes.ScenesDialogFragment;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.ImageUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -71,6 +79,7 @@ public class HomeFragment extends ListFragment {
 	 */
 	public static void sendBroadcastStopAnimation(final Context context, final String mac) {
 		Intent intent = new Intent(EXTRA_ANIMATION_STOP_INTENT);
+		intent.setPackage("de.jeisfeld.lifx.app");
 		intent.putExtra(EXTRA_ANIMATION_STOP_MAC, mac);
 		context.sendBroadcast(intent);
 	}
@@ -84,7 +93,11 @@ public class HomeFragment extends ListFragment {
 	public final void onViewCreated(@NonNull final View view, final Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		if (DeviceRegistry.getInstance().getDevices(false).size() == 0) {
+		Button buttonScenes = requireView().findViewById(R.id.buttonScenes);
+		buttonScenes.setOnClickListener(v -> ScenesDialogFragment.displayScenesDialog(requireActivity()));
+		updateSceneButtons();
+
+		if (DeviceRegistry.getInstance().getDevices(false).isEmpty()) {
 			getListView().setVisibility(View.GONE);
 			requireView().findViewById(R.id.textViewNoDevice).setVisibility(View.VISIBLE);
 		}
@@ -113,6 +126,8 @@ public class HomeFragment extends ListFragment {
 	public final void onResume() {
 		super.onResume();
 
+		updateSceneButtons();
+
 		ContextCompat.registerReceiver(requireActivity(), mReceiver, new IntentFilter(EXTRA_ANIMATION_STOP_INTENT), ContextCompat.RECEIVER_NOT_EXPORTED);
 
 		mExecutor = Executors.newScheduledThreadPool(1);
@@ -133,6 +148,44 @@ public class HomeFragment extends ListFragment {
 		mExecutor = null;
 
 		requireActivity().unregisterReceiver(mReceiver);
+	}
+
+	/**
+	 * Populate the scene buttons shown above the list view.
+	 */
+	private void updateSceneButtons() {
+		if (getView() == null) {
+			return;
+		}
+                LinearLayout layout = getView().findViewById(R.id.layoutSceneButtons);
+                View layoutScenes = getView().findViewById(R.id.layoutScenes);
+                View separatorScenes = getView().findViewById(R.id.separatorScenes);
+                if (layout == null || layoutScenes == null) {
+                        return;
+                }
+                layout.removeAllViews();
+                List<Scene> scenes = SceneRegistry.getInstance().getScenes();
+                if (scenes.isEmpty()) {
+                        layoutScenes.setVisibility(View.GONE);
+                        if (separatorScenes != null) {
+                                separatorScenes.setVisibility(View.GONE);
+                        }
+                        return;
+                }
+                layoutScenes.setVisibility(View.VISIBLE);
+                if (separatorScenes != null) {
+                        separatorScenes.setVisibility(View.VISIBLE);
+                }
+                LayoutInflater inflater = LayoutInflater.from(getContext());
+                for (Scene scene : scenes) {
+                        View sceneView = inflater.inflate(R.layout.grid_entry_scene, layout, false);
+                        ((TextView) sceneView.findViewById(R.id.textViewSceneName)).setText(scene.getName());
+                        ImageView imageView = sceneView.findViewById(R.id.imageViewRunScene);
+                        imageView.setOnClickListener(v ->
+                                        LifxAlarmService.triggerAlarmService(requireContext(),
+                                                        LifxAlarmService.ACTION_TEST_SCENE, scene.getId(), new Date()));
+                        layout.addView(sceneView);
+                }
 	}
 
 	/**
