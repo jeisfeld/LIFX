@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/listelement_light_height"
+    android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:paddingTop="@dimen/list_vertical_margin"
-    android:paddingBottom="@dimen/list_vertical_margin">
+    android:paddingBottom="@dimen/list_vertical_margin"
+    android:gravity="center_vertical">
 
     <TextView
         android:id="@+id/textViewScenes"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/list_horizontal_margin"
         android:layout_weight="1"
-        android:gravity="center_vertical"
         android:text="@string/menu_scenes"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
