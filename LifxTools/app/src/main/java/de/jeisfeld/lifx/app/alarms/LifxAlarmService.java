@@ -204,15 +204,15 @@ public class LifxAlarmService extends Service {
 			synchronized (ANIMATED_ALARMS) {
 				PENDING_ALARMS.remove(alarmId);
 			}
-			runAnimations(alarm, alarmDate);
+			runAnimations(alarm, alarmDate, false);
 			AlarmReceiver.retriggerAlarm(this, alarm);
 		}
 		else if (ACTION_IMMEDIATE_ALARM.equals(action)) {
-			runAnimations(alarm, alarmDate);
+			runAnimations(alarm, alarmDate, false);
 			AlarmReceiver.retriggerAlarm(this, alarm);
 		}
 		else if (ACTION_TEST_ALARM.equals(action)) {
-			runAnimations(alarm, alarmDate);
+			runAnimations(alarm, alarmDate, false);
 		}
 		else if (ACTION_TEST_SCENE.equals(action)) {
 			Scene scene = SceneRegistry.getInstance().getScene(alarmId);
@@ -220,7 +220,7 @@ public class LifxAlarmService extends Service {
 					new HashSet<>(), scene.getName(),
 					scene.getSteps().stream().map(s -> new Step(s.getId(), s.getDelay(), s.getStoredColorId(), s.getDuration())).collect(Collectors.toList()),
 					AlarmType.STANDARD, null, false);
-			runAnimations(sceneAlarm, alarmDate);
+			runAnimations(sceneAlarm, alarmDate, true);
 		}
 		else if (ACTION_INTERRUPT_ALARM.equals(action)) {
 			interruptAlarm(alarm);
@@ -243,12 +243,13 @@ public class LifxAlarmService extends Service {
 	}
 
 	/**
-	 * Run the animations for an alarm.
+	 * Run the animations for an alarm or scene.
 	 *
 	 * @param alarm     the alarm
 	 * @param alarmDate the alarm date
+	 * @param isScene   true if triggered for a scene
 	 */
-	private void runAnimations(final Alarm alarm, final Date alarmDate) {
+	private void runAnimations(final Alarm alarm, final Date alarmDate, final boolean isScene) {
 		synchronized (ANIMATED_ALARMS) {
 			ANIMATED_ALARMS.add(alarm.getId());
 			startNotification();
@@ -257,7 +258,7 @@ public class LifxAlarmService extends Service {
 			animationThread.start();
 		}
 
-		startRunningNotification(alarm);
+		startRunningNotification(alarm, isScene);
 	}
 
 	/**
@@ -557,15 +558,18 @@ public class LifxAlarmService extends Service {
 	 *
 	 * @param alarm The alarm.
 	 */
-	private void startRunningNotification(final Alarm alarm) {
+	private void startRunningNotification(final Alarm alarm, final boolean isScene) {
 		PendingIntent contentIntent = PendingIntent.getActivity(this, alarm.getId(),
-				MainActivity.createIntent(this, R.id.nav_alarms), PendingIntent.FLAG_IMMUTABLE);
+				MainActivity.createIntent(this, isScene ? R.id.nav_scenes : R.id.nav_alarms), PendingIntent.FLAG_IMMUTABLE);
 		PendingIntent stopIntent = PendingIntent.getService(this, alarm.getId(),
 				LifxAlarmService.createIntent(this, ACTION_INTERRUPT_ALARM, alarm.getId(), null), PendingIntent.FLAG_IMMUTABLE);
+		int titleRes = isScene ? R.string.notification_title_scene_execution : R.string.notification_title_alarm_execution;
+		int smallIcon = isScene ? R.drawable.ic_menu_scenes : R.drawable.ic_notification_icon_alarm;
+		int largeIcon = isScene ? R.drawable.ic_menu_scenes : R.drawable.ic_notification_icon_large_alarm;
 		Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID_EXECUTION)
-				.setContentTitle(getString(R.string.notification_title_alarm_execution, alarm.getName()))
-				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
-				.setLargeIcon(ImageUtil.createBitmapFromDrawable(this, R.drawable.ic_notification_icon_large_alarm))
+				.setContentTitle(getString(titleRes, alarm.getName()))
+				.setSmallIcon(smallIcon)
+				.setLargeIcon(ImageUtil.createBitmapFromDrawable(this, largeIcon))
 				.setOngoing(true)
 				.setPriority(NotificationCompat.PRIORITY_HIGH)
 				.setContentIntent(contentIntent)
