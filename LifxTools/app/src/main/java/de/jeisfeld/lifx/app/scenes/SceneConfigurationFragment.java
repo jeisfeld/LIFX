@@ -78,9 +78,9 @@ public class SceneConfigurationFragment extends Fragment {
 		root.findViewById(R.id.imageViewAddSceneLight).setOnClickListener(v -> {
 			List<Light> lightsWithStoredColors = ColorRegistry.getInstance().getLightsWithStoredColors();
 			lightsWithStoredColors.removeAll(mScene.getLightSteps().stream().map(Scene.LightSteps::getLight).collect(java.util.stream.Collectors.toSet()));
-			SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(), device ->
-					StoredColorsDialogFragment.displayStoredColorsDialog(requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
-							(dialog, storedColor) -> {
+                        SelectDeviceDialogFragment.displaySelectDeviceDialog(requireActivity(), device ->
+                                        StoredColorsDialogFragment.displayStoredColorsDialog(requireActivity(), (int) device.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, true,
+                                                        (dialog, storedColor) -> {
 								mScene.getSteps().add(new Scene.Step(0, storedColor.getId(), DEFAULT_DURATION));
 								mScene = SceneRegistry.getInstance().addOrUpdate(mScene);
 								mAdapter.notifyDataSetChanged(mScene);
