@@ -156,7 +156,7 @@ public class SceneStepExpandableListAdapter extends BaseExpandableListAdapter {
                         textViewEndTime.setVisibility(View.GONE);
                         imageViewAddStep.setVisibility(View.VISIBLE);
                         long finalMaxEndTime = maxEndTime;
-                        imageViewAddStep.setOnClickListener(v -> StoredColorsDialogFragment.displayStoredColorsDialog(mFragment.requireActivity(), (int) lightSteps.getLight().getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
+                        imageViewAddStep.setOnClickListener(v -> StoredColorsDialogFragment.displayStoredColorsDialog(mFragment.requireActivity(), (int) lightSteps.getLight().getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, true,
                                 (dialog, storedColor) -> {
                                         mScene.getSteps().add(new Step(finalMaxEndTime, storedColor.getId(), SceneConfigurationFragment.DEFAULT_DURATION));
                                         mScene = SceneRegistry.getInstance().addOrUpdate(mScene);
@@ -191,7 +191,7 @@ public class SceneStepExpandableListAdapter extends BaseExpandableListAdapter {
 
                 View.OnClickListener changeColorListener = v -> {
                         final Step step = getChild(groupPosition, childPosition);
-                        StoredColorsDialogFragment.displayStoredColorsDialog(mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true, false,
+                        StoredColorsDialogFragment.displayStoredColorsDialog(mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true, true,
                                 (dialog, storedColor) -> {
                                         Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
                                         mScene.getSteps().remove(step);
