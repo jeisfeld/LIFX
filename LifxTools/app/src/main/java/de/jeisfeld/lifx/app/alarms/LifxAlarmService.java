@@ -749,11 +749,41 @@ public class LifxAlarmService extends Service {
                                                 int duration = (int) step.getDuration();
                                                 Power power = getLight().getPower();
                                                 boolean wasOff = power != null && power.isOff();
-                                                if (color.isOff()) {
-                                                        getLight().setPower(false, duration, false);
+                                                if (getLight() instanceof MultiZoneLight) {
+                                                        MultizoneColors colors = storedColor instanceof StoredMultizoneColors
+                                                                        ? ((StoredMultizoneColors) storedColor).getColors()
+                                                                        : new MultizoneColors.Fixed(color);
+                                                        if (colors.isOff()) {
+                                                                getLight().setPower(false, duration, false);
+                                                        }
+                                                        else if (wasOff) {
+                                                                ((MultiZoneLight) getLight()).setColors(colors, 0, false);
+                                                                getLight().setPower(true, duration, false);
+                                                        }
+                                                        else {
+                                                                ((MultiZoneLight) getLight()).setColors(colors, duration, false);
+                                                        }
+                                                }
+                                                else if (getLight() instanceof TileChain) {
+                                                        TileChainColors colors = storedColor instanceof StoredTileColors
+                                                                        ? ((StoredTileColors) storedColor).getColors()
+                                                                        : new TileChainColors.Fixed(color);
+                                                        if (colors.isOff()) {
+                                                                getLight().setPower(false, duration, false);
+                                                        }
+                                                        else if (wasOff) {
+                                                                ((TileChain) getLight()).setColors(colors, 0, false);
+                                                                getLight().setPower(true, duration, false);
+                                                        }
+                                                        else {
+                                                                ((TileChain) getLight()).setColors(colors, duration, false);
+                                                        }
                                                 }
                                                 else {
-                                                        if (wasOff) {
+                                                        if (color.isOff()) {
+                                                                getLight().setPower(false, duration, false);
+                                                        }
+                                                        else if (wasOff) {
                                                                 getLight().setColor(color, 0, false);
                                                                 getLight().setPower(true, duration, false);
                                                         }
