@@ -20,7 +20,8 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/list_vertical_margin"
         android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
         <Button
             android:id="@+id/buttonScenes"
