@@ -33,6 +33,7 @@
     <string name="notification_channel_alarm_execution">Execução de alarme LIFX</string>
     <string name="notification_title_alarm">Alarme LIFX</string>
     <string name="notification_title_alarm_execution">Alarme LIFX %1$s</string>
+    <string name="notification_title_scene_execution">Cena LIFX %1$s</string>
     <string name="notification_text_alarm">%2$s: %1$s\n</string>
     <string name="notification_text_no_alarm">Sem mais alarmes</string>
     <string name="notification_alarm_action_stop">Pare</string>
