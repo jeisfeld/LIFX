@@ -243,12 +243,14 @@ public class StoredColor {
 					getLight().endAnimation(false);
 				}
 				setColor(colorDuration, model);
-				if (PreferenceUtil.getSharedPreferenceBoolean(R.string.key_pref_auto_on, true)) {
-					getLight().setPower(true);
-					if (model != null) {
-						model.updatePowerButton(Power.ON);
-					}
-				}
+                                if (!(this instanceof StoredAnimation)
+                                                && PreferenceUtil.getSharedPreferenceBoolean(
+                                                                R.string.key_pref_auto_on, true)) {
+                                        getLight().setPower(true);
+                                        if (model != null) {
+                                                model.updatePowerButton(Power.ON);
+                                        }
+                                }
 			}
 			catch (IOException e) {
 				Log.w(Application.TAG, e);
