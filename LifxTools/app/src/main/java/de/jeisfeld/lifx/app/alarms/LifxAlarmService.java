@@ -341,8 +341,8 @@ public class LifxAlarmService extends Service {
 			}
 
 			if (hasStoredAnimation) {
-				animationThreads.add(new StoredAnimationThread(light, lightSteps.getSteps(), alarmDate)
-						.setAnimationCallback(callback));
+				animationThreads.add(new StoredAnimationThread(light, lightSteps.getSteps(), alarmDate,
+						alarm.getAlarmType(), alarm.getDuration()).setAnimationCallback(callback));
 			}
 			else if (DeviceRegistry.getInstance().getRingtoneDummyLight().equals(light)) {
 				animationThreads.add(new RingtoneAnimationThread(
@@ -724,6 +724,14 @@ public class LifxAlarmService extends Service {
 		 */
 		private final Date mAlarmDate;
 		/**
+		 * The alarm type.
+		 */
+		private final AlarmType mAlarmType;
+		/**
+		 * The total duration of the alarm.
+		 */
+		private final long mAlarmDuration;
+		/**
 		 * An exception callback called in case of SocketException.
 		 */
 		private AnimationCallback mAnimationCallback = null;
@@ -731,14 +739,19 @@ public class LifxAlarmService extends Service {
 		/**
 		 * Create an animation thread.
 		 *
-		 * @param light     The light.
-		 * @param steps     The steps for the light.
-		 * @param alarmDate The start date of the alarm or scene.
+		 * @param light         The light.
+		 * @param steps         The steps for the light.
+		 * @param alarmDate     The start date of the alarm or scene.
+		 * @param alarmType     The alarm type.
+		 * @param alarmDuration The total duration of the alarm.
 		 */
-		protected StoredAnimationThread(final Light light, final List<Step> steps, final Date alarmDate) {
+		protected StoredAnimationThread(final Light light, final List<Step> steps, final Date alarmDate,
+										final AlarmType alarmType, final long alarmDuration) {
 			mLight = light;
 			mSteps = steps;
 			mAlarmDate = alarmDate;
+			mAlarmType = alarmType;
+			mAlarmDuration = alarmDuration;
 		}
 
 		/**
@@ -757,18 +770,23 @@ public class LifxAlarmService extends Service {
 			try {
 				LifxAnimationService.stopAnimationForMac(LifxAlarmService.this, mLight.getTargetAddress());
 				mLight.endAnimation(false);
-				for (int i = 0; i < mSteps.size(); i++) {
-					Step step = mSteps.get(i);
-					long start = mAlarmDate.getTime() + step.getDelay();
+				int n = 0;
+				while (!isInterrupted() && (mAlarmType == AlarmType.CYCLIC || n < mSteps.size())) {
+					Step step = mSteps.get(n % mSteps.size());
+					long cycleStart = mAlarmDate.getTime() + (n / mSteps.size()) * mAlarmDuration;
+					long start = cycleStart + step.getDelay();
 					long waitTime = start - System.currentTimeMillis();
 					if (waitTime > 0) {
 						//noinspection BusyWait
 						Thread.sleep(waitTime);
 					}
 
-					if (i > 0 && mSteps.get(i - 1).getStoredColor() instanceof StoredAnimation) {
-						LifxAnimationService.stopAnimationForMac(LifxAlarmService.this, mLight.getTargetAddress());
-						mLight.endAnimation(false);
+					if (n > 0) {
+						Step previous = mSteps.get((n - 1) % mSteps.size());
+						if (previous.getStoredColor() instanceof StoredAnimation) {
+							LifxAnimationService.stopAnimationForMac(LifxAlarmService.this, mLight.getTargetAddress());
+							mLight.endAnimation(false);
+						}
 					}
 
 					StoredColor storedColor = step.getStoredColor();
@@ -825,9 +843,27 @@ public class LifxAlarmService extends Service {
 							}
 						}
 					}
+					n++;
 				}
-				if (mAnimationCallback != null) {
-					mAnimationCallback.onAnimationEnd(false);
+
+				if (!isInterrupted()) {
+					Step lastStep = mSteps.get((n - 1) % mSteps.size());
+					if (mAlarmType != AlarmType.CYCLIC && mAlarmType != AlarmType.STOP_MANUALLY) {
+						long end = mAlarmDate.getTime() + lastStep.getDelay() + lastStep.getDuration();
+						long waitTime = end - System.currentTimeMillis();
+						if (waitTime > 0) {
+							//noinspection BusyWait
+							Thread.sleep(waitTime);
+						}
+					}
+					if (mAlarmType != AlarmType.STOP_MANUALLY
+							&& lastStep.getStoredColor() instanceof StoredAnimation) {
+						LifxAnimationService.stopAnimationForMac(LifxAlarmService.this, mLight.getTargetAddress());
+						mLight.endAnimation(false);
+					}
+					if (mAnimationCallback != null) {
+						mAnimationCallback.onAnimationEnd(false);
+					}
 				}
 			}
 			catch (InterruptedException e) {
