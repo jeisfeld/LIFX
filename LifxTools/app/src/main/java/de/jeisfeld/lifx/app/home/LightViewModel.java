@@ -175,20 +175,42 @@ public class LightViewModel extends DeviceViewModel {
 		mColor.postValue(color);
 	}
 
-	/**
-	 * Start the animation.
-	 *
-	 * @param animationData Data for the animation.
-	 */
-	public void startAnimation(final AnimationData animationData) {
-		Context context = getContext().get();
-		if (context == null) {
-			return;
-		}
-		updateBrightness(AnimationData.getSelectedBrightness(getLight()));
-		mAnimationStatus.postValue(true);
-		LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
-	}
+        /**
+         * Start the animation.
+         *
+         * @param animationData Data for the animation.
+         */
+        public void startAnimation(final AnimationData animationData) {
+                Context context = getContext().get();
+                if (context == null) {
+                        return;
+                }
+                double brightness = AnimationData.getSelectedBrightness(getLight());
+                updateSelectedBrightness(brightness);
+                Color currentColor = mColor.getValue();
+                if (currentColor == null) {
+                        currentColor = getLight().getColor();
+                }
+                if (currentColor != null) {
+                        Color newColor = currentColor.withBrightness(brightness);
+                        try {
+                                if (mPower.getValue() != null && mPower.getValue().isOff() && isAutoOn()) {
+                                        getLight().setColor(newColor, 0, false);
+                                        getLight().setPower(true, 0, false);
+                                        updatePowerButton(Power.ON);
+                                }
+                                else {
+                                        getLight().setColor(newColor, 0, false);
+                                }
+                                updateStoredColor(newColor);
+                        }
+                        catch (IOException e) {
+                                Log.w(Application.TAG, e);
+                        }
+                }
+                mAnimationStatus.postValue(true);
+                LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
+        }
 
 	/**
 	 * Stop the animation.
