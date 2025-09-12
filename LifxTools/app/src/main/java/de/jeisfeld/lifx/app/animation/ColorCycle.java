@@ -5,17 +5,17 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
-import de.jeisfeld.lifx.lan.animation.CycleAnimationDefinition;
 import de.jeisfeld.lifx.lan.type.Color;
 
 /**
- * Animation cycling through a list of colors.
+ * Animation cycling through a sequence of colors with individual durations.
  */
 public class ColorCycle extends AnimationData {
     /**
@@ -24,9 +24,9 @@ public class ColorCycle extends AnimationData {
     private static final long serialVersionUID = 1L;
 
     /**
-     * Duration for each color step.
+     * Durations for each color step in milliseconds.
      */
-    private final int mStepDuration;
+    private final ArrayList<Integer> mDurations;
     /**
      * Colors to cycle through.
      */
@@ -35,25 +35,29 @@ public class ColorCycle extends AnimationData {
     /**
      * Constructor.
      *
-     * @param stepDuration duration for each color step
-     * @param colors       list of colors to cycle
+     * @param durations list of step durations
+     * @param colors    list of colors to cycle
      */
-    public ColorCycle(final int stepDuration, final ArrayList<Color> colors) {
-        mStepDuration = stepDuration;
+    public ColorCycle(final List<Integer> durations, final ArrayList<Color> colors) {
+        mDurations = new ArrayList<>(durations);
         mColors = colors;
     }
 
     @Override
     public final void addToIntent(final Intent serviceIntent) {
         super.addToIntent(serviceIntent);
-        serviceIntent.putExtra(EXTRA_ANIMATION_DURATION, mStepDuration);
+        int[] durations = new int[mDurations.size()];
+        for (int i = 0; i < mDurations.size(); i++) {
+            durations[i] = mDurations.get(i);
+        }
+        serviceIntent.putExtra(EXTRA_ANIMATION_DURATIONS, durations);
         serviceIntent.putExtra(EXTRA_COLOR_LIST, mColors);
     }
 
     @Override
     public final void store(final int colorId) {
         super.store(colorId);
-        PreferenceUtil.setIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, mStepDuration);
+        PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId, mDurations);
         PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId, mColors);
     }
 
@@ -64,12 +68,18 @@ public class ColorCycle extends AnimationData {
 
     @Override
     protected final AnimationDefinition getAnimationDefinition(final Light light) {
-        Color[] colors = new Color[mColors.size()];
-        double brightness = getSelectedBrightness(light);
-        for (int i = 0; i < mColors.size(); i++) {
-            colors[i] = mColors.get(i).withRelativeBrightness(brightness);
-        }
-        return new CycleAnimationDefinition(mStepDuration, 0, colors);
+        final double brightness = getSelectedBrightness(light);
+        return new AnimationDefinition() {
+            @Override
+            public int getDuration(final int n) {
+                return mDurations.get(n % mDurations.size());
+            }
+
+            @Override
+            public Color getColor(final int n) {
+                return mColors.get(n % mColors.size()).withRelativeBrightness(brightness);
+            }
+        };
     }
 
     @Override
@@ -83,6 +93,18 @@ public class ColorCycle extends AnimationData {
 
     @Override
     public final boolean isValid() {
-        return mColors != null && !mColors.isEmpty() && mStepDuration > 0;
+        if (mColors == null || mDurations == null) {
+            return false;
+        }
+        if (mColors.isEmpty() || mDurations.size() != mColors.size()) {
+            return false;
+        }
+        for (int d : mDurations) {
+            if (d <= 0) {
+                return false;
+            }
+        }
+        return true;
     }
 }
+
