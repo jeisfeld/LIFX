@@ -185,7 +185,29 @@ public class LightViewModel extends DeviceViewModel {
 		if (context == null) {
 			return;
 		}
-		updateBrightness(AnimationData.getSelectedBrightness(getLight()));
+		double brightness = AnimationData.getSelectedBrightness(getLight());
+		updateSelectedBrightness(brightness);
+		Color currentColor = mColor.getValue();
+		if (currentColor == null) {
+			currentColor = getLight().getColor();
+		}
+		if (currentColor != null) {
+			Color newColor = currentColor.withBrightness(brightness);
+			try {
+				if (mPower.getValue() != null && mPower.getValue().isOff() && isAutoOn()) {
+					getLight().setColor(newColor, 0, false);
+					getLight().setPower(true, 0, false);
+					updatePowerButton(Power.ON);
+				}
+				else {
+					getLight().setColor(newColor, 0, false);
+				}
+				updateStoredColor(newColor);
+			}
+			catch (IOException e) {
+				Log.w(Application.TAG, e);
+			}
+		}
 		mAnimationStatus.postValue(true);
 		LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
 	}
