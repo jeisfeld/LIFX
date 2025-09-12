@@ -197,18 +197,18 @@ public abstract class AnimationData implements Serializable {
 		}
 
 		final int duration;
-		switch (animationType) {
-		case MULTIZONE_MOVE:
-			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
-			double stretch = intent.getDoubleExtra(EXTRA_ANIMATION_STRETCH, 1);
-			MultizoneMoveDefinition.Direction multizoneDirection =
-					(MultizoneMoveDefinition.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
-			MultizoneColors colors = (MultizoneColors) intent.getSerializableExtra(EXTRA_MULTIZONE_COLORS);
-			boolean isRunning = intent.getBooleanExtra(EXTRA_ANIMATION_IS_RUNNING, false);
-			return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
-		case TILECHAIN_WAVE:
-			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
-			double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
+                switch (animationType) {
+                case MULTIZONE_MOVE:
+                        duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
+                        double stretch = intent.getDoubleExtra(EXTRA_ANIMATION_STRETCH, 1);
+                        MultizoneMoveDefinition.Direction multizoneDirection =
+                                        (MultizoneMoveDefinition.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
+                        MultizoneColors colors = (MultizoneColors) intent.getSerializableExtra(EXTRA_MULTIZONE_COLORS);
+                        boolean isRunning = intent.getBooleanExtra(EXTRA_ANIMATION_IS_RUNNING, false);
+                        return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
+                case TILECHAIN_WAVE:
+                        duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
+                        double radius = intent.getDoubleExtra(EXTRA_ANIMATION_RADIUS, 10); // MAGIC_NUMBER
 			TileChainWaveDefinition.Direction tilechainDirection =
 					(TileChainWaveDefinition.Direction) intent.getSerializableExtra(EXTRA_ANIMATION_DIRECTION);
 			TileChainWaveDefinition.Form tilechainForm = (TileChainWaveDefinition.Form) intent.getSerializableExtra(EXTRA_ANIMATION_FORM);
@@ -228,13 +228,17 @@ public abstract class AnimationData implements Serializable {
 			return new TileChainMorph(duration, tileColors2, false);
 		case TILECHAIN_CLOUDS:
 			duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
-			final int cloudSaturation = intent.getIntExtra(EXTRA_ANIMATION_CLOUD_SATURATION, (byte) 50);
-			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors3 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
-			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
-		default:
-			return null;
-		}
-	}
+                        final int cloudSaturation = intent.getIntExtra(EXTRA_ANIMATION_CLOUD_SATURATION, (byte) 50);
+                        @SuppressWarnings("unchecked") final ArrayList<Color> tileColors3 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+                        return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
+               case COLOR_CYCLE:
+                       duration = intent.getIntExtra(EXTRA_ANIMATION_DURATION, DEFAULT_DURATION);
+                       @SuppressWarnings("unchecked") ArrayList<Color> cycleColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+                       return new ColorCycle(duration, cycleColors);
+                default:
+                        return null;
+                }
+        }
 
 	/**
 	 * Restore animation data from stored animation.
@@ -250,15 +254,15 @@ public abstract class AnimationData implements Serializable {
 		}
 
 		final int duration;
-		switch (animationType) {
-		case MULTIZONE_MOVE:
-			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
-			double stretch = PreferenceUtil.getIndexedSharedPreferenceDouble(R.string.key_animation_stretch, colorId, 1);
-			MultizoneMoveDefinition.Direction multizoneDirection = MultizoneMoveDefinition.Direction.fromOrdinal(
-					PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_direction, colorId, 0));
-			MultizoneColors colors = new StoredMultizoneColors(colorId).getColors();
-			boolean isRunning = false;
-			return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
+                switch (animationType) {
+                case MULTIZONE_MOVE:
+                        duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
+                        double stretch = PreferenceUtil.getIndexedSharedPreferenceDouble(R.string.key_animation_stretch, colorId, 1);
+                        MultizoneMoveDefinition.Direction multizoneDirection = MultizoneMoveDefinition.Direction.fromOrdinal(
+                                        PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_direction, colorId, 0));
+                        MultizoneColors colors = new StoredMultizoneColors(colorId).getColors();
+                        boolean isRunning = false;
+                        return new MultizoneMove(duration, stretch, multizoneDirection, colors, isRunning);
 		case TILECHAIN_WAVE:
 			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
 			double radius = PreferenceUtil.getIndexedSharedPreferenceDouble(R.string.key_animation_radius, colorId, 10); // MAGIC_NUMBER
@@ -283,12 +287,16 @@ public abstract class AnimationData implements Serializable {
 		case TILECHAIN_CLOUDS:
 			duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
 			final int cloudSaturation = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_cloud_saturation, colorId, 50);
-			ArrayList<Color> tileColors3 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
-			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
-		default:
-			return null;
-		}
-	}
+                        ArrayList<Color> tileColors3 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
+                        return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
+               case COLOR_CYCLE:
+                       duration = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_duration, colorId, DEFAULT_DURATION);
+                       ArrayList<Color> cycleColors = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
+                       return new ColorCycle(duration, cycleColors);
+                default:
+                        return null;
+                }
+        }
 
 	/**
 	 * Store animation data within stored color.
@@ -327,11 +335,15 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain morph.
 		 */
-		TILECHAIN_MORPH,
-		/**
-		 * Tilechain clouds.
-		 */
-		TILECHAIN_CLOUDS;
+                TILECHAIN_MORPH,
+                /**
+                 * Tilechain clouds.
+                 */
+               TILECHAIN_CLOUDS,
+               /**
+                * Cycle through a list of colors.
+                */
+               COLOR_CYCLE;
 
 		/**
 		 * Get Animation Type from its ordinal value.
