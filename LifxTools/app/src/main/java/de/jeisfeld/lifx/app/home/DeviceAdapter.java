@@ -34,6 +34,8 @@ import de.jeisfeld.lifx.app.animation.AnimationData;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.MultizoneAnimationDialogListener;
+import de.jeisfeld.lifx.app.animation.ColorCycleAnimationDialogFragment;
+import de.jeisfeld.lifx.app.animation.ColorCycleAnimationDialogFragment.ColorCycleAnimationDialogListener;
 import de.jeisfeld.lifx.app.animation.TileChainAnimationDialogFragment;
 import de.jeisfeld.lifx.app.animation.TileChainAnimationDialogFragment.TileChainAnimationDialogListener;
 import de.jeisfeld.lifx.app.home.HomeFragment.NoDeviceCallback;
@@ -738,9 +740,36 @@ public class DeviceAdapter extends BaseAdapter {
 				}
 			});
 		}
-		else {
-			animationButton.setVisibility(View.GONE);
-		}
+                else {
+                        animationButton.setOnClickListener(view -> {
+                                if (animationButton.isChecked()) {
+                                        if (model.mPower.getValue() == null || !model.mPower.getValue().isOn()) {
+                                                animationButton.setChecked(false);
+                                                return;
+                                        }
+                                        Fragment fragment = mFragment.get();
+                                        if (fragment != null && fragment.getActivity() != null) {
+                                                ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(
+                                                                fragment.getActivity(), model,
+                                                                new ColorCycleAnimationDialogListener() {
+                                                                        @Override
+                                                                        public void onDialogPositiveClick(final DialogFragment dialog,
+                                                                                        final AnimationData animationData) {
+                                                                                model.startAnimation(animationData);
+                                                                        }
+
+                                                                        @Override
+                                                                        public void onDialogNegativeClick(final DialogFragment dialog) {
+                                                                                animationButton.setChecked(false);
+                                                                        }
+                                                                });
+                                        }
+                                }
+                                else {
+                                        model.stopAnimation();
+                                }
+                        });
+                }
 
 	}
 

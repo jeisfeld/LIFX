@@ -8,6 +8,7 @@
     <string name="title_dialog_save_animation">Save Animation</string>
     <string name="title_dialog_image">Adapt image</string>
     <string name="title_dialog_animation">Animation Settings</string>
+    <string name="title_dialog_color_cycle_animation">Color cycle settings</string>
     <string name="title_dialog_alarm_time">Set Alarm Time</string>
     <string name="title_dialog_copy_alarm">Copy Alarm</string>
     <string name="title_dialog_change_alarm_name">Change Alarm Name</string>
@@ -68,6 +69,7 @@
     <string name="button_copy">Create copy</string>
     <string name="button_add_alarm">Add alarm</string>
     <string name="button_add_scene">Add scene</string>
+    <string name="button_add_color">Add color</string>
     <string name="button_overwrite">Overwrite</string>
     <string name="button_import">Import</string>
 
