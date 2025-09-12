@@ -211,8 +211,8 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 					mFragment.startRingtoneDialog(newStartTime, null);
 				}
 				else {
-					StoredColorsDialogFragment.displayStoredColorsDialog(
-							mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, false,
+                                        StoredColorsDialogFragment.displayStoredColorsDialog(
+                                                        mFragment.requireActivity(), (int) light.getParameter(DeviceRegistry.DEVICE_ID), StoreColorType.ONLYSELECT, true, true,
 							(dialog, storedColor) -> {
 								mAlarm.getSteps().add(new Step((int) newStartTime, storedColor.getId(), AlarmConfigurationFragment.DEFAULT_DURATION));
 								mAlarm = AlarmRegistry.getInstance().addOrUpdate(mAlarm);
@@ -275,8 +275,8 @@ public class AlarmStepExpandableListAdapter extends BaseExpandableListAdapter {
 				mFragment.startRingtoneDialog(step.getDelay(), (RingtoneStep) step);
 			}
 			else {
-				StoredColorsDialogFragment.displayStoredColorsDialog(
-						mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true, false,
+                                StoredColorsDialogFragment.displayStoredColorsDialog(
+                                                mFragment.requireActivity(), step.getStoredColor().getDeviceId(), StoreColorType.ONLYSELECT, true, true,
 						(dialog, storedColor) -> {
 							Step newStep = new Step(step.getId(), step.getDelay(), storedColor.getId(), step.getDuration());
 							mAlarm.getSteps().remove(step);
