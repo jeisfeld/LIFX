@@ -748,9 +748,12 @@ public class DeviceAdapter extends BaseAdapter {
                                                 return;
                                         }
                                         Fragment fragment = mFragment.get();
-                                        if (fragment != null && fragment.getActivity() != null) {
+                                        if (fragment != null && fragment.getActivity() != null
+                                                        && model.getLight() != null
+                                                        && model.getLight().getParameter(DeviceRegistry.DEVICE_ID) != null) {
+                                                int deviceId = (int) model.getLight().getParameter(DeviceRegistry.DEVICE_ID);
                                                 ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(
-                                                                fragment.getActivity(), model,
+                                                                fragment.getActivity(), model, deviceId,
                                                                 new ColorCycleAnimationDialogListener() {
                                                                         @Override
                                                                         public void onDialogPositiveClick(final DialogFragment dialog,

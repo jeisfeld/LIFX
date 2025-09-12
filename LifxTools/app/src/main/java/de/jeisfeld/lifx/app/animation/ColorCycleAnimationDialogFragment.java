@@ -24,7 +24,6 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.LightViewModel;
-import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment;
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorType;
@@ -47,6 +46,8 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
     private MutableLiveData<ColorCycleAnimationDialogListener> mListener = new MutableLiveData<>();
     /** The model. */
     private MutableLiveData<LightViewModel> mModel = new MutableLiveData<>();
+    /** The device id. */
+    private int mDeviceId;
 
     /** Durations of the steps. */
     private final ArrayList<Integer> mDurations = new ArrayList<>();
@@ -58,14 +59,16 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
      *
      * @param activity the current activity
      * @param model    the light view model
+     * @param deviceId the device id
      * @param listener The listener waiting for the response
      */
     public static void displayColorCycleAnimationDialog(final FragmentActivity activity, final LightViewModel model,
-                    final ColorCycleAnimationDialogListener listener) {
+                    final int deviceId, final ColorCycleAnimationDialogListener listener) {
         Bundle bundle = new Bundle();
         ColorCycleAnimationDialogFragment fragment = new ColorCycleAnimationDialogFragment();
         fragment.setListener(listener);
         fragment.setModel(model);
+        fragment.setDeviceId(deviceId);
         fragment.setArguments(bundle);
         fragment.show(activity.getSupportFragmentManager(), fragment.getClass().toString());
 
@@ -81,6 +84,11 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
     /** Set the model. */
     public final void setModel(final LightViewModel model) {
         mModel = new MutableLiveData<>(model);
+    }
+
+    /** Set the device id. */
+    public final void setDeviceId(final int deviceId) {
+        mDeviceId = deviceId;
     }
 
     @Override
@@ -102,11 +110,8 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
         Button buttonAdd = view.findViewById(R.id.buttonAddStep);
         buttonAdd.setOnClickListener(v -> {
             FragmentActivity activity = getActivity();
-            LightViewModel model = mModel.getValue();
-            if (activity != null && model != null && model.getLight() != null
-                    && model.getLight().getParameter(DeviceRegistry.DEVICE_ID) != null) {
-                int deviceId = (int) model.getLight().getParameter(DeviceRegistry.DEVICE_ID);
-                StoredColorsDialogFragment.displayStoredColorsDialog(activity, deviceId, StoreColorType.ONLYSELECT,
+            if (activity != null && mDeviceId != 0) {
+                StoredColorsDialogFragment.displayStoredColorsDialog(activity, mDeviceId, StoreColorType.ONLYSELECT,
                         false, false, new StoredColorsDialogListener() {
                             @Override
                             public void onStoredColorClick(final DialogFragment dialog, final StoredColor storedColor) {
@@ -194,11 +199,8 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
             textViewColorName.setText(storedColor.getName());
 
             View.OnClickListener changeColorListener = v -> {
-                LightViewModel model = mModel.getValue();
-                if (model != null && model.getLight() != null
-                        && model.getLight().getParameter(DeviceRegistry.DEVICE_ID) != null) {
-                    int deviceId = (int) model.getLight().getParameter(DeviceRegistry.DEVICE_ID);
-                    StoredColorsDialogFragment.displayStoredColorsDialog(requireActivity(), deviceId,
+                if (mDeviceId != 0) {
+                    StoredColorsDialogFragment.displayStoredColorsDialog(requireActivity(), mDeviceId,
                             StoreColorType.ONLYSELECT, true, true, new StoredColorsDialogListener() {
                                 @Override
                                 public void onStoredColorClick(final DialogFragment dialog, final StoredColor newColor) {
