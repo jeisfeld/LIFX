@@ -77,6 +77,10 @@ public abstract class AnimationData implements Serializable {
 	 */
 	protected static final String EXTRA_COLOR_LIST = "de.jeisfeld.lifx.COLOR_LIST";
 	/**
+	 * Key for a list of step durations within the intent.
+	 */
+	protected static final String EXTRA_ANIMATION_DURATIONS = "de.jeisfeld.lifx.ANIMATION_DURATIONS";
+	/**
 	 * The default duration.
 	 */
 	private static final int DEFAULT_DURATION = 10000;
@@ -231,6 +235,16 @@ public abstract class AnimationData implements Serializable {
 			final int cloudSaturation = intent.getIntExtra(EXTRA_ANIMATION_CLOUD_SATURATION, (byte) 50);
 			@SuppressWarnings("unchecked") final ArrayList<Color> tileColors3 = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
 			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
+		case COLOR_CYCLE:
+			int[] durationsArray = intent.getIntArrayExtra(EXTRA_ANIMATION_DURATIONS);
+			ArrayList<Integer> cycleDurations = new ArrayList<>();
+			if (durationsArray != null) {
+				for (int d : durationsArray) {
+					cycleDurations.add(d);
+				}
+			}
+			@SuppressWarnings("unchecked") ArrayList<Color> cycleColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
+			return new ColorCycle(cycleDurations, cycleColors);
 		default:
 			return null;
 		}
@@ -285,6 +299,10 @@ public abstract class AnimationData implements Serializable {
 			final int cloudSaturation = PreferenceUtil.getIndexedSharedPreferenceInt(R.string.key_animation_cloud_saturation, colorId, 50);
 			ArrayList<Color> tileColors3 = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
 			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
+		case COLOR_CYCLE:
+			ArrayList<Integer> cycleDurations = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId);
+			ArrayList<Color> cycleColors = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
+			return new ColorCycle(cycleDurations, cycleColors);
 		default:
 			return null;
 		}
@@ -331,7 +349,11 @@ public abstract class AnimationData implements Serializable {
 		/**
 		 * Tilechain clouds.
 		 */
-		TILECHAIN_CLOUDS;
+		TILECHAIN_CLOUDS,
+		/**
+		 * Cycle through a list of colors.
+		 */
+		COLOR_CYCLE;
 
 		/**
 		 * Get Animation Type from its ordinal value.

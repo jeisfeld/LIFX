@@ -31,6 +31,8 @@ import androidx.lifecycle.LifecycleOwner;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.ColorCycleAnimationDialogFragment;
+import de.jeisfeld.lifx.app.animation.ColorCycleAnimationDialogFragment.ColorCycleAnimationDialogListener;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment;
 import de.jeisfeld.lifx.app.animation.MultizoneAnimationDialogFragment.MultizoneAnimationDialogListener;
@@ -739,7 +741,37 @@ public class DeviceAdapter extends BaseAdapter {
 			});
 		}
 		else {
-			animationButton.setVisibility(View.GONE);
+			animationButton.setOnClickListener(view -> {
+				if (animationButton.isChecked()) {
+					if (model.mPower.getValue() == null || !model.mPower.getValue().isOn()) {
+						animationButton.setChecked(false);
+						return;
+					}
+					Fragment fragment = mFragment.get();
+					if (fragment != null && fragment.getActivity() != null
+							&& model.getLight() != null
+							&& model.getLight().getParameter(DeviceRegistry.DEVICE_ID) != null) {
+						int deviceId = (int) model.getLight().getParameter(DeviceRegistry.DEVICE_ID);
+						ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(
+								fragment.getActivity(), model, deviceId,
+								new ColorCycleAnimationDialogListener() {
+									@Override
+									public void onDialogPositiveClick(final DialogFragment dialog,
+																	  final AnimationData animationData) {
+										model.startAnimation(animationData);
+									}
+
+									@Override
+									public void onDialogNegativeClick(final DialogFragment dialog) {
+										animationButton.setChecked(false);
+									}
+								});
+					}
+				}
+				else {
+					model.stopAnimation();
+				}
+			});
 		}
 
 	}

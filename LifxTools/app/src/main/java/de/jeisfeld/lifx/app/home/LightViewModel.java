@@ -185,31 +185,72 @@ public class LightViewModel extends DeviceViewModel {
 		if (context == null) {
 			return;
 		}
-		double brightness = AnimationData.getSelectedBrightness(getLight());
-		updateSelectedBrightness(brightness);
-		Color currentColor = mColor.getValue();
-		if (currentColor == null) {
-			currentColor = getLight().getColor();
-		}
-		if (currentColor != null) {
-			Color newColor = currentColor.withBrightness(brightness);
-			try {
-				if (mPower.getValue() != null && mPower.getValue().isOff() && isAutoOn()) {
-					getLight().setColor(newColor, 0, false);
-					getLight().setPower(true, 0, false);
-					updatePowerButton(Power.ON);
-				}
-				else {
-					getLight().setColor(newColor, 0, false);
-				}
-				updateStoredColor(newColor);
-			}
-			catch (IOException e) {
-				Log.w(Application.TAG, e);
-			}
-		}
 		mAnimationStatus.postValue(true);
-		LifxAnimationService.triggerAnimationService(context, getLight(), animationData);
+		new StartAnimationTask(this, animationData, context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+	}
+
+	/**
+	 * Async task for preparing and starting an animation.
+	 */
+	private static final class StartAnimationTask extends AsyncTask<String, String, Void> {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<LightViewModel> mModel;
+		/**
+		 * The animation data.
+		 */
+		private final AnimationData mAnimationData;
+		/**
+		 * The context.
+		 */
+		private final Context mContext;
+
+		/**
+		 * Constructor.
+		 *
+		 * @param model         The model.
+		 * @param animationData The animation data.
+		 * @param context       The context.
+		 */
+		@SuppressWarnings("deprecation")
+		private StartAnimationTask(final LightViewModel model, final AnimationData animationData,
+								   final Context context) {
+			mModel = new WeakReference<>(model);
+			mAnimationData = animationData;
+			mContext = context;
+		}
+
+		@Override
+		protected Void doInBackground(final String... strings) {
+			LightViewModel model = mModel.get();
+			if (model == null) {
+				return null;
+			}
+			Light light = model.getLight();
+			double brightness = AnimationData.getSelectedBrightness(light);
+			model.updateSelectedBrightness(brightness);
+			Color currentColor = model.mColor.getValue();
+			if (currentColor != null) {
+				Color newColor = currentColor.withBrightness(brightness);
+				try {
+					if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
+						light.setColor(newColor, 0, false);
+						light.setPower(true, 0, false);
+						model.updatePowerButton(Power.ON);
+					}
+					else {
+						light.setColor(newColor, 0, false);
+					}
+					model.updateStoredColor(newColor);
+				}
+				catch (IOException e) {
+					Log.w(Application.TAG, e);
+				}
+			}
+			LifxAnimationService.triggerAnimationService(mContext, light, mAnimationData);
+			return null;
+		}
 	}
 
 	/**

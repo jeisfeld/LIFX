@@ -63,6 +63,7 @@
     <string name="key_animation_color_list" translatable="false">animation_color_list</string>
     <string name="key_animation_relative_brightness" translatable="false">animation_relative_brightness</string>
     <string name="key_animation_cloud_saturation" translatable="false">animation_cloud_saturation</string>
+    <string name="key_animation_durations_list" translatable="false">animation_durations_list</string>
 
     <!-- Keys for alarms -->
     <string name="key_alarm_ids" translatable="false">alarm_ids</string>
