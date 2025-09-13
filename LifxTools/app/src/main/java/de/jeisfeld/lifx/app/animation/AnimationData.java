@@ -10,6 +10,7 @@ import java.util.ArrayList;
 
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
@@ -76,6 +77,10 @@ public abstract class AnimationData implements Serializable {
 	 * Key for a list of colors within the intent.
 	 */
 	protected static final String EXTRA_COLOR_LIST = "de.jeisfeld.lifx.COLOR_LIST";
+	/**
+	 * Key for a list of stored color ids within the intent.
+	 */
+	protected static final String EXTRA_STORED_COLOR_IDS = "de.jeisfeld.lifx.STORED_COLOR_IDS";
 	/**
 	 * Key for a list of step durations within the intent.
 	 */
@@ -243,8 +248,14 @@ public abstract class AnimationData implements Serializable {
 					cycleDurations.add(d);
 				}
 			}
-			@SuppressWarnings("unchecked") ArrayList<Color> cycleColors = (ArrayList<Color>) intent.getSerializableExtra(EXTRA_COLOR_LIST);
-			return new ColorCycle(cycleDurations, cycleColors);
+			int[] colorIdArray = intent.getIntArrayExtra(EXTRA_STORED_COLOR_IDS);
+			ArrayList<StoredColor> storedColors = new ArrayList<>();
+			if (colorIdArray != null) {
+				for (int id : colorIdArray) {
+					storedColors.add(StoredColor.fromId(id));
+				}
+			}
+			return new ColorCycle(cycleDurations, storedColors);
 		default:
 			return null;
 		}
@@ -301,8 +312,18 @@ public abstract class AnimationData implements Serializable {
 			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
 		case COLOR_CYCLE:
 			ArrayList<Integer> cycleDurations = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId);
-			ArrayList<Color> cycleColors = PreferenceUtil.getIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId);
-			return new ColorCycle(cycleDurations, cycleColors);
+			ArrayList<Long> colorEntries = PreferenceUtil.getIndexedSharedPreferenceLongList(R.string.key_animation_color_list, colorId);
+			ArrayList<StoredColor> storedColors = new ArrayList<>();
+			for (long entry : colorEntries) {
+				if (entry >= Integer.MIN_VALUE && entry <= Integer.MAX_VALUE
+						&& PreferenceUtil.hasIndexedSharedPreference(R.string.key_color_name, (int) entry)) {
+					storedColors.add(StoredColor.fromId((int) entry));
+				}
+				else {
+					storedColors.add(new StoredColor(new Color(entry), 0, null));
+				}
+			}
+			return new ColorCycle(cycleDurations, storedColors);
 		default:
 			return null;
 		}

@@ -30,7 +30,6 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorTy
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestDurationDialogFragment.RequestDurationDialogListener;
-import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * Dialog for setting up a color cycle animation using start and end times per step.
@@ -153,12 +152,8 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
 				})
 				.setPositiveButton(R.string.button_start, (dialog, id) -> {
 					if (mListener != null && mListener.getValue() != null) {
-						ArrayList<Color> colors = new ArrayList<>();
-						for (StoredColor sc : mStoredColors) {
-							colors.add(sc.getColor());
-						}
 						mListener.getValue().onDialogPositiveClick(ColorCycleAnimationDialogFragment.this,
-								new ColorCycle(mDurations, colors));
+								new ColorCycle(mDurations, new ArrayList<>(mStoredColors)));
 					}
 				});
 		return builder.create();
@@ -257,12 +252,15 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
 			}
 
 			textViewEnd.setOnClickListener(v -> {
-				final int endSeconds = end / (int) TimeUnit.SECONDS.toMillis(1);
+				final int durationSeconds = mDurations.get(position)
+						/ (int) TimeUnit.SECONDS.toMillis(1);
 				DialogUtil.displayDurationDialog(requireActivity(), new RequestDurationDialogListener() {
 							@Override
-							public void onDialogPositiveClick(final DialogFragment dialog, final int minutes, final int seconds) {
-								int newEnd = (int) (TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds));
-								mDurations.set(position, newEnd - start);
+							public void onDialogPositiveClick(final DialogFragment dialog,
+															  final int minutes, final int seconds) {
+								int newDuration = (int) (TimeUnit.MINUTES.toMillis(minutes)
+										+ TimeUnit.SECONDS.toMillis(seconds));
+								mDurations.set(position, newDuration);
 								notifyDataSetChanged();
 							}
 
@@ -270,7 +268,8 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
 							public void onDialogNegativeClick(final DialogFragment dialog) {
 							}
 						}, R.string.title_dialog_scene_step_duration, R.string.button_ok,
-						endSeconds / 60, endSeconds % 60, R.string.message_dialog_scene_step_duration);
+						durationSeconds / 60, durationSeconds % 60,
+						R.string.message_dialog_scene_step_duration);
 			});
 
 			view.findViewById(R.id.imageViewDelete).setOnClickListener(v -> {

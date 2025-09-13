@@ -116,7 +116,7 @@ public class StoredAnimation extends StoredColor {
 	 *
 	 * @return The relative brightness.
 	 */
-	private double getRelativeBrightness() {
+	public double getRelativeBrightness() {
 		return mRelativeBrightness;
 	}
 

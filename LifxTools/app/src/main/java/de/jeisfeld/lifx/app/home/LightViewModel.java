@@ -14,6 +14,7 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.ColorCycle;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -60,6 +61,16 @@ public class LightViewModel extends DeviceViewModel {
 	 */
 	protected Light getLight() {
 		return (Light) getDevice();
+	}
+
+	/**
+	 * Get the device id.
+	 *
+	 * @return the device id or null if not available.
+	 */
+	public Integer getDeviceId() {
+		Object deviceId = getLight().getParameter(DeviceRegistry.DEVICE_ID);
+		return deviceId instanceof Integer ? (Integer) deviceId : null;
 	}
 
 	/**
@@ -232,7 +243,10 @@ public class LightViewModel extends DeviceViewModel {
 			model.updateSelectedBrightness(brightness);
 			Color currentColor = model.mColor.getValue();
 			if (currentColor != null) {
-				Color newColor = currentColor.withBrightness(brightness);
+				Color newColor = currentColor;
+				if (!(mAnimationData instanceof ColorCycle)) {
+					newColor = newColor.withBrightness(brightness);
+				}
 				try {
 					if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
 						light.setColor(newColor, 0, false);
