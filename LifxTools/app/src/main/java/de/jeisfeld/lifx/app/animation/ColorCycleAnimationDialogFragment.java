@@ -251,22 +251,26 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
 				});
 			}
 
-			textViewEnd.setOnClickListener(v -> {
-				final int endSeconds = end / (int) TimeUnit.SECONDS.toMillis(1);
-				DialogUtil.displayDurationDialog(requireActivity(), new RequestDurationDialogListener() {
-							@Override
-							public void onDialogPositiveClick(final DialogFragment dialog, final int minutes, final int seconds) {
-								int newEnd = (int) (TimeUnit.MINUTES.toMillis(minutes) + TimeUnit.SECONDS.toMillis(seconds));
-								mDurations.set(position, newEnd - start);
-								notifyDataSetChanged();
-							}
+                        textViewEnd.setOnClickListener(v -> {
+                                final int durationSeconds = mDurations.get(position)
+                                                / (int) TimeUnit.SECONDS.toMillis(1);
+                                DialogUtil.displayDurationDialog(requireActivity(), new RequestDurationDialogListener() {
+                                                        @Override
+                                                        public void onDialogPositiveClick(final DialogFragment dialog,
+                                                                        final int minutes, final int seconds) {
+                                                                int newDuration = (int) (TimeUnit.MINUTES.toMillis(minutes)
+                                                                                                + TimeUnit.SECONDS.toMillis(seconds));
+                                                                mDurations.set(position, newDuration);
+                                                                notifyDataSetChanged();
+                                                        }
 
-							@Override
-							public void onDialogNegativeClick(final DialogFragment dialog) {
-							}
-						}, R.string.title_dialog_scene_step_duration, R.string.button_ok,
-						endSeconds / 60, endSeconds % 60, R.string.message_dialog_scene_step_duration);
-			});
+                                                        @Override
+                                                        public void onDialogNegativeClick(final DialogFragment dialog) {
+                                                        }
+                                                }, R.string.title_dialog_scene_step_duration, R.string.button_ok,
+                                                durationSeconds / 60, durationSeconds % 60,
+                                                R.string.message_dialog_scene_step_duration);
+                        });
 
 			view.findViewById(R.id.imageViewDelete).setOnClickListener(v -> {
 				mDurations.remove(position);
