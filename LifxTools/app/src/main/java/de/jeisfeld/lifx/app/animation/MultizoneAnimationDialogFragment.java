@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -30,11 +32,11 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 	 * Display a dialog for setting up a multizone animation.
 	 *
 	 * @param activity the current activity
-	 * @param model the multizone view model.
+	 * @param model    the multizone view model.
 	 * @param listener The listener waiting for the response
 	 */
 	public static void displayMultizoneAnimationDialog(final FragmentActivity activity, final MultizoneViewModel model,
-			final MultizoneAnimationDialogListener listener) {
+													   final MultizoneAnimationDialogListener listener) {
 		Bundle bundle = new Bundle();
 		MultizoneAnimationDialogFragment fragment = new MultizoneAnimationDialogFragment();
 		fragment.setListener(listener);
@@ -87,9 +89,25 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 		}
 
 		final View view = View.inflate(requireActivity(), R.layout.dialog_multizone_animation, null);
+		final Spinner spinnerType = view.findViewById(R.id.spinnerType);
 		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
 		final EditText editTextStretch = view.findViewById(R.id.editTextStretch);
-		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
+
+		spinnerType.setOnItemSelectedListener(new OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position,
+									   final long id) {
+				if (position >= MultizoneMoveDefinition.Direction.values().length) {
+					openColorCycleDialog();
+					dismiss();
+				}
+			}
+
+			@Override
+			public void onNothingSelected(final AdapterView<?> parent) {
+				// do nothing
+			}
+		});
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.title_dialog_animation)
@@ -118,14 +136,52 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 							stretch = 1;
 						}
 
-						MultizoneMoveDefinition.Direction direction =
-								MultizoneMoveDefinition.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+						int position = spinnerType.getSelectedItemPosition();
+						if (position >= MultizoneMoveDefinition.Direction.values().length) {
+							openColorCycleDialog();
+						}
+						else {
+							MultizoneMoveDefinition.Direction direction =
+									MultizoneMoveDefinition.Direction.fromOrdinal(position);
 
-						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
-								new MultizoneMove(duration, stretch, direction, mModel.getValue().getColors().getValue(), false));
+							mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
+									new MultizoneMove(duration, stretch, direction,
+											mModel.getValue().getColors().getValue(), false));
+						}
 					}
 				});
 		return builder.create();
+	}
+
+	/**
+	 * Open the color cycle animation dialog.
+	 */
+	private void openColorCycleDialog() {
+		FragmentActivity activity = getActivity();
+		if (activity != null && mModel != null && mModel.getValue() != null) {
+			Integer deviceId = mModel.getValue().getDeviceId();
+			if (deviceId != null) {
+				ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(activity, mModel.getValue(), deviceId,
+						new ColorCycleAnimationDialogFragment.ColorCycleAnimationDialogListener() {
+							@Override
+							public void onDialogPositiveClick(final DialogFragment dialog,
+															  final AnimationData animationData) {
+								if (mListener != null && mListener.getValue() != null) {
+									mListener.getValue().onDialogPositiveClick(
+											MultizoneAnimationDialogFragment.this, animationData);
+								}
+							}
+
+							@Override
+							public void onDialogNegativeClick(final DialogFragment dialog) {
+								if (mListener != null && mListener.getValue() != null) {
+									mListener.getValue().onDialogNegativeClick(
+											MultizoneAnimationDialogFragment.this);
+								}
+							}
+						});
+			}
+		}
 	}
 
 	@Override
@@ -152,7 +208,7 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Callback method for positive click from the confirmation dialog.
 		 *
-		 * @param dialog The confirmation dialog fragment.
+		 * @param dialog        The confirmation dialog fragment.
 		 * @param animationData The animation data.
 		 */
 		void onDialogPositiveClick(DialogFragment dialog, AnimationData animationData);

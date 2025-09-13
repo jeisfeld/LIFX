@@ -30,7 +30,6 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoreColorTy
 import de.jeisfeld.lifx.app.storedcolors.StoredColorsDialogFragment.StoredColorsDialogListener;
 import de.jeisfeld.lifx.app.util.DialogUtil;
 import de.jeisfeld.lifx.app.util.DialogUtil.RequestDurationDialogFragment.RequestDurationDialogListener;
-import de.jeisfeld.lifx.lan.type.Color;
 
 /**
  * Dialog for setting up a color cycle animation using start and end times per step.
@@ -153,12 +152,8 @@ public class ColorCycleAnimationDialogFragment extends DialogFragment {
 				})
 				.setPositiveButton(R.string.button_start, (dialog, id) -> {
 					if (mListener != null && mListener.getValue() != null) {
-						ArrayList<Color> colors = new ArrayList<>();
-						for (StoredColor sc : mStoredColors) {
-							colors.add(sc.getColor());
-						}
 						mListener.getValue().onDialogPositiveClick(ColorCycleAnimationDialogFragment.this,
-								new ColorCycle(mDurations, colors));
+								new ColorCycle(mDurations, new ArrayList<>(mStoredColors)));
 					}
 				});
 		return builder.create();

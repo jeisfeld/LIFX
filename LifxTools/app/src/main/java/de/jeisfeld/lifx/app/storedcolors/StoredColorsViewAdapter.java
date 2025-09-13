@@ -106,6 +106,11 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 										newColor = new StoredTileColors(storedColor.getId(), ((StoredTileColors) storedColor).getColors(),
 												storedColor.getDeviceId(), text.trim());
 									}
+									else if (storedColor instanceof StoredAnimation) {
+										StoredAnimation storedAnimation = (StoredAnimation) storedColor;
+										newColor = new StoredAnimation(storedAnimation.getId(), storedAnimation.getAnimationData(),
+												storedAnimation.getRelativeBrightness(), storedAnimation.getDeviceId(), text.trim());
+									}
 									else {
 										newColor = new StoredColor(storedColor.getId(), storedColor.getColor(),
 												storedColor.getDeviceId(), text.trim());
