@@ -82,58 +82,60 @@ public class ColorCycle extends AnimationData {
 	}
 
 	@Override
-	protected final AnimationDefinition getAnimationDefinition(final Light light) {
-		final double brightness = getSelectedBrightness(light);
-		if (light instanceof MultiZoneLight) {
-			return new MultiZoneLight.AnimationDefinition() {
-				@Override
-				public int getDuration(final int n) {
-					return mDurations.get(n % mDurations.size());
-				}
+        protected final AnimationDefinition getAnimationDefinition(final Light light) {
+                if (light instanceof MultiZoneLight) {
+                        return new MultiZoneLight.AnimationDefinition() {
+                                @Override
+                                public int getDuration(final int n) {
+                                        return mDurations.get(n % mDurations.size());
+                                }
 
-				@Override
-				public MultizoneColors getColors(final int n) {
-					StoredColor sc = mStoredColors.get(n % mStoredColors.size());
-					if (sc instanceof StoredMultizoneColors) {
-						return ((StoredMultizoneColors) sc).getColors().withRelativeBrightness(brightness);
-					}
-					Color color = sc.getColor();
-					return new MultizoneColors.Fixed(color == null ? Color.OFF : color.withRelativeBrightness(brightness));
-				}
-			};
-		}
-		if (light instanceof TileChain) {
-			return new TileChain.AnimationDefinition() {
-				@Override
-				public int getDuration(final int n) {
-					return mDurations.get(n % mDurations.size());
-				}
+                                @Override
+                                public MultizoneColors getColors(final int n) {
+                                        double brightness = getSelectedBrightness(light);
+                                        StoredColor sc = mStoredColors.get(n % mStoredColors.size());
+                                        if (sc instanceof StoredMultizoneColors) {
+                                                return ((StoredMultizoneColors) sc).getColors().withRelativeBrightness(brightness);
+                                        }
+                                        Color color = sc.getColor();
+                                        return new MultizoneColors.Fixed(color == null ? Color.OFF : color.withRelativeBrightness(brightness));
+                                }
+                        };
+                }
+                if (light instanceof TileChain) {
+                        return new TileChain.AnimationDefinition() {
+                                @Override
+                                public int getDuration(final int n) {
+                                        return mDurations.get(n % mDurations.size());
+                                }
 
-				@Override
-				public TileChainColors getColors(final int n) {
-					StoredColor sc = mStoredColors.get(n % mStoredColors.size());
-					if (sc instanceof StoredTileColors) {
-						return ((StoredTileColors) sc).getColors().withRelativeBrightness(brightness);
-					}
-					Color color = sc.getColor();
-					return new TileChainColors.Fixed(color == null ? Color.OFF : color.withRelativeBrightness(brightness));
-				}
-			};
-		}
-		return new AnimationDefinition() {
-			@Override
-			public int getDuration(final int n) {
-				return mDurations.get(n % mDurations.size());
-			}
+                                @Override
+                                public TileChainColors getColors(final int n) {
+                                        double brightness = getSelectedBrightness(light);
+                                        StoredColor sc = mStoredColors.get(n % mStoredColors.size());
+                                        if (sc instanceof StoredTileColors) {
+                                                return ((StoredTileColors) sc).getColors().withRelativeBrightness(brightness);
+                                        }
+                                        Color color = sc.getColor();
+                                        return new TileChainColors.Fixed(color == null ? Color.OFF : color.withRelativeBrightness(brightness));
+                                }
+                        };
+                }
+                return new AnimationDefinition() {
+                        @Override
+                        public int getDuration(final int n) {
+                                return mDurations.get(n % mDurations.size());
+                        }
 
-			@Override
-			public Color getColor(final int n) {
-				StoredColor sc = mStoredColors.get(n % mStoredColors.size());
-				Color color = sc.getColor();
-				return color == null ? Color.OFF : color.withRelativeBrightness(brightness);
-			}
-		};
-	}
+                        @Override
+                        public Color getColor(final int n) {
+                                double brightness = getSelectedBrightness(light);
+                                StoredColor sc = mStoredColors.get(n % mStoredColors.size());
+                                Color color = sc.getColor();
+                                return color == null ? Color.OFF : color.withRelativeBrightness(brightness);
+                        }
+                };
+        }
 
 	@Override
 	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {

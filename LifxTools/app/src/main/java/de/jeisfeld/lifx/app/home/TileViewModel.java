@@ -95,11 +95,14 @@ public class TileViewModel extends LightViewModel {
 		}
 	}
 
-	@Override
-	public final void updateStoredColor(final Color color) {
-		super.updateStoredColor(color);
-		updateStoredColors(new TileChainColors.Fixed(color), 1);
-	}
+        @Override
+        public final void updateStoredColor(final Color color) {
+                if (color == null) {
+                        return;
+                }
+                super.updateStoredColor(color);
+                updateStoredColors(new TileChainColors.Fixed(color), 1);
+        }
 
 	@Override
 	public final void updateColor(final Color color, final boolean isImmediate) {

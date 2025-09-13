@@ -211,22 +211,25 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param groupId The group id.
 	 * @param color   The color.
 	 */
-	protected void refreshGroupColor(final int groupId, final Color color) {
-		for (MainViewModel model : mViewModels) {
-			if (model instanceof LightViewModel) {
-				Light light = ((LightViewModel) model).getLight();
-				if (light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) != null
-						&& (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
-					try {
-						((LightViewModel) model).updateStoredColor(color);
-					}
-					catch (Exception e) {
-						// ignore NullPointerException in case of call before instantiation
-					}
-				}
-			}
-		}
-	}
+        protected void refreshGroupColor(final int groupId, final Color color) {
+                if (color == null) {
+                        return;
+                }
+                for (MainViewModel model : mViewModels) {
+                        if (model instanceof LightViewModel) {
+                                Light light = ((LightViewModel) model).getLight();
+                                if (light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) != null
+                                                && (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
+                                        try {
+                                                ((LightViewModel) model).updateStoredColor(color);
+                                        }
+                                        catch (Exception e) {
+                                                // ignore NullPointerException in case of call before instantiation
+                                        }
+                                }
+                        }
+                }
+        }
 
 	/**
 	 * Refresh the power for all devices of a group after setting group power.
