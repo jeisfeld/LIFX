@@ -117,16 +117,13 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 
 		if (mModel != null && mModel.getValue() != null && mModel.getValue().getLight() != null
 				&& mModel.getValue().getLight().getProduct().isChain()) {
-			ArrayList<String> items = new ArrayList<>(Arrays.asList(
-					getResources().getStringArray(R.array.values_tilechain_animation_type)));
-			if (items.size() > TileChainAnimationType.CLOUDS.ordinal()) {
-				items.remove(TileChainAnimationType.CLOUDS.ordinal());
-			}
-			ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
-					android.R.layout.simple_spinner_item, items);
-			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			spinnerAnimationType.setAdapter(adapter);
-		}
+                        ArrayList<String> items = new ArrayList<>(Arrays.asList(
+                                        getResources().getStringArray(R.array.values_tilechain_animation_type)));
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireActivity(),
+                                        android.R.layout.simple_spinner_item, items);
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                        spinnerAnimationType.setAdapter(adapter);
+                }
 
 		prepareSpinnerListener(parentView, spinnerAnimationType);
 
@@ -225,13 +222,16 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 								cloudSaturation = 50;
 							}
 							cloudSaturation = Math.max(0, Math.min(255, cloudSaturation));
-							mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
-									new TileChainClouds(duration * 5, cloudSaturation, mColors, false));
-							break;
-						case WAVE:
-						default:
-							double lightRadius =
-									Math.sqrt(light.getTotalHeight() * light.getTotalHeight() + light.getTotalWidth() * light.getTotalWidth()) / 2;
+                                                        mListener.getValue().onDialogPositiveClick(TileChainAnimationDialogFragment.this,
+                                                                        new TileChainClouds(duration * 5, cloudSaturation, mColors, false));
+                                                        break;
+                                                case COLOR_CYCLE:
+                                                        openColorCycleDialog();
+                                                        break;
+                                                case WAVE:
+                                                default:
+                                                        double lightRadius =
+                                                                        Math.sqrt(light.getTotalHeight() * light.getTotalHeight() + light.getTotalWidth() * light.getTotalWidth()) / 2;
 
 							double radius;
 							try {
@@ -262,8 +262,8 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 	 * @param parentView           The dialog parent view.
 	 * @param spinnerAnimationType The spinner.
 	 */
-	private void prepareSpinnerListener(final View parentView, final Spinner spinnerAnimationType) {
-		spinnerAnimationType.setOnItemSelectedListener(new OnItemSelectedListener() {
+        private void prepareSpinnerListener(final View parentView, final Spinner spinnerAnimationType) {
+                spinnerAnimationType.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position, final long id) {
 				TileChainAnimationType animationType = TileChainAnimationType.fromOrdinal(position);
@@ -308,25 +308,60 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 					ImageView imageViewColors = parentView.findViewById(R.id.imageViewColors);
 					imageViewColors.setImageDrawable(ColorUtil.getButtonDrawable(getContext(), mColors));
 					break;
-				case WAVE:
-				default:
-					parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowForm).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
-					parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
-					parentView.findViewById(R.id.tableRowCloudSaturation).setVisibility(View.GONE);
-					break;
-				}
-			}
+                                case COLOR_CYCLE:
+                                        openColorCycleDialog();
+                                        dismiss();
+                                        break;
+                                case WAVE:
+                                default:
+                                        parentView.findViewById(R.id.tableRowRadius).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowDirection).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowForm).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowColors).setVisibility(View.VISIBLE);
+                                        parentView.findViewById(R.id.tableRowColorRegex).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowAdjustBrightness).setVisibility(View.GONE);
+                                        parentView.findViewById(R.id.tableRowCloudSaturation).setVisibility(View.GONE);
+                                        break;
+                                }
+                        }
 
 			@Override
 			public void onNothingSelected(final AdapterView<?> parent) {
 				// do nothing
-			}
-		});
-	}
+                        }
+                });
+        }
+
+        /**
+         * Open the color cycle animation dialog.
+         */
+        private void openColorCycleDialog() {
+               FragmentActivity activity = getActivity();
+               if (activity != null && mModel != null && mModel.getValue() != null) {
+                       Integer deviceId = mModel.getValue().getDeviceId();
+                       if (deviceId != null) {
+                               ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(activity, mModel.getValue(), deviceId,
+                                       new ColorCycleAnimationDialogFragment.ColorCycleAnimationDialogListener() {
+                                               @Override
+                                               public void onDialogPositiveClick(final DialogFragment dialog,
+                                                               final AnimationData animationData) {
+                                                       if (mListener != null && mListener.getValue() != null) {
+                                                               mListener.getValue().onDialogPositiveClick(
+                                                                               TileChainAnimationDialogFragment.this, animationData);
+                                                       }
+                                               }
+
+                                                @Override
+                                                public void onDialogNegativeClick(final DialogFragment dialog) {
+                                                        if (mListener != null && mListener.getValue() != null) {
+                                                                mListener.getValue().onDialogNegativeClick(
+                                                                                TileChainAnimationDialogFragment.this);
+                                                        }
+                                                }
+                                       });
+                       }
+               }
+       }
 
 	@Override
 	public final void onCancel(@Nonnull final DialogInterface dialogInterface) {
@@ -368,7 +403,11 @@ public class TileChainAnimationDialogFragment extends DialogFragment {
 		/**
 		 * Clouds.
 		 */
-		CLOUDS;
+                CLOUDS,
+                /**
+                 * Color cycle.
+                 */
+                COLOR_CYCLE;
 
 		/**
 		 * Get TileChainAnimationType from its ordinal value.

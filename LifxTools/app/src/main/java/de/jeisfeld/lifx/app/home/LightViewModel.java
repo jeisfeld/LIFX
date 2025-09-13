@@ -58,15 +58,25 @@ public class LightViewModel extends DeviceViewModel {
 	 *
 	 * @return The light.
 	 */
-	protected Light getLight() {
-		return (Light) getDevice();
-	}
+        protected Light getLight() {
+                return (Light) getDevice();
+        }
 
-	/**
-	 * Get the animation status.
-	 *
-	 * @return The animation status.
-	 */
+       /**
+        * Get the device id.
+        *
+        * @return the device id or null if not available.
+        */
+       public Integer getDeviceId() {
+               Object deviceId = getLight().getParameter(DeviceRegistry.DEVICE_ID);
+               return deviceId instanceof Integer ? (Integer) deviceId : null;
+       }
+
+       /**
+        * Get the animation status.
+        *
+        * @return The animation status.
+        */
 	public LiveData<Boolean> getAnimationStatus() {
 		return mAnimationStatus;
 	}

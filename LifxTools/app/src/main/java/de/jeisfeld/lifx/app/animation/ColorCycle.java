@@ -12,7 +12,11 @@ import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
+import de.jeisfeld.lifx.lan.MultiZoneLight;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
+import de.jeisfeld.lifx.lan.type.MultizoneColors;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 
 /**
  * Animation cycling through a sequence of colors with individual durations.
@@ -67,20 +71,48 @@ public class ColorCycle extends AnimationData {
 	}
 
 	@Override
-	protected final AnimationDefinition getAnimationDefinition(final Light light) {
-		final double brightness = getSelectedBrightness(light);
-		return new AnimationDefinition() {
-			@Override
-			public int getDuration(final int n) {
-				return mDurations.get(n % mDurations.size());
-			}
+       protected final AnimationDefinition getAnimationDefinition(final Light light) {
+               final double brightness = getSelectedBrightness(light);
+               if (light instanceof MultiZoneLight) {
+                       return new MultiZoneLight.AnimationDefinition() {
+                               @Override
+                               public int getDuration(final int n) {
+                                       return mDurations.get(n % mDurations.size());
+                               }
 
-			@Override
-			public Color getColor(final int n) {
-				return mColors.get(n % mColors.size()).withRelativeBrightness(brightness);
-			}
-		};
-	}
+                               @Override
+                               public MultizoneColors getColors(final int n) {
+                                       return new MultizoneColors.Fixed(
+                                                       mColors.get(n % mColors.size()).withRelativeBrightness(brightness));
+                               }
+                       };
+               }
+               if (light instanceof TileChain) {
+                       return new TileChain.AnimationDefinition() {
+                               @Override
+                               public int getDuration(final int n) {
+                                       return mDurations.get(n % mDurations.size());
+                               }
+
+                               @Override
+                               public TileChainColors getColors(final int n) {
+                                       return new TileChainColors.Fixed(
+                                                       mColors.get(n % mColors.size()).withRelativeBrightness(brightness));
+                               }
+                       };
+               }
+               return new AnimationDefinition() {
+                       @Override
+                       public int getDuration(final int n) {
+                               return mDurations.get(n % mDurations.size());
+                       }
+
+                       @Override
+                       public Color getColor(final int n) {
+                               return mColors.get(n % mColors.size()).withRelativeBrightness(brightness);
+                       }
+               };
+       }
 
 	@Override
 	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
