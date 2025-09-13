@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -15,6 +17,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition;
 
 /**
@@ -87,9 +90,25 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 		}
 
 		final View view = View.inflate(requireActivity(), R.layout.dialog_multizone_animation, null);
-		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
-		final EditText editTextStretch = view.findViewById(R.id.editTextStretch);
-		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
+                final Spinner spinnerType = view.findViewById(R.id.spinnerType);
+                final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
+                final EditText editTextStretch = view.findViewById(R.id.editTextStretch);
+
+                spinnerType.setOnItemSelectedListener(new OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position,
+                                        final long id) {
+                                if (position >= MultizoneMoveDefinition.Direction.values().length) {
+                                        openColorCycleDialog();
+                                        dismiss();
+                                }
+                        }
+
+                        @Override
+                        public void onNothingSelected(final AdapterView<?> parent) {
+                                // do nothing
+                        }
+                });
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.title_dialog_animation)
@@ -118,15 +137,53 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 							stretch = 1;
 						}
 
-						MultizoneMoveDefinition.Direction direction =
-								MultizoneMoveDefinition.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+                                                int position = spinnerType.getSelectedItemPosition();
+                                                if (position >= MultizoneMoveDefinition.Direction.values().length) {
+                                                        openColorCycleDialog();
+                                                }
+                                                else {
+                                                        MultizoneMoveDefinition.Direction direction =
+                                                                        MultizoneMoveDefinition.Direction.fromOrdinal(position);
 
-						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
-								new MultizoneMove(duration, stretch, direction, mModel.getValue().getColors().getValue(), false));
-					}
-				});
-		return builder.create();
-	}
+                                                        mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
+                                                                        new MultizoneMove(duration, stretch, direction,
+                                                                                        mModel.getValue().getColors().getValue(), false));
+                                                }
+                                        }
+                                });
+                return builder.create();
+        }
+
+        /**
+         * Open the color cycle animation dialog.
+         */
+        private void openColorCycleDialog() {
+                FragmentActivity activity = getActivity();
+                if (activity != null && mModel != null && mModel.getValue() != null
+                                && mModel.getValue().getLight() != null
+                                && mModel.getValue().getLight().getParameter(DeviceRegistry.DEVICE_ID) != null) {
+                        int deviceId = (int) mModel.getValue().getLight().getParameter(DeviceRegistry.DEVICE_ID);
+                        ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(activity, mModel.getValue(), deviceId,
+                                        new ColorCycleAnimationDialogFragment.ColorCycleAnimationDialogListener() {
+                                                @Override
+                                                public void onDialogPositiveClick(final DialogFragment dialog,
+                                                                final AnimationData animationData) {
+                                                        if (mListener != null && mListener.getValue() != null) {
+                                                                mListener.getValue().onDialogPositiveClick(
+                                                                                MultizoneAnimationDialogFragment.this, animationData);
+                                                        }
+                                                }
+
+                                                @Override
+                                                public void onDialogNegativeClick(final DialogFragment dialog) {
+                                                        if (mListener != null && mListener.getValue() != null) {
+                                                                mListener.getValue().onDialogNegativeClick(
+                                                                                MultizoneAnimationDialogFragment.this);
+                                                        }
+                                                }
+                                        });
+                }
+        }
 
 	@Override
 	public final void onCancel(@Nonnull final DialogInterface dialogInterface) {

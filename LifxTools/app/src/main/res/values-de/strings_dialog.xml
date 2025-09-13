@@ -106,11 +106,12 @@
     <string name="label_minutes">Minuten</string>
     <string name="label_seconds">Sekunden</string>
 
-    <string-array name="values_multizone_animation_direction">
+    <string-array name="values_multizone_animation_type">
         <item>vorwärts</item>
         <item>rückwärts</item>
         <item>auswärts</item>
         <item>einwärts</item>
+        <item>Farbwechsel</item>
     </string-array>
     <string-array name="values_tilechain_animation_type">
         <item>Welle</item>
@@ -118,6 +119,7 @@
         <item>Flamme</item>
         <item>Metamorphose</item>
         <item>Wolken</item>
+        <item>Farbwechsel</item>
     </string-array>
     <string-array name="values_tilechain_animation_direction">
         <item>auswärts</item>

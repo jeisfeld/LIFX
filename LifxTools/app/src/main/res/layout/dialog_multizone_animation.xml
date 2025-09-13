@@ -10,6 +10,21 @@
     <TableRow>
 
         <TextView
+            android:text="@string/label_animation_type"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Spinner
+            android:id="@+id/spinnerType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:entries="@array/values_multizone_animation_type"
+            android:minHeight="@dimen/medium_button_size"
+            android:spinnerMode="dropdown" />
+    </TableRow>
+
+    <TableRow>
+
+        <TextView
             android:text="@string/label_animation_duration"
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -41,18 +56,4 @@
             tools:ignore="HardcodedText" />
     </TableRow>
 
-    <TableRow>
-
-        <TextView
-            android:text="@string/label_animation_direction"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
-
-        <Spinner
-            android:id="@+id/spinnerDirection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:entries="@array/values_multizone_animation_direction"
-            android:minHeight="@dimen/medium_button_size"
-            android:spinnerMode="dropdown" />
-    </TableRow>
 </TableLayout>
