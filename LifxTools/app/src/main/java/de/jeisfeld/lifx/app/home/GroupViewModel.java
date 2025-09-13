@@ -22,8 +22,10 @@ import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.Group;
 import de.jeisfeld.lifx.lan.Light;
+import de.jeisfeld.lifx.lan.TileChain;
 import de.jeisfeld.lifx.lan.type.Color;
 import de.jeisfeld.lifx.lan.type.Power;
+import de.jeisfeld.lifx.lan.type.TileChainColors;
 
 /**
  * Class holding data for the display view of a group.
@@ -120,6 +122,10 @@ public class GroupViewModel extends MainViewModel {
 
 	@Override
 	protected final void updateBrightness(final double brightness) {
+		DeviceAdapter adapter = mAdapter.get();
+		if (adapter != null) {
+			adapter.refreshGroupBrightness(mGroupId, brightness);
+		}
 		synchronized (mRunningSetColorTasks) {
 			for (Device device : DeviceRegistry.getInstance().getDevices(mGroupId, false)) {
 				if (device instanceof Light) {
@@ -385,7 +391,27 @@ public class GroupViewModel extends MainViewModel {
 		protected Color doInBackground(final Color... colors) {
 			try {
 				if (mColor == null) {
-					mLight.setBrightness(mBrightness);
+					if (mLight instanceof TileChain) {
+						TileChain tileChain = (TileChain) mLight;
+						TileChainColors tileChainColors = tileChain.getColors();
+						if (tileChainColors != null) {
+							int maxBrightness = tileChainColors.getMaxBrightness(tileChain);
+							if (maxBrightness > 0) {
+								double relative = maxBrightness / 65535.0; // MAGIC_NUMBER
+								TileChainColors baseColors = tileChainColors.withRelativeBrightness(1 / relative);
+								tileChain.setColors(baseColors.withRelativeBrightness(mBrightness), 0, false);
+							}
+							else {
+								tileChain.setBrightness(mBrightness);
+							}
+						}
+						else {
+							tileChain.setBrightness(mBrightness);
+						}
+					}
+					else {
+						mLight.setBrightness(mBrightness);
+					}
 				}
 				else {
 					mLight.setColor(mColor, 0, false);
@@ -419,9 +445,12 @@ public class GroupViewModel extends MainViewModel {
 			if (color != null) {
 				model.mColor.postValue(color);
 			}
+			DeviceAdapter adapter = model.mAdapter.get();
+			if (adapter != null && mColor == null) {
+				adapter.refreshGroupBrightness(model.getGroupId(), mBrightness);
+			}
 			if (isAutoOn()) {
 				model.updatePowerButton(Power.ON);
-				DeviceAdapter adapter = model.mAdapter.get();
 				if (adapter != null) {
 					adapter.refreshGroupPower(model.getGroupId(), Power.ON);
 					adapter.refreshGroupColor(model.getGroupId(), color);

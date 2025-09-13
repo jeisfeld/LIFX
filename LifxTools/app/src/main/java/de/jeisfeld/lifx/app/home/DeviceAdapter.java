@@ -212,6 +212,9 @@ public class DeviceAdapter extends BaseAdapter {
 	 * @param color   The color.
 	 */
 	protected void refreshGroupColor(final int groupId, final Color color) {
+		if (color == null) {
+			return;
+		}
 		for (MainViewModel model : mViewModels) {
 			if (model instanceof LightViewModel) {
 				Light light = ((LightViewModel) model).getLight();
@@ -219,6 +222,42 @@ public class DeviceAdapter extends BaseAdapter {
 						&& (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
 					try {
 						((LightViewModel) model).updateStoredColor(color);
+					}
+					catch (Exception e) {
+						// ignore NullPointerException in case of call before instantiation
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Refresh the brightness for all devices of a group after setting group brightness.
+	 *
+	 * @param groupId    The group id.
+	 * @param brightness The brightness.
+	 */
+	protected void refreshGroupBrightness(final int groupId, final double brightness) {
+		for (MainViewModel model : mViewModels) {
+			if (model instanceof LightViewModel) {
+				Light light = ((LightViewModel) model).getLight();
+				if (light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) != null
+						&& (int) light.getParameter(DeviceRegistry.DEVICE_GROUP_ID) == groupId) {
+					try {
+						if (model instanceof MultizoneViewModel) {
+							((MultizoneViewModel) model).updateSelectedBrightness(brightness);
+						}
+						else if (model instanceof TileViewModel) {
+							((TileViewModel) model).updateSelectedBrightness(brightness);
+						}
+						else {
+							((LightViewModel) model).updateSelectedBrightness(brightness);
+							Color color = ((LightViewModel) model).getColor().getValue();
+							if (color != null) {
+								((LightViewModel) model).updateStoredColor(
+										color.withRelativeBrightness(brightness));
+							}
+						}
 					}
 					catch (Exception e) {
 						// ignore NullPointerException in case of call before instantiation

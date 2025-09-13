@@ -83,7 +83,6 @@ public class ColorCycle extends AnimationData {
 
 	@Override
 	protected final AnimationDefinition getAnimationDefinition(final Light light) {
-		final double brightness = getSelectedBrightness(light);
 		if (light instanceof MultiZoneLight) {
 			return new MultiZoneLight.AnimationDefinition() {
 				@Override
@@ -93,6 +92,7 @@ public class ColorCycle extends AnimationData {
 
 				@Override
 				public MultizoneColors getColors(final int n) {
+					double brightness = getSelectedBrightness(light);
 					StoredColor sc = mStoredColors.get(n % mStoredColors.size());
 					if (sc instanceof StoredMultizoneColors) {
 						return ((StoredMultizoneColors) sc).getColors().withRelativeBrightness(brightness);
@@ -111,6 +111,7 @@ public class ColorCycle extends AnimationData {
 
 				@Override
 				public TileChainColors getColors(final int n) {
+					double brightness = getSelectedBrightness(light);
 					StoredColor sc = mStoredColors.get(n % mStoredColors.size());
 					if (sc instanceof StoredTileColors) {
 						return ((StoredTileColors) sc).getColors().withRelativeBrightness(brightness);
@@ -128,6 +129,7 @@ public class ColorCycle extends AnimationData {
 
 			@Override
 			public Color getColor(final int n) {
+				double brightness = getSelectedBrightness(light);
 				StoredColor sc = mStoredColors.get(n % mStoredColors.size());
 				Color color = sc.getColor();
 				return color == null ? Color.OFF : color.withRelativeBrightness(brightness);

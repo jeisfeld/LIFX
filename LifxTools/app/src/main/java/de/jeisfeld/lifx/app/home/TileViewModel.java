@@ -97,6 +97,9 @@ public class TileViewModel extends LightViewModel {
 
 	@Override
 	public final void updateStoredColor(final Color color) {
+		if (color == null) {
+			return;
+		}
 		super.updateStoredColor(color);
 		updateStoredColors(new TileChainColors.Fixed(color), 1);
 	}
@@ -260,14 +263,14 @@ public class TileViewModel extends LightViewModel {
 							model.startAnimation(animationData);
 						}
 						break;
-                                        case CLOUDS:
-                                                if (animationStatus == AnimationStatus.OFF) {
-													animationData = new TileChainClouds(effectInfo.getSpeed(),
-															effectInfo.getParameters()[4],
-															effectInfo.getPaletteColors(), true);
-                                                        model.startAnimation(animationData);
-                                                }
-                                                break;
+					case CLOUDS:
+						if (animationStatus == AnimationStatus.OFF) {
+							animationData = new TileChainClouds(effectInfo.getSpeed(),
+									effectInfo.getParameters()[4],
+									effectInfo.getPaletteColors(), true);
+							model.startAnimation(animationData);
+						}
+						break;
 					case OFF:
 						if (animationStatus == AnimationStatus.NATIVE) {
 							model.stopAnimation();

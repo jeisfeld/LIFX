@@ -112,6 +112,9 @@ public class MultizoneViewModel extends LightViewModel {
 
 	@Override
 	public final void updateStoredColor(final Color color) {
+		if (color == null) {
+			return;
+		}
 		super.updateStoredColor(color);
 		updateStoredColors(new MultizoneColors.Fixed(color), 1);
 	}
@@ -148,12 +151,18 @@ public class MultizoneViewModel extends LightViewModel {
 	 * @param stopAnimation    Flag indicating if animation should be stopped.
 	 */
 	public void updateColors(final MultizoneColors colors, final double brightnessFactor, final boolean isImmediate, final boolean stopAnimation) {
-		updateStoredColors(colors, brightnessFactor);
 		if (stopAnimation) {
 			stopAnimationOrAlarm();
 		}
 		synchronized (mRunningSetColorTasks) {
-			mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
+			if (colors == null) {
+				mRelativeBrightness.postValue(brightnessFactor);
+				mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, brightnessFactor, isImmediate));
+			}
+			else {
+				updateStoredColors(colors, brightnessFactor);
+				mRunningSetColorTasks.add(new SetMultizoneColorsTask(this, colors.withRelativeBrightness(brightnessFactor), isImmediate));
+			}
 			if (mRunningSetColorTasks.size() > 2) {
 				mRunningSetColorTasks.remove(1);
 			}
@@ -166,7 +175,10 @@ public class MultizoneViewModel extends LightViewModel {
 	@Override
 	protected final void doUpdateBrightness(final double brightness) {
 		MultizoneColors oldColors = mColors.getValue();
-		if (oldColors != null) {
+		if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) == AnimationStatus.NATIVE) {
+			updateColors(null, brightness, true, false);
+		}
+		else if (oldColors != null) {
 			updateColors(oldColors, brightness, true, false);
 		}
 	}
@@ -311,6 +323,10 @@ public class MultizoneViewModel extends LightViewModel {
 		 */
 		private final MultizoneColors mColors;
 		/**
+		 * The brightness to be set.
+		 */
+		private final Double mBrightness;
+		/**
 		 * Flag indicating if the change should be immediate.
 		 */
 		private final boolean mIsImmediate;
@@ -326,6 +342,22 @@ public class MultizoneViewModel extends LightViewModel {
 		private SetMultizoneColorsTask(final MultizoneViewModel model, final MultizoneColors colors, final boolean isImmediate) {
 			mModel = new WeakReference<>(model);
 			mColors = colors;
+			mBrightness = null;
+			mIsImmediate = isImmediate;
+		}
+
+		/**
+		 * Constructor, passing only brightness.
+		 *
+		 * @param model       The underlying model.
+		 * @param brightness  The brightness.
+		 * @param isImmediate Flag indicating if the change should be immediate.
+		 */
+		@SuppressWarnings("deprecation")
+		private SetMultizoneColorsTask(final MultizoneViewModel model, final double brightness, final boolean isImmediate) {
+			mModel = new WeakReference<>(model);
+			mColors = null;
+			mBrightness = brightness;
 			mIsImmediate = isImmediate;
 		}
 
@@ -340,7 +372,11 @@ public class MultizoneViewModel extends LightViewModel {
 				int colorDuration = mIsImmediate ? 0
 						: PreferenceUtil.getSharedPreferenceIntString(
 						R.string.key_pref_color_duration, R.string.pref_default_color_duration);
-				if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
+				if (mColors == null) {
+					model.getLight().setBrightness(mBrightness);
+					return null;
+				}
+				else if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
 					model.getLight().setColors(mColors, 0, false);
 					model.getLight().setPower(true, colorDuration, false);
 				}
