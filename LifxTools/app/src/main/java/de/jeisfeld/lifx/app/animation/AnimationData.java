@@ -10,7 +10,6 @@ import java.util.ArrayList;
 
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
-import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -253,7 +252,7 @@ public abstract class AnimationData implements Serializable {
 			ArrayList<StoredColor> storedColors = new ArrayList<>();
 			if (colorIdArray != null) {
 				for (int id : colorIdArray) {
-					storedColors.add(ColorRegistry.getInstance().getStoredColor(id));
+					storedColors.add(StoredColor.fromId(id));
 				}
 			}
 			return new ColorCycle(cycleDurations, storedColors);
@@ -316,14 +315,13 @@ public abstract class AnimationData implements Serializable {
 			ArrayList<Long> colorEntries = PreferenceUtil.getIndexedSharedPreferenceLongList(R.string.key_animation_color_list, colorId);
 			ArrayList<StoredColor> storedColors = new ArrayList<>();
 			for (long entry : colorEntries) {
-				if (entry >= Integer.MIN_VALUE && entry <= Integer.MAX_VALUE) {
-					StoredColor sc = ColorRegistry.getInstance().getStoredColor((int) entry);
-					if (sc != null) {
-						storedColors.add(sc);
-						continue;
-					}
+				if (entry >= Integer.MIN_VALUE && entry <= Integer.MAX_VALUE
+						&& PreferenceUtil.hasIndexedSharedPreference(R.string.key_color_name, (int) entry)) {
+					storedColors.add(StoredColor.fromId((int) entry));
 				}
-				storedColors.add(new StoredColor(new Color(entry), 0, null));
+				else {
+					storedColors.add(new StoredColor(new Color(entry), 0, null));
+				}
 			}
 			return new ColorCycle(cycleDurations, storedColors);
 		default:
