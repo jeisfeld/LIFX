@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -29,7 +30,11 @@ import de.jeisfeld.lifx.lan.type.Power;
 /**
  * Class holding information about a stored color.
  */
-public class StoredColor {
+public class StoredColor implements Serializable {
+	/**
+	 * The default serial version id.
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * The color.
 	 */
