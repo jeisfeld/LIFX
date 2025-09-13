@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.TableRow;
 
 import javax.annotation.Nonnull;
 
@@ -14,7 +17,10 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.R;
+import de.jeisfeld.lifx.app.animation.ColorCycleAnimationDialogFragment;
+import de.jeisfeld.lifx.app.animation.ColorCycleAnimationDialogFragment.ColorCycleAnimationDialogListener;
 import de.jeisfeld.lifx.app.home.MultizoneViewModel;
+import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.lan.animation.MultizoneMoveDefinition;
 
 /**
@@ -86,10 +92,32 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 			dismiss();
 		}
 
-		final View view = View.inflate(requireActivity(), R.layout.dialog_multizone_animation, null);
-		final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
-		final EditText editTextStretch = view.findViewById(R.id.editTextStretch);
-		final Spinner spinnerDirection = view.findViewById(R.id.spinnerDirection);
+                final View view = View.inflate(requireActivity(), R.layout.dialog_multizone_animation, null);
+                final Spinner spinnerType = view.findViewById(R.id.spinnerType);
+                final EditText editTextDuration = view.findViewById(R.id.editTextDuration);
+                final EditText editTextStretch = view.findViewById(R.id.editTextStretch);
+                final TableRow tableRowDuration = view.findViewById(R.id.tableRowDuration);
+                final TableRow tableRowStretch = view.findViewById(R.id.tableRowStretch);
+
+                spinnerType.setOnItemSelectedListener(new OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(final AdapterView<?> parent, final View selectedView, final int position,
+                                                                 final long id) {
+                                if (position >= MultizoneMoveDefinition.Direction.values().length) {
+                                        tableRowDuration.setVisibility(View.GONE);
+                                        tableRowStretch.setVisibility(View.GONE);
+                                }
+                                else {
+                                        tableRowDuration.setVisibility(View.VISIBLE);
+                                        tableRowStretch.setVisibility(View.VISIBLE);
+                                }
+                        }
+
+                        @Override
+                        public void onNothingSelected(final AdapterView<?> parent) {
+                                // do nothing
+                        }
+                });
 
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		builder.setTitle(R.string.title_dialog_animation)
@@ -100,31 +128,59 @@ public class MultizoneAnimationDialogFragment extends DialogFragment {
 						mListener.getValue().onDialogNegativeClick(MultizoneAnimationDialogFragment.this);
 					}
 				})
-				.setPositiveButton(R.string.button_start, (dialog, id) -> {
-					// Send the negative button event back to the host activity
-					if (mListener != null && mListener.getValue() != null && mModel != null && mModel.getValue() != null) {
-						int duration;
-						try {
-							duration = (int) (Double.parseDouble(editTextDuration.getText().toString()) * 1000); // MAGIC_NUMBER
-						}
-						catch (Exception e) {
-							duration = 10000; // MAGIC_NUMBER
-						}
-						double stretch;
-						try {
-							stretch = Math.max(0.1, Double.parseDouble(editTextStretch.getText().toString())); // MAGIC_NUMBER
-						}
-						catch (Exception e) {
-							stretch = 1;
-						}
+                                .setPositiveButton(R.string.button_start, (dialog, id) -> {
+                                        // Send the negative button event back to the host activity
+                                        if (mListener != null && mListener.getValue() != null && mModel != null
+                                                        && mModel.getValue() != null) {
+                                                int type = spinnerType.getSelectedItemPosition();
+                                                if (type >= MultizoneMoveDefinition.Direction.values().length) {
+                                                        if (mModel.getValue().getLight() != null
+                                                                        && mModel.getValue().getLight().getParameter(DeviceRegistry.DEVICE_ID) != null) {
+                                                                int deviceId = (int) mModel.getValue().getLight().getParameter(DeviceRegistry.DEVICE_ID);
+                                                                FragmentActivity activity = getActivity();
+                                                                if (activity != null) {
+                                                                        ColorCycleAnimationDialogFragment.displayColorCycleAnimationDialog(
+                                                                                        activity, mModel.getValue(), deviceId,
+                                                                                        new ColorCycleAnimationDialogListener() {
+                                                                                                @Override
+                                                                                                public void onDialogPositiveClick(final DialogFragment dialogFragment,
+                                                                                                                final AnimationData animationData) {
+                                                                                                        mListener.getValue().onDialogPositiveClick(dialogFragment, animationData);
+                                                                                                }
 
-						MultizoneMoveDefinition.Direction direction =
-								MultizoneMoveDefinition.Direction.fromOrdinal(spinnerDirection.getSelectedItemPosition());
+                                                                                                @Override
+                                                                                                public void onDialogNegativeClick(final DialogFragment dialogFragment) {
+                                                                                                        mListener.getValue().onDialogNegativeClick(dialogFragment);
+                                                                                                }
+                                                                                        });
+                                                                }
+                                                        }
+                                                }
+                                                else {
+                                                        int duration;
+                                                        try {
+                                                                duration = (int) (Double.parseDouble(editTextDuration.getText().toString()) * 1000); // MAGIC_NUMBER
+                                                        }
+                                                        catch (Exception e) {
+                                                                duration = 10000; // MAGIC_NUMBER
+                                                        }
+                                                        double stretch;
+                                                        try {
+                                                                stretch = Math.max(0.1, Double.parseDouble(editTextStretch.getText().toString())); // MAGIC_NUMBER
+                                                        }
+                                                        catch (Exception e) {
+                                                                stretch = 1;
+                                                        }
 
-						mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
-								new MultizoneMove(duration, stretch, direction, mModel.getValue().getColors().getValue(), false));
-					}
-				});
+                                                        MultizoneMoveDefinition.Direction direction =
+                                                                        MultizoneMoveDefinition.Direction.fromOrdinal(type);
+
+                                                        mListener.getValue().onDialogPositiveClick(MultizoneAnimationDialogFragment.this,
+                                                                        new MultizoneMove(duration, stretch, direction,
+                                                                                        mModel.getValue().getColors().getValue(), false));
+                                                }
+                                        }
+                                });
 		return builder.create();
 	}
 
