@@ -10,6 +10,9 @@ import java.util.List;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.util.ColorUtil;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
+import de.jeisfeld.lifx.app.storedcolors.StoredColor;
+import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
+import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationDefinition;
 import de.jeisfeld.lifx.lan.MultiZoneLight;
@@ -31,21 +34,21 @@ public class ColorCycle extends AnimationData {
 	 * Durations for each color step in milliseconds.
 	 */
 	private final ArrayList<Integer> mDurations;
-	/**
-	 * Colors to cycle through.
-	 */
-	private final ArrayList<Color> mColors;
+        /**
+         * Stored colors to cycle through.
+         */
+        private final ArrayList<StoredColor> mStoredColors;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param durations list of step durations
-	 * @param colors    list of colors to cycle
-	 */
-	public ColorCycle(final List<Integer> durations, final ArrayList<Color> colors) {
-		mDurations = new ArrayList<>(durations);
-		mColors = colors;
-	}
+         * @param durations   list of step durations
+         * @param storedColors list of stored colors to cycle
+         */
+        public ColorCycle(final List<Integer> durations, final ArrayList<StoredColor> storedColors) {
+                mDurations = new ArrayList<>(durations);
+                mStoredColors = storedColors;
+        }
 
 	@Override
 	public final void addToIntent(final Intent serviceIntent) {
@@ -54,16 +57,24 @@ public class ColorCycle extends AnimationData {
 		for (int i = 0; i < mDurations.size(); i++) {
 			durations[i] = mDurations.get(i);
 		}
-		serviceIntent.putExtra(EXTRA_ANIMATION_DURATIONS, durations);
-		serviceIntent.putExtra(EXTRA_COLOR_LIST, mColors);
-	}
+                serviceIntent.putExtra(EXTRA_ANIMATION_DURATIONS, durations);
+                int[] colorIds = new int[mStoredColors.size()];
+                for (int i = 0; i < mStoredColors.size(); i++) {
+                        colorIds[i] = mStoredColors.get(i).getId();
+                }
+                serviceIntent.putExtra(EXTRA_STORED_COLOR_IDS, colorIds);
+        }
 
 	@Override
 	public final void store(final int colorId) {
 		super.store(colorId);
-		PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId, mDurations);
-		PreferenceUtil.setIndexedSharedPreferenceColorList(R.string.key_animation_color_list, colorId, mColors);
-	}
+                PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId, mDurations);
+                ArrayList<Integer> colorIds = new ArrayList<>();
+                for (StoredColor sc : mStoredColors) {
+                        colorIds.add(sc.getId());
+                }
+                PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_animation_color_list, colorId, colorIds);
+        }
 
 	@Override
 	protected final AnimationType getType() {
@@ -82,8 +93,12 @@ public class ColorCycle extends AnimationData {
 
                                @Override
                                public MultizoneColors getColors(final int n) {
-                                       return new MultizoneColors.Fixed(
-                                                       mColors.get(n % mColors.size()).withRelativeBrightness(brightness));
+                                       StoredColor sc = mStoredColors.get(n % mStoredColors.size());
+                                       if (sc instanceof StoredMultizoneColors) {
+                                               return ((StoredMultizoneColors) sc).getColors().withRelativeBrightness(brightness);
+                                       }
+                                       Color color = sc.getColor();
+                                       return new MultizoneColors.Fixed(color == null ? Color.OFF : color.withRelativeBrightness(brightness));
                                }
                        };
                }
@@ -96,8 +111,12 @@ public class ColorCycle extends AnimationData {
 
                                @Override
                                public TileChainColors getColors(final int n) {
-                                       return new TileChainColors.Fixed(
-                                                       mColors.get(n % mColors.size()).withRelativeBrightness(brightness));
+                                       StoredColor sc = mStoredColors.get(n % mStoredColors.size());
+                                       if (sc instanceof StoredTileColors) {
+                                               return ((StoredTileColors) sc).getColors().withRelativeBrightness(brightness);
+                                       }
+                                       Color color = sc.getColor();
+                                       return new TileChainColors.Fixed(color == null ? Color.OFF : color.withRelativeBrightness(brightness));
                                }
                        };
                }
@@ -109,34 +128,39 @@ public class ColorCycle extends AnimationData {
 
                        @Override
                        public Color getColor(final int n) {
-                               return mColors.get(n % mColors.size()).withRelativeBrightness(brightness);
+                               StoredColor sc = mStoredColors.get(n % mStoredColors.size());
+                               Color color = sc.getColor();
+                               return color == null ? Color.OFF : color.withRelativeBrightness(brightness);
                        }
                };
        }
 
 	@Override
 	public final Drawable getBaseButtonDrawable(final Context context, final Light light, final double relativeBrightness) {
-		ArrayList<Color> colors = new ArrayList<>();
-		for (Color c : mColors) {
-			colors.add(c.withRelativeBrightness(relativeBrightness));
-		}
-		return ColorUtil.getButtonDrawable(context, colors);
-	}
+                ArrayList<Color> colors = new ArrayList<>();
+                for (StoredColor sc : mStoredColors) {
+                        Color c = sc.getColor();
+                        if (c != null) {
+                                colors.add(c.withRelativeBrightness(relativeBrightness));
+                        }
+                }
+                return ColorUtil.getButtonDrawable(context, colors);
+        }
 
 	@Override
 	public final boolean isValid() {
-		if (mColors == null || mDurations == null) {
-			return false;
-		}
-		if (mColors.isEmpty() || mDurations.size() != mColors.size()) {
-			return false;
-		}
-		for (int d : mDurations) {
-			if (d <= 0) {
-				return false;
-			}
-		}
-		return true;
-	}
+                if (mStoredColors == null || mDurations == null) {
+                        return false;
+                }
+                if (mStoredColors.isEmpty() || mDurations.size() != mStoredColors.size()) {
+                        return false;
+                }
+                for (int d : mDurations) {
+                        if (d <= 0) {
+                                return false;
+                        }
+                }
+                return true;
+        }
 }
 
