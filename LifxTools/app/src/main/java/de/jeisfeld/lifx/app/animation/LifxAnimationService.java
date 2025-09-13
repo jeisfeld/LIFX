@@ -189,29 +189,33 @@ public class LifxAnimationService extends Service {
 									updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
 								}
 							}
-							while (true) {
-								try {
-									//noinspection BusyWait
-									Thread.sleep(60000); // MAGIC_NUMBER
-								}
-								catch (InterruptedException e) {
-									try {
-										List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
-										if (animationDataList == null || animationDataList.size() < 2
-												|| !animationDataList.get(0).hasNativeImplementation(light)
-												|| !animationDataList.get(1).hasNativeImplementation(light)) {
-											// If there is another native animation in the queue, do not sent OFF
-											// as setEffect will not work shortly after OFF
-											animationData.getNativeAnimationDefinition(light).stopAnimation();
-										}
-									}
-									catch (IOException ex) {
-										// ignore
-									}
-									updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
-									return;
-								}
-							}
+                                                       // Sleep until the thread gets interrupted which signals the
+                                                       // animation should be stopped. Using isInterrupted avoids an
+                                                       // infinite loop in case the interrupt flag is already set
+                                                       // before entering the sleep call.
+                                                       while (!isInterrupted()) {
+                                                               try {
+                                                                       //noinspection BusyWait
+                                                                       Thread.sleep(60000); // MAGIC_NUMBER
+                                                               }
+                                                               catch (InterruptedException e) {
+                                                                       try {
+                                                                               List<AnimationData> animationDataList = ANIMATED_LIGHT_DATA.get(mac);
+                                                                               if (animationDataList == null || animationDataList.size() < 2
+                                                                                               || !animationDataList.get(0).hasNativeImplementation(light)
+                                                                                               || !animationDataList.get(1).hasNativeImplementation(light)) {
+                                                                                       // If there is another native animation in the queue, do not sent OFF
+                                                                                       // as setEffect will not work shortly after OFF
+                                                                                       animationData.getNativeAnimationDefinition(light).stopAnimation();
+                                                                               }
+                                                                       }
+                                                                       catch (IOException ex) {
+                                                                               // ignore
+                                                                       }
+                                                                       updateOnEndAnimation(light.getTargetAddress(), wakeLock, animationData);
+                                                                       return;
+                                                               }
+                                                       }
 						}
 					}.start();
 				}
