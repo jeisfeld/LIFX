@@ -69,11 +69,11 @@ public class ColorCycle extends AnimationData {
 	public final void store(final int colorId) {
 		super.store(colorId);
                 PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId, mDurations);
-                ArrayList<Integer> colorIds = new ArrayList<>();
+                ArrayList<Long> colorEntries = new ArrayList<>();
                 for (StoredColor sc : mStoredColors) {
-                        colorIds.add(sc.getId());
+                        colorEntries.add((long) sc.getId());
                 }
-                PreferenceUtil.setIndexedSharedPreferenceIntList(R.string.key_animation_color_list, colorId, colorIds);
+                PreferenceUtil.setIndexedSharedPreferenceLongList(R.string.key_animation_color_list, colorId, colorEntries);
         }
 
 	@Override

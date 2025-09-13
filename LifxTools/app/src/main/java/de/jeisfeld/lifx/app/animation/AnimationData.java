@@ -313,16 +313,23 @@ public abstract class AnimationData implements Serializable {
 			return new TileChainClouds(duration, cloudSaturation, tileColors3, false);
                 case COLOR_CYCLE:
                         ArrayList<Integer> cycleDurations = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_animation_durations_list, colorId);
-                        ArrayList<Integer> colorIds = PreferenceUtil.getIndexedSharedPreferenceIntList(R.string.key_animation_color_list, colorId);
+                        ArrayList<Long> colorEntries = PreferenceUtil.getIndexedSharedPreferenceLongList(R.string.key_animation_color_list, colorId);
                         ArrayList<StoredColor> storedColors = new ArrayList<>();
-                        for (int id : colorIds) {
-                                storedColors.add(ColorRegistry.getInstance().getStoredColor(id));
+                        for (long entry : colorEntries) {
+                                if (entry >= Integer.MIN_VALUE && entry <= Integer.MAX_VALUE) {
+                                        StoredColor sc = ColorRegistry.getInstance().getStoredColor((int) entry);
+                                        if (sc != null) {
+                                                storedColors.add(sc);
+                                                continue;
+                                        }
+                                }
+                                storedColors.add(new StoredColor(new Color(entry), 0, null));
                         }
                         return new ColorCycle(cycleDurations, storedColors);
                 default:
                         return null;
                 }
-	}
+        }
 
 	/**
 	 * Store animation data within stored color.
