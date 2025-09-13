@@ -14,6 +14,7 @@ import androidx.lifecycle.MutableLiveData;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.animation.AnimationData;
+import de.jeisfeld.lifx.app.animation.ColorCycle;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService;
 import de.jeisfeld.lifx.app.animation.LifxAnimationService.AnimationStatus;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
@@ -238,26 +239,29 @@ public class LightViewModel extends DeviceViewModel {
 				return null;
 			}
 			Light light = model.getLight();
-			double brightness = AnimationData.getSelectedBrightness(light);
-			model.updateSelectedBrightness(brightness);
-			Color currentColor = model.mColor.getValue();
-			if (currentColor != null) {
-				Color newColor = currentColor.withBrightness(brightness);
-				try {
-					if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
-						light.setColor(newColor, 0, false);
-						light.setPower(true, 0, false);
-						model.updatePowerButton(Power.ON);
-					}
-					else {
-						light.setColor(newColor, 0, false);
-					}
-					model.updateStoredColor(newColor);
-				}
-				catch (IOException e) {
-					Log.w(Application.TAG, e);
-				}
-			}
+                        double brightness = AnimationData.getSelectedBrightness(light);
+                        model.updateSelectedBrightness(brightness);
+                        Color currentColor = model.mColor.getValue();
+                        if (currentColor != null) {
+                                Color newColor = currentColor;
+                                if (!(mAnimationData instanceof ColorCycle)) {
+                                        newColor = newColor.withBrightness(brightness);
+                                }
+                                try {
+                                        if (model.mPower.getValue() != null && model.mPower.getValue().isOff() && isAutoOn()) {
+                                                light.setColor(newColor, 0, false);
+                                                light.setPower(true, 0, false);
+                                                model.updatePowerButton(Power.ON);
+                                        }
+                                        else {
+                                                light.setColor(newColor, 0, false);
+                                        }
+                                        model.updateStoredColor(newColor);
+                                }
+                                catch (IOException e) {
+                                        Log.w(Application.TAG, e);
+                                }
+                        }
 			LifxAnimationService.triggerAnimationService(mContext, light, mAnimationData);
 			return null;
 		}
