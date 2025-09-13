@@ -98,18 +98,23 @@ public class StoredColorsViewAdapter extends RecyclerView.Adapter<StoredColorsVi
 								}
 								else {
 									StoredColor newColor;
-									if (storedColor instanceof StoredMultizoneColors) {
-										newColor = new StoredMultizoneColors(storedColor.getId(), ((StoredMultizoneColors) storedColor).getColors(),
-												storedColor.getDeviceId(), text.trim());
-									}
-									else if (storedColor instanceof StoredTileColors) {
-										newColor = new StoredTileColors(storedColor.getId(), ((StoredTileColors) storedColor).getColors(),
-												storedColor.getDeviceId(), text.trim());
-									}
-									else {
-										newColor = new StoredColor(storedColor.getId(), storedColor.getColor(),
-												storedColor.getDeviceId(), text.trim());
-									}
+                                                                        if (storedColor instanceof StoredMultizoneColors) {
+                                                                                newColor = new StoredMultizoneColors(storedColor.getId(), ((StoredMultizoneColors) storedColor).getColors(),
+                                                                                                storedColor.getDeviceId(), text.trim());
+                                                                        }
+                                                                        else if (storedColor instanceof StoredTileColors) {
+                                                                                newColor = new StoredTileColors(storedColor.getId(), ((StoredTileColors) storedColor).getColors(),
+                                                                                                storedColor.getDeviceId(), text.trim());
+                                                                        }
+                                                                        else if (storedColor instanceof StoredAnimation) {
+                                                                                StoredAnimation storedAnimation = (StoredAnimation) storedColor;
+                                                                                newColor = new StoredAnimation(storedAnimation.getId(), storedAnimation.getAnimationData(),
+                                                                                                storedAnimation.getRelativeBrightness(), storedAnimation.getDeviceId(), text.trim());
+                                                                        }
+                                                                        else {
+                                                                                newColor = new StoredColor(storedColor.getId(), storedColor.getColor(),
+                                                                                                storedColor.getDeviceId(), text.trim());
+                                                                        }
 
 									ColorRegistry.getInstance().addOrUpdate(newColor);
 									mStoredColors.set(position, newColor);

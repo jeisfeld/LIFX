@@ -111,14 +111,14 @@ public class StoredAnimation extends StoredColor {
 		return mAnimationData;
 	}
 
-	/**
-	 * Get the relative brightness.
-	 *
-	 * @return The relative brightness.
-	 */
-	private double getRelativeBrightness() {
-		return mRelativeBrightness;
-	}
+        /**
+         * Get the relative brightness.
+         *
+         * @return The relative brightness.
+         */
+        public double getRelativeBrightness() {
+                return mRelativeBrightness;
+        }
 
 	@NonNull
 	@Override
