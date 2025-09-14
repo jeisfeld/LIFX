@@ -137,13 +137,19 @@ public class LightViewModel extends DeviceViewModel {
                 else {
                         AnimationData animationData = LifxAnimationService.getAnimationData(getLight().getTargetAddress());
                         if (animationData instanceof ColorCycle) {
-                                synchronized (mRunningSetColorTasks) {
-                                        mRunningSetColorTasks.add(new SetBrightnessTask(this, brightness));
-                                        if (mRunningSetColorTasks.size() > 2) {
-                                                mRunningSetColorTasks.remove(1);
-                                        }
-                                        if (mRunningSetColorTasks.size() == 1) {
-                                                mRunningSetColorTasks.get(0).execute();
+                                if (getLight().getProduct().isMatrix() && !getLight().getProduct().isChain()
+                                                && this instanceof TileViewModel) {
+                                        ((TileViewModel) this).updateBrightnessForCurrentColors(brightness);
+                                }
+                                else {
+                                        synchronized (mRunningSetColorTasks) {
+                                                mRunningSetColorTasks.add(new SetBrightnessTask(this, brightness));
+                                                if (mRunningSetColorTasks.size() > 2) {
+                                                        mRunningSetColorTasks.remove(1);
+                                                }
+                                                if (mRunningSetColorTasks.size() == 1) {
+                                                        mRunningSetColorTasks.get(0).execute();
+                                                }
                                         }
                                 }
                         }

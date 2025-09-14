@@ -111,10 +111,27 @@ public class TileViewModel extends LightViewModel {
 	}
 
 	@Override
-	public final void updateSelectedBrightness(final double brightness) {
-		super.updateSelectedBrightness(brightness);
-		mRelativeBrightness.postValue(brightness);
-	}
+        public final void updateSelectedBrightness(final double brightness) {
+                super.updateSelectedBrightness(brightness);
+                mRelativeBrightness.postValue(brightness);
+        }
+
+        /**
+         * Update brightness while keeping the current colors.
+         *
+         * @param brightness The new brightness.
+         */
+        void updateBrightnessForCurrentColors(final double brightness) {
+                synchronized (mRunningSetColorTasks) {
+                        mRunningSetColorTasks.add(new SetTileBrightnessTask(this, brightness));
+                        if (mRunningSetColorTasks.size() > 2) {
+                                mRunningSetColorTasks.remove(1);
+                        }
+                        if (mRunningSetColorTasks.size() == 1) {
+                                mRunningSetColorTasks.get(0).execute();
+                        }
+                }
+        }
 
 	/**
 	 * Update the main color for color pickers.
@@ -379,9 +396,77 @@ public class TileViewModel extends LightViewModel {
 		}
 
 		@Override
-		public void execute() {
-			executeOnExecutor(THREAD_POOL_EXECUTOR);
-		}
-	}
+                public void execute() {
+                        executeOnExecutor(THREAD_POOL_EXECUTOR);
+                }
+        }
+
+        /**
+         * Async task for setting brightness while preserving current tile colors.
+         */
+        private static final class SetTileBrightnessTask extends AsyncTask<Double, String, TileChainColors> implements AsyncExecutable {
+                /**
+                 * A weak reference to the underlying model.
+                 */
+                private final WeakReference<TileViewModel> mModel;
+                /**
+                 * The brightness to be applied.
+                 */
+                private final double mBrightness;
+
+                /**
+                 * Constructor.
+                 *
+                 * @param model      The underlying model.
+                 * @param brightness The brightness.
+                 */
+                @SuppressWarnings("deprecation")
+                private SetTileBrightnessTask(final TileViewModel model, final double brightness) {
+                        mModel = new WeakReference<>(model);
+                        mBrightness = brightness;
+                }
+
+                @Override
+                protected TileChainColors doInBackground(final Double... doubles) {
+                        TileViewModel model = mModel.get();
+                        if (model == null) {
+                                return null;
+                        }
+                        try {
+                                TileChainColors colors = model.getLight().getColors();
+                                if (colors != null) {
+                                        colors = colors.withRelativeBrightness(mBrightness);
+                                        model.getLight().setColors(colors, 0, false);
+                                }
+                                return colors;
+                        }
+                        catch (IOException e) {
+                                Log.w(Application.TAG, e);
+                                return null;
+                        }
+                }
+
+                @Override
+                protected void onPostExecute(final TileChainColors colors) {
+                        TileViewModel model = mModel.get();
+                        if (model == null) {
+                                return;
+                        }
+                        synchronized (model.mRunningSetColorTasks) {
+                                model.mRunningSetColorTasks.remove(this);
+                                if (!model.mRunningSetColorTasks.isEmpty()) {
+                                        model.mRunningSetColorTasks.get(0).execute();
+                                }
+                        }
+                        if (colors != null) {
+                                model.updateStoredColors(colors, mBrightness);
+                        }
+                }
+
+                @Override
+                public void execute() {
+                        executeOnExecutor(THREAD_POOL_EXECUTOR);
+                }
+        }
 
 }
