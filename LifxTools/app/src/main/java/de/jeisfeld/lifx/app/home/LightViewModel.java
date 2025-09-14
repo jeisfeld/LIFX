@@ -132,9 +132,18 @@ public class LightViewModel extends DeviceViewModel {
                 updateSelectedBrightness(brightness);
                 String mac = getLight().getTargetAddress();
                 AnimationStatus status = LifxAnimationService.getAnimationStatus(mac);
-                if (status != AnimationStatus.CUSTOM
-                                || LifxAnimationService.getAnimationData(mac) instanceof ColorCycle) {
-                        doUpdateBrightness(brightness);
+                AnimationData animationData = LifxAnimationService.getAnimationData(mac);
+                if (status == AnimationStatus.CUSTOM && !(animationData instanceof ColorCycle)) {
+                        return;
+                }
+                synchronized (mRunningSetColorTasks) {
+                        mRunningSetColorTasks.add(new SetBrightnessTask(this, brightness));
+                        if (mRunningSetColorTasks.size() > 2) {
+                                mRunningSetColorTasks.remove(1);
+                        }
+                        if (mRunningSetColorTasks.size() == 1) {
+                                mRunningSetColorTasks.get(0).execute();
+                        }
                 }
         }
 
@@ -290,10 +299,10 @@ public class LightViewModel extends DeviceViewModel {
 		getLight().endAnimation(false);
 	}
 
-	/**
-	 * An async task for checking the color.
-	 */
-	private static final class CheckColorTask extends AsyncTask<String, String, Color> {
+        /**
+         * An async task for checking the color.
+         */
+        private static final class CheckColorTask extends AsyncTask<String, String, Color> {
 		/**
 		 * A weak reference to the underlying model.
 		 */
@@ -326,12 +335,67 @@ public class LightViewModel extends DeviceViewModel {
 			}
 			model.updateStoredColor(color);
 		}
-	}
+        }
 
-	/**
-	 * An async task for setting the color.
-	 */
-	private static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
+        /**
+         * An async task for setting the brightness.
+         */
+        private static final class SetBrightnessTask extends AsyncTask<Double, String, Void> implements AsyncExecutable {
+                /**
+                 * A weak reference to the underlying model.
+                 */
+                private final WeakReference<LightViewModel> mModel;
+                /**
+                 * The brightness to be set.
+                 */
+                private final double mBrightness;
+
+                /**
+                 * Constructor.
+                 *
+                 * @param model      The underlying model.
+                 * @param brightness The brightness.
+                 */
+                @SuppressWarnings("deprecation")
+                private SetBrightnessTask(final LightViewModel model, final double brightness) {
+                        mModel = new WeakReference<>(model);
+                        mBrightness = brightness;
+                }
+
+                @Override
+                protected Void doInBackground(final Double... brightness) {
+                        LightViewModel model = mModel.get();
+                        if (model == null) {
+                                return null;
+                        }
+                        model.doUpdateBrightness(mBrightness);
+                        return null;
+                }
+
+                @Override
+                protected void onPostExecute(final Void aVoid) {
+                        LightViewModel model = mModel.get();
+                        if (model == null) {
+                                return;
+                        }
+                        synchronized (model.mRunningSetColorTasks) {
+                                model.mRunningSetColorTasks.remove(this);
+                                if (!model.mRunningSetColorTasks.isEmpty()) {
+                                        model.mRunningSetColorTasks.get(0).execute();
+                                }
+                        }
+                }
+
+                @Override
+                public void execute() {
+                        executeOnExecutor(THREAD_POOL_EXECUTOR);
+                }
+        }
+
+        /**
+         * An async task for setting the color.
+         */
+        private static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
 		/**
 		 * A weak reference to the underlying model.
 		 */

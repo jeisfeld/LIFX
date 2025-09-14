@@ -157,18 +157,19 @@ public class TileViewModel extends LightViewModel {
 		}
 	}
 
-	@Override
-	protected final void doUpdateBrightness(final double brightness) {
-		TileChainColors oldColors = mColors.getValue();
-		if (oldColors != null) {
-			if (LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) == AnimationStatus.NATIVE && getDevice().getProduct().isChain()) {
-				updateColors(null, brightness, true, false);
-			}
-			else {
-				updateColors(oldColors, brightness, true, false);
-			}
-		}
-	}
+        @Override
+        protected final void doUpdateBrightness(final double brightness) {
+                TileChainColors oldColors = mColors.getValue();
+                if (oldColors != null) {
+                        if (!getDevice().getProduct().isChain()
+                                        || LifxAnimationService.getAnimationStatus(getLight().getTargetAddress()) == AnimationStatus.NATIVE) {
+                                updateColors(null, brightness, true, false);
+                        }
+                        else {
+                                updateColors(oldColors, brightness, true, false);
+                        }
+                }
+        }
 
 	@Override
 	public final void checkColor() {
