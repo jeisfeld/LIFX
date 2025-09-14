@@ -127,32 +127,14 @@ public class LightViewModel extends DeviceViewModel {
 		updateColor(newColor, true);
 	}
 
-	@Override
+        @Override
         public final void updateBrightness(final double brightness) {
                 updateSelectedBrightness(brightness);
-                AnimationStatus status = LifxAnimationService.getAnimationStatus(getLight().getTargetAddress());
-                if (status != AnimationStatus.CUSTOM) {
+                String mac = getLight().getTargetAddress();
+                AnimationStatus status = LifxAnimationService.getAnimationStatus(mac);
+                if (status != AnimationStatus.CUSTOM
+                                || LifxAnimationService.getAnimationData(mac) instanceof ColorCycle) {
                         doUpdateBrightness(brightness);
-                }
-                else {
-                        AnimationData animationData = LifxAnimationService.getAnimationData(getLight().getTargetAddress());
-                        if (animationData instanceof ColorCycle) {
-                                if (getLight().getProduct().isMatrix() && !getLight().getProduct().isChain()
-                                                && this instanceof TileViewModel) {
-                                        ((TileViewModel) this).updateBrightnessForCurrentColors(brightness);
-                                }
-                                else {
-                                        synchronized (mRunningSetColorTasks) {
-                                                mRunningSetColorTasks.add(new SetBrightnessTask(this, brightness));
-                                                if (mRunningSetColorTasks.size() > 2) {
-                                                        mRunningSetColorTasks.remove(1);
-                                                }
-                                                if (mRunningSetColorTasks.size() == 1) {
-                                                        mRunningSetColorTasks.get(0).execute();
-                                                }
-                                        }
-                                }
-                        }
                 }
         }
 
@@ -349,11 +331,11 @@ public class LightViewModel extends DeviceViewModel {
 	/**
 	 * An async task for setting the color.
 	 */
-        private static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
-                /**
-                 * A weak reference to the underlying model.
-                 */
-                private final WeakReference<LightViewModel> mModel;
+	private static final class SetColorTask extends AsyncTask<Color, String, Color> implements AsyncExecutable {
+		/**
+		 * A weak reference to the underlying model.
+		 */
+		private final WeakReference<LightViewModel> mModel;
 		/**
 		 * The color to be set.
 		 */
@@ -400,11 +382,11 @@ public class LightViewModel extends DeviceViewModel {
 			catch (IOException e) {
 				Log.w(Application.TAG, e);
 				return null;
-                }
-        }
+			}
+		}
 
-                @Override
-                protected void onPostExecute(final Color color) {
+		@Override
+		protected void onPostExecute(final Color color) {
 			LightViewModel model = mModel.get();
 			if (model == null) {
 				return;
@@ -422,72 +404,8 @@ public class LightViewModel extends DeviceViewModel {
 		}
 
 		@Override
-                public void execute() {
-                        executeOnExecutor(THREAD_POOL_EXECUTOR);
-                }
-        }
-
-        /**
-         * Async task for setting the brightness without stopping animations.
-         */
-        private static final class SetBrightnessTask extends AsyncTask<Double, String, Void> implements AsyncExecutable {
-                /**
-                 * A weak reference to the underlying model.
-                 */
-                private final WeakReference<LightViewModel> mModel;
-                /**
-                 * The brightness to be set.
-                 */
-                private final double mBrightness;
-
-                /**
-                 * Constructor.
-                 *
-                 * @param model      The underlying model.
-                 * @param brightness The brightness.
-                 */
-                @SuppressWarnings("deprecation")
-                private SetBrightnessTask(final LightViewModel model, final double brightness) {
-                        mModel = new WeakReference<>(model);
-                        mBrightness = brightness;
-                }
-
-                @Override
-                protected Void doInBackground(final Double... doubles) {
-                        LightViewModel model = mModel.get();
-                        if (model == null) {
-                                return null;
-                        }
-                        try {
-                                model.getLight().setBrightness(mBrightness);
-                        }
-                        catch (IOException e) {
-                                Log.w(Application.TAG, e);
-                        }
-                        return null;
-                }
-
-                @Override
-                protected void onPostExecute(final Void aVoid) {
-                        LightViewModel model = mModel.get();
-                        if (model == null) {
-                                return;
-                        }
-                        synchronized (model.mRunningSetColorTasks) {
-                                model.mRunningSetColorTasks.remove(this);
-                                if (!model.mRunningSetColorTasks.isEmpty()) {
-                                        model.mRunningSetColorTasks.get(0).execute();
-                                }
-                        }
-                        Color oldColor = model.mColor.getValue();
-                        if (oldColor != null) {
-                                model.updateStoredColor(oldColor.withBrightness(mBrightness));
-                        }
-                }
-
-                @Override
-                public void execute() {
-                        executeOnExecutor(THREAD_POOL_EXECUTOR);
-                }
-        }
+		public void execute() {
+			executeOnExecutor(THREAD_POOL_EXECUTOR);
+		}
+	}
 }
