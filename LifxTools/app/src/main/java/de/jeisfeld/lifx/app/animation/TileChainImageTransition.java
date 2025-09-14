@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
 import de.jeisfeld.lifx.app.storedcolors.ColorRegistry;
+import de.jeisfeld.lifx.app.storedcolors.StoredAnimation;
 import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
@@ -92,12 +93,13 @@ public class TileChainImageTransition extends AnimationData {
 		final Integer deviceId = (Integer) light.getParameter(DeviceRegistry.DEVICE_ID);
 		final Random random = new Random();
 		final List<StoredColor> storedColorsList = ColorRegistry.getInstance().getStoredColors(deviceId).stream()
+				.filter(storedColor -> !(storedColor instanceof StoredAnimation))
 				.filter(storedColor -> storedColor.getName().matches(mColorRegex)).collect(Collectors.toList());
 
 		return new TileChain.AnimationDefinition() {
 			@Override
 			public TileChainColors getColors(final int n) {
-				if (storedColorsList.size() == 0) {
+				if (storedColorsList.isEmpty()) {
 					return null;
 				}
 				else {
