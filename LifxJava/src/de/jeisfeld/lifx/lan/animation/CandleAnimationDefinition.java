@@ -136,7 +136,7 @@ public final class CandleAnimationDefinition implements TileChain.AnimationDefin
 			mCandleWidth = 3; // MAGIC_NUMBER
 			mCandleHeight = mBackground == CRADLE // MAGIC_NUMBER
 					? new int[] {5 - mCandleBurndown, 11 - mCandleBurndown, 7 - mCandleBurndown, 9 - mCandleBurndown} // MAGIC_NUMBER
-					: new int[] {6 - mCandleBurndown, 12 - mCandleBurndown, 10 - mCandleBurndown, 8 - mCandleBurndown}; // MAGIC_NUMBER
+					: new int[] {8 - mCandleBurndown, 12 - mCandleBurndown, 6 - mCandleBurndown, 10 - mCandleBurndown}; // MAGIC_NUMBER
 			mCandleLeft = new int[] {0, 4, 9, 13}; // MAGIC_NUMBER
 			mCandleBottom = mBackground == CRADLE ? new int[] {3, 1, 5, 3} : new int[] {0, 0, 0, 0}; // MAGIC_NUMBER
 			break;
