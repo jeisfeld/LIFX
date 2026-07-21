@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:selector_BrightnessSlider="@drawable/wheel" />
+            app:selector_BrightnessSlider="@drawable/colorpickerview_wheel" />
 
         <de.jeisfeld.lifx.app.view.ColorTemperatureSlideBar
             android:id="@+id/ColorTemperatureSlideBar"
@@ -75,7 +75,7 @@
             android:layout_marginTop="15dp"
             android:layout_marginBottom="10dp"
             app:layout_constraintBottom_toTopOf="@id/BrightnessSlideBar"
-            app:selector_AlphaSlideBar="@drawable/wheel" />
+            app:selector_AlphaSlideBar="@drawable/colorpickerview_wheel" />
 
         <com.skydoves.colorpickerview.ColorPickerView
             android:id="@+id/colorPickerMain"
@@ -88,7 +88,7 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:palette="@drawable/color_wheel"
-            app:selector="@drawable/wheel" />
+            app:selector="@drawable/colorpickerview_wheel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -107,6 +107,6 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:palette="@drawable/brightness_colortemp"
-            app:selector="@drawable/wheel" />
+            app:selector="@drawable/colorpickerview_wheel" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>

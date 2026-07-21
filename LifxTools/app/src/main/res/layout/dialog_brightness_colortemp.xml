@@ -16,7 +16,7 @@
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintTop_toTopOf="parent"
         app:palette="@drawable/brightness_colortemp"
-        app:selector="@drawable/wheel" />
+        app:selector="@drawable/colorpickerview_wheel" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
