@@ -8,6 +8,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -20,11 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.MainActivity;
 import de.jeisfeld.lifx.app.R;
 import de.jeisfeld.lifx.app.home.HomeFragment;
 import de.jeisfeld.lifx.app.managedevices.DeviceRegistry;
+import de.jeisfeld.lifx.app.util.LocalNetworkPermission;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Device;
 import de.jeisfeld.lifx.lan.LifxLan;
@@ -78,6 +81,9 @@ public class LifxAnimationService extends Service {
 	 * @param animationData The animation data.
 	 */
 	public static void triggerAnimationService(final Context context, final Light light, final AnimationData animationData) {
+		if (!LocalNetworkPermission.isGranted(context)) {
+			return;
+		}
 		Intent serviceIntent = new Intent(context, LifxAnimationService.class);
 		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_MAC, light.getTargetAddress());
 		serviceIntent.putExtra(LifxAnimationService.EXTRA_DEVICE_LABEL, light.getLabel());
@@ -93,8 +99,9 @@ public class LifxAnimationService extends Service {
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
-		if (intent == null) {
-			return START_REDELIVER_INTENT;
+		if (intent == null || !LocalNetworkPermission.isGranted(this)) {
+			stopSelf();
+			return START_NOT_STICKY;
 		}
 
 		final String mac = intent.getStringExtra(EXTRA_DEVICE_MAC);
@@ -280,7 +287,9 @@ public class LifxAnimationService extends Service {
 				.setSmallIcon(R.drawable.ic_notification_icon_logo)
 				.setContentIntent(pendingIntent)
 				.build();
-		startForeground(SERVICE_ID, notification);
+		ServiceCompat.startForeground(this, SERVICE_ID, notification,
+				Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+						? ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE : 0);
 	}
 
 	/**

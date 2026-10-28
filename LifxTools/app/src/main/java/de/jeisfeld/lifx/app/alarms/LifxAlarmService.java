@@ -7,6 +7,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.media.AudioManager;
 import android.media.Ringtone;
 import android.os.Build;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationCompat.BigTextStyle;
+import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
 import de.jeisfeld.lifx.app.Application;
 import de.jeisfeld.lifx.app.MainActivity;
@@ -47,6 +49,7 @@ import de.jeisfeld.lifx.app.storedcolors.StoredColor;
 import de.jeisfeld.lifx.app.storedcolors.StoredMultizoneColors;
 import de.jeisfeld.lifx.app.storedcolors.StoredTileColors;
 import de.jeisfeld.lifx.app.util.ImageUtil;
+import de.jeisfeld.lifx.app.util.LocalNetworkPermission;
 import de.jeisfeld.lifx.app.util.PreferenceUtil;
 import de.jeisfeld.lifx.lan.Light;
 import de.jeisfeld.lifx.lan.Light.AnimationCallback;
@@ -139,6 +142,9 @@ public class LifxAlarmService extends Service {
 	 * @param alarmTime the alarm time.
 	 */
 	public static void triggerAlarmService(final Context context, final String action, final int alarmId, final Date alarmTime) {
+		if (!LocalNetworkPermission.isGranted(context)) {
+			return;
+		}
 		if (ACTION_CANCEL_ALARM.equals(action) || ACTION_INTERRUPT_ALARM.equals(action)) {
 			context.startService(createIntent(context, action, alarmId, alarmTime));
 		}
@@ -184,7 +190,8 @@ public class LifxAlarmService extends Service {
 
 	@Override
 	public final int onStartCommand(final Intent intent, final int flags, final int startId) {
-		if (intent == null) {
+		if (intent == null || !LocalNetworkPermission.isGranted(this)) {
+			stopSelf();
 			return START_NOT_STICKY;
 		}
 		final String action = intent.getAction();
@@ -571,7 +578,9 @@ public class LifxAlarmService extends Service {
 				.setSmallIcon(R.drawable.ic_notification_icon_alarm)
 				.setContentIntent(contentIntent)
 				.build();
-		startForeground(SERVICE_ID, notification);
+		ServiceCompat.startForeground(this, SERVICE_ID, notification,
+				Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
+						? ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE : 0);
 		// sometimes update of notification text is not reliable - therefore making explicit update.
 		NotificationManager manager = getSystemService(NotificationManager.class);
 		assert manager != null;

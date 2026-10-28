@@ -37,4 +37,6 @@
     <string name="notification_text_alarm">%2$s: %1$s\n</string>
     <string name="notification_text_no_alarm">No más alarmas</string>
     <string name="notification_alarm_action_stop">Detener</string>
+    <string name="local_network_permission_explanation">LifxTools necesita acceso a la red local para buscar y controlar tus luces.</string>
+    <string name="local_network_permission_retry">Permitir acceso a la red local</string>
 </resources>
